@@ -5,6 +5,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_rect.h>
+
 /**
  * An unrecoverable event happened at this point in the program.
  */
@@ -17,6 +20,6 @@
  * same units being used for time.
  */
 uint64_t timeNowNs();
-uint64_t timeAsMs(uint32_t ms);
-uint64_t timeAsSec(uint32_t sec);
+uint64_t msToNs(uint32_t ms);
+uint64_t secToNs(uint32_t sec);
 

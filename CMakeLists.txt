@@ -22,7 +22,9 @@ endif()
 
 set(KNELL_SRCS
 	src/main.c
-	src/kn.c)
+	src/kn.c
+	src/input.c
+	src/render_hl.c)
 
 add_executable(knell ${KNELL_SRCS})
 target_link_libraries(knell SDL2 GL rt)
