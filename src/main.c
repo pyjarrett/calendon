@@ -1,41 +1,12 @@
-#include <stdbool.h>
+#include "kn.h"
+
 #include <stdio.h>
-#include <stdint.h>
-#include <time.h>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_rect.h>
 
-/**
- * An unrecoverable event happened at this point in the program.
- */
-#define KN_FATAL_ERROR(error_message) \
-	printf(error_message); \
-	abort();
-
-
 SDL_Window* window;
 bool running = true;
-
-/**
- * The time of now as nanoseconds.
- */
-uint64_t timeNowNs()
-{
-	struct timespec ts;
-	clock_gettime(CLOCK_MONOTONIC, &ts);
-	return ts.tv_sec * 1000 * 1000 * 1000 + ts.tv_nsec;
-}
-
-uint64_t timeAsMs(uint32_t ms)
-{
-	return ms * 1000 * 1000;
-}
-
-uint64_t timeAsSec(uint32_t sec)
-{
-	return timeAsMs(sec) * 1000;
-}
 
 void initAllSystems();
 void initSDL();
