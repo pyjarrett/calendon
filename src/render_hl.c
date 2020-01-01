@@ -22,7 +22,7 @@ void rhl_init()
 
 	// VSync causes the draw to stall until the frame is displayed.
 	// This might be more useful if/when drawing gets moved to it's own thread.
-	const bool useVSync = true;
+	const bool useVSync = false;
 	if (useVSync) {
 		SDL_GL_SetSwapInterval(1);
 	}

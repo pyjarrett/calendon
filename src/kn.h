@@ -15,11 +15,16 @@
 	printf(error_message); \
 	abort();
 
+/**
+ * Used to suppress errors resulting from unused values.
+ */
+#define KN_UNUSED(value) (void)(value)
+
 /*
  * Functions for getting the current time and converting other units to the
  * same units being used for time.
  */
 uint64_t timeNowNs();
-uint64_t msToNs(uint32_t ms);
-uint64_t secToNs(uint32_t sec);
+uint64_t msToNs(uint64_t ms);
+uint64_t secToNs(uint64_t sec);
 

@@ -8,9 +8,10 @@ SDL_Window* window;
 
 static bool running = true;
 static KeyInputs keyInputs;
+static uint64_t lastTick;
 
 static void initAllSystems();
-static void initSDL();
+static void initWindow();
 
 /**
  * Create the window for drawing according to the available program
@@ -27,7 +28,7 @@ static void createWindow(const int width, const int height)
 	}
 }
 
-void initSDL()
+void initWindow()
 {
 	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
 		KN_FATAL_ERROR("Unable to init SDL");
@@ -38,19 +39,17 @@ void initSDL()
 	createWindow(width, height);
 }
 
-/**
- * Initialize all systems.
- */
-void initAllSystems(const int argc, char** argv)
+void initAllSystems()
 {
-	initSDL();
+	lastTick = timeNowNs();
+	initWindow();
 	rhl_init();
 }
 
 /**
  * Parses events off of the SDL event queue.
  */
-void parseSDLEvents(KeyInputs* keyInputs)
+void parseSDLEvents(KeyInputs* inputs)
 {
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
@@ -59,12 +58,12 @@ void parseSDLEvents(KeyInputs* keyInputs)
 				running = false;
 				break;
 			case SDL_KEYDOWN:
-				KeySet_add(&keyInputs->down, event.key.keysym.sym);
-				KeySet_remove(&keyInputs->up, event.key.keysym.sym);
+				KeySet_add(&inputs->down, event.key.keysym.sym);
+				KeySet_remove(&inputs->up, event.key.keysym.sym);
 				break;
 			case SDL_KEYUP:
-				KeySet_add(&keyInputs->up, event.key.keysym.sym);
-				KeySet_remove(&keyInputs->down, event.key.keysym.sym);
+				KeySet_add(&inputs->up, event.key.keysym.sym);
+				KeySet_remove(&inputs->down, event.key.keysym.sym);
 				break;
 			default:
 				break;
@@ -72,61 +71,83 @@ void parseSDLEvents(KeyInputs* keyInputs)
 	}
 }
 
-int main(const int argc, char* argv[])
+void drawFrame()
 {
-	initAllSystems(argc, argv);
+	rgba8i black = {0, 0, 0, 0 };
+	rhl_startFrame();
+	rhl_clear(black);
+	rhl_endFrame();
+}
 
-	printf("Sizeof KeyInputs: %i", sizeof(KeyInputs));
+/**
+ * Possibly generate a delta time for the next game update.  If the time since
+ * the previous tick is too small or very large, no tick will be generated.
+ * Small ticks do needless work, and large ticks might be due to resuming from
+ * the debugger.
+ *
+ * @param[out] outDt delta time if a tick is generated (returns true), not set otherwise
+ * @return true if a tick should occur
+ */
+bool generateTick(uint64_t* outDt)
+{
+	const uint64_t current = timeNowNs();
+	if (lastTick > current) {
+		KN_FATAL_ERROR("Time went backwards");
+	}
 
-	uint64_t last = timeNowNs();
+	// Prevent updating too rapidly.  Maintaining a relatively consistent
+	// timestep limits stored state and prevents precision errors due to
+	// extremely small dt.
+	//
+	// Since Knell is single-threaded, VSync will probably ensure that the
+	// minimum tick size is never missed.
+	const uint64_t minTickSize = msToNs(8);
+	const uint64_t dt = current - lastTick;
+	if (dt < minTickSize) {
+		return false;
+	}
+
+	lastTick = current;
+
+	// Ignore huge ticks, such as when resuming in the debugger.
+	const uint64_t maxTickSize = secToNs(5);
+	if (dt > maxTickSize) {
+		printf("Skipping large tick");
+		return false;
+	}
+
+	*outDt = dt;
+	return true;
+}
+
+void tick(uint64_t dt)
+{
+	KN_UNUSED(dt);
+}
+
+void runMainLoop()
+{
 	while (running) {
-		//
 		// Event checking should be quick.  Always processing events prevents
 		// slowness due to bursts.
-		//
 		parseSDLEvents(&keyInputs);
 
-		if (keyInputs.down.size > 0 || keyInputs.up.size > 0) {
-			printf("Keys down: %i\n", keyInputs.down.size);
-			printf("Keys up: %i\n", keyInputs.up.size);
+		uint64_t dt;
+		if (generateTick(&dt)) {
+			tick(dt);
 		}
-
-		//
-		// Prevent updating too rapidly.  Maintaining a relatively consistent
-		// timestep limits stored state and prevents precision errors due to
-		// extremely small dt.
-		//
-		const uint64_t minTickSize = msToNs(8);
-		const uint64_t current = timeNowNs();
-		if (last > current) {
-			KN_FATAL_ERROR("Time went backwards");
-		}
-		const uint64_t dt = current - last;
-		if (dt < minTickSize) {
-			continue;
-		}
-
-		last = current;
-
-		//
-		// Ignore obscenely large ticks, such as when resuming in the
-		// debugger.
-		//
-		const uint64_t maxTickSize = secToNs(5);
-		if (dt > maxTickSize) {
-			printf("Skipping large tick");
-			continue;
-		}
-
-		rgba8i black = { 0, 0, 0, 0 };
-		rhl_startFrame();
-		rhl_clear(black);
-		rhl_endFrame();
+		drawFrame();
 
 		// gGame.update(dt, m_playerInput);
 		// gGraphics.startFrame();
 		// gGame.draw();
 		// gGraphics.endFrame();
 	}
+}
+
+int main(const int argc, char* argv[])
+{
+	initAllSystems();
+	runMainLoop();
 	return 0;
 }

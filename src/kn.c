@@ -9,12 +9,12 @@ uint64_t timeNowNs()
 	return ts.tv_sec * 1000 * 1000 * 1000 + ts.tv_nsec;
 }
 
-uint64_t msToNs(uint32_t ms)
+uint64_t msToNs(uint64_t ms)
 {
 	return ms * 1000 * 1000;
 }
 
-uint64_t secToNs(uint32_t sec)
+uint64_t secToNs(uint64_t sec)
 {
 	return msToNs(sec * 1000);
 }
