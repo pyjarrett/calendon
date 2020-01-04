@@ -8,6 +8,19 @@
 
 static uint64_t lastTick;
 
+void drawFrame()
+{
+	rgba8i black = {0, 0, 0, 0 };
+	rhl_startFrame();
+	rhl_clear(black);
+	rhl_endFrame();
+}
+
+void tick(uint64_t dt)
+{
+	KN_UNUSED(dt);
+}
+
 /**
  * Common initialization point for all global systems.
  */
@@ -16,14 +29,6 @@ void initAllSystems()
 	lastTick = timeNowNs();
 	initWindow();
 	rhl_init();
-}
-
-void drawFrame()
-{
-	rgba8i black = {0, 0, 0, 0 };
-	rhl_startFrame();
-	rhl_clear(black);
-	rhl_endFrame();
 }
 
 /**
@@ -65,11 +70,6 @@ bool generateTick(uint64_t* outDt)
 
 	*outDt = dt;
 	return true;
-}
-
-void tick(uint64_t dt)
-{
-	KN_UNUSED(dt);
 }
 
 void runMainLoop()
