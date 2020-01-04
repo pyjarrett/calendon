@@ -87,9 +87,30 @@ void runMainLoop()
 	}
 }
 
+
+#include "math.h"
+void runTest()
+{
+	float4x4 s = float4x4_nonuniform_scale(1.0f, 2.0f, 3.0f);
+	float4x4 t = float4x4_translate(5.0f, 6.0f, 7.0f);
+
+	printf("S = \n");
+	float4x4_debug_print(stdout, s);
+
+	printf("T = \n");
+	float4x4_debug_print(stdout, t);
+
+	printf("T * S = \n");
+	float4x4_debug_print(stdout, float4x4_multiply(t, s));
+
+	printf("T * T = \n");
+	float4x4_debug_print(stdout, float4x4_multiply(t, t));
+}
+
 int main(const int argc, char* argv[])
 {
 	initAllSystems();
-	runMainLoop();
+	runTest();
+	//runMainLoop();
 	return 0;
 }
