@@ -1,74 +1,21 @@
+#include "control.h"
 #include "kn.h"
 #include "input.h"
 #include "render_hl.h"
+#include "ui.h"
 
 #include <stdio.h>
 
-SDL_Window* window;
-
-static bool running = true;
-static KeyInputs keyInputs;
 static uint64_t lastTick;
 
-static void initAllSystems();
-static void initWindow();
-
 /**
- * Create the window for drawing according to the available program
- * configuration.
+ * Common initialization point for all global systems.
  */
-static void createWindow(const int width, const int height)
-{
-	const int windowInitFlags = SDL_WINDOW_OPENGL;
-	window = SDL_CreateWindow("Powerblocks (knell)", SDL_WINDOWPOS_CENTERED,
-			SDL_WINDOWPOS_CENTERED, width, height, windowInitFlags);
-	if (window == NULL) {
-		SDL_Quit();
-		KN_FATAL_ERROR("Unable to create SDL windows\n");
-	}
-}
-
-void initWindow()
-{
-	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-		KN_FATAL_ERROR("Unable to init SDL");
-	}
-
-	const uint32_t width = 1024;
-	const uint32_t height = 768;
-	createWindow(width, height);
-}
-
 void initAllSystems()
 {
 	lastTick = timeNowNs();
 	initWindow();
 	rhl_init();
-}
-
-/**
- * Parses events off of the SDL event queue.
- */
-void parseSDLEvents(KeyInputs* inputs)
-{
-	SDL_Event event;
-	while (SDL_PollEvent(&event)) {
-		switch (event.type) {
-			case SDL_QUIT:
-				running = false;
-				break;
-			case SDL_KEYDOWN:
-				KeySet_add(&inputs->down, event.key.keysym.sym);
-				KeySet_remove(&inputs->up, event.key.keysym.sym);
-				break;
-			case SDL_KEYUP:
-				KeySet_add(&inputs->up, event.key.keysym.sym);
-				KeySet_remove(&inputs->down, event.key.keysym.sym);
-				break;
-			default:
-				break;
-		}
-	}
 }
 
 void drawFrame()
@@ -127,21 +74,16 @@ void tick(uint64_t dt)
 
 void runMainLoop()
 {
-	while (running) {
+	while (isRunning()) {
 		// Event checking should be quick.  Always processing events prevents
 		// slowness due to bursts.
-		parseSDLEvents(&keyInputs);
+		processWindowEvents();
 
 		uint64_t dt;
 		if (generateTick(&dt)) {
 			tick(dt);
 		}
 		drawFrame();
-
-		// gGame.update(dt, m_playerInput);
-		// gGraphics.startFrame();
-		// gGame.draw();
-		// gGraphics.endFrame();
 	}
 }
 

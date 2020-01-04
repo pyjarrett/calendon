@@ -21,11 +21,20 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 endif()
 
 set(KNELL_SRCS
-	src/main.c
-	src/kn.c
+	src/control.c
 	src/input.c
-	src/render_hl.c)
+	src/kn.c
+	src/main.c
+	src/render_hl.c
+	src/ui.c
+	)
+
+set(KNELL_LIBS
+	SDL2
+	GL
+	rt
+	)
 
 add_executable(knell ${KNELL_SRCS})
-target_link_libraries(knell SDL2 GL rt)
+target_link_libraries(knell ${KNELL_LIBS})
 
