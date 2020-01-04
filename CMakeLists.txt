@@ -20,6 +20,12 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99")
 endif()
 
+include(vendor/common/vendorize-cmake-0.1/vendorize.cmake)
+
+vendorize(common spartan_file_utils 0.0.1)
+include_directories(SYSTEM "${VENDOR_SPARTAN_FILE_UTILS_ROOT}/include")
+link_directories(SYSTEM "${VENDOR_SPARTAN_FILE_UTILS_ROOT}/build/lib")
+
 set(KNELL_SRCS
 	src/control.c
 	src/input.c
@@ -35,6 +41,7 @@ set(KNELL_LIBS
 	SDL2
 	GL
 	rt
+	libspa-fu.a
 	)
 
 add_executable(knell ${KNELL_SRCS})

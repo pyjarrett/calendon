@@ -5,6 +5,7 @@
 
 #include <stdbool.h>
 #include <GL/gl.h>
+#include <spa_fu/spa_fu.h>
 
 extern struct SDL_Window* window;
 static SDL_GLContext* gl;
@@ -41,7 +42,21 @@ void rll_configureVSync()
 
 void rll_loadShaders()
 {
+	if (SPA_IsDir("assets/dir")) {
+		printf("assets/dir exists\n");
+	}
+	else {
+		printf("assets/dir doesn't exist\n");
+	}
+
+	if (SPA_IsFile("asserts/dir")) {
+		printf("assets/dir is a file\n");
+	}
+	else {
+		printf("assets/dir is not a file\n");
+	}
 }
+
 
 void rll_init()
 {
