@@ -14,10 +14,8 @@ set(RESOURCE_DIR "${PROJECT_BINARY_DIR}/resources")
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -g")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-	set(CMAKE_C_FLAGS "-Wall -g")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -g")
 endif()
 
 include(vendor/common/vendorize-cmake-0.1/vendorize.cmake)
@@ -30,6 +28,7 @@ link_directories(SYSTEM "${VENDOR_SPARTAN_FILE_UTILS_ROOT}/build/lib")
 add_definitions(-D_POSIX_C_SOURCE=199309L)
 
 set(KNELL_SRCS
+	src/bits.c
 	src/control.c
 	src/input.c
 	src/kn.c

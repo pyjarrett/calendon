@@ -85,6 +85,7 @@ void runMainLoop()
 	}
 }
 
+#include "bits.h"
 #include "math.h"
 void runTest()
 {
@@ -105,6 +106,14 @@ void runTest()
 
 	printf("Tt = \n");
 	float4x4_debug_print(stdout, float4x4_transpose(t));
+
+	for (uint64_t i=0; i < 63; ++i) {
+		const uint64_t n = 1LL << i;
+		printf("%lu\n", n);
+		if (!isPowerOfTwo64(n)) {
+			printf("Didn't evaluate power of two correctly: %i (%lu)\n", 1 << i, i);
+		}
+	}
 }
 
 int main(const int argc, char* argv[])
