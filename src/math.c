@@ -32,6 +32,17 @@ float4x4 float4x4_translate(float x, float y, float z)
 	}};
 }
 
+float4x4 float4x4_transpose(float4x4 m)
+{
+	float4x4 result;
+	for (uint32_t i=0; i<4; ++i) {
+		for (uint32_t j=0; j<4; ++j) {
+			result.m[i][j] = m.m[j][i];
+		}
+	}
+	return result;
+}
+
 float4x4 float4x4_multiply(float4x4 l, float4x4 r)
 {
 	float4x4 result;

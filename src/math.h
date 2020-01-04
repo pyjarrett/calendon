@@ -42,6 +42,7 @@ typedef struct {
 float4x4 float4x4_identity();
 float4x4 float4x4_nonuniform_scale(float x, float y, float z);
 float4x4 float4x4_translate(float x, float y, float z);
+float4x4 float4x4_transpose(float4x4 m);
 float4x4 float4x4_multiply(float4x4 left, float4x4 right);
 
 #include <stdio.h>
