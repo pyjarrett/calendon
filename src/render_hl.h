@@ -17,18 +17,16 @@
 #define KN_RENDER_HL_H
 
 #include "kn.h"
-
-typedef struct {
-	uint8_t red;
-	uint8_t green;
-	uint8_t blue;
-	uint8_t alpha;
-} rgba8i;
+#include "color.h"
 
 void rhl_init();
 void rhl_startFrame();
 void rhl_clear(rgba8i color);
 void rhl_endFrame();
+
+typedef uint32_t SpriteID;
+SpriteID rhl_createSprite();
+void rhl_drawSprite(SpriteID spriteID, float x, float y);
 
 #endif /* KN_RENDER_HL_H */
 

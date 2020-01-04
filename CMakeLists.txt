@@ -27,6 +27,7 @@ set(KNELL_SRCS
 	src/main.c
 	src/math.c
 	src/render_hl.c
+	src/render_ll.c
 	src/ui.c
 	)
 

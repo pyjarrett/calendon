@@ -10,9 +10,7 @@ static uint64_t lastTick;
 
 void drawFrame()
 {
-	rgba8i black = {0, 0, 0, 0 };
 	rhl_startFrame();
-	rhl_clear(black);
 	rhl_endFrame();
 }
 
@@ -87,7 +85,6 @@ void runMainLoop()
 	}
 }
 
-
 #include "math.h"
 void runTest()
 {
@@ -114,6 +111,7 @@ int main(const int argc, char* argv[])
 {
 	initAllSystems();
 	runTest();
-	//runMainLoop();
+	runMainLoop();
 	return 0;
 }
+
