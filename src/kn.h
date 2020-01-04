@@ -11,8 +11,8 @@
 /**
  * An unrecoverable event happened at this point in the program.
  */
-#define KN_FATAL_ERROR(error_message) \
-	printf(error_message); \
+#define KN_FATAL_ERROR(error_message, ...) \
+	printf(error_message, ##__VA_ARGS__); \
 	abort();
 
 /**
