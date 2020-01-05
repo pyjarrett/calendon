@@ -2,6 +2,7 @@
 
 #include "kn.h"
 #include "color.h"
+#include "log.h"
 
 #include <stdbool.h>
 #include <GL/gl.h>
@@ -31,7 +32,7 @@ void rll_configureVSync()
 {
 	// VSync causes the draw to stall until the frame is displayed.
 	// This might be more useful if/when drawing gets moved to it's own thread.
-	const bool useVSync = false;
+	const bool useVSync = true;
 	if (useVSync) {
 		SDL_GL_SetSwapInterval(1);
 	}

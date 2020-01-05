@@ -1,10 +1,13 @@
 #include "control.h"
 #include "kn.h"
 #include "input.h"
+#include "log.h"
 #include "render_hl.h"
 #include "ui.h"
 
 #include <stdio.h>
+
+static uint32_t LogSysMain;
 
 static uint64_t lastTick;
 
@@ -24,9 +27,13 @@ void tick(uint64_t dt)
  */
 void initAllSystems()
 {
+	LOG_Init();
+	LOG_RegisterSystem(&LogSysMain, "Main", KN_LOG_TRACE);
 	lastTick = timeNowNs();
 	initWindow();
 	rhl_init();
+
+	KN_TRACE(LogSysMain, "Systems initialized.");
 }
 
 /**
@@ -62,7 +69,7 @@ bool generateTick(uint64_t* outDt)
 	// Ignore huge ticks, such as when resuming in the debugger.
 	const uint64_t maxTickSize = secToNs(5);
 	if (dt > maxTickSize) {
-		printf("Skipping large tick");
+		KN_TRACE(LogSysMain, "Skipping large tick: %" PRIu64, *outDt);
 		return false;
 	}
 
@@ -85,7 +92,6 @@ void runMainLoop()
 	}
 }
 
-#include "bits.h"
 #include "math.h"
 void runTest()
 {
@@ -106,14 +112,6 @@ void runTest()
 
 	printf("Tt = \n");
 	float4x4_debug_print(stdout, float4x4_transpose(t));
-
-	for (uint64_t i=0; i < 63; ++i) {
-		const uint64_t n = 1LL << i;
-		printf("%lu\n", n);
-		if (!isPowerOfTwo64(n)) {
-			printf("Didn't evaluate power of two correctly: %i (%lu)\n", 1 << i, i);
-		}
-	}
 }
 
 int main(const int argc, char* argv[])
