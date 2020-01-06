@@ -68,3 +68,9 @@ set(KNELL_LIBS
 add_executable(knell ${KNELL_SRCS})
 target_link_libraries(knell ${KNELL_LIBS})
 
+if (UNIX)
+	add_custom_target(sync_assets
+			COMMAND rsync -avz "${CMAKE_SOURCE_DIR}/assets/" "${ASSET_DIR}"
+			COMMENT "Copying assets")
+	add_dependencies(knell sync_assets)
+endif(UNIX)

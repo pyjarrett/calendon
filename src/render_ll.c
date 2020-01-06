@@ -43,18 +43,18 @@ void rll_configureVSync()
 
 void rll_loadShaders()
 {
-	if (SPA_IsDir("assets/dir")) {
-		printf("assets/dir exists\n");
+	if (SPA_IsDir("assets")) {
+		printf("assets dir exists\n");
 	}
 	else {
-		printf("assets/dir doesn't exist\n");
+		printf("assets dir doesn't exist\n");
 	}
 
-	if (SPA_IsFile("asserts/dir")) {
-		printf("assets/dir is a file\n");
+	if (SPA_IsFile("assets")) {
+		printf("assets is a file\n");
 	}
 	else {
-		printf("assets/dir is not a file\n");
+		printf("assets is not a file\n");
 	}
 }
 
