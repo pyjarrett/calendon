@@ -22,9 +22,9 @@ endif()
 
 include(vendor/common/vendorize-cmake-0.1/vendorize.cmake)
 
-vendorize(common spartan_file_utils 0.0.1)
+vendorize(linux spartan_file_utils 0.0.1)
 include_directories(SYSTEM "${VENDOR_SPARTAN_FILE_UTILS_ROOT}/include")
-link_directories(SYSTEM "${VENDOR_SPARTAN_FILE_UTILS_ROOT}/build/lib")
+link_directories(SYSTEM "${VENDOR_SPARTAN_FILE_UTILS_ROOT}/lib")
 
 # Change POSIX support to allow use of CLOCK_MONOTONIC.
 add_definitions(-D_POSIX_C_SOURCE=199309L)
@@ -45,7 +45,7 @@ set(KNELL_LIBS
 	SDL2
 	GL
 	rt
-	libspa-fu.a
+	spa-fu
 	)
 
 add_executable(knell ${KNELL_SRCS})
