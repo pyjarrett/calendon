@@ -1,3 +1,8 @@
 build/
 .rcbuild
 *.swp
+cmake-build-coverage/
+cmake-build-debug/
+cmake-build-release/
+tags
+.idea
