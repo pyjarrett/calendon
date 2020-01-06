@@ -5,7 +5,7 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
-set(CMAKE_CONFIGURATION_TYPES Debug;Release)
+set(CMAKE_CONFIGURATION_TYPES Debug;Release;Coverage)
 
 set(BINARY_DIR "${PROJECT_BINARY_DIR}")
 set(LIBRARY_DIR "${PROJECT_BINARY_DIR}/lib")
@@ -13,6 +13,22 @@ set(ARCHIVE_DIR "${PROJECT_BINARY_DIR}/lib")
 set(ASSET_DIR "${PROJECT_BINARY_DIR}/assets")
 set(CONFIG_DIR "${PROJECT_BINARY_DIR}/configs")
 set(RESOURCE_DIR "${PROJECT_BINARY_DIR}/resources")
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+	if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
+	elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
+	endif()
+elseif(CMAKE_BUILD_TYPE STREQUAL "Coverage")
+	if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+		message(FATAL_ERROR "Coverage is not available in Clang.")
+	elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+		set(KNELL_LIBS ${KNELL_LIBS} gcov)
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
+		set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -fprofile-arcs -ftest-coverage")
+	endif()
+endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -g")
@@ -46,6 +62,7 @@ set(KNELL_LIBS
 	GL
 	rt
 	spa-fu
+	${KNELL_LIBS}
 	)
 
 add_executable(knell ${KNELL_SRCS})
