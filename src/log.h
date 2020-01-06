@@ -105,7 +105,9 @@ extern const char* LogSystemsRegistered[KN_LOG_MAX_SYSTEMS];
  * Errors are serious issues which must be addressed prior to shipping a product
  * and fixed as soon as possible when detected in release.
  */
-#define KN_ERROR(system, msg, ...) KN_LOG(system, KN_LOG_ERROR, msg, ##__VA_ARGS__)
+#define KN_ERROR(system, msg, ...) \
+	KN_LOG(system, KN_LOG_ERROR, msg, ##__VA_ARGS__) \
+	KN_DEBUG_BREAK();
 
 /**
  * A program should never give warnings in a regular run of the program.
