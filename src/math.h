@@ -10,9 +10,12 @@
 /**
  * ROW vector.
  */
-typedef struct {
-	float x, y, z;
-} float3;
+typedef union {
+	struct {
+		float x, y, z, w;
+	};
+	float v[4];
+} float4;
 
 /**
  * Using float[4][4] gives the row-major ordering of matrix data:
@@ -39,14 +42,17 @@ typedef struct {
 	float m[4][4];
 } float4x4;
 
+float4 float4_multiply(float4 v, float4x4 m);
+
 float4x4 float4x4_identity();
-float4x4 float4x4_nonuniform_scale(float x, float y, float z);
+float4x4 float4x4_nonuniformScale(float x, float y, float z);
 float4x4 float4x4_translate(float x, float y, float z);
 float4x4 float4x4_transpose(float4x4 m);
 float4x4 float4x4_multiply(float4x4 left, float4x4 right);
 
 #include <stdio.h>
-void float4x4_debug_print(FILE* stream, float4x4 m);
+void float4_debugPrint(FILE* stream, float4 v);
+void float4x4_debugPrint(FILE* stream, float4x4 m);
 
 #endif /* KN_MATH_H */
 

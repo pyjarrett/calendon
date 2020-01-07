@@ -13,8 +13,8 @@ static uint64_t lastTick;
 
 void drawFrame()
 {
-	rhl_startFrame();
-	rhl_endFrame();
+	r_startFrame();
+	r_endFrame();
 }
 
 void tick(uint64_t dt)
@@ -31,7 +31,7 @@ void initAllSystems()
 	LOG_RegisterSystem(&LogSysMain, "Main", KN_LOG_TRACE);
 	lastTick = timeNowNs();
 	initWindow();
-	rhl_init();
+	r_init();
 
 	KN_TRACE(LogSysMain, "Systems initialized.");
 }
@@ -95,23 +95,32 @@ void runMainLoop()
 #include "math.h"
 void runTest()
 {
-	float4x4 s = float4x4_nonuniform_scale(1.0f, 2.0f, 3.0f);
+	float4x4 s = float4x4_nonuniformScale(1.0f, 2.0f, 3.0f);
 	float4x4 t = float4x4_translate(5.0f, 6.0f, 7.0f);
 
+	float4 point = { .x = 1.0f, .y = 2.0f, .z = 3.0f, .w = 1.0f };
+	float4 vector = { .x = 1.0f, .y = 2.0f, .z = 3.0f, .w = 0.0f };
+
 	printf("S = \n");
-	float4x4_debug_print(stdout, s);
+	float4x4_debugPrint(stdout, s);
+
+	float4_debugPrint(stdout, float4_multiply(point, s));
+	float4_debugPrint(stdout, float4_multiply(vector, s));
 
 	printf("T = \n");
-	float4x4_debug_print(stdout, t);
+	float4x4_debugPrint(stdout, t);
+
+	float4_debugPrint(stdout, float4_multiply(point, t));
+	float4_debugPrint(stdout, float4_multiply(vector, t));
 
 	printf("T * S = \n");
-	float4x4_debug_print(stdout, float4x4_multiply(t, s));
+	float4x4_debugPrint(stdout, float4x4_multiply(t, s));
 
 	printf("T * T = \n");
-	float4x4_debug_print(stdout, float4x4_multiply(t, t));
+	float4x4_debugPrint(stdout, float4x4_multiply(t, t));
 
 	printf("Tt = \n");
-	float4x4_debug_print(stdout, float4x4_transpose(t));
+	float4x4_debugPrint(stdout, float4x4_transpose(t));
 }
 
 int main(const int argc, char* argv[])
