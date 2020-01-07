@@ -52,8 +52,8 @@ set(KNELL_SRCS
 	src/log.c
 	src/main.c
 	src/math.c
-	src/render_hl.c
-	src/render_ll.c
+	src/render.c
+	src/render-ll.c
 	src/ui.c
 	)
 
@@ -68,6 +68,7 @@ set(KNELL_LIBS
 add_executable(knell ${KNELL_SRCS})
 target_link_libraries(knell ${KNELL_LIBS})
 
+# TODO: Replace this with a file describing where to find assets.
 if (UNIX)
 	add_custom_target(sync_assets
 			COMMAND rsync -avz "${CMAKE_SOURCE_DIR}/assets/" "${ASSET_DIR}"

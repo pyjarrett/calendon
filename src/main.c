@@ -2,7 +2,7 @@
 #include "kn.h"
 #include "input.h"
 #include "log.h"
-#include "render_hl.h"
+#include "render.h"
 #include "ui.h"
 
 #include <stdio.h>

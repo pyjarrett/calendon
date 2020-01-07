@@ -1,6 +1,6 @@
-#include "render_hl.h"
+#include "render.h"
 
-#include "render_ll.h"
+#include "render-ll.h"
 
 static SpriteID nextSpriteID = 0;
 
