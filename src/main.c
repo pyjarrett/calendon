@@ -7,8 +7,6 @@
 
 #include <stdio.h>
 
-static uint32_t LogSysMain;
-
 static uint64_t lastTick;
 
 void drawFrame()
@@ -28,7 +26,6 @@ void tick(uint64_t dt)
 void initAllSystems()
 {
 	LOG_Init();
-	LOG_RegisterSystem(&LogSysMain, "Main", KN_LOG_TRACE);
 	lastTick = timeNowNs();
 	initWindow();
 	r_init();

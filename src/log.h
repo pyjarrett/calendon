@@ -47,6 +47,11 @@
 #include <stdint.h>
 
 /**
+ * Global program log ID.
+ */
+extern uint32_t LogSysMain;
+
+/**
  * Log verbosity settings in increasing order of logging.  Using a higher
  * setting enables logging from all systems below it.
  */

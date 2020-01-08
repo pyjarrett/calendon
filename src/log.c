@@ -7,6 +7,7 @@ char LogVerbosityChar[KN_LOG_NUM_TYPES];
 uint32_t LogSystemsVerbosity[KN_LOG_MAX_SYSTEMS];
 const char* LogSystemsRegistered[KN_LOG_MAX_SYSTEMS];
 uint32_t LogSystemsNumRegistered;
+uint32_t LogSysMain;
 
 void LOG_Init()
 {
@@ -24,6 +25,8 @@ void LOG_Init()
 	LogVerbosityChar[KN_LOG_TRACE] = 'T';
 
 	initialized = true;
+
+	LOG_RegisterSystem(&LogSysMain, "Main", KN_LOG_TRACE);
 }
 
 /**
