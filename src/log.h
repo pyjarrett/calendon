@@ -99,10 +99,12 @@ extern const char* LogSystemsRegistered[KN_LOG_MAX_SYSTEMS];
  * Records a message to the log system.
  */
 #define KN_LOG(system, verbosity, msg, ...) { \
-	printf("%c: SYS_%-10s: " msg "    [ " __FILE__ ":%i ] \n", \
+	printf("%c: %40s:%i SYS_%-10s: " msg " \n", \
 		LogVerbosityChar[verbosity], \
-		LogSystemsRegistered[system], ##__VA_ARGS__, \
-		__LINE__ \
+		__FILE__, \
+		__LINE__, \
+		LogSystemsRegistered[system], \
+		##__VA_ARGS__ \
 		); \
 	}
 
