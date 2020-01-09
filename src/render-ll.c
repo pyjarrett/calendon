@@ -71,13 +71,13 @@ void RLL_LoadShaders()
 		}
 	}
 
-	MemoryFile memFile;
-	if (!File_Read(path, &memFile, KN_FILE_TYPE_TEXT)) {
+	DynamicBuffer sourceFileBuffer;
+	if (!File_Read(path, &sourceFileBuffer, KN_FILE_TYPE_TEXT)) {
 		KN_ERROR(LogSysMain, "Unable to read path");
 	}
-	KN_TRACE(LogSysMain, "%s", memFile.contents);
+	KN_TRACE(LogSysMain, "%s", sourceFileBuffer.contents);
+	Mem_Free(&sourceFileBuffer);
 }
-
 
 void RLL_Init()
 {

@@ -2,6 +2,7 @@
 #include "kn.h"
 #include "input.h"
 #include "log.h"
+#include "memory.h"
 #include "render.h"
 #include "ui.h"
 #include "assets.h"
@@ -27,6 +28,7 @@ void tick(uint64_t dt)
 void initAllSystems()
 {
 	LOG_Init();
+	Mem_Init();
 
 	assets_init("/home/paul/lab/knell/assets");
 
@@ -35,6 +37,11 @@ void initAllSystems()
 	R_Init();
 
 	KN_TRACE(LogSysMain, "Systems initialized.");
+}
+
+void shutdownAllSystems()
+{
+	Mem_Shutdown();
 }
 
 /**
@@ -129,6 +136,7 @@ int main(const int argc, char* argv[])
 	initAllSystems();
 	runTest();
 	runMainLoop();
+	shutdownAllSystems();
 	return 0;
 }
 
