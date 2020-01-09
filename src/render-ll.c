@@ -9,6 +9,7 @@
 #include <spa_fu/spa_fu.h>
 
 #include "assets.h"
+#include "fileio.h"
 
 extern struct SDL_Window* window;
 static SDL_GLContext* gl;
@@ -69,6 +70,12 @@ void rll_loadShaders()
 			KN_TRACE(LogSysMain, "%s not found", path);
 		}
 	}
+
+	MemoryFile memFile;
+	if (!File_Read(path, &memFile, KN_FILE_TYPE_TEXT)) {
+		KN_ERROR(LogSysMain, "Unable to read path");
+	}
+	KN_TRACE(LogSysMain, "%s", memFile.contents);
 }
 
 

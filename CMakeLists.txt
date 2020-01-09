@@ -48,6 +48,7 @@ add_definitions(-D_POSIX_C_SOURCE=199309L)
 set(KNELL_SRCS
 	src/assets.c
 	src/control.c
+	src/fileio.c
 	src/input.c
 	src/kn.c
 	src/log.c
