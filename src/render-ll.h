@@ -9,10 +9,10 @@
 
 #include "color.h"
 
-void rll_init();
-void rll_startFrame();
-void rll_endFrame();
-void rll_clear(rgba8i color);
+void RLL_Init();
+void RLL_StartFrame();
+void RLL_EndFrame();
+void RLL_Clear(rgba8i color);
 
 #endif /* KN_RENDER_LL_H */
 

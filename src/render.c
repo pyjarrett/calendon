@@ -18,20 +18,20 @@ float4x4 orthoProjection(const uint32_t width, const uint32_t height)
 void r_init(const uint32_t width, const uint32_t height)
 {
 	projection = orthoProjection(width, height);
-	rll_init();
+	RLL_Init();
 }
 
 void r_startFrame()
 {
-	rll_startFrame();
+	RLL_StartFrame();
 
 	rgba8i black = { 0, 0, 0, 0 };
-	rll_clear(black);
+	RLL_Clear(black);
 }
 
 void r_endFrame()
 {
-	rll_endFrame();
+	RLL_EndFrame();
 }
 
 SpriteID r_createSprite()

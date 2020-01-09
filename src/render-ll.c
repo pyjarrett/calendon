@@ -16,7 +16,7 @@ static SDL_GLContext* gl;
 
 static GLuint spriteProgram;
 
-void rll_initGL()
+void RLL_InitGL()
 {
 	// Get up and running quickly with OpenGL 3.1 with old-school functions.
 	// TODO: Replace with Core profile once something is working.
@@ -31,7 +31,7 @@ void rll_initGL()
 	}
 }
 
-void rll_configureVSync()
+void RLL_ConfigureVSync()
 {
 	// VSync causes the draw to stall until the frame is displayed.
 	// This might be more useful if/when drawing gets moved to it's own thread.
@@ -44,7 +44,7 @@ void rll_configureVSync()
 	}
 }
 
-void rll_loadShaders()
+void RLL_LoadShaders()
 {
 	if (SPA_IsDir("assets")) {
 		printf("assets dir exists\n");
@@ -79,24 +79,24 @@ void rll_loadShaders()
 }
 
 
-void rll_init()
+void RLL_Init()
 {
-	rll_initGL();
-	rll_configureVSync();
-	rll_loadShaders();
+	RLL_InitGL();
+	RLL_ConfigureVSync();
+	RLL_LoadShaders();
 }
 
-void rll_startFrame()
+void RLL_StartFrame()
 {
 	SDL_GL_MakeCurrent(window, gl);
 }
 
-void rll_endFrame()
+void RLL_EndFrame()
 {
 	SDL_GL_SwapWindow(window);
 }
 
-void rll_clear(rgba8i color)
+void RLL_Clear(rgba8i color)
 {
 	glClearColor(color.red, color.green, color.blue, color.alpha);
 	glClear(GL_COLOR_BUFFER_BIT);
