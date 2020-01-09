@@ -27,6 +27,7 @@ void LOG_Init()
 	initialized = true;
 
 	LOG_RegisterSystem(&LogSysMain, "Main", KN_LOG_TRACE);
+	KN_TRACE(LogSysMain, "Log system initialized.");
 }
 
 /**

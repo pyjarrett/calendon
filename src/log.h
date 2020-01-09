@@ -47,7 +47,7 @@
 #include <stdint.h>
 
 /**
- * Global program log ID.
+ * Global main program log.
  */
 extern uint32_t LogSysMain;
 
@@ -98,13 +98,13 @@ extern const char* LogSystemsRegistered[KN_LOG_MAX_SYSTEMS];
 /**
  * Records a message to the log system.
  */
-#define KN_LOG(system, verbosity, msg, ...) \
-		if (verbosity <= LogSystemsVerbosity[system]) { \
-			printf("%c:" __FILE__ ":%i " "SYS_%s: " msg "\n", \
-				LogVerbosityChar[verbosity], \
-				__LINE__, \
-				LogSystemsRegistered[system], ##__VA_ARGS__); \
-		}
+#define KN_LOG(system, verbosity, msg, ...) { \
+	printf("%c: SYS_%-10s: " msg "    [ " __FILE__ ":%i ] \n", \
+		LogVerbosityChar[verbosity], \
+		LogSystemsRegistered[system], ##__VA_ARGS__, \
+		__LINE__ \
+		); \
+	}
 
 /**
  * Errors are serious issues which must be addressed prior to shipping a product

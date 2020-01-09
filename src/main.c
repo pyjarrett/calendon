@@ -4,6 +4,7 @@
 #include "log.h"
 #include "render.h"
 #include "ui.h"
+#include "assets.h"
 
 #include <stdio.h>
 
@@ -26,6 +27,9 @@ void tick(uint64_t dt)
 void initAllSystems()
 {
 	LOG_Init();
+
+	assets_init("/home/paul/lab/knell/assets");
+
 	lastTick = timeNowNs();
 	initWindow();
 	r_init();

@@ -8,6 +8,8 @@
 #include <GL/gl.h>
 #include <spa_fu/spa_fu.h>
 
+#include "assets.h"
+
 extern struct SDL_Window* window;
 static SDL_GLContext* gl;
 
@@ -55,6 +57,17 @@ void rll_loadShaders()
 	}
 	else {
 		printf("assets is not a file\n");
+	}
+
+	const int pathMax = 1024;
+	char path[pathMax];
+	if (assets_pathFor("shaders/screen_coord.frag", path, pathMax)) {
+		if (SPA_IsFile(path)) {
+			KN_TRACE(LogSysMain, "\e[32m" "%s found" "\e[39m", path);
+		}
+		else {
+			KN_TRACE(LogSysMain, "%s not found", path);
+		}
 	}
 }
 
