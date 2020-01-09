@@ -19,14 +19,10 @@
 #include "kn.h"
 #include "color.h"
 
-void r_init();
-void r_startFrame();
-void r_clear(rgba8i color);
-void r_endFrame();
-
-typedef uint32_t SpriteID;
-SpriteID r_createSprite();
-void r_drawSprite(SpriteID spriteID, float x, float y);
+void R_Init();
+void R_StartFrame();
+void R_Clear(rgba8i color);
+void R_EndFrame();
 
 #endif /* KN_RENDER_HL_H */
 

@@ -12,8 +12,8 @@ static uint64_t lastTick;
 
 void drawFrame()
 {
-	r_startFrame();
-	r_endFrame();
+	R_StartFrame();
+	R_EndFrame();
 }
 
 void tick(uint64_t dt)
@@ -32,7 +32,7 @@ void initAllSystems()
 
 	lastTick = timeNowNs();
 	initWindow();
-	r_init();
+	R_Init();
 
 	KN_TRACE(LogSysMain, "Systems initialized.");
 }

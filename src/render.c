@@ -3,7 +3,6 @@
 #include "math.h"
 #include "render-ll.h"
 
-static SpriteID nextSpriteID = 0;
 static float4x4 projection;
 
 float4x4 orthoProjection(const uint32_t width, const uint32_t height)
@@ -15,13 +14,13 @@ float4x4 orthoProjection(const uint32_t width, const uint32_t height)
 	return float4x4_multiply(trans, scale);
 }
 
-void r_init(const uint32_t width, const uint32_t height)
+void R_Init(const uint32_t width, const uint32_t height)
 {
 	projection = orthoProjection(width, height);
 	RLL_Init();
 }
 
-void r_startFrame()
+void R_StartFrame()
 {
 	RLL_StartFrame();
 
@@ -29,17 +28,7 @@ void r_startFrame()
 	RLL_Clear(black);
 }
 
-void r_endFrame()
+void R_EndFrame()
 {
 	RLL_EndFrame();
 }
-
-SpriteID r_createSprite()
-{
-	return nextSpriteID++;
-}
-
-void r_drawSprite(SpriteID spriteID, float x, float y)
-{
-}
-
