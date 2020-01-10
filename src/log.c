@@ -9,7 +9,7 @@ const char* LogSystemsRegistered[KN_LOG_MAX_SYSTEMS];
 uint32_t LogSystemsNumRegistered;
 uint32_t LogSysMain;
 
-void LOG_Init()
+void Log_Init()
 {
 	if (initialized) {
 		KN_FATAL_ERROR("Double initialization of logging system.");
@@ -26,7 +26,7 @@ void LOG_Init()
 
 	initialized = true;
 
-	LOG_RegisterSystem(&LogSysMain, "Main", KN_LOG_TRACE);
+	Log_RegisterSystem(&LogSysMain, "Main", KN_LOG_TRACE);
 	KN_TRACE(LogSysMain, "Log system initialized.");
 }
 
@@ -35,7 +35,7 @@ void LOG_Init()
  *
  * Assumes "name" is somewhere where it doesn't need dynamic allocation.
  */
-void LOG_RegisterSystem(uint32_t* system, const char* name, uint32_t verbosity)
+void Log_RegisterSystem(uint32_t* system, const char* name, uint32_t verbosity)
 {
 	if (!initialized) {
 		KN_FATAL_ERROR("Log system not initialized, cannot register any systems.");

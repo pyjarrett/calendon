@@ -27,7 +27,7 @@ void tick(uint64_t dt)
  */
 void initAllSystems()
 {
-	LOG_Init();
+	Log_Init();
 	Mem_Init();
 
 	assets_init("/home/paul/lab/knell/assets");

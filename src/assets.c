@@ -27,7 +27,7 @@ void assets_init(const char* newAssetsRoot)
 		KN_FATAL_ERROR("Assets root directory doesn't exist: %s", assetsRoot);
 	}
 
-	LOG_RegisterSystem(&LogSysAssets, "Assets", KN_LOG_TRACE);
+	Log_RegisterSystem(&LogSysAssets, "Assets", KN_LOG_TRACE);
 
 	KN_TRACE(LogSysAssets, "Assets initialized with root at: '%s'", assetsRoot);
 }

@@ -9,7 +9,7 @@ static uint32_t LogSysMemory;
 void Mem_Init()
 {
 	MemOutstandingAllocations = 0;
-	LOG_RegisterSystem(&LogSysMemory, "Memory", KN_LOG_TRACE);
+	Log_RegisterSystem(&LogSysMemory, "Memory", KN_LOG_TRACE);
 }
 
 void Mem_Allocate(DynamicBuffer* buffer, const uint32_t size)

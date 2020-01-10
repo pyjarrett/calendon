@@ -126,8 +126,8 @@ extern const char* LogSystemsRegistered[KN_LOG_MAX_SYSTEMS];
  */
 #define KN_TRACE(system, msg, ...) KN_LOG(system, KN_LOG_TRACE, msg, ##__VA_ARGS__)
 
-void LOG_Init();
-void LOG_RegisterSystem(uint32_t* system, const char* name, uint32_t verbosity);
+void Log_Init();
+void Log_RegisterSystem(uint32_t* system, const char* name, uint32_t verbosity);
 
 #endif /* KN_LOG_H */
 
