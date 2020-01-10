@@ -4,16 +4,16 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/mman.h>
 
-bool File_Read(const char* filename, DynamicBuffer* buffer, const uint32_t format) {
+bool File_Read(const char *filename, const uint32_t format, DynamicBuffer *buffer)
+{
 	if (!filename) {
 		KN_ERROR(LogSysMain, "Cannot read a null filename");
 		return false;
 	}
 
 	if (!buffer) {
-		KN_ERROR(LogSysMain, "Cannot write to a null FileContents");
+		KN_ERROR(LogSysMain, "Cannot write file contents to a null buffer");
 		return false;
 	}
 

@@ -72,7 +72,7 @@ void RLL_LoadShaders()
 	}
 
 	DynamicBuffer sourceFileBuffer;
-	if (!File_Read(path, &sourceFileBuffer, KN_FILE_TYPE_TEXT)) {
+	if (!File_Read(path, KN_FILE_TYPE_TEXT, &sourceFileBuffer)) {
 		KN_ERROR(LogSysMain, "Unable to read path");
 	}
 	KN_TRACE(LogSysMain, "%s", sourceFileBuffer.contents);
