@@ -5,7 +5,9 @@
 #ifndef KN_UI_H
 #define KN_UI_H
 
-void UI_Init();
+#include <stdint.h>
+
+void UI_Init(uint32_t width, uint32_t height);
 void UI_Shutdown();
 
 /**

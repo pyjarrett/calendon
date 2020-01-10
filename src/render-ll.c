@@ -1,20 +1,33 @@
 #include "render-ll.h"
 
 #include "kn.h"
+
+#include "assets.h"
 #include "color.h"
+#include "fileio.h"
 #include "log.h"
+#include "math.h"
 
 #include <stdbool.h>
 #include <GL/gl.h>
 #include <spa_fu/spa_fu.h>
 
-#include "assets.h"
-#include "fileio.h"
 
 extern struct SDL_Window* window;
 static SDL_GLContext* gl;
 
 static GLuint spriteProgram;
+
+static float4x4 projection;
+
+float4x4 RLL_OrthoProjection(const uint32_t width, const uint32_t height)
+{
+	const float far = 0;
+	const float near = 100;
+	const float4x4 scale = float4x4_nonuniformScale(2.0f / width, 2.0f / height, 2.0f / (far - near));
+	const float4x4 trans = float4x4_translate(-width / 2.0f, -height / 2.0f, -(far + near) / 2.0f);
+	return float4x4_multiply(trans, scale);
+}
 
 void RLL_InitGL()
 {
@@ -64,11 +77,13 @@ void RLL_LoadShaders()
 	Mem_Free(&sourceFileBuffer);
 }
 
-void RLL_Init()
+void RLL_Init(const uint32_t width, const uint32_t height)
 {
 	RLL_InitGL();
 	RLL_ConfigureVSync();
 	RLL_LoadShaders();
+
+	projection = RLL_OrthoProjection(width, height);
 }
 
 void RLL_StartFrame()

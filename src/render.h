@@ -19,7 +19,7 @@
 #include "kn.h"
 #include "color.h"
 
-void R_Init();
+void R_Init(uint32_t width, uint32_t height);
 void R_StartFrame();
 void R_Clear(rgba8i color);
 void R_EndFrame();

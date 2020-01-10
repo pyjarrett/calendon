@@ -34,8 +34,11 @@ void initAllSystems()
 	Assets_Init("/home/paul/lab/knell/assets");
 
 	lastTick = Time_NowNs();
-	UI_Init();
-	R_Init();
+
+	const uint32_t width = 1024;
+	const uint32_t height = 768;
+	UI_Init(width, height);
+	R_Init(width, height);
 
 	KN_TRACE(LogSysMain, "Systems initialized.");
 }

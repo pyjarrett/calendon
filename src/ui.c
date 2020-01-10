@@ -21,14 +21,11 @@ static void UI_CreateWindow(const int width, const int height)
 	}
 }
 
-void UI_Init()
+void UI_Init(uint32_t width, uint32_t height)
 {
 	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
 		KN_FATAL_ERROR("Unable to init SDL");
 	}
-
-	const uint32_t width = 1024;
-	const uint32_t height = 768;
 	UI_CreateWindow(width, height);
 }
 
