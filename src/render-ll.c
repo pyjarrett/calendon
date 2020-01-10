@@ -62,7 +62,7 @@ void RLL_LoadShaders()
 
 	const int pathMax = 1024;
 	char path[pathMax];
-	if (assets_pathFor("shaders/screen_coord.frag", path, pathMax)) {
+	if (Assets_PathFor("shaders/screen_coord.frag", path, pathMax)) {
 		if (SPA_IsFile(path)) {
 			KN_TRACE(LogSysMain, "\e[32m" "%s found" "\e[39m", path);
 		}

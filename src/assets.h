@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-void assets_init(const char* assetDir);
-bool assets_pathFor(const char* assertName, char* buffer, uint32_t bufferSize);
+void Assets_Init(const char* assetDir);
+bool Assets_PathFor(const char* assertName, char* buffer, uint32_t bufferSize);
 
 #endif /* KN_ASSETS_H */

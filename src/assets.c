@@ -15,12 +15,12 @@ static uint32_t LogSysAssets;
  * Initial the asset system with the top level directory where assets should
  * be found.
  */
-void assets_init(const char* newAssetsRoot)
+void Assets_Init(const char* assetDir)
 {
-	if (strlen(newAssetsRoot) >= MAX_ASSET_PATH_LENGTH) {
-		KN_FATAL_ERROR("Asset path root is too long.  Cannot initialize asset path with %s", newAssetsRoot);
+	if (strlen(assetDir) >= MAX_ASSET_PATH_LENGTH) {
+		KN_FATAL_ERROR("Asset path root is too long.  Cannot initialize asset path with %s", assetDir);
 	}
-	strcpy(assetsRoot, newAssetsRoot);
+	strcpy(assetsRoot, assetDir);
 	assetsRootLength = strlen(assetsRoot);
 
 	if (!SPA_IsDir(assetsRoot)) {
@@ -35,23 +35,23 @@ void assets_init(const char* newAssetsRoot)
 /**
  * Gets the path for accessing a specific resource within the assets system.
  */
-bool assets_pathFor(const char* assetName, char* buffer, uint32_t bufferSize)
+bool Assets_PathFor(const char* assertName, char* buffer, uint32_t bufferSize)
 {
 	if (assetsRootLength == 0) {
-		KN_ERROR(LogSysAssets, "Asset system not initialized, cannot get path for %s", assetName);
+		KN_ERROR(LogSysAssets, "Asset system not initialized, cannot get path for %s", assertName);
 		return false;
 	}
 
 	// Output buffer cannot hold root + '/' + assetName + '\0'.
-	if (assetsRootLength + 1 + strlen(assetName) + 1 >= bufferSize) {
+	if (assetsRootLength + 1 + strlen(assertName) + 1 >= bufferSize) {
 		return false;
 	}
 
 	memcpy(buffer, assetsRoot, assetsRootLength);
 	buffer[assetsRootLength] = '/';
-	strcpy(buffer + assetsRootLength + 1, assetName);
+	strcpy(buffer + assetsRootLength + 1, assertName);
 
-	KN_TRACE(LogSysAssets, "Resolved asset path '%s' -> '%s'", assetName, buffer);
+	KN_TRACE(LogSysAssets, "Resolved asset path '%s' -> '%s'", assertName, buffer);
 
 	return true;
 }

@@ -30,7 +30,7 @@ void initAllSystems()
 	Log_Init();
 	Mem_Init();
 
-	assets_init("/home/paul/lab/knell/assets");
+	Assets_Init("/home/paul/lab/knell/assets");
 
 	lastTick = timeNowNs();
 	initWindow();
