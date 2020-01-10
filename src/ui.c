@@ -10,7 +10,7 @@ KeyInputs keyInputs;
  * Create the window for drawing according to the available program
  * configuration.
  */
-static void createWindow(const int width, const int height)
+static void UI_CreateWindow(const int width, const int height)
 {
 	const int windowInitFlags = SDL_WINDOW_OPENGL;
 	window = SDL_CreateWindow("Powerblocks (knell)", SDL_WINDOWPOS_CENTERED,
@@ -21,8 +21,7 @@ static void createWindow(const int width, const int height)
 	}
 }
 
-
-void initWindow()
+void UI_Init()
 {
 	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
 		KN_FATAL_ERROR("Unable to init SDL");
@@ -30,13 +29,21 @@ void initWindow()
 
 	const uint32_t width = 1024;
 	const uint32_t height = 768;
-	createWindow(width, height);
+	UI_CreateWindow(width, height);
+}
+
+void UI_Shutdown()
+{
+	if (window) {
+		SDL_DestroyWindow(window);
+	}
+	SDL_Quit();
 }
 
 /**
  * Parses events off of the SDL event queue.
  */
-void processWindowEvents()
+void UI_ProcessWindowEvents()
 {
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
@@ -57,4 +64,3 @@ void processWindowEvents()
 		}
 	}
 }
-

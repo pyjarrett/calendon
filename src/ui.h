@@ -5,7 +5,8 @@
 #ifndef KN_UI_H
 #define KN_UI_H
 
-void initWindow();
+void UI_Init();
+void UI_Shutdown();
 
 /**
  * Call this to give the windowing system the opportunity to run its message
@@ -15,7 +16,7 @@ void initWindow();
  * In Win32 this might pump messages, on other systems it might poll inputs for
  * them to be distributed to other systems.
  */
-void processWindowEvents();
+void UI_ProcessWindowEvents();
 
 #endif /* KN_UI_H */
 

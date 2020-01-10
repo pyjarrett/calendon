@@ -34,7 +34,7 @@ void initAllSystems()
 	Assets_Init("/home/paul/lab/knell/assets");
 
 	lastTick = Time_NowNs();
-	initWindow();
+	UI_Init();
 	R_Init();
 
 	KN_TRACE(LogSysMain, "Systems initialized.");
@@ -43,6 +43,7 @@ void initAllSystems()
 void shutdownAllSystems()
 {
 	Mem_Shutdown();
+	UI_Shutdown();
 }
 
 /**
@@ -91,7 +92,7 @@ void runMainLoop()
 	while (isRunning()) {
 		// Event checking should be quick.  Always processing events prevents
 		// slowness due to bursts.
-		processWindowEvents();
+		UI_ProcessWindowEvents();
 
 		uint64_t dt;
 		if (generateTick(&dt)) {
