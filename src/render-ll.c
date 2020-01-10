@@ -46,20 +46,6 @@ void RLL_ConfigureVSync()
 
 void RLL_LoadShaders()
 {
-	if (SPA_IsDir("assets")) {
-		printf("assets dir exists\n");
-	}
-	else {
-		printf("assets dir doesn't exist\n");
-	}
-
-	if (SPA_IsFile("assets")) {
-		printf("assets is a file\n");
-	}
-	else {
-		printf("assets is not a file\n");
-	}
-
 	const int pathMax = 1024;
 	char path[pathMax];
 	if (Assets_PathFor("shaders/screen_coord.frag", path, pathMax)) {
@@ -75,7 +61,6 @@ void RLL_LoadShaders()
 	if (!File_Read(path, KN_FILE_TYPE_TEXT, &sourceFileBuffer)) {
 		KN_ERROR(LogSysMain, "Unable to read path");
 	}
-	KN_TRACE(LogSysMain, "%s", sourceFileBuffer.contents);
 	Mem_Free(&sourceFileBuffer);
 }
 
