@@ -44,12 +44,3 @@
 #ifndef KN_DEBUG_BREAK
 	#define KN_DEBUG_BREAK() do {} while(0)
 #endif
-
-/*
- * Functions for getting the current time and converting other units to the
- * same units being used for time.
- */
-uint64_t timeNowNs();
-uint64_t msToNs(uint64_t ms);
-uint64_t secToNs(uint64_t sec);
-

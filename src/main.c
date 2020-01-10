@@ -3,6 +3,7 @@
 #include "input.h"
 #include "log.h"
 #include "memory.h"
+#include "time.h"
 #include "render.h"
 #include "ui.h"
 #include "assets.h"
@@ -32,7 +33,7 @@ void initAllSystems()
 
 	Assets_Init("/home/paul/lab/knell/assets");
 
-	lastTick = timeNowNs();
+	lastTick = Time_NowNs();
 	initWindow();
 	R_Init();
 
@@ -55,7 +56,7 @@ void shutdownAllSystems()
  */
 bool generateTick(uint64_t* outDt)
 {
-	const uint64_t current = timeNowNs();
+	const uint64_t current = Time_NowNs();
 	if (lastTick > current) {
 		KN_FATAL_ERROR("Time went backwards");
 	}
@@ -66,7 +67,7 @@ bool generateTick(uint64_t* outDt)
 	//
 	// Since Knell is single-threaded, VSync will probably ensure that the
 	// minimum tick size is never missed.
-	const uint64_t minTickSize = msToNs(8);
+	const uint64_t minTickSize = Time_MsToNs(8);
 	const uint64_t dt = current - lastTick;
 	if (dt < minTickSize) {
 		return false;
@@ -75,7 +76,7 @@ bool generateTick(uint64_t* outDt)
 	lastTick = current;
 
 	// Ignore huge ticks, such as when resuming in the debugger.
-	const uint64_t maxTickSize = secToNs(5);
+	const uint64_t maxTickSize = Time_SecToNs(5);
 	if (dt > maxTickSize) {
 		KN_TRACE(LogSysMain, "Skipping large tick: %" PRIu64, *outDt);
 		return false;
