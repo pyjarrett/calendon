@@ -15,12 +15,15 @@
 
 
 extern struct SDL_Window* window;
+static uint32_t windowWidth, windowHeight;
+
 static SDL_GLContext* gl;
 
 static float4x4 projection;
 
 static GLuint spriteProgram;
 static GLuint fullScreenDebugProgram;
+static GLuint fullScreenQuadBuffer;
 
 #define RLL_NUM_SPRITES 128
 uint32_t spritesUsed;
@@ -217,6 +220,16 @@ void RLL_ConfigureVSync()
 	}
 }
 
+/**
+ * Even if VAOs aren't used, a dummy VAO must be bound.
+ */
+void RLL_InitDummyVAO()
+{
+	static GLuint vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+}
+
 void RLL_FillSpriteBuffer()
 {
 	for (uint32_t i=0; i<RLL_NUM_SPRITES; ++i) {
@@ -225,6 +238,23 @@ void RLL_FillSpriteBuffer()
 		spriteVertexBuffer[2] = float4_Make(1.0f, 0.0f, 0.0f, 0.0f);
 		spriteVertexBuffer[3] = float4_Make(1.0f, 1.0f, 0.0f, 0.0f);
 	}
+}
+
+void RLL_FillFullScreenQuadBuffer()
+{
+	// OpenGL ndc is a cube from -1 to 1
+	float4 vertices[] = {
+		float4_Make(-1.0f, -1.0f, 0.0f, 0.0f),
+		float4_Make(-1.0f, 1.0f, 0.0f, 0.0f),
+		float4_Make(1.0f, -1.0f, 0.0f, 0.0f),
+		float4_Make(1.0f, 1.0f, 0.0f, 0.0f)
+	};
+	glGenBuffers(1, &fullScreenQuadBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, fullScreenQuadBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	KN_ASSERT(fullScreenQuadBuffer, "Cannot allocate a buffer for the full screen quad");
+	KN_ASSERT_NO_GL_ERROR();
 }
 
 void RLL_LoadShaders()
@@ -343,9 +373,13 @@ void RLL_Init(const uint32_t width, const uint32_t height)
 {
 	RLL_InitGL();
 	RLL_ConfigureVSync();
+	RLL_InitDummyVAO();
 	RLL_FillSpriteBuffer();
+	RLL_FillFullScreenQuadBuffer();
 	RLL_LoadShaders();
 
+	windowWidth = width;
+	windowHeight = height;
 	projection = RLL_OrthoProjection(width, height);
 }
 
@@ -366,27 +400,38 @@ void RLL_Clear(rgba8i color)
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-/**
- * Draw a fullscreen debug rect.  This is used to verify the orthographic
- * projection.
- */
-void RLL_DrawDebugFullscreenRect()
+void RLL_SetFullScreenViewport()
 {
-	// OpenGL orthographic projection is a cube from -1 to 1
+	glViewport(0, 0, windowWidth, windowHeight);
+}
 
-	float4 vertices[] = {
-		float4_Make(0.0f, 0.0f, 0.0f, 0.0f),
-		float4_Make(0.0f, 1.0f, 0.0f, 0.0f),
-		float4_Make(1.0f, 0.0f, 0.0f, 0.0f),
-		float4_Make(1.0f, 1.0f, 0.0f, 0.0f)
-	};
+/**
+ * Draw a fullscreen debug rect.
+ */
+void RLL_DrawDebugFullScreenRect()
+{
+	KN_ASSERT_NO_GL_ERROR();
 
-	// set viewport
+	RLL_SetFullScreenViewport();
 
-	// set program
-
-	// set uniforms
+	glUseProgram(fullScreenDebugProgram);
 
 	// set vertex arrays
-	// draw
+	GLuint positionAttrib = glGetAttribLocation(fullScreenDebugProgram, "Position");
+	glEnableVertexAttribArray(positionAttrib);
+	KN_ASSERT_NO_GL_ERROR();
+	glVertexAttribPointer(
+		positionAttrib,
+		4,
+		GL_FLOAT,
+		GL_FALSE,
+		4 * sizeof(float),
+		(void *)0
+	);
+
+	glBindBuffer(GL_ARRAY_BUFFER, fullScreenQuadBuffer);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glDisableVertexAttribArray(0);
+
+	KN_ASSERT_NO_GL_ERROR();
 }

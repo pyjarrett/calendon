@@ -13,6 +13,8 @@ void R_StartFrame()
 
 	rgba8i black = { 0, 0, 0, 0 };
 	RLL_Clear(black);
+
+	RLL_DrawDebugFullScreenRect();
 }
 
 void R_EndFrame()

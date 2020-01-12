@@ -30,7 +30,7 @@ void RLL_StartFrame();
 void RLL_EndFrame();
 void RLL_Clear(rgba8i color);
 
-void RLL_DrawDebugFullscreenRect();
+void RLL_DrawDebugFullScreenRect();
 
 #endif /* KN_RENDER_LL_H */
 
