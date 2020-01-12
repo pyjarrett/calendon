@@ -20,7 +20,7 @@
 	const char* RLL_GLTypeToString(GLenum type);
 	void RLL_PrintProgram(GLuint program);
 	void RLL_PrintGLVersion();
-	void RLL_CheckGLError(const char* file, const int line);
+	void RLL_CheckGLError(const char* file, int line);
 #else
 	#define KN_ASSERT_NO_GL_ERROR()
 #endif
