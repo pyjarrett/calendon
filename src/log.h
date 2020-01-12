@@ -98,23 +98,22 @@ extern const char* LogSystemsRegistered[KN_LOG_MAX_SYSTEMS];
 /**
  * Records a message to the log system.
  */
-#define KN_LOG(system, verbosity, msg, ...) { \
+#define KN_LOG(system, verbosity, msg, ...) \
 	printf("%c: %40s:%i SYS_%-10s: " msg " \n", \
 		LogVerbosityChar[verbosity], \
 		__FILE__, \
 		__LINE__, \
 		LogSystemsRegistered[system], \
 		##__VA_ARGS__ \
-		); \
-	}
+		)
 
 /**
  * Errors are serious issues which must be addressed prior to shipping a product
  * and fixed as soon as possible when detected in release.
  */
 #define KN_ERROR(system, msg, ...) \
-	KN_LOG(system, KN_LOG_ERROR, msg, ##__VA_ARGS__) \
-	KN_DEBUG_BREAK();
+	KN_LOG(system, KN_LOG_ERROR, msg, ##__VA_ARGS__); \
+	KN_DEBUG_BREAK()
 
 /**
  * A program should never give warnings in a regular run of the program.

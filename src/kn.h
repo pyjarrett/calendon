@@ -34,13 +34,13 @@
 			KN_DEBUG_BREAK(); \
 			KN_FATAL_ERROR(message, ##__VA_ARGS__); \
 		} \
-    } while (0);
+    } while (0)
 
 /**
  * An unrecoverable event happened at this point in the program.
  */
 #define KN_FATAL_ERROR(error_message, ...) \
-	do { printf(error_message, ##__VA_ARGS__); abort(); } while (0);
+	do { printf(error_message, ##__VA_ARGS__); abort(); } while (0)
 
 /**
  * Used to suppress errors resulting from unused values.

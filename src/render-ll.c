@@ -347,7 +347,7 @@ bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* progr
 		const uint32_t MAX_INFO_LOG_LENGTH = 4096;
 		if (MAX_INFO_LOG_LENGTH < infoLogLength) {
 			KN_ERROR(LogSysRender, "Info log is too small to hold all output");
-		};
+		}
 		char infoLog[MAX_INFO_LOG_LENGTH];
 		glGetProgramInfoLog(*program, infoLogLength, NULL, infoLog);
 		KN_TRACE(LogSysRender, "Link log: %s\n", infoLog);

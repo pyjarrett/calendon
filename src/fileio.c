@@ -19,7 +19,7 @@ bool File_Read(const char *filename, const uint32_t format, DynamicBuffer *buffe
 
 	if (format != KN_FILE_TYPE_BINARY && format != KN_FILE_TYPE_TEXT) {
 		KN_ERROR(LogSysMain, "Invalid file type constant. "
-			"Must be KN_FILE_TYPE_BINARY or KN_FILE_TYPE_TEXT")
+			"Must be KN_FILE_TYPE_BINARY or KN_FILE_TYPE_TEXT");
 		return false;
 	}
 
