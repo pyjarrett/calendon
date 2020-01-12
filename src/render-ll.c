@@ -88,7 +88,7 @@ const char* RLL_GLTypeToString(GLenum type)
 #undef strType
 }
 
-void printProgram(const GLuint program)
+void RLL_PrintProgram(const GLuint program)
 {
 	// Print attributes.
 	GLint numActiveAttributes;
@@ -362,7 +362,7 @@ bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* progr
 	glDetachShader(*program, fragmentShader);
 
 #if KN_DEBUG
-	printProgram(*program);
+	RLL_PrintProgram(*program);
 #endif
 
 	KN_ASSERT_NO_GL_ERROR();
