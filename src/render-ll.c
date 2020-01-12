@@ -20,6 +20,8 @@ static GLuint spriteProgram;
 
 static float4x4 projection;
 
+uint32_t LogSysRender;
+
 float4x4 RLL_OrthoProjection(const uint32_t width, const uint32_t height)
 {
 	const float far = 0;
@@ -31,6 +33,8 @@ float4x4 RLL_OrthoProjection(const uint32_t width, const uint32_t height)
 
 void RLL_InitGL()
 {
+	Log_RegisterSystem(&LogSysRender, "Render", KN_LOG_TRACE);
+
 	// Get up and running quickly with OpenGL 3.1 with old-school functions.
 	// TODO: Replace with Core profile once something is working.
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -42,6 +46,7 @@ void RLL_InitGL()
 	if (gl == NULL) {
 		KN_FATAL_ERROR("Unable to create OpenGL context: %s", SDL_GetError());
 	}
+	KN_TRACE(LogSysRender, "OpenGL renderer initialized");
 }
 
 void RLL_ConfigureVSync()
