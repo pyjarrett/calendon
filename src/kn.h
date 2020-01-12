@@ -18,12 +18,6 @@
  */
 #define KN_UNUSED(value) (void)(value)
 
-#if defined(_DEBUG) || !defined(NDEBUG)
-	#define KN_DEBUG 1
-#else
-	#define KN_DEBUG 0
-#endif
-
 #if KN_DEBUG
 	#if defined(_MSC_VER)
 		#if DY_CONFIG_DEBUG
