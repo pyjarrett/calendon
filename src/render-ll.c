@@ -7,28 +7,183 @@
 #include "fileio.h"
 #include "log.h"
 #include "math.h"
+#include "memory.h"
+
+#include <spa_fu/spa_fu.h>
 
 #include <stdbool.h>
-#include <GL/gl.h>
-#include <spa_fu/spa_fu.h>
 
 
 extern struct SDL_Window* window;
 static SDL_GLContext* gl;
 
-static GLuint spriteProgram;
-
 static float4x4 projection;
+
+static GLuint spriteProgram;
+static GLuint fullScreenDebugProgram;
+
+#define RLL_NUM_SPRITES 128
+uint32_t spritesUsed;
+float4x4 spriteTransforms[RLL_NUM_SPRITES];
+float4 spriteVertexBuffer[RLL_NUM_SPRITES];
+float4 spriteTint[RLL_NUM_SPRITES];
 
 uint32_t LogSysRender;
 
-float4x4 RLL_OrthoProjection(const uint32_t width, const uint32_t height)
+bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* program);
+
+#if KN_DEBUG
+void RLL_CheckGLError(const char* file, const int line)
+{
+	const GLenum glError = glGetError();
+	switch (glError)
+	{
+		case GL_NO_ERROR:
+			return;
+#define label_print(label) case label: KN_TRACE(LogSysRender, "OpenGL Error: %s:%d " #label, file, line); break;
+		label_print(GL_INVALID_ENUM)
+		label_print(GL_INVALID_VALUE)
+		label_print(GL_INVALID_OPERATION)
+		label_print(GL_INVALID_FRAMEBUFFER_OPERATION)
+		label_print(GL_OUT_OF_MEMORY)
+		label_print(GL_STACK_UNDERFLOW)
+		label_print(GL_STACK_OVERFLOW)
+#undef label_print
+		default:
+			KN_TRACE(LogSysRender, "Unknown error: %s:%d %d", file, line, glError);
+	}
+	KN_DEBUG_BREAK();
+}
+
+const char* RLL_GLTypeToString(GLenum type)
+{
+#define strType(t) case t: return #t
+	switch (type) {
+		strType(GL_FLOAT);
+		strType(GL_FLOAT_VEC2);
+		strType(GL_FLOAT_VEC3);
+		strType(GL_FLOAT_VEC4);
+		strType(GL_FLOAT_MAT2);
+		strType(GL_FLOAT_MAT3);
+		strType(GL_FLOAT_MAT4);
+		strType(GL_FLOAT_MAT2x3);
+		strType(GL_FLOAT_MAT2x4);
+		strType(GL_FLOAT_MAT3x2);
+		strType(GL_FLOAT_MAT3x4);
+		strType(GL_FLOAT_MAT4x2);
+		strType(GL_FLOAT_MAT4x3);
+		strType(GL_INT);
+		strType(GL_INT_VEC2);
+		strType(GL_INT_VEC3);
+		strType(GL_INT_VEC4);
+		strType(GL_UNSIGNED_INT);
+		strType(GL_UNSIGNED_INT_VEC2);
+		strType(GL_UNSIGNED_INT_VEC3);
+		strType(GL_UNSIGNED_INT_VEC4);
+		default: return "Unknown type";
+	}
+#undef strType
+}
+
+void printProgram(const GLuint program)
+{
+	// Print attributes.
+	GLint numActiveAttributes;
+	glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &numActiveAttributes);
+	KN_TRACE(LogSysRender, "Active Attributes: %d", numActiveAttributes);
+	for (int i = 0; i < numActiveAttributes; ++i) {
+		const GLsizei bufferSize = 1024;
+		GLchar name[bufferSize];
+		GLint size;
+		GLenum type;
+		glGetActiveAttrib(program, i, bufferSize, NULL, &size, &type, name);
+		KN_TRACE(LogSysRender, "[%d]: %s '%s'   %d", i, RLL_GLTypeToString(type), name, size);
+	}
+
+	GLint numActiveUniforms;
+	glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &numActiveUniforms);
+	KN_TRACE(LogSysRender, "Active Uniforms: %d", numActiveUniforms);
+	for (int i = 0; i < numActiveUniforms; ++i) {
+		const GLsizei bufferSize = 1024;
+		GLchar name[bufferSize];
+		GLint size;
+		GLenum type;
+		glGetActiveUniform(program, i, bufferSize, NULL, &size, &type, name);
+		KN_TRACE(LogSysRender, "[%d]: %s '%s'   %d", i, RLL_GLTypeToString(type), name, size);
+	}
+
+	// Print validation status.
+	glValidateProgram(program);
+	GLint validateStatus;
+	glGetProgramiv(program, GL_VALIDATE_STATUS, &validateStatus);
+	KN_TRACE(LogSysRender, "Validate status: %d", validateStatus);
+
+	// Print the info log.
+	GLint infoLogLength;
+	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
+	if (infoLogLength > 0) {
+		const uint32_t MAX_INFO_LOG_LENGTH = 4096;
+		if (MAX_INFO_LOG_LENGTH < infoLogLength) {
+			KN_TRACE(LogSysRender, "Info log is too small to hold all output");
+		}
+		char infoLog[MAX_INFO_LOG_LENGTH];
+		glGetProgramInfoLog(program, infoLogLength, NULL, infoLog);
+		KN_TRACE(LogSysRender, "Validation log: %s\n", infoLog);
+	}
+}
+
+void printGLVersion()
+{
+	KN_ASSERT_NO_GL_ERROR();
+	GLint majorVersion, minorVersion;
+	glGetIntegerv(GL_MAJOR_VERSION, &majorVersion);
+	glGetIntegerv(GL_MINOR_VERSION, &minorVersion);
+	KN_TRACE(LogSysRender, "Using OpenGL %i.%i", majorVersion, minorVersion);
+	KN_TRACE(LogSysRender, "    Vendor: %s", glGetString(GL_VENDOR));
+	KN_TRACE(LogSysRender, "    Renderer: %s", glGetString(GL_RENDERER));
+	KN_TRACE(LogSysRender, "    Version: %s", glGetString(GL_VERSION));
+	KN_TRACE(LogSysRender, "    GLSL Version: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+	KN_ASSERT_NO_GL_ERROR();
+}
+
+#endif /* KN_DEBUG */
+
+static float4x4 RLL_OrthoProjection(const uint32_t width, const uint32_t height)
 {
 	const float far = 0;
 	const float near = 100;
 	const float4x4 scale = float4x4_nonuniformScale(2.0f / width, 2.0f / height, 2.0f / (far - near));
 	const float4x4 trans = float4x4_translate(-width / 2.0f, -height / 2.0f, -(far + near) / 2.0f);
 	return float4x4_multiply(trans, scale);
+}
+
+static bool RLL_CreateShader(GLuint* shader, const char* source, const uint32_t sourceLength)
+{
+	const GLchar* sources[] = { source };
+	const GLint sizes[] = { sourceLength };
+	glShaderSource(*shader, 1, sources, sizes);
+	glCompileShader(*shader);
+
+	GLint compileResult = GL_FALSE;
+	glGetShaderiv(*shader, GL_COMPILE_STATUS, &compileResult);
+	if (!compileResult) {
+		KN_ERROR(LogSysRender, "Unable to compile shader: %s", source);
+		return false;
+	}
+
+	GLint infoLogLength;
+	glGetShaderiv(*shader, GL_INFO_LOG_LENGTH, &infoLogLength);
+	if (infoLogLength > 0) {
+		const int MAX_INFO_LOG_LENGTH = 4096;
+		if (MAX_INFO_LOG_LENGTH < infoLogLength) {
+			KN_ERROR(LogSysRender, "Info log buffer is too small to hold all output");
+			return false;
+		}
+		char infoLog[MAX_INFO_LOG_LENGTH];
+		glGetShaderInfoLog(*shader, MAX_INFO_LOG_LENGTH, NULL, infoLog);
+		KN_TRACE(LogSysRender, "Compilation results for %s", infoLog);
+	}
+	return true;
 }
 
 void RLL_InitGL()
@@ -62,30 +217,133 @@ void RLL_ConfigureVSync()
 	}
 }
 
+void RLL_FillSpriteBuffer()
+{
+	for (uint32_t i=0; i<RLL_NUM_SPRITES; ++i) {
+		spriteVertexBuffer[0] = float4_Make(0.0f, 0.0f, 0.0f, 0.0f);
+		spriteVertexBuffer[1] = float4_Make(0.0f, 1.0f, 0.0f, 0.0f);
+		spriteVertexBuffer[2] = float4_Make(1.0f, 0.0f, 0.0f, 0.0f);
+		spriteVertexBuffer[3] = float4_Make(1.0f, 1.0f, 0.0f, 0.0f);
+	}
+}
+
 void RLL_LoadShaders()
 {
-	const int pathMax = 1024;
-	char path[pathMax];
-	if (Assets_PathFor("shaders/screen_coord.frag", path, pathMax)) {
-		if (SPA_IsFile(path)) {
-			KN_TRACE(LogSysMain, "\e[32m" "%s found" "\e[39m", path);
+	const int maxShaderTextLength = 1024;
+	char fragmentShaderPath[maxShaderTextLength];
+	char vertexShaderPath[maxShaderTextLength];
+	DynamicBuffer fragmentShaderBuffer;
+	DynamicBuffer vertexShaderBuffer;
+
+	// Read fragment shader
+	if (Assets_PathFor("shaders/uv_as_red_green.frag", fragmentShaderPath, maxShaderTextLength)) {
+		if (SPA_IsFile(fragmentShaderPath)) {
+			KN_TRACE(LogSysMain, "\e[32m" "%s found" "\e[39m", fragmentShaderPath);
 		}
 		else {
-			KN_TRACE(LogSysMain, "%s not found", path);
+			KN_TRACE(LogSysMain, "%s not found", fragmentShaderPath);
 		}
 	}
 
-	DynamicBuffer sourceFileBuffer;
-	if (!File_Read(path, KN_FILE_TYPE_TEXT, &sourceFileBuffer)) {
-		KN_ERROR(LogSysMain, "Unable to read path");
+	if (!File_Read(fragmentShaderPath, KN_FILE_TYPE_TEXT, &fragmentShaderBuffer)) {
+		KN_ERROR(LogSysMain, "Unable to read fragment shader text");
 	}
-	Mem_Free(&sourceFileBuffer);
+
+	// Read vertex shader
+	if (Assets_PathFor("shaders/fullscreen_textured_quad.vert", vertexShaderPath, maxShaderTextLength)) {
+		if (SPA_IsFile(vertexShaderPath)) {
+			KN_TRACE(LogSysMain, "\e[32m" "%s found" "\e[39m", vertexShaderPath);
+		}
+		else {
+			KN_TRACE(LogSysMain, "%s not found", vertexShaderPath);
+		}
+	}
+
+	if (!File_Read(vertexShaderPath, KN_FILE_TYPE_TEXT, &vertexShaderBuffer)) {
+		KN_ERROR(LogSysMain, "Unable to read vertex shader text");
+	}
+
+	//KN_TRACE(LogSysMain, "Fragment shader %s", fragmentShaderBuffer.contents);
+	//KN_TRACE(LogSysMain, "Vertex shader %s", vertexShaderBuffer.contents);
+
+	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+
+	if (!glIsShader(vertexShader)) {
+		KN_ERROR(LogSysMain, "Unable to allocate space for vertex shader");
+	}
+
+	if (!glIsShader(fragmentShader)) {
+		KN_ERROR(LogSysMain, "Unable to allocate space for fragment shader");
+	}
+
+	RLL_CreateShader(&fragmentShader, fragmentShaderBuffer.contents, fragmentShaderBuffer.size);
+	RLL_CreateShader(&vertexShader, vertexShaderBuffer.contents, vertexShaderBuffer.size);
+
+	RLL_CreateProgram(vertexShader, fragmentShader, &fullScreenDebugProgram);
+	Mem_Free(&vertexShaderBuffer);
+	Mem_Free(&fragmentShaderBuffer);
+}
+
+bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* program)
+{
+	KN_ASSERT_NO_GL_ERROR();
+
+	if (!program) {
+		KN_ERROR(LogSysRender, "program is a NULL ptr");
+		return false;
+	}
+
+	if (!glIsShader(vertexShader)) {
+		KN_ERROR(LogSysRender, "Vertex shader doesn't exist");
+		return false;
+	}
+
+	if (!glIsShader(fragmentShader)) {
+		KN_ERROR(LogSysRender, "Fragment shader doesn't exist");
+	}
+
+	*program = glCreateProgram();
+	glAttachShader(*program, vertexShader);
+	glAttachShader(*program, fragmentShader);
+	glLinkProgram(*program);
+
+	GLint linkResult;
+	glGetProgramiv(*program, GL_LINK_STATUS, &linkResult);
+
+	GLint infoLogLength;
+	glGetProgramiv(*program, GL_INFO_LOG_LENGTH, &infoLogLength);
+	if (infoLogLength > 0) {
+		const uint32_t MAX_INFO_LOG_LENGTH = 4096;
+		if (MAX_INFO_LOG_LENGTH < infoLogLength) {
+			KN_ERROR(LogSysRender, "Info log is too small to hold all output");
+		};
+		char infoLog[MAX_INFO_LOG_LENGTH];
+		glGetProgramInfoLog(*program, infoLogLength, NULL, infoLog);
+		KN_TRACE(LogSysRender, "Link log: %s\n", infoLog);
+	}
+
+	if (linkResult == GL_FALSE) {
+		KN_ERROR(LogSysRender, "Unable to link program");
+		return false;
+	}
+
+	glDetachShader(*program, vertexShader);
+	glDetachShader(*program, fragmentShader);
+
+#if KN_DEBUG
+	printProgram(*program);
+#endif
+
+	KN_ASSERT_NO_GL_ERROR();
+	return linkResult == GL_TRUE;
 }
 
 void RLL_Init(const uint32_t width, const uint32_t height)
 {
 	RLL_InitGL();
 	RLL_ConfigureVSync();
+	RLL_FillSpriteBuffer();
 	RLL_LoadShaders();
 
 	projection = RLL_OrthoProjection(width, height);
@@ -94,6 +352,7 @@ void RLL_Init(const uint32_t width, const uint32_t height)
 void RLL_StartFrame()
 {
 	SDL_GL_MakeCurrent(window, gl);
+	spritesUsed = 0;
 }
 
 void RLL_EndFrame()
@@ -107,3 +366,27 @@ void RLL_Clear(rgba8i color)
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
+/**
+ * Draw a fullscreen debug rect.  This is used to verify the orthographic
+ * projection.
+ */
+void RLL_DrawDebugFullscreenRect()
+{
+	// OpenGL orthographic projection is a cube from -1 to 1
+
+	float4 vertices[] = {
+		float4_Make(0.0f, 0.0f, 0.0f, 0.0f),
+		float4_Make(0.0f, 1.0f, 0.0f, 0.0f),
+		float4_Make(1.0f, 0.0f, 0.0f, 0.0f),
+		float4_Make(1.0f, 1.0f, 0.0f, 0.0f)
+	};
+
+	// set viewport
+
+	// set program
+
+	// set uniforms
+
+	// set vertex arrays
+	// draw
+}

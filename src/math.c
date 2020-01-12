@@ -2,6 +2,11 @@
 
 #include <stdint.h>
 
+float4 float4_Make(float x, float y, float z, float w)
+{
+	return (float4) {{ x, y, z, w }};
+}
+
 float4 float4_multiply(float4 v, float4x4 m)
 {
 	//float4 out;
