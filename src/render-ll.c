@@ -141,7 +141,7 @@ void RLL_PrintProgram(const GLuint program)
 	}
 }
 
-void printGLVersion()
+void RLL_PrintGLVersion()
 {
 	KN_ASSERT_NO_GL_ERROR();
 	GLint majorVersion, minorVersion;
