@@ -13,20 +13,37 @@
 
 #include <stdbool.h>
 
-
+/**
+ * The window on which to draw.
+ */
 extern struct SDL_Window* window;
 static uint32_t windowWidth, windowHeight;
 
+/**
+ * The render system must carry around the OpenGL context to be used to draw to
+ * the window.
+ */
 static SDL_GLContext* gl;
 
+/**
+ * Orthographic projection matrix to match the same dimensions as the window
+ * size.  Scaling based on the same aspect ratio but big enough to see might be
+ * a better option.
+ */
 static float4x4 projection;
 
 static GLuint spriteProgram;
 static GLuint fullScreenDebugProgram;
 static GLuint fullScreenQuadBuffer;
 
+/**
+ * Vertex `GL_ARRAY_BUFFER` containing vertex information for drawing debug shapes.
+ */
 static GLuint debugQuadBuffer;
 
+/**
+ * Program to use for drawing debug shapes.
+ */
 static GLuint solidPolygonProgram;
 
 #define RLL_NUM_SPRITES 128
@@ -35,6 +52,9 @@ float4x4 spriteTransforms[RLL_NUM_SPRITES];
 float4 spriteVertexBuffer[RLL_NUM_SPRITES];
 float4 spriteTint[RLL_NUM_SPRITES];
 
+/**
+ * Logging ID for renderer logging.
+ */
 uint32_t LogSysRender;
 
 bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* program);
@@ -64,6 +84,9 @@ void RLL_CheckGLError(const char* file, const int line)
 	KN_DEBUG_BREAK();
 }
 
+/**
+ * Converts `GLenum` to a string for debugging.
+ */
 const char* RLL_GLTypeToString(GLenum type)
 {
 #define strType(t) case t: return #t
@@ -94,8 +117,16 @@ const char* RLL_GLTypeToString(GLenum type)
 #undef strType
 }
 
+/**
+ * Print a shader program and all of its active attributes and uniforms.
+ * Failing to use attributes results in them not being active.  This function
+ * is used before dropping into renderdoc or heavier tools for monitoring the
+ * shader system while it is being developed.
+ */
 void RLL_PrintProgram(const GLuint program)
 {
+	KN_ASSERT(glIsProgram(program), "Program is not a program");
+
 	// Print attributes.
 	GLint numActiveAttributes;
 	glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &numActiveAttributes);
@@ -141,8 +172,13 @@ void RLL_PrintProgram(const GLuint program)
 	}
 }
 
+/**
+ * The renderer may have requested a specific version of OpenGL, but this
+ * program provides the current version being used.
+ */
 void RLL_PrintGLVersion()
 {
+	// TODO: set the opengl context?
 	KN_ASSERT_NO_GL_ERROR();
 	GLint majorVersion, minorVersion;
 	glGetIntegerv(GL_MAJOR_VERSION, &majorVersion);
@@ -157,6 +193,10 @@ void RLL_PrintGLVersion()
 
 #endif /* KN_DEBUG */
 
+/**
+ * An openGL orthographic matrix.  Note that DirectX will need a related, but
+ * slightly different version.
+ */
 static float4x4 RLL_OrthoProjection(const uint32_t width, const uint32_t height)
 {
 	const float far = -100;
@@ -164,15 +204,7 @@ static float4x4 RLL_OrthoProjection(const uint32_t width, const uint32_t height)
 	const float w = width;
 	const float h = height;
 	const float4x4 scale = float4x4_NonUniformScale(2.0f / w, 2.0f / h, 2.0f / (far - near));
-	printf("Scale\n");
-	float4x4_DebugPrint(stdout, scale);
 	const float4x4 trans = float4x4_Translate(-w / 2.0f, -h / 2.0f, -(far + near) / 2.0f);
-	printf("TRANSLATE\n");
-	float4x4_DebugPrint(stdout, trans);
-	printf("Ortho\n");
-	float4x4_DebugPrint(stdout, float4x4_Multiply(trans, scale));
-	printf("\n");
-	float4x4_DebugPrint(stdout, float4x4_Multiply(scale, trans));
 	//return float4x4_Multiply(scale, trans);
 	return float4x4_Multiply(trans, scale);
 }
