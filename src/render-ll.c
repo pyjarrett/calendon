@@ -163,18 +163,18 @@ static float4x4 RLL_OrthoProjection(const uint32_t width, const uint32_t height)
 	const float near = 100;
 	const float w = width;
 	const float h = height;
-	const float4x4 scale = float4x4_nonuniformScale(2.0f / w, 2.0f / h, 2.0f / (far - near));
+	const float4x4 scale = float4x4_NonUniformScale(2.0f / w, 2.0f / h, 2.0f / (far - near));
 	printf("Scale\n");
-	float4x4_debugPrint(stdout, scale);
-	const float4x4 trans = float4x4_translate(-w / 2.0f, -h / 2.0f, -(far + near) / 2.0f);
+	float4x4_DebugPrint(stdout, scale);
+	const float4x4 trans = float4x4_Translate(-w / 2.0f, -h / 2.0f, -(far + near) / 2.0f);
 	printf("TRANSLATE\n");
-	float4x4_debugPrint(stdout, trans);
+	float4x4_DebugPrint(stdout, trans);
 	printf("Ortho\n");
-	float4x4_debugPrint(stdout, float4x4_multiply(trans, scale));
+	float4x4_DebugPrint(stdout, float4x4_Multiply(trans, scale));
 	printf("\n");
-	float4x4_debugPrint(stdout, float4x4_multiply(scale, trans));
-	//return float4x4_multiply(scale, trans);
-	return float4x4_multiply(trans, scale);
+	float4x4_DebugPrint(stdout, float4x4_Multiply(scale, trans));
+	//return float4x4_Multiply(scale, trans);
+	return float4x4_Multiply(trans, scale);
 }
 
 static bool RLL_CreateShader(GLuint* shader, const char* source, const uint32_t sourceLength)
@@ -554,7 +554,7 @@ void RLL_DrawDebugRect(const float4 position, const dimension2f dimensions,
 	const GLuint uniformProjection = glGetUniformLocation(solidPolygonProgram, "Projection");
 	glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, &projection.m[0][0]);
 
-	const float4x4 identity = float4x4_identity();
+	const float4x4 identity = float4x4_Identity();
 	const GLuint uniformViewModel = glGetUniformLocation(solidPolygonProgram, "ViewModel");
 	glUniformMatrix4fv(uniformViewModel, 1, GL_FALSE, &identity.m[0][0]);
 
@@ -589,12 +589,12 @@ void RLL_DrawDebugRect(const float4 position, const dimension2f dimensions,
 	static uint32_t flag = 0;
 	if (!flag) {
 		for (uint32_t i = 0; i < 4; ++i) {
-			float4_debugPrint(stdout, vertices[i]);
+			float4_DebugPrint(stdout, vertices[i]);
 		}
 
 		printf("Transformed:\n");
 		for (uint32_t i = 0; i < 4; ++i) {
-			float4_debugPrint(stdout, float4_multiply(vertices[i], projection));
+			float4_DebugPrint(stdout, float4_Multiply(vertices[i], projection));
 		}
 		flag = 1;
 		printf("\n");

@@ -41,17 +41,17 @@ typedef struct {
 } float4x4;
 
 float4 float4_Make(float x, float y, float z, float w);
-float4 float4_multiply(float4 v, float4x4 m);
+float4 float4_Multiply(float4 v, float4x4 m);
 
-float4x4 float4x4_identity();
-float4x4 float4x4_nonuniformScale(float x, float y, float z);
-float4x4 float4x4_translate(float x, float y, float z);
-float4x4 float4x4_transpose(float4x4 m);
-float4x4 float4x4_multiply(float4x4 left, float4x4 right);
+float4x4 float4x4_Identity();
+float4x4 float4x4_NonUniformScale(float x, float y, float z);
+float4x4 float4x4_Translate(float x, float y, float z);
+float4x4 float4x4_Transpose(float4x4 m);
+float4x4 float4x4_Multiply(float4x4 left, float4x4 right);
 
 #include <stdio.h>
-void float4_debugPrint(FILE* stream, float4 v);
-void float4x4_debugPrint(FILE* stream, float4x4 m);
+void float4_DebugPrint(FILE* stream, float4 v);
+void float4x4_DebugPrint(FILE* stream, float4x4 m);
 
 #endif /* KN_MATH_H */
 

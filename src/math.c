@@ -7,7 +7,7 @@ float4 float4_Make(float x, float y, float z, float w)
 	return (float4) {{ x, y, z, w }};
 }
 
-float4 float4_multiply(float4 v, float4x4 m)
+float4 float4_Multiply(float4 v, float4x4 m)
 {
 	//float4 out;
 	//for (uint32_t i=0; i<4; ++i) {
@@ -25,7 +25,7 @@ float4 float4_multiply(float4 v, float4x4 m)
 	return (float4) {{ x, y, z, w }};
 }
 
-float4x4 float4x4_identity()
+float4x4 float4x4_Identity()
 {
 	return (float4x4) {{
 		{ 1, 0, 0, 0 },
@@ -35,7 +35,7 @@ float4x4 float4x4_identity()
 	}};
 }
 
-float4x4 float4x4_nonuniformScale(float x, float y, float z)
+float4x4 float4x4_NonUniformScale(float x, float y, float z)
 {
 	return (float4x4) {{
 		{ x, 0, 0, 0 }, 
@@ -45,7 +45,7 @@ float4x4 float4x4_nonuniformScale(float x, float y, float z)
 	}};
 }
 
-float4x4 float4x4_translate(float x, float y, float z)
+float4x4 float4x4_Translate(float x, float y, float z)
 {
 	return (float4x4) {{
 		{ 1, 0, 0, 0 },
@@ -55,7 +55,7 @@ float4x4 float4x4_translate(float x, float y, float z)
 	}};
 }
 
-float4x4 float4x4_transpose(float4x4 m)
+float4x4 float4x4_Transpose(float4x4 m)
 {
 	float4x4 result;
 	for (uint32_t i=0; i<4; ++i) {
@@ -66,7 +66,7 @@ float4x4 float4x4_transpose(float4x4 m)
 	return result;
 }
 
-float4x4 float4x4_multiply(float4x4 l, float4x4 r)
+float4x4 float4x4_Multiply(float4x4 left, float4x4 right)
 {
 	float4x4 result;
 	for (uint32_t i=0; i<4; ++i) {
@@ -75,7 +75,7 @@ float4x4 float4x4_multiply(float4x4 l, float4x4 r)
 			for (uint32_t k=0; k<4; ++k) {
 				// (i,j) is the element being written
 				// Keep row constant for left, column constant for right.
-				element += (l.m[i][k] * r.m[k][j]);
+				element += (left.m[i][k] * right.m[k][j]);
 			}
 			result.m[i][j] = element;
 		}
@@ -83,12 +83,12 @@ float4x4 float4x4_multiply(float4x4 l, float4x4 r)
 	return result;
 }
 
-void float4_debugPrint(FILE* stream, float4 v)
+void float4_DebugPrint(FILE* stream, float4 v)
 {
 	fprintf(stream, "(%6.5f %6.5f %6.5f %6.5f)\n", v.x, v.y, v.z, v.w);
 }
 
-void float4x4_debugPrint(FILE* stream, float4x4 m)
+void float4x4_DebugPrint(FILE* stream, float4x4 m)
 {
 	for (uint32_t i=0; i<4; ++i) {
 		fprintf(stream, "%6.5f %6.5f %6.5f %6.5f\n", m.m[i][0], m.m[i][1], m.m[i][2], m.m[i][3]);

@@ -108,35 +108,35 @@ void runMainLoop()
 #include "math.h"
 void runTest()
 {
-	float4x4 s = float4x4_nonuniformScale(1.0f, 2.0f, 3.0f);
-	float4x4 t = float4x4_translate(5.0f, 6.0f, 7.0f);
+	float4x4 s = float4x4_NonUniformScale(1.0f, 2.0f, 3.0f);
+	float4x4 t = float4x4_Translate(5.0f, 6.0f, 7.0f);
 
 	float4 point = { .x = 1.0f, .y = 2.0f, .z = 3.0f, .w = 1.0f };
 	float4 vector = { .x = 1.0f, .y = 2.0f, .z = 3.0f, .w = 0.0f };
 
 	printf("S = \n");
-	float4x4_debugPrint(stdout, s);
+	float4x4_DebugPrint(stdout, s);
 
-	float4_debugPrint(stdout, float4_multiply(point, s));
-	float4_debugPrint(stdout, float4_multiply(vector, s));
+	float4_DebugPrint(stdout, float4_Multiply(point, s));
+	float4_DebugPrint(stdout, float4_Multiply(vector, s));
 
 	printf("T = \n");
-	float4x4_debugPrint(stdout, t);
+	float4x4_DebugPrint(stdout, t);
 
-	float4_debugPrint(stdout, float4_multiply(point, t));
-	float4_debugPrint(stdout, float4_multiply(vector, t));
+	float4_DebugPrint(stdout, float4_Multiply(point, t));
+	float4_DebugPrint(stdout, float4_Multiply(vector, t));
 
 	printf("T * S = \n");
-	float4x4_debugPrint(stdout, float4x4_multiply(t, s));
+	float4x4_DebugPrint(stdout, float4x4_Multiply(t, s));
 
 	printf("S * T = \n");
-	float4x4_debugPrint(stdout, float4x4_multiply(s, t));
+	float4x4_DebugPrint(stdout, float4x4_Multiply(s, t));
 
 	printf("T * T = \n");
-	float4x4_debugPrint(stdout, float4x4_multiply(t, t));
+	float4x4_DebugPrint(stdout, float4x4_Multiply(t, t));
 
 	printf("Tt = \n");
-	float4x4_debugPrint(stdout, float4x4_transpose(t));
+	float4x4_DebugPrint(stdout, float4x4_Transpose(t));
 }
 
 int main(const int argc, char* argv[])
