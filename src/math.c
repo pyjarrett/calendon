@@ -18,15 +18,10 @@ float4 float4_multiply(float4 v, float4x4 m)
 	//	out.v[i] = element;
 	//}
 	//return out;
-
-	const float x = v.v[0] * m.m[0][0] + v.v[1] * m.m[1][0] + v.v[2] * m.m[2][0]
-		+ v.v[3] * m.m[3][0];
-	const float y = v.v[1] * m.m[0][1] + v.v[1] * m.m[1][1] + v.v[2] * m.m[2][1]
-		+ v.v[3] * m.m[3][1];
-	const float z = v.v[2] * m.m[0][2] + v.v[1] * m.m[1][2] + v.v[2] * m.m[2][2]
-		+ v.v[3] * m.m[3][2];
-	const float w = v.v[3] * m.m[0][3] + v.v[1] * m.m[1][3] + v.v[2] * m.m[2][3]
-		+ v.v[3] * m.m[3][3];
+	const float x = v.v[0] * m.m[0][0] + v.v[1] * m.m[0][1] + v.v[2] * m.m[0][2] + v.v[3] * m.m[0][3];
+	const float y = v.v[0] * m.m[1][0] + v.v[1] * m.m[1][1] + v.v[2] * m.m[1][2] + v.v[3] * m.m[1][3];
+	const float z = v.v[0] * m.m[2][0] + v.v[1] * m.m[2][1] + v.v[2] * m.m[2][2] + v.v[3] * m.m[2][3];
+	const float w = v.v[0] * m.m[3][0] + v.v[1] * m.m[3][1] + v.v[2] * m.m[3][2] + v.v[3] * m.m[3][3];
 	return (float4) {{ x, y, z, w }};
 }
 
@@ -90,12 +85,12 @@ float4x4 float4x4_multiply(float4x4 l, float4x4 r)
 
 void float4_debugPrint(FILE* stream, float4 v)
 {
-	fprintf(stream, "(%6.f %6.f %6.f %6.f)\n", v.x, v.y, v.z, v.w);
+	fprintf(stream, "(%6.5f %6.5f %6.5f %6.5f)\n", v.x, v.y, v.z, v.w);
 }
 
 void float4x4_debugPrint(FILE* stream, float4x4 m)
 {
 	for (uint32_t i=0; i<4; ++i) {
-		fprintf(stream, "%6.f %6.f %6.f %6.f\n", m.m[i][0], m.m[i][1], m.m[i][2], m.m[i][3]);
+		fprintf(stream, "%6.5f %6.5f %6.5f %6.5f\n", m.m[i][0], m.m[i][1], m.m[i][2], m.m[i][3]);
 	}
 }

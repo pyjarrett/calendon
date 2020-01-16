@@ -129,6 +129,9 @@ void runTest()
 	printf("T * S = \n");
 	float4x4_debugPrint(stdout, float4x4_multiply(t, s));
 
+	printf("S * T = \n");
+	float4x4_debugPrint(stdout, float4x4_multiply(s, t));
+
 	printf("T * T = \n");
 	float4x4_debugPrint(stdout, float4x4_multiply(t, t));
 

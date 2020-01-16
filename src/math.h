@@ -7,6 +7,10 @@
 #ifndef KN_MATH_H
 #define KN_MATH_H
 
+typedef struct {
+	float width, height;
+} dimension2f;
+
 /**
  * ROW vector.
  */
@@ -24,12 +28,6 @@ typedef union {
  *  8  9 10 11
  * 12 13 14 15
  *
- * Using float[16] gives the column-major ordering of matrix data:
- *  0  4  8 12
- *  1  5  9 13
- *  2  6 10 14
- *  3  3 11 15
-
  * This means that matrices can be written in the form of a singular array:
  * ```
  * float translate[16] = { 1, 0, 0, x,

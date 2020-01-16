@@ -25,6 +25,10 @@ static GLuint spriteProgram;
 static GLuint fullScreenDebugProgram;
 static GLuint fullScreenQuadBuffer;
 
+static GLuint debugQuadBuffer;
+
+static GLuint solidPolygonProgram;
+
 #define RLL_NUM_SPRITES 128
 uint32_t spritesUsed;
 float4x4 spriteTransforms[RLL_NUM_SPRITES];
@@ -34,6 +38,8 @@ float4 spriteTint[RLL_NUM_SPRITES];
 uint32_t LogSysRender;
 
 bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* program);
+void RLL_FillBuffers();
+void RLL_LoadShaders();
 
 #if KN_DEBUG
 void RLL_CheckGLError(const char* file, const int line)
@@ -153,10 +159,21 @@ void printGLVersion()
 
 static float4x4 RLL_OrthoProjection(const uint32_t width, const uint32_t height)
 {
-	const float far = 0;
+	const float far = -100;
 	const float near = 100;
-	const float4x4 scale = float4x4_nonuniformScale(2.0f / width, 2.0f / height, 2.0f / (far - near));
-	const float4x4 trans = float4x4_translate(-width / 2.0f, -height / 2.0f, -(far + near) / 2.0f);
+	const float w = width;
+	const float h = height;
+	const float4x4 scale = float4x4_nonuniformScale(2.0f / w, 2.0f / h, 2.0f / (far - near));
+	printf("Scale\n");
+	float4x4_debugPrint(stdout, scale);
+	const float4x4 trans = float4x4_translate(-w / 2.0f, -h / 2.0f, -(far + near) / 2.0f);
+	printf("TRANSLATE\n");
+	float4x4_debugPrint(stdout, trans);
+	printf("Ortho\n");
+	float4x4_debugPrint(stdout, float4x4_multiply(trans, scale));
+	printf("\n");
+	float4x4_debugPrint(stdout, float4x4_multiply(scale, trans));
+	//return float4x4_multiply(scale, trans);
 	return float4x4_multiply(trans, scale);
 }
 
@@ -257,7 +274,31 @@ void RLL_FillFullScreenQuadBuffer()
 	KN_ASSERT_NO_GL_ERROR();
 }
 
-void RLL_LoadShaders()
+void RLL_FillDebugQuadBuffer()
+{
+	// Doesn't matter, will be overwritten.
+	float4 vertices[] = {
+		float4_Make(-1.0f, -1.0f, 0.0f, 0.0f),
+		float4_Make(-1.0f, 1.0f, 0.0f, 0.0f),
+		float4_Make(1.0f, -1.0f, 0.0f, 0.0f),
+		float4_Make(1.0f, 1.0f, 0.0f, 0.0f)
+	};
+	glGenBuffers(1, &debugQuadBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, debugQuadBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+
+	KN_ASSERT(debugQuadBuffer, "Cannot allocate a buffer for the debug quad buffer");
+	KN_ASSERT_NO_GL_ERROR();
+}
+
+void RLL_FillBuffers()
+{
+	RLL_FillSpriteBuffer();
+	RLL_FillFullScreenQuadBuffer();
+	RLL_FillDebugQuadBuffer();
+}
+
+void RLL_LoadFullScreenDebugShader()
 {
 	const int maxShaderTextLength = 1024;
 	char fragmentShaderPath[maxShaderTextLength];
@@ -313,6 +354,70 @@ void RLL_LoadShaders()
 	RLL_CreateProgram(vertexShader, fragmentShader, &fullScreenDebugProgram);
 	Mem_Free(&vertexShaderBuffer);
 	Mem_Free(&fragmentShaderBuffer);
+}
+
+void RLL_LoadSolidPolygonShader()
+{
+	const int maxShaderTextLength = 1024;
+	char fragmentShaderPath[maxShaderTextLength];
+	char vertexShaderPath[maxShaderTextLength];
+	DynamicBuffer fragmentShaderBuffer;
+	DynamicBuffer vertexShaderBuffer;
+
+	// Read fragment shader
+	if (Assets_PathFor("shaders/solid_polygon.frag", fragmentShaderPath, maxShaderTextLength)) {
+		if (SPA_IsFile(fragmentShaderPath)) {
+			KN_TRACE(LogSysMain, "\e[32m" "%s found" "\e[39m", fragmentShaderPath);
+		}
+		else {
+			KN_TRACE(LogSysMain, "%s not found", fragmentShaderPath);
+		}
+	}
+
+	if (!File_Read(fragmentShaderPath, KN_FILE_TYPE_TEXT, &fragmentShaderBuffer)) {
+		KN_ERROR(LogSysMain, "Unable to read fragment shader text");
+	}
+
+	// Read vertex shader
+	if (Assets_PathFor("shaders/solid_polygon.vert", vertexShaderPath, maxShaderTextLength)) {
+		if (SPA_IsFile(vertexShaderPath)) {
+			KN_TRACE(LogSysMain, "\e[32m" "%s found" "\e[39m", vertexShaderPath);
+		}
+		else {
+			KN_TRACE(LogSysMain, "%s not found", vertexShaderPath);
+		}
+	}
+
+	if (!File_Read(vertexShaderPath, KN_FILE_TYPE_TEXT, &vertexShaderBuffer)) {
+		KN_ERROR(LogSysMain, "Unable to read vertex shader text");
+	}
+
+	KN_TRACE(LogSysMain, "Fragment shader %s", fragmentShaderBuffer.contents);
+	KN_TRACE(LogSysMain, "Vertex shader %s", vertexShaderBuffer.contents);
+
+	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+
+	if (!glIsShader(vertexShader)) {
+		KN_ERROR(LogSysMain, "Unable to allocate space for vertex shader");
+	}
+
+	if (!glIsShader(fragmentShader)) {
+		KN_ERROR(LogSysMain, "Unable to allocate space for fragment shader");
+	}
+
+	RLL_CreateShader(&fragmentShader, fragmentShaderBuffer.contents, fragmentShaderBuffer.size);
+	RLL_CreateShader(&vertexShader, vertexShaderBuffer.contents, vertexShaderBuffer.size);
+
+	RLL_CreateProgram(vertexShader, fragmentShader, &solidPolygonProgram);
+	Mem_Free(&vertexShaderBuffer);
+	Mem_Free(&fragmentShaderBuffer);
+}
+
+void RLL_LoadShaders()
+{
+	RLL_LoadSolidPolygonShader();
+	RLL_LoadFullScreenDebugShader();
 }
 
 bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* program)
@@ -374,8 +479,7 @@ void RLL_Init(const uint32_t width, const uint32_t height)
 	RLL_InitGL();
 	RLL_ConfigureVSync();
 	RLL_InitDummyVAO();
-	RLL_FillSpriteBuffer();
-	RLL_FillFullScreenQuadBuffer();
+	RLL_FillBuffers();
 	RLL_LoadShaders();
 
 	windowWidth = width;
@@ -415,6 +519,7 @@ void RLL_DrawDebugFullScreenRect()
 	RLL_SetFullScreenViewport();
 
 	glUseProgram(fullScreenDebugProgram);
+	glBindBuffer(GL_ARRAY_BUFFER, fullScreenQuadBuffer);
 
 	// set vertex arrays
 	GLuint positionAttrib = glGetAttribLocation(fullScreenDebugProgram, "Position");
@@ -429,9 +534,76 @@ void RLL_DrawDebugFullScreenRect()
 		(void *)0
 	);
 
-	glBindBuffer(GL_ARRAY_BUFFER, fullScreenQuadBuffer);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(positionAttrib);
+
+	KN_ASSERT_NO_GL_ERROR();
+}
+
+/**
+ * Draws a rectangle at a given center point with known dimensions.
+ */
+void RLL_DrawDebugRect(const float4 position, const dimension2f dimensions,
+	const float4 color)
+{
+	RLL_SetFullScreenViewport();
+
+	glUseProgram(solidPolygonProgram);
+	glBindBuffer(GL_ARRAY_BUFFER, debugQuadBuffer);
+
+	const GLuint uniformProjection = glGetUniformLocation(solidPolygonProgram, "Projection");
+	glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, &projection.m[0][0]);
+
+	const float4x4 identity = float4x4_identity();
+	const GLuint uniformViewModel = glGetUniformLocation(solidPolygonProgram, "ViewModel");
+	glUniformMatrix4fv(uniformViewModel, 1, GL_FALSE, &identity.m[0][0]);
+
+	const GLuint uniformColor = glGetUniformLocation(solidPolygonProgram, "PolygonColor");
+	const float r = 1.0f, g = 1.0f, b = 1.0f, a = 1.0f;
+	glUniform4f(uniformColor, r, g, b, a);
+
+	GLuint positionAttrib = glGetAttribLocation(solidPolygonProgram, "Position");
+	glEnableVertexAttribArray(positionAttrib);
+	KN_ASSERT_NO_GL_ERROR();
+	glVertexAttribPointer(
+		positionAttrib,
+		4,
+		GL_FLOAT,
+		GL_FALSE,
+		4 * sizeof(float),
+		(void *)0
+	);
+
+	float4 vertices[4];
+	vertices[0] = float4_Make(-dimensions.width / 2.0f, -dimensions.height / 2.0f, 0.0f, 1.0f);
+	vertices[1] = float4_Make(dimensions.width / 2.0f, -dimensions.height / 2.0f, 0.0f, 1.0f);
+	vertices[2] = float4_Make(-dimensions.width / 2.0f, dimensions.height / 2.0f, 0.0f, 1.0f);
+	vertices[3] = float4_Make(dimensions.width / 2.0f, dimensions.height / 2.0f, 0.0f, 1.0f);
+
+	for (uint32_t i = 0; i < 4; ++i) {
+		vertices[i].x += position.x;
+		vertices[i].y += position.y;
+		vertices[i].z += position.z;
+	}
+
+	static uint32_t flag = 0;
+	if (!flag) {
+		for (uint32_t i = 0; i < 4; ++i) {
+			float4_debugPrint(stdout, vertices[i]);
+		}
+
+		printf("Transformed:\n");
+		for (uint32_t i = 0; i < 4; ++i) {
+			float4_debugPrint(stdout, float4_multiply(vertices[i], projection));
+		}
+		flag = 1;
+		printf("\n");
+	}
+
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+	glDisableVertexAttribArray(positionAttrib);
 
 	KN_ASSERT_NO_GL_ERROR();
 }
