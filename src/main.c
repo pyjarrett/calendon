@@ -105,7 +105,7 @@ void runMainLoop()
 	}
 }
 
-#include "math.h"
+#include "math4.h"
 void runTest()
 {
 	float4x4 s = float4x4_NonUniformScale(1.0f, 2.0f, 3.0f);

@@ -6,7 +6,7 @@
 #include "color.h"
 #include "fileio.h"
 #include "log.h"
-#include "math.h"
+#include "math4.h"
 #include "memory.h"
 
 #include <spa_fu/spa_fu.h>

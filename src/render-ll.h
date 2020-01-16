@@ -8,7 +8,7 @@
 #define KN_RENDER_LL_H
 
 #include "color.h"
-#include "math.h"
+#include "math4.h"
 
 // Get prototypes without manually loading each one.
 #define GL_GLEXT_PROTOTYPES 1
