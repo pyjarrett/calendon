@@ -3,19 +3,31 @@
 #include "math.h"
 #include "render-ll.h"
 
+/**
+ * Initialize the rendering system assuming a rectangular region of the given
+ * drawing dimensions.
+ */
 void R_Init(const uint32_t width, const uint32_t height)
 {
 	RLL_Init(width, height);
 }
 
+/**
+ * To be called once per main loop to reset the state required to draw the next
+ * frame.  Error conditions should be restored and any pending values should be
+ * considered invalid.
+ *
+ * All calls to render operations should be between a `R_StartFrame()` and
+ * `R_EndFrame()`.
+ */
 void R_StartFrame()
 {
 	RLL_StartFrame();
 
-	rgba8i black = { 0, 0, 0, 0 };
+	const rgba8i black = { 0, 0, 0, 0 };
 	RLL_Clear(black);
 
-	//RLL_DrawDebugFullScreenRect();
+	RLL_DrawDebugFullScreenRect();
 
 	float4 origin = float4_Make(100.0f, 100.0f, 0.0f, 1.0f);
 	float4 white = float4_Make(1.0f, 1.0f, 1.0f, 1.0f);
@@ -23,6 +35,9 @@ void R_StartFrame()
 	RLL_DrawDebugRect(origin, sample, white);
 }
 
+/**
+ * The frame is now done and should be submitted for drawing.
+ */
 void R_EndFrame()
 {
 	RLL_EndFrame();

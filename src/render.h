@@ -5,7 +5,8 @@
  * as indicating frame start/end, clearing the screen, drawing a background, or
  * drawing a sprite at a specific location.  The details of what exactly is
  * happening is hidden from the game itself since the high-level control hides
- * the details of how these details occur.
+ * the details of how these details occur.  Rendering occurs only to a single
+ * rectangular window.
  *
  * Any sort of rendering backend should be able to implement the functions
  * defined here and be able to render the scene appropriately.
@@ -17,11 +18,9 @@
 #define KN_RENDER_HL_H
 
 #include "kn.h"
-#include "color.h"
 
 void R_Init(uint32_t width, uint32_t height);
 void R_StartFrame();
-void R_Clear(rgba8i color);
 void R_EndFrame();
 
 #endif /* KN_RENDER_HL_H */
