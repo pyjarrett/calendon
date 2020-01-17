@@ -10,10 +10,25 @@
 #include "color.h"
 #include "math4.h"
 
-// Get prototypes without manually loading each one.
-#define GL_GLEXT_PROTOTYPES 1
-#include <GL/gl.h>
-#include <GL/glext.h>
+#if _MSC_VER
+	#define NOMINMAX
+	#define WIN32_LEAN_AND_MEAN
+	#include <windows.h>
+
+	// Windows defines these to be empty.
+	#undef near
+	#undef far
+
+	#include <GL/glew.h>
+	#define GL_GLEXT_PROTOTYPES 1
+	#include <GL/gl.h>
+	#include <SDL_opengl_glext.h>
+#else // linux
+	// Get prototypes without manually loading each one.
+	#define GL_GLEXT_PROTOTYPES 1
+	#include <GL/gl.h>
+	#include <GL/glext.h>
+#endif
 
 #if KN_DEBUG
 	#define KN_ASSERT_NO_GL_ERROR() RLL_CheckGLError(__FILE__, __LINE__)

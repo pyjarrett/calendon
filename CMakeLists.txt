@@ -24,7 +24,7 @@ set(CMAKE_C_EXTENSIONS OFF)
 # Future configurations:
 # Profile: Add -pg flag for GCC to use with gprof
 # RelWIthDebugInfo: Optimized build with debug symbols included.
-set(CMAKE_CONFIGURATION_TYPES Debug;Release;Coverage)
+set(CMAKE_CONFIGURATION_TYPES Debug;Release) # ;Coverage
 
 # Provide standardized output locations.  This particularly
 # helps when dealing with additional directories such as for
@@ -83,15 +83,38 @@ endif()
 # providing libraries from known local sources (vendoring).
 include(vendor/common/vendorize-cmake-0.1/vendorize.cmake)
 
-# spartan file utils in an in-house library for cross platform quick file
-# operations such as seeing if a file exists, or if a path is a dir or a file.
-vendorize(linux spartan_file_utils 0.0.1)
-include_directories(SYSTEM "${VENDOR_SPARTAN_FILE_UTILS_ROOT}/include")
-link_directories(SYSTEM "${VENDOR_SPARTAN_FILE_UTILS_ROOT}/lib")
-
 # libspng provides extremely simplified PNG loading.
 vendorize(common libspng 0.5.0)
 include_directories(SYSTEM ${VENDOR_LIBSPNG_ROOT})
+
+if (WIN32)
+	vendorize(windows sdl2 2.0.10)
+	include_directories(SYSTEM "${VENDOR_SDL2_ROOT}/include")
+	link_directories(SYSTEM "${VENDOR_SDL2_ROOT}/lib/x64")
+
+	# spartan file utils in an in-house library for cross platform quick file
+	# operations such as seeing if a file exists, or if a path is a dir or a file.
+	vendorize(windows spartan_file_utils 0.0.1)
+	include_directories(SYSTEM "${VENDOR_SPARTAN_FILE_UTILS_ROOT}/include")
+	link_directories(SYSTEM "${VENDOR_SPARTAN_FILE_UTILS_ROOT}/lib")
+
+	# glew (GL Extension Wranger) is used to load OpenGL extension functions so we
+	# don't need to manually load function pointers.
+	vendorize(windows glew 2.1.0)
+	include_directories(SYSTEM "${VENDOR_GLEW_ROOT}/include")
+	link_directories(SYSTEM "${VENDOR_GLEW_ROOT}/lib/Release/x64")
+	set(KNELL_LIBS
+		glew32.lib
+		${KNELL_LIBS})
+endif (WIN32)
+
+if (UNIX)
+	# spartan file utils in an in-house library for cross platform quick file
+	# operations such as seeing if a file exists, or if a path is a dir or a file.
+	vendorize(linux spartan_file_utils 0.0.1)
+	include_directories(SYSTEM "${VENDOR_SPARTAN_FILE_UTILS_ROOT}/include")
+	link_directories(SYSTEM "${VENDOR_SPARTAN_FILE_UTILS_ROOT}/lib")
+endif (UNIX)
 
 # Use "feature test macro" to change POSIX support to allow use of
 # CLOCK_MONOTONIC.

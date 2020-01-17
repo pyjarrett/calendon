@@ -30,8 +30,13 @@ void initAllSystems()
 {
 	Log_Init();
 	Mem_Init();
+	Time_Init();
 
-	Assets_Init("/home/paul/lab/knell/assets");
+#ifdef _WIN32
+    Assets_Init("C:/workshop/knell/assets");
+#else
+    Assets_Init("/home/paul/lab/knell/assets");
+#endif       
 
 	lastTick = Time_NowNs();
 

@@ -3,9 +3,15 @@
  */
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_rect.h>
+#if _MSC_VER
+	#include <SDL.h>
+	#include <SDL_rect.h>
+#else
+	#include <SDL2/SDL.h>
+	#include <SDL2/SDL_rect.h>
+#endif
 
 #if KN_DEBUG
 	#if defined(_MSC_VER)

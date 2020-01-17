@@ -52,6 +52,8 @@ float4x4 spriteTransforms[RLL_NUM_SPRITES];
 float4 spriteVertexBuffer[RLL_NUM_SPRITES];
 float4 spriteTint[RLL_NUM_SPRITES];
 
+#define MAX_INFO_LOG_LENGTH 4096
+
 /**
  * Logging ID for renderer logging.
  */
@@ -127,13 +129,14 @@ void RLL_PrintProgram(const GLuint program)
 {
 	KN_ASSERT(glIsProgram(program), "Program is not a program");
 
+	enum { bufferSize = 1024 };
+	GLchar name[bufferSize];
+
 	// Print attributes.
 	GLint numActiveAttributes;
 	glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &numActiveAttributes);
 	KN_TRACE(LogSysRender, "Active Attributes: %d", numActiveAttributes);
 	for (int i = 0; i < numActiveAttributes; ++i) {
-		const GLsizei bufferSize = 1024;
-		GLchar name[bufferSize];
 		GLint size;
 		GLenum type;
 		glGetActiveAttrib(program, i, bufferSize, NULL, &size, &type, name);
@@ -144,8 +147,6 @@ void RLL_PrintProgram(const GLuint program)
 	glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &numActiveUniforms);
 	KN_TRACE(LogSysRender, "Active Uniforms: %d", numActiveUniforms);
 	for (int i = 0; i < numActiveUniforms; ++i) {
-		const GLsizei bufferSize = 1024;
-		GLchar name[bufferSize];
 		GLint size;
 		GLenum type;
 		glGetActiveUniform(program, i, bufferSize, NULL, &size, &type, name);
@@ -162,7 +163,6 @@ void RLL_PrintProgram(const GLuint program)
 	GLint infoLogLength;
 	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
 	if (infoLogLength > 0) {
-		const uint32_t MAX_INFO_LOG_LENGTH = 4096;
 		if (MAX_INFO_LOG_LENGTH < infoLogLength) {
 			KN_TRACE(LogSysRender, "Info log is too small to hold all output");
 		}
@@ -226,7 +226,6 @@ static bool RLL_CreateShader(GLuint* shader, const char* source, const uint32_t 
 	GLint infoLogLength;
 	glGetShaderiv(*shader, GL_INFO_LOG_LENGTH, &infoLogLength);
 	if (infoLogLength > 0) {
-		const int MAX_INFO_LOG_LENGTH = 4096;
 		if (MAX_INFO_LOG_LENGTH < infoLogLength) {
 			KN_ERROR(LogSysRender, "Info log buffer is too small to hold all output");
 			return false;
@@ -253,6 +252,12 @@ void RLL_InitGL()
 	if (gl == NULL) {
 		KN_FATAL_ERROR("Unable to create OpenGL context: %s", SDL_GetError());
 	}
+
+#if _WIN32
+	// Use GLEW on Windows to load function pointers to advanced OpenGL functions.
+	glewInit();
+#endif
+
 	KN_TRACE(LogSysRender, "OpenGL renderer initialized");
 }
 
@@ -277,6 +282,7 @@ void RLL_InitDummyVAO()
 	static GLuint vao;
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
+    KN_ASSERT_NO_GL_ERROR();
 }
 
 void RLL_FillSpriteBuffer()
@@ -333,8 +339,8 @@ void RLL_FillBuffers()
 void RLL_LoadFullScreenDebugShader()
 {
 	const int maxShaderTextLength = 1024;
-	char fragmentShaderPath[maxShaderTextLength];
-	char vertexShaderPath[maxShaderTextLength];
+	char fragmentShaderPath[1024];
+	char vertexShaderPath[1024];
 	DynamicBuffer fragmentShaderBuffer;
 	DynamicBuffer vertexShaderBuffer;
 
@@ -391,8 +397,8 @@ void RLL_LoadFullScreenDebugShader()
 void RLL_LoadSolidPolygonShader()
 {
 	const int maxShaderTextLength = 1024;
-	char fragmentShaderPath[maxShaderTextLength];
-	char vertexShaderPath[maxShaderTextLength];
+	char fragmentShaderPath[1024];
+	char vertexShaderPath[1024];
 	DynamicBuffer fragmentShaderBuffer;
 	DynamicBuffer vertexShaderBuffer;
 
@@ -481,7 +487,6 @@ bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* progr
 	GLint infoLogLength;
 	glGetProgramiv(*program, GL_INFO_LOG_LENGTH, &infoLogLength);
 	if (infoLogLength > 0) {
-		const uint32_t MAX_INFO_LOG_LENGTH = 4096;
 		if (MAX_INFO_LOG_LENGTH < infoLogLength) {
 			KN_ERROR(LogSysRender, "Info log is too small to hold all output");
 		}
