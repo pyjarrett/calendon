@@ -144,7 +144,7 @@ void runTest()
 	float4x4_DebugPrint(stdout, float4x4_Transpose(t));
 }
 
-int main(const int argc, char* argv[])
+int main(int argc, char* argv[])
 {
 	initAllSystems();
 	runTest();
