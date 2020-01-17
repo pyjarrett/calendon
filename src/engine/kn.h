@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#if _MSC_VER
+#ifdef _WIN32
 	#include <SDL.h>
 	#include <SDL_rect.h>
 #else

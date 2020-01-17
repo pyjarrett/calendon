@@ -65,8 +65,10 @@ endif()
 
 # Bring in extra warnings to prevent errors.
 # https://caiorss.github.io/C-Cpp-Notes/compiler-flags-options.html
-set(KNELL_COMMON_C_FLAGS "-Wall -Wextra -Wpedantic -Wshadow -Wdouble-promotion -Wundef -Wconversion -fno-common -fsanitize=address -fsanitize=undefined")
-#set(KNELL_COMMON_C_FLAGS "${KNELL_COMMON_C_FLAGS} -fno-rtti -fno-exceptions")
+set(KNELL_COMMON_C_FLAGS "${KNELL_COMMON_C_FLAGS} -Wall -Wextra")
+#set(KNELL_COMMON_C_FLAGS "${KNELL_COMMON_C_FLAGS} -Wpedantic")
+set(KNELL_COMMON_C_FLAGS "${KNELL_COMMON_C_FLAGS} -Wshadow -Wdouble-promotion -Wundef -Wconversion -fno-common")
+set(KNELL_COMMON_C_FLAGS "${KNELL_COMMON_C_FLAGS} -fsanitize=address -fsanitize=undefined")
 set(KNELL_COMMON_C_FLAGS "${KNELL_COMMON_C_FLAGS} -fvisibility=hidden")
 
 # Eliminate extra dead code

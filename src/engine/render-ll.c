@@ -17,7 +17,7 @@
  * The window on which to draw.
  */
 extern struct SDL_Window* window;
-static uint32_t windowWidth, windowHeight;
+static GLsizei windowWidth, windowHeight;
 
 /**
  * The render system must carry around the OpenGL context to be used to draw to
@@ -136,20 +136,20 @@ void RLL_PrintProgram(const GLuint program)
 	GLint numActiveAttributes;
 	glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &numActiveAttributes);
 	KN_TRACE(LogSysRender, "Active Attributes: %d", numActiveAttributes);
-	for (int i = 0; i < numActiveAttributes; ++i) {
+	for (GLint i = 0; i < numActiveAttributes; ++i) {
 		GLint size;
 		GLenum type;
-		glGetActiveAttrib(program, i, bufferSize, NULL, &size, &type, name);
+		glGetActiveAttrib(program, (GLuint)i, bufferSize, NULL, &size, &type, name);
 		KN_TRACE(LogSysRender, "[%d]: %s '%s'   %d", i, RLL_GLTypeToString(type), name, size);
 	}
 
 	GLint numActiveUniforms;
 	glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &numActiveUniforms);
 	KN_TRACE(LogSysRender, "Active Uniforms: %d", numActiveUniforms);
-	for (int i = 0; i < numActiveUniforms; ++i) {
+	for (GLint i = 0; i < numActiveUniforms; ++i) {
 		GLint size;
 		GLenum type;
-		glGetActiveUniform(program, i, bufferSize, NULL, &size, &type, name);
+		glGetActiveUniform(program, (GLuint)i, bufferSize, NULL, &size, &type, name);
 		KN_TRACE(LogSysRender, "[%d]: %s '%s'   %d", i, RLL_GLTypeToString(type), name, size);
 	}
 
@@ -201,8 +201,8 @@ static float4x4 RLL_OrthoProjection(const uint32_t width, const uint32_t height)
 {
 	const float far = -100;
 	const float near = 100;
-	const float w = width;
-	const float h = height;
+	const float w = (float)width;
+	const float h = (float)height;
 	const float4x4 scale = float4x4_NonUniformScale(2.0f / w, 2.0f / h, 2.0f / (far - near));
 	const float4x4 trans = float4x4_Translate(-w / 2.0f, -h / 2.0f, -(far + near) / 2.0f);
 	//return float4x4_Multiply(scale, trans);
@@ -253,7 +253,7 @@ void RLL_InitGL()
 		KN_FATAL_ERROR("Unable to create OpenGL context: %s", SDL_GetError());
 	}
 
-#if _WIN32
+#ifdef _WIN32
 	// Use GLEW on Windows to load function pointers to advanced OpenGL functions.
 	glewInit();
 #endif
@@ -519,8 +519,8 @@ void RLL_Init(const uint32_t width, const uint32_t height)
 	RLL_FillBuffers();
 	RLL_LoadShaders();
 
-	windowWidth = width;
-	windowHeight = height;
+	windowWidth = (GLsizei)width;
+	windowHeight = (GLsizei)height;
 	projection = RLL_OrthoProjection(width, height);
 }
 
@@ -588,22 +588,22 @@ void RLL_DrawDebugRect(const float4 position, const dimension2f dimensions,
 	glUseProgram(solidPolygonProgram);
 	glBindBuffer(GL_ARRAY_BUFFER, debugQuadBuffer);
 
-	const GLuint uniformProjection = glGetUniformLocation(solidPolygonProgram, "Projection");
+	const GLint uniformProjection = glGetUniformLocation(solidPolygonProgram, "Projection");
 	glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, &projection.m[0][0]);
 
 	const float4x4 identity = float4x4_Identity();
-	const GLuint uniformViewModel = glGetUniformLocation(solidPolygonProgram, "ViewModel");
+	const GLint uniformViewModel = glGetUniformLocation(solidPolygonProgram, "ViewModel");
 	glUniformMatrix4fv(uniformViewModel, 1, GL_FALSE, &identity.m[0][0]);
 
-	const GLuint uniformColor = glGetUniformLocation(solidPolygonProgram, "PolygonColor");
-	const float r = 1.0f, g = 1.0f, b = 1.0f, a = 1.0f;
-	glUniform4f(uniformColor, r, g, b, a);
+	const GLint uniformColor = glGetUniformLocation(solidPolygonProgram, "PolygonColor");
+	glUniform4f(uniformColor, color.x, color.y, color.z, color.w);
 
-	GLuint positionAttrib = glGetAttribLocation(solidPolygonProgram, "Position");
-	glEnableVertexAttribArray(positionAttrib);
+	const GLint positionAttrib = glGetAttribLocation(solidPolygonProgram, "Position");
+	KN_ASSERT(positionAttrib >= 0, "Position attribute does not exist");
+	glEnableVertexAttribArray((GLuint)positionAttrib);
 	KN_ASSERT_NO_GL_ERROR();
 	glVertexAttribPointer(
-		positionAttrib,
+		(GLuint)positionAttrib,
 		4,
 		GL_FLOAT,
 		GL_FALSE,

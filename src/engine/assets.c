@@ -21,7 +21,7 @@ void Assets_Init(const char* assetDir)
 		KN_FATAL_ERROR("Asset path root is too long.  Cannot initialize asset path with %s", assetDir);
 	}
 	strcpy(assetsRoot, assetDir);
-	assetsRootLength = strlen(assetsRoot);
+	assetsRootLength = (uint32_t)strlen(assetsRoot);
 
 	if (!SPA_IsDir(assetsRoot)) {
 		KN_FATAL_ERROR("Assets root directory doesn't exist: %s", assetsRoot);

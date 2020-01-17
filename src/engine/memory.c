@@ -40,7 +40,7 @@ void Mem_Free(DynamicBuffer* buffer)
 	free(buffer->contents);
 
 	if (MemOutstandingAllocations == 0) {
-		KN_ERROR(LogSysMemory, "Double free of buffer %p", buffer);
+		KN_ERROR(LogSysMemory, "Double free of buffer %p", (void*)buffer);
 	}
 	else {
 		--MemOutstandingAllocations;
