@@ -137,7 +137,7 @@ extern KN_API uint32_t LogSystemsVerbosity[KN_LOG_MAX_SYSTEMS];
  */
 #define KN_TRACE(system, msg, ...) KN_LOG(system, KN_LOG_TRACE, msg, ##__VA_ARGS__)
 
-KN_API void Log_Init();
+KN_API void Log_Init(void);
 KN_API void Log_RegisterSystem(LogHandle* system, const char* name, uint32_t verbosity);
 
 #endif /* KN_LOG_H */

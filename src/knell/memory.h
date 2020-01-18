@@ -14,8 +14,8 @@ typedef struct {
 	uint32_t size;
 } DynamicBuffer;
 
-KN_API void Mem_Init();
-KN_API void Mem_Shutdown();
+KN_API void Mem_Init(void);
+KN_API void Mem_Shutdown(void);
 KN_API void Mem_Allocate(DynamicBuffer* buffer, uint32_t size);
 KN_API void Mem_Free(DynamicBuffer* buffer);
 

@@ -20,7 +20,7 @@ KN_API void R_Init(const uint32_t width, const uint32_t height)
  * All calls to render operations should be between a `R_StartFrame()` and
  * `R_EndFrame()`.
  */
-KN_API void R_StartFrame()
+KN_API void R_StartFrame(void)
 {
 	RLL_StartFrame();
 
@@ -36,7 +36,7 @@ KN_API void R_StartFrame()
 /**
  * The frame is now done and should be submitted for drawing.
  */
-KN_API void R_EndFrame()
+KN_API void R_EndFrame(void)
 {
 	RLL_EndFrame();
 }

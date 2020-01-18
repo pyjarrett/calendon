@@ -41,8 +41,8 @@
 #endif
 
 void RLL_Init(uint32_t width, uint32_t height);
-void RLL_StartFrame();
-void RLL_EndFrame();
+void RLL_StartFrame(void);
+void RLL_EndFrame(void);
 void RLL_Clear(rgba8i color);
 
 void RLL_DrawDebugFullScreenRect();

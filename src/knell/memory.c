@@ -6,7 +6,7 @@
 static uint32_t MemOutstandingAllocations;
 static uint32_t LogSysMemory;
 
-void Mem_Init()
+void Mem_Init(void)
 {
 	MemOutstandingAllocations = 0;
 	Log_RegisterSystem(&LogSysMemory, "Memory", KN_LOG_TRACE);
@@ -49,7 +49,7 @@ void Mem_Free(DynamicBuffer* buffer)
 	}
 }
 
-void Mem_Shutdown()
+void Mem_Shutdown(void)
 {
 	if (MemOutstandingAllocations != 0) {
 		KN_ERROR(LogSysMemory, "Memory systems leaks: %" PRIu32, MemOutstandingAllocations);

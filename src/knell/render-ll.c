@@ -523,13 +523,13 @@ void RLL_Init(const uint32_t width, const uint32_t height)
 	projection = RLL_OrthoProjection(width, height);
 }
 
-void RLL_StartFrame()
+void RLL_StartFrame(void)
 {
 	SDL_GL_MakeCurrent(window, gl);
 	spritesUsed = 0;
 }
 
-void RLL_EndFrame()
+void RLL_EndFrame(void)
 {
 	SDL_GL_SwapWindow(window);
 }
