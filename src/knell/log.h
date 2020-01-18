@@ -72,17 +72,22 @@ extern KN_API const char* LogSystemsRegistered[KN_LOG_MAX_SYSTEMS];
  * setting enables logging from all systems below it.
  */
 enum {
+	// Since unsigned ints are used, GCC generates lots of compiler warnings
+	// relating to (verbosity <= 0) since verbosity is unsigned and cannot be
+	// less than 0.  This "always on" error mode hides that error.
+	KN_LOG_FATAL = 0,
+
 	/** Very serious issues requiring attention. */
-	KN_LOG_ERROR = 0,
+	KN_LOG_ERROR = 1,
 
 	/**
 	 * Warnings to be fixed before shipping.  The program can continue
 	 * executing, but it is in an abnormal or reduced state.
 	 */
-	KN_LOG_WARN,
+	KN_LOG_WARN = 2,
 
 	/** Messages for tracing program flow. */
-	KN_LOG_TRACE,
+	KN_LOG_TRACE = 3,
 
 	/** Total number of verbosity settings. */
 	KN_LOG_NUM_TYPES
