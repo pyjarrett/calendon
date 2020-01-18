@@ -17,12 +17,12 @@
  * - `KN_GAME_API` marker for game library functions
  *
  * Windows:
- * dllimport - describe that we're goign to find this when we link
- * dllexport - we're providing this function for others to use
+ * - dllimport - describe that we're going to find this when we link
+ * - dllexport - we're providing this function for others to use
  *
  * Linux:
- *  Overrides the hidden visibilty set by default by our build.
- * __attribute__((visibility("default"))
+ * - Overrides the hidden visibility set by default by our build.
+ * - __attribute__((visibility("default"))
  *
  */
 #ifdef _WIN32
