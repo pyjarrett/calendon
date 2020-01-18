@@ -47,9 +47,25 @@
 #include <stdint.h>
 
 /**
+ * Maximum number of systems supported by the logging system.
+ */
+#define KN_LOG_MAX_SYSTEMS 64
+
+/**
+ * Simplifies the question of "What type is a log handle?"
+ */
+typedef uint32_t LogHandle;
+
+/**
  * Global main program log.
  */
-extern uint32_t LogSysMain;
+extern LogHandle LogSysMain;
+
+/**
+ * Names of all systems registered for use.  These names get added to every log
+ * line to indicate the originating system of each message.
+ */
+extern const char* LogSystemsRegistered[KN_LOG_MAX_SYSTEMS];
 
 /**
  * Log verbosity settings in increasing order of logging.  Using a higher
@@ -73,11 +89,6 @@ enum {
 };
 
 /**
- * Maximum number of systems supported by the logging system.
- */
-#define KN_LOG_MAX_SYSTEMS 64
-
-/**
  * Characters printed in the line to represent the type of log entry.
  */
 extern char LogVerbosityChar[KN_LOG_NUM_TYPES];
@@ -88,12 +99,6 @@ extern char LogVerbosityChar[KN_LOG_NUM_TYPES];
  * systems while you ridicule their authors.
  */
 extern uint32_t LogSystemsVerbosity[KN_LOG_MAX_SYSTEMS];
-
-/**
- * Names of all systems registered for use.  These names get added to every log
- * line to indicate the originating system of each message.
- */
-extern const char* LogSystemsRegistered[KN_LOG_MAX_SYSTEMS];
 
 /**
  * Records a message to the log system.
@@ -126,7 +131,7 @@ extern const char* LogSystemsRegistered[KN_LOG_MAX_SYSTEMS];
 #define KN_TRACE(system, msg, ...) KN_LOG(system, KN_LOG_TRACE, msg, ##__VA_ARGS__)
 
 void Log_Init();
-void Log_RegisterSystem(uint32_t* system, const char* name, uint32_t verbosity);
+void Log_RegisterSystem(LogHandle* system, const char* name, uint32_t verbosity);
 
 #endif /* KN_LOG_H */
 
