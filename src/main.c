@@ -12,14 +12,7 @@
 
 #include <stdio.h>
 
-#ifdef _WIN32
-	// Windows specific
-	#define WIN32_LEAN_AND_MEAN
-	#include <windows.h>
-#endif
-
 static uint64_t frames = 0;
-
 static uint64_t lastTick;
 
 /**
