@@ -3,8 +3,8 @@
 #include "kn.h"
 
 #include "assets.h"
+#include "assets-fileio.h"
 #include "color.h"
-#include "fileio.h"
 #include "log.h"
 #include "math4.h"
 #include "memory.h"
@@ -354,7 +354,7 @@ void RLL_LoadFullScreenDebugShader()
 		}
 	}
 
-	if (!File_Read(fragmentShaderPath, KN_FILE_TYPE_TEXT, &fragmentShaderBuffer)) {
+	if (!Assets_ReadFile(fragmentShaderPath, KN_FILE_TYPE_TEXT, &fragmentShaderBuffer)) {
 		KN_ERROR(LogSysMain, "Unable to read fragment shader text");
 	}
 
@@ -368,7 +368,7 @@ void RLL_LoadFullScreenDebugShader()
 		}
 	}
 
-	if (!File_Read(vertexShaderPath, KN_FILE_TYPE_TEXT, &vertexShaderBuffer)) {
+	if (!Assets_ReadFile(vertexShaderPath, KN_FILE_TYPE_TEXT, &vertexShaderBuffer)) {
 		KN_ERROR(LogSysMain, "Unable to read vertex shader text");
 	}
 
@@ -412,7 +412,7 @@ void RLL_LoadSolidPolygonShader()
 		}
 	}
 
-	if (!File_Read(fragmentShaderPath, KN_FILE_TYPE_TEXT, &fragmentShaderBuffer)) {
+	if (!Assets_ReadFile(fragmentShaderPath, KN_FILE_TYPE_TEXT, &fragmentShaderBuffer)) {
 		KN_ERROR(LogSysMain, "Unable to read fragment shader text");
 	}
 
@@ -426,7 +426,7 @@ void RLL_LoadSolidPolygonShader()
 		}
 	}
 
-	if (!File_Read(vertexShaderPath, KN_FILE_TYPE_TEXT, &vertexShaderBuffer)) {
+	if (!Assets_ReadFile(vertexShaderPath, KN_FILE_TYPE_TEXT, &vertexShaderBuffer)) {
 		KN_ERROR(LogSysMain, "Unable to read vertex shader text");
 	}
 

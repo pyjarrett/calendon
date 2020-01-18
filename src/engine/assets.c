@@ -9,7 +9,7 @@
 #define MAX_ASSET_PATH_LENGTH 256
 static char assetsRoot[MAX_ASSET_PATH_LENGTH+1];
 static uint32_t assetsRootLength = 0;
-static uint32_t LogSysAssets;
+LogHandle LogSysAssets;
 
 /**
  * Initial the asset system with the top level directory where assets should
@@ -27,7 +27,7 @@ void Assets_Init(const char* assetDir)
 		KN_FATAL_ERROR("Assets root directory doesn't exist: %s", assetsRoot);
 	}
 
-	Log_RegisterSystem(&LogSysAssets, "Assets", KN_LOG_TRACE);
+	Log_RegisterSystem(&LogSysAssets, "Assets", KN_LOG_ERROR);
 
 	KN_TRACE(LogSysAssets, "Assets initialized with root at: '%s'", assetsRoot);
 }

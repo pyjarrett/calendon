@@ -1,24 +1,26 @@
-#include "fileio.h"
+#include "assets-fileio.h"
 
 #include "log.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
-bool File_Read(const char *filename, const uint32_t format, DynamicBuffer *buffer)
+extern LogHandle LogSysAssets;
+
+bool Assets_ReadFile(const char *filename, uint32_t format, DynamicBuffer *buffer)
 {
 	if (!filename) {
-		KN_ERROR(LogSysMain, "Cannot read a null filename");
+		KN_ERROR(LogSysAssets, "Cannot read a null filename");
 		return false;
 	}
 
 	if (!buffer) {
-		KN_ERROR(LogSysMain, "Cannot write file contents to a null buffer");
+		KN_ERROR(LogSysAssets, "Cannot write file contents to a null buffer");
 		return false;
 	}
 
 	if (format != KN_FILE_TYPE_BINARY && format != KN_FILE_TYPE_TEXT) {
-		KN_ERROR(LogSysMain, "Invalid file type constant. "
+		KN_ERROR(LogSysAssets, "Invalid file type constant. "
 			"Must be KN_FILE_TYPE_BINARY or KN_FILE_TYPE_TEXT");
 		return false;
 	}
@@ -26,7 +28,7 @@ bool File_Read(const char *filename, const uint32_t format, DynamicBuffer *buffe
 	const char* readMode = format == KN_FILE_TYPE_TEXT ? "r" : "rb";
 	FILE* file = fopen(filename, readMode);
 	if (!file) {
-		KN_ERROR(LogSysMain, "Cannot open file: %s", filename);
+		KN_ERROR(LogSysAssets, "Cannot open file: %s", filename);
 		return false;
 	}
 
@@ -44,12 +46,12 @@ bool File_Read(const char *filename, const uint32_t format, DynamicBuffer *buffe
 
 	fseek(file, 0, SEEK_SET);
 	size_t amountRead = fread(buffer->contents, 1, (size_t)fileLength, file);
-	KN_TRACE(LogSysMain, "Read %zu bytes from %s", amountRead, filename);
+	KN_TRACE(LogSysAssets, "Read %zu bytes from %s", amountRead, filename);
 	if (amountRead != (size_t)fileLength) {
 		if (feof(file)) {
-			KN_TRACE(LogSysMain, "File EOF reached");
+			KN_TRACE(LogSysAssets, "File EOF reached");
 		} else if (ferror(file)) {
-			KN_ERROR(LogSysMain, "Error reading file: %s", filename);
+			KN_ERROR(LogSysAssets, "Error reading file: %s", filename);
 		}
 	}
 	fclose(file);

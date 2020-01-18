@@ -11,6 +11,6 @@ enum {
 	KN_FILE_TYPE_TEXT
 };
 
-bool File_Read(const char *filename, uint32_t format, DynamicBuffer *buffer);
+bool Assets_ReadFile(const char *filename, uint32_t format, DynamicBuffer *buffer);
 
 #endif /* KN_FILEIO_H */
