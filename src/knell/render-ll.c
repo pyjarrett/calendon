@@ -4,14 +4,13 @@
 
 #include "assets.h"
 #include "assets-fileio.h"
+#include "compat-sdl.h"
 #include "color.h"
 #include "log.h"
 #include "math4.h"
 #include "memory.h"
 
 #include <spa_fu/spa_fu.h>
-
-#include <stdbool.h>
 
 /**
  * The window on which to draw.

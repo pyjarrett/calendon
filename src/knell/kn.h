@@ -10,14 +10,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#ifdef _WIN32
-	#include <SDL.h>
-	#include <SDL_rect.h>
-#else
-	#include <SDL2/SDL.h>
-	#include <SDL2/SDL_rect.h>
-#endif
-
 /*
  * Markers for engine library functions.
  *

@@ -1,4 +1,6 @@
 #include "kn.h"
+#include "compat-sdl.h"
+
 /*
  * Handling of player inputs.
  */
