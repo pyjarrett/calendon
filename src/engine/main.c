@@ -116,47 +116,12 @@ void runMainLoop()
 	}
 }
 
-#include "math4.h"
-void runTest()
-{
-	float4x4 s = float4x4_NonUniformScale(1.0f, 2.0f, 3.0f);
-	float4x4 t = float4x4_Translate(5.0f, 6.0f, 7.0f);
-
-	float4 point = { .x = 1.0f, .y = 2.0f, .z = 3.0f, .w = 1.0f };
-	float4 vector = { .x = 1.0f, .y = 2.0f, .z = 3.0f, .w = 0.0f };
-
-	printf("S = \n");
-	float4x4_DebugPrint(stdout, s);
-
-	float4_DebugPrint(stdout, float4_Multiply(point, s));
-	float4_DebugPrint(stdout, float4_Multiply(vector, s));
-
-	printf("T = \n");
-	float4x4_DebugPrint(stdout, t);
-
-	float4_DebugPrint(stdout, float4_Multiply(point, t));
-	float4_DebugPrint(stdout, float4_Multiply(vector, t));
-
-	printf("T * S = \n");
-	float4x4_DebugPrint(stdout, float4x4_Multiply(t, s));
-
-	printf("S * T = \n");
-	float4x4_DebugPrint(stdout, float4x4_Multiply(s, t));
-
-	printf("T * T = \n");
-	float4x4_DebugPrint(stdout, float4x4_Multiply(t, t));
-
-	printf("Tt = \n");
-	float4x4_DebugPrint(stdout, float4x4_Transpose(t));
-}
-
 int main(int argc, char* argv[])
 {
 	KN_UNUSED(argc);
 	KN_UNUSED(argv);
 
 	initAllSystems();
-	runTest();
 	runMainLoop();
 	shutdownAllSystems();
 	return 0;
