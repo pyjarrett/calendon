@@ -18,7 +18,7 @@ static uint64_t lastTick;
 /**
  * Common initialization point for all global systems.
  */
-void initAllSystems()
+void Main_InitAllSystems()
 {
 	Log_Init();
 	Mem_Init();
@@ -47,7 +47,7 @@ void initAllSystems()
 #endif
 }
 
-void shutdownAllSystems()
+void Main_Shutdown()
 {
 	Game_ShutdownFn();
 	Mem_Shutdown();
@@ -63,7 +63,7 @@ void shutdownAllSystems()
  * @param[out] outDt delta time if a tick is generated (returns true), not set otherwise
  * @return true if a tick should occur
  */
-bool generateTick(uint64_t* outDt)
+bool Main_GenerateTick(uint64_t* outDt)
 {
 	const uint64_t current = Time_NowNs();
 	if (lastTick > current) {
@@ -95,7 +95,7 @@ bool generateTick(uint64_t* outDt)
 	return true;
 }
 
-void runMainLoop()
+void Main_Loop()
 {
 	while (isRunning()) {
 		// Event checking should be quick.  Always processing events prevents
@@ -103,7 +103,7 @@ void runMainLoop()
 		UI_ProcessWindowEvents();
 
 		uint64_t dt;
-		if (generateTick(&dt)) {
+		if (Main_GenerateTick(&dt)) {
 			Game_TickFn(dt);
 			++frames;
 		}
@@ -124,9 +124,9 @@ int main(int argc, char* argv[])
 	KN_UNUSED(argc);
 	KN_UNUSED(argv);
 
-	initAllSystems();
-	runMainLoop();
-	shutdownAllSystems();
+	Main_InitAllSystems();
+	Main_Loop();
+	Main_Shutdown();
 	return 0;
 }
 
