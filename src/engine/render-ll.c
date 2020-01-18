@@ -347,43 +347,43 @@ void RLL_LoadFullScreenDebugShader()
 	// Read fragment shader
 	if (Assets_PathFor("shaders/uv_as_red_green.frag", fragmentShaderPath, maxShaderTextLength)) {
 		if (SPA_IsFile(fragmentShaderPath)) {
-			KN_TRACE(LogSysMain, "\e[32m" "%s found" "\e[39m", fragmentShaderPath);
+			KN_TRACE(LogSysRender, "\e[32m" "%s found" "\e[39m", fragmentShaderPath);
 		}
 		else {
-			KN_TRACE(LogSysMain, "%s not found", fragmentShaderPath);
+			KN_TRACE(LogSysRender, "%s not found", fragmentShaderPath);
 		}
 	}
 
 	if (!Assets_ReadFile(fragmentShaderPath, KN_FILE_TYPE_TEXT, &fragmentShaderBuffer)) {
-		KN_ERROR(LogSysMain, "Unable to read fragment shader text");
+		KN_ERROR(LogSysRender, "Unable to read fragment shader text");
 	}
 
 	// Read vertex shader
 	if (Assets_PathFor("shaders/fullscreen_textured_quad.vert", vertexShaderPath, maxShaderTextLength)) {
 		if (SPA_IsFile(vertexShaderPath)) {
-			KN_TRACE(LogSysMain, "\e[32m" "%s found" "\e[39m", vertexShaderPath);
+			KN_TRACE(LogSysRender, "\e[32m" "%s found" "\e[39m", vertexShaderPath);
 		}
 		else {
-			KN_TRACE(LogSysMain, "%s not found", vertexShaderPath);
+			KN_TRACE(LogSysRender, "%s not found", vertexShaderPath);
 		}
 	}
 
 	if (!Assets_ReadFile(vertexShaderPath, KN_FILE_TYPE_TEXT, &vertexShaderBuffer)) {
-		KN_ERROR(LogSysMain, "Unable to read vertex shader text");
+		KN_ERROR(LogSysRender, "Unable to read vertex shader text");
 	}
 
-	//KN_TRACE(LogSysMain, "Fragment shader %s", fragmentShaderBuffer.contents);
-	//KN_TRACE(LogSysMain, "Vertex shader %s", vertexShaderBuffer.contents);
+	//KN_TRACE(LogSysRender, "Fragment shader %s", fragmentShaderBuffer.contents);
+	//KN_TRACE(LogSysRender, "Vertex shader %s", vertexShaderBuffer.contents);
 
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
 	if (!glIsShader(vertexShader)) {
-		KN_ERROR(LogSysMain, "Unable to allocate space for vertex shader");
+		KN_ERROR(LogSysRender, "Unable to allocate space for vertex shader");
 	}
 
 	if (!glIsShader(fragmentShader)) {
-		KN_ERROR(LogSysMain, "Unable to allocate space for fragment shader");
+		KN_ERROR(LogSysRender, "Unable to allocate space for fragment shader");
 	}
 
 	RLL_CreateShader(&fragmentShader, fragmentShaderBuffer.contents, fragmentShaderBuffer.size);
@@ -405,43 +405,43 @@ void RLL_LoadSolidPolygonShader()
 	// Read fragment shader
 	if (Assets_PathFor("shaders/solid_polygon.frag", fragmentShaderPath, maxShaderTextLength)) {
 		if (SPA_IsFile(fragmentShaderPath)) {
-			KN_TRACE(LogSysMain, "\e[32m" "%s found" "\e[39m", fragmentShaderPath);
+			KN_TRACE(LogSysRender, "\e[32m" "%s found" "\e[39m", fragmentShaderPath);
 		}
 		else {
-			KN_TRACE(LogSysMain, "%s not found", fragmentShaderPath);
+			KN_TRACE(LogSysRender, "%s not found", fragmentShaderPath);
 		}
 	}
 
 	if (!Assets_ReadFile(fragmentShaderPath, KN_FILE_TYPE_TEXT, &fragmentShaderBuffer)) {
-		KN_ERROR(LogSysMain, "Unable to read fragment shader text");
+		KN_ERROR(LogSysRender, "Unable to read fragment shader text");
 	}
 
 	// Read vertex shader
 	if (Assets_PathFor("shaders/solid_polygon.vert", vertexShaderPath, maxShaderTextLength)) {
 		if (SPA_IsFile(vertexShaderPath)) {
-			KN_TRACE(LogSysMain, "\e[32m" "%s found" "\e[39m", vertexShaderPath);
+			KN_TRACE(LogSysRender, "\e[32m" "%s found" "\e[39m", vertexShaderPath);
 		}
 		else {
-			KN_TRACE(LogSysMain, "%s not found", vertexShaderPath);
+			KN_TRACE(LogSysRender, "%s not found", vertexShaderPath);
 		}
 	}
 
 	if (!Assets_ReadFile(vertexShaderPath, KN_FILE_TYPE_TEXT, &vertexShaderBuffer)) {
-		KN_ERROR(LogSysMain, "Unable to read vertex shader text");
+		KN_ERROR(LogSysRender, "Unable to read vertex shader text");
 	}
 
-	KN_TRACE(LogSysMain, "Fragment shader %s", fragmentShaderBuffer.contents);
-	KN_TRACE(LogSysMain, "Vertex shader %s", vertexShaderBuffer.contents);
+	KN_TRACE(LogSysRender, "Fragment shader %s", fragmentShaderBuffer.contents);
+	KN_TRACE(LogSysRender, "Vertex shader %s", vertexShaderBuffer.contents);
 
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
 	if (!glIsShader(vertexShader)) {
-		KN_ERROR(LogSysMain, "Unable to allocate space for vertex shader");
+		KN_ERROR(LogSysRender, "Unable to allocate space for vertex shader");
 	}
 
 	if (!glIsShader(fragmentShader)) {
-		KN_ERROR(LogSysMain, "Unable to allocate space for fragment shader");
+		KN_ERROR(LogSysRender, "Unable to allocate space for fragment shader");
 	}
 
 	RLL_CreateShader(&fragmentShader, fragmentShaderBuffer.contents, fragmentShaderBuffer.size);
