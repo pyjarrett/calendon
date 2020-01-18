@@ -3,11 +3,15 @@
 
 #include <stdint.h>
 
+/**
+ * A single contiguous block of dynamically allocated memory.
+ *
+ * Allocated with `Mem_Allocate` and then released with `Mem_Free`.  The number
+ * of unfree'd buffers is reported on shutdown.
+ */
 typedef struct {
 	char* contents;
 	uint32_t size;
-	const char* file;
-	uint64_t line;
 } DynamicBuffer;
 
 void Mem_Init();
@@ -16,5 +20,3 @@ void Mem_Allocate(DynamicBuffer* buffer, uint32_t size);
 void Mem_Free(DynamicBuffer* buffer);
 
 #endif /* KN_MEMORY_H */
-
-void Mem_Shutdown();

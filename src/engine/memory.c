@@ -37,7 +37,9 @@ void Mem_Free(DynamicBuffer* buffer)
 		KN_ERROR(LogSysMemory, "Cannot release a null DynamicBuffer.");
 		return;
 	}
+	KN_ASSERT(buffer->contents != 0, "DynamicBuffer has already been freed");
 	free(buffer->contents);
+	buffer->contents = NULL;
 
 	if (MemOutstandingAllocations == 0) {
 		KN_ERROR(LogSysMemory, "Double free of buffer %p", (void*)buffer);
