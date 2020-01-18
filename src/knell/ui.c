@@ -29,7 +29,7 @@ KN_API void UI_Init(uint32_t width, uint32_t height)
 	UI_CreateWindow(width, height);
 }
 
-KN_API void UI_Shutdown()
+KN_API void UI_Shutdown(void)
 {
 	if (window) {
 		SDL_DestroyWindow(window);
@@ -40,7 +40,7 @@ KN_API void UI_Shutdown()
 /**
  * Parses events off of the SDL event queue.
  */
-KN_API void UI_ProcessWindowEvents()
+KN_API void UI_ProcessWindowEvents(void)
 {
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {

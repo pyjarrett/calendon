@@ -8,7 +8,7 @@
 #include "kn.h"
 
 KN_API void UI_Init(uint32_t width, uint32_t height);
-KN_API void UI_Shutdown();
+KN_API void UI_Shutdown(void);
 
 /**
  * Call this to give the windowing system the opportunity to run its message
@@ -18,7 +18,7 @@ KN_API void UI_Shutdown();
  * In Win32 this might pump messages, on other systems it might poll inputs for
  * them to be distributed to other systems.
  */
-KN_API void UI_ProcessWindowEvents();
+KN_API void UI_ProcessWindowEvents(void);
 
 #endif /* KN_UI_H */
 
