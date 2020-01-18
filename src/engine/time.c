@@ -1,6 +1,6 @@
 #include "time.h"
 
-#if _WIN32
+#ifdef _WIN32
 // Windows lacks the convenient POSIX API for this, so resort to using query
 // performance counters (QPC).
 // https://docs.microsoft.com/en-us/windows/win32/sysinfo/acquiring-high-resolution-time-stamps

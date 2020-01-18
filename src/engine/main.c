@@ -7,6 +7,7 @@
 #include "render.h"
 #include "ui.h"
 #include "assets.h"
+#include "process.h"
 
 #include <stdio.h>
 
@@ -46,6 +47,11 @@ void initAllSystems()
 	R_Init(width, height);
 
 	KN_TRACE(LogSysMain, "Systems initialized.");
+
+#ifdef _WIN32
+	// TODO: This should be hidden unless doing an "diagnostic-startup-crash" or some other special behavior.
+	Proc_PrintLoadedDLLs();
+#endif
 }
 
 void shutdownAllSystems()

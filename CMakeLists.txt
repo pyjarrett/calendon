@@ -37,6 +37,10 @@ set(ASSET_DIR "${PROJECT_BINARY_DIR}/assets")
 set(CONFIG_DIR "${PROJECT_BINARY_DIR}/configs")
 set(RESOURCE_DIR "${PROJECT_BINARY_DIR}/resources")
 
+# KNELL_LIBS is the list of all libraries to link with the Knell lib itself.
+# Client should be required to do minimum linking themselves.
+set(KNELL_LIBS "")
+
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	# Set the KN_DEBUG symbol to 1 at the top level within the build system
 	# so no header needs to be included (or possibly forgotten) to get this
@@ -46,6 +50,10 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
 	elseif(CMAKE_C_COMPILER_ID MATCHES "GNU")
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
+    elseif(CMAKE_C_COMPILER_ID MATCHES "MSVC")
+        # Allow symbol resolution when querying for symbols.
+        add_definitions(-DPSAPI_VERSION=1)
+		set(KNELL_LIBS ${KNELL_LIBS} psapi)
 	endif()
 endif()
 
