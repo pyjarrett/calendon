@@ -32,15 +32,20 @@ bool File_Read(const char *filename, const uint32_t format, DynamicBuffer *buffe
 
 	fseek(file, 0, SEEK_END);
 	long int fileLength = ftell(file);
+	if (fileLength > UINT32_MAX) {
+		KN_ERROR(LogSysMain, "File '%s' is too large to load into dynamic buffer: %li KiB",
+			filename, fileLength / 1024L);
+		return false;
+	}
 	if (format == KN_FILE_TYPE_TEXT) {
 		fileLength += 1;
 	}
-	Mem_Allocate(buffer, fileLength);
+	Mem_Allocate(buffer, (uint32_t)fileLength);
 
 	fseek(file, 0, SEEK_SET);
-	size_t amountRead = fread(buffer->contents, 1, fileLength, file);
+	size_t amountRead = fread(buffer->contents, 1, (size_t)fileLength, file);
 	KN_TRACE(LogSysMain, "Read %zu bytes from %s", amountRead, filename);
-	if (amountRead != fileLength) {
+	if (amountRead != (size_t)fileLength) {
 		if (feof(file)) {
 			KN_TRACE(LogSysMain, "File EOF reached");
 		} else if (ferror(file)) {
@@ -53,7 +58,7 @@ bool File_Read(const char *filename, const uint32_t format, DynamicBuffer *buffe
 		buffer->contents[fileLength - 1] = '\0';
 	}
 
-	buffer->size = amountRead;
+	buffer->size = (uint32_t)amountRead;
 
 	return true;
 }
