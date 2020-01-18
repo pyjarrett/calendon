@@ -12,9 +12,11 @@
 
 #include <stdio.h>
 
-// Windows specific
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#ifdef _WIN32
+	// Windows specific
+	#define WIN32_LEAN_AND_MEAN
+	#include <windows.h>
+#endif
 
 static uint64_t frames = 0;
 
@@ -31,10 +33,11 @@ void initAllSystems()
 
 #ifdef _WIN32
     Assets_Init("C:/workshop/knell/assets");
+    Game_Load("C:/workshop/knell/cmake-build-debug/src/demos/sample.dll");
 #else
     Assets_Init("/home/paul/lab/knell/assets");
+	Game_Load("/home/paul/lab/knell/cmake-build-debug/src/demos/libsample.so");
 #endif
-    Game_Load("C:/workshop/knell/cmake-build-debug/src/demos/sample.dll");
 
 	lastTick = Time_NowNs();
 
@@ -113,8 +116,12 @@ void runMainLoop()
 		}
 		Game_DrawFn();
 
-		if (frames == 100) {
+		if (frames == 500) {
+#ifdef _WIN32
 			Game_Load("C:/workshop/knell/cmake-build-debug/src/demos/sample2.dll");
+#else
+			Game_Load("/home/paul/lab/knell/cmake-build-debug/src/demos/libsample2.so");
+#endif
 		}
 	}
 }

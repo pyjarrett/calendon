@@ -127,13 +127,16 @@ endif (UNIX)
 # http://man7.org/linux/man-pages/man7/feature_test_macros.7.html
 add_definitions(-D_POSIX_C_SOURCE=199309L)
 
+remove_definitions(-DKN_LIBRARY)
 add_definitions(-DKN_LIBRARY=0)
 add_subdirectory(src/knell)
 include_directories(SYSTEM src/)
 
+remove_definitions(-DKN_LIBRARY)
 add_definitions(-DKN_LIBRARY=0)
 add_subdirectory(src/demos)
 
+remove_definitions(-DKN_LIBRARY)
 add_definitions(-DKN_LIBRARY=0)
 add_executable(knell src/main.c)
 target_link_libraries(knell knell-lib sample sample2)

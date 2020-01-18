@@ -1,3 +1,4 @@
+remove_definitions(-DKN_LIBRARY)
 add_definitions(-DKN_LIBRARY=0)
 add_library(sample SHARED sample.c)
 target_link_libraries(sample knell-lib)

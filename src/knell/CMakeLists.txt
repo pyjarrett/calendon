@@ -23,6 +23,7 @@ if (UNIX)
 		)
 endif ()
 
+remove_definitions(-DKN_LIBRARY)
 add_definitions(-DKN_LIBRARY=1)
 add_library(knell-lib SHARED ${KNELL_SRCS})
 target_link_libraries(knell-lib ${KNELL_LIBS})
