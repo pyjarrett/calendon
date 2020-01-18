@@ -105,7 +105,7 @@ bool Main_GenerateTick(uint64_t* outDt)
 
 void Main_Loop(void)
 {
-	while (isRunning()) {
+	while (Main_IsRunning()) {
 		// Event checking should be quick.  Always processing events prevents
 		// slowness due to bursts.
 		UI_ProcessWindowEvents();

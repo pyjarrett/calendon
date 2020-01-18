@@ -46,7 +46,7 @@ KN_API void UI_ProcessWindowEvents()
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
 			case SDL_QUIT:
-				queueGracefulShutdown();
+				Main_QueueGracefulShutdown();
 				break;
 			case SDL_KEYDOWN:
 				KeySet_add(&keyInputs.down, event.key.keysym.sym);
