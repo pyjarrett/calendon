@@ -127,4 +127,6 @@ endif (UNIX)
 # http://man7.org/linux/man-pages/man7/feature_test_macros.7.html
 add_definitions(-D_POSIX_C_SOURCE=199309L)
 
-add_subdirectory(src/engine)
+add_subdirectory(src/knell)
+include_directories(SYSTEM src/)
+add_subdirectory(src/demos)

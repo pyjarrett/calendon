@@ -1,5 +1,6 @@
 #include "control.h"
 #include "kn.h"
+#include "game.h"
 #include "input.h"
 #include "log.h"
 #include "memory.h"
@@ -37,7 +38,9 @@ void initAllSystems()
     Assets_Init("C:/workshop/knell/assets");
 #else
     Assets_Init("/home/paul/lab/knell/assets");
-#endif       
+#endif
+
+    Game_Init("C:/workshop/knell/cmake-build-debug");
 
 	lastTick = Time_NowNs();
 
@@ -56,6 +59,7 @@ void initAllSystems()
 
 void shutdownAllSystems()
 {
+	Game_Shutdown();
 	Mem_Shutdown();
 	UI_Shutdown();
 }
@@ -110,9 +114,9 @@ void runMainLoop()
 
 		uint64_t dt;
 		if (generateTick(&dt)) {
-			tick(dt);
+			Game_Tick(dt);
 		}
-		drawFrame();
+		Game_Draw();
 	}
 }
 
