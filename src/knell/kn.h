@@ -1,6 +1,9 @@
 /*
  * Functions and types common to many parts of Knell.
  */
+#ifndef KN_H
+#define KN_H
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -79,3 +82,5 @@
 #ifndef KN_DEBUG_BREAK
 	#define KN_DEBUG_BREAK() do {} while(0)
 #endif
+
+#endif /* KN_H */
