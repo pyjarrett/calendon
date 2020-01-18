@@ -9,7 +9,7 @@
 
 LARGE_INTEGER qpcFrequency;
 
-void Time_Init(void)
+KN_API void Time_Init(void)
 {
 	// From the docs:
 	// The qpcFrequency of the performance counter is fixed at system boot and is
@@ -19,7 +19,7 @@ void Time_Init(void)
 	QueryPerformanceFrequency(&qpcFrequency);
 }
 
-uint64_t Time_NowNs(void)
+KN_API uint64_t Time_NowNs(void)
 {
 	// QPC gives the number of ticks, need to convert to nanoseconds.
 	LARGE_INTEGER ticks;
@@ -35,11 +35,11 @@ uint64_t Time_NowNs(void)
 
 #include <time.h>
 
-void Time_Init(void)
+KN_API void Time_Init(void)
 {
 }
 
-uint64_t Time_NowNs(void)
+KN_API uint64_t Time_NowNs(void)
 {
 	struct timespec ts;
 	clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -48,12 +48,12 @@ uint64_t Time_NowNs(void)
 
 #endif /* _WIN32 */
 
-uint64_t Time_MsToNs(uint64_t ms)
+KN_API uint64_t Time_MsToNs(uint64_t ms)
 {
 	return ms * 1000 * 1000;
 }
 
-uint64_t Time_SecToNs(uint64_t sec)
+KN_API uint64_t Time_SecToNs(uint64_t sec)
 {
 	return Time_MsToNs(sec * 1000);
 }

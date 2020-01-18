@@ -59,13 +59,13 @@ typedef uint32_t LogHandle;
 /**
  * Global main program log.
  */
-extern LogHandle LogSysMain;
+extern KN_API LogHandle LogSysMain;
 
 /**
  * Names of all systems registered for use.  These names get added to every log
  * line to indicate the originating system of each message.
  */
-extern const char* LogSystemsRegistered[KN_LOG_MAX_SYSTEMS];
+extern KN_API const char* LogSystemsRegistered[KN_LOG_MAX_SYSTEMS];
 
 /**
  * Log verbosity settings in increasing order of logging.  Using a higher
@@ -91,14 +91,14 @@ enum {
 /**
  * Characters printed in the line to represent the type of log entry.
  */
-extern char LogVerbosityChar[KN_LOG_NUM_TYPES];
+extern KN_API char LogVerbosityChar[KN_LOG_NUM_TYPES];
 
 /**
  * Per-system verbosity settings given by values in `KN_LOG_*`.  Every system
  * has its own verbosity settings so you can disable the ones for spammy
  * systems while you ridicule their authors.
  */
-extern uint32_t LogSystemsVerbosity[KN_LOG_MAX_SYSTEMS];
+extern KN_API uint32_t LogSystemsVerbosity[KN_LOG_MAX_SYSTEMS];
 
 /**
  * Records a message to the log system.
@@ -132,8 +132,8 @@ extern uint32_t LogSystemsVerbosity[KN_LOG_MAX_SYSTEMS];
  */
 #define KN_TRACE(system, msg, ...) KN_LOG(system, KN_LOG_TRACE, msg, ##__VA_ARGS__)
 
-void Log_Init();
-void Log_RegisterSystem(LogHandle* system, const char* name, uint32_t verbosity);
+KN_API void Log_Init();
+KN_API void Log_RegisterSystem(LogHandle* system, const char* name, uint32_t verbosity);
 
 #endif /* KN_LOG_H */
 

@@ -1,29 +1,24 @@
-#include "control.h"
-#include "kn.h"
-#include "game.h"
-#include "input.h"
-#include "log.h"
-#include "memory.h"
-#include "time.h"
-#include "render.h"
-#include "ui.h"
-#include "assets.h"
-#include "process.h"
+#include "knell/control.h"
+#include "knell/kn.h"
+#include "knell/game.h"
+#include "knell/input.h"
+#include "knell/log.h"
+#include "knell/memory.h"
+#include "knell/time.h"
+#include "knell/render.h"
+#include "knell/ui.h"
+#include "knell/assets.h"
+#include "knell/process.h"
 
 #include <stdio.h>
 
+// Windows specific
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
+static uint64_t frames = 0;
+
 static uint64_t lastTick;
-
-void drawFrame()
-{
-	R_StartFrame();
-	R_EndFrame();
-}
-
-void tick(uint64_t dt)
-{
-	KN_UNUSED(dt);
-}
 
 /**
  * Common initialization point for all global systems.
@@ -39,8 +34,7 @@ void initAllSystems()
 #else
     Assets_Init("/home/paul/lab/knell/assets");
 #endif
-
-    Game_Init("C:/workshop/knell/cmake-build-debug");
+    Game_Load("C:/workshop/knell/cmake-build-debug/src/demos/sample.dll");
 
 	lastTick = Time_NowNs();
 
@@ -59,7 +53,7 @@ void initAllSystems()
 
 void shutdownAllSystems()
 {
-	Game_Shutdown();
+	Game_ShutdownFn();
 	Mem_Shutdown();
 	UI_Shutdown();
 }
@@ -114,9 +108,14 @@ void runMainLoop()
 
 		uint64_t dt;
 		if (generateTick(&dt)) {
-			Game_Tick(dt);
+			Game_TickFn(dt);
+			++frames;
 		}
-		Game_Draw();
+		Game_DrawFn();
+
+		if (frames == 100) {
+			Game_Load("C:/workshop/knell/cmake-build-debug/src/demos/sample2.dll");
+		}
 	}
 }
 

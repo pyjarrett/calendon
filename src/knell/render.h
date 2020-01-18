@@ -19,9 +19,9 @@
 
 #include "kn.h"
 
-void R_Init(uint32_t width, uint32_t height);
-void R_StartFrame();
-void R_EndFrame();
+KN_API void R_Init(uint32_t width, uint32_t height);
+KN_API void R_StartFrame();
+KN_API void R_EndFrame();
 
 #endif /* KN_RENDER_HL_H */
 

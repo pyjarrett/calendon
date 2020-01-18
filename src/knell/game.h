@@ -1,16 +1,18 @@
 #ifndef KN_GAME_H
 #define KN_GAME_H
 
-typedef struct {
-	bool (*init)(void);
-	void (*shutdown)(void);
-	bool (*tick)(void);
-	void (*draw)(void);
-} Game;
+#include "kn.h"
 
-void Game_Init(const char* target);
-void Game_Draw(void);
-void Game_Tick(uint64_t dt);
-void Game_Shutdown();
+typedef void (*Game_InitPROC)(void);
+typedef void (*Game_DrawPROC)(void);
+typedef void (*Game_TickPROC)(uint64_t);
+typedef void (*Game_ShutdownPROC)(void);
+
+KN_API Game_InitPROC Game_InitFn;
+KN_API Game_DrawPROC Game_DrawFn;
+KN_API Game_TickPROC Game_TickFn;
+KN_API Game_ShutdownPROC Game_ShutdownFn;
+
+KN_API void Game_Load(const char* sharedLibraryName);
 
 #endif /* KN_GAME_H */

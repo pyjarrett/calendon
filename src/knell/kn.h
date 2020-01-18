@@ -13,6 +13,12 @@
 	#include <SDL2/SDL_rect.h>
 #endif
 
+#if KN_LIBRARY
+	#define KN_API __declspec(dllexport)
+#else
+	#define KN_API __declspec(dllimport)
+#endif
+
 #if KN_DEBUG
 	#if defined(_MSC_VER)
 		#include <intrin.h>

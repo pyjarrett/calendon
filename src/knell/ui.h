@@ -5,10 +5,10 @@
 #ifndef KN_UI_H
 #define KN_UI_H
 
-#include <stdint.h>
+#include "kn.h"
 
-void UI_Init(uint32_t width, uint32_t height);
-void UI_Shutdown();
+KN_API void UI_Init(uint32_t width, uint32_t height);
+KN_API void UI_Shutdown();
 
 /**
  * Call this to give the windowing system the opportunity to run its message
@@ -18,7 +18,7 @@ void UI_Shutdown();
  * In Win32 this might pump messages, on other systems it might poll inputs for
  * them to be distributed to other systems.
  */
-void UI_ProcessWindowEvents();
+KN_API void UI_ProcessWindowEvents();
 
 #endif /* KN_UI_H */
 

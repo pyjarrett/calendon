@@ -1,7 +1,7 @@
 #ifndef KN_PROCESS_H
 #define KN_PROCESS_H
 
-#include <stdbool.h>
+#include "kn.h"
 
 #ifdef _WIN32
 
@@ -9,7 +9,7 @@
 /**
  * Prints all the loaded DLLs to the log.
  */
-bool Proc_PrintLoadedDLLs(void);
+KN_API bool Proc_PrintLoadedDLLs(void);
 
 #endif /* _WIN32 */
 

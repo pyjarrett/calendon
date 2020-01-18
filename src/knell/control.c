@@ -5,13 +5,12 @@
  */
 bool running = true;
 
-bool isRunning()
+KN_API bool isRunning()
 {
 	return running;
 }
 
-void queueGracefulShutdown()
+KN_API void queueGracefulShutdown()
 {
 	running = false;
 }
-

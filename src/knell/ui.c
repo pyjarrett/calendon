@@ -21,7 +21,7 @@ static void UI_CreateWindow(const uint32_t width, const uint32_t height)
 	}
 }
 
-void UI_Init(uint32_t width, uint32_t height)
+KN_API void UI_Init(uint32_t width, uint32_t height)
 {
 	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
 		KN_FATAL_ERROR("Unable to init SDL");
@@ -29,7 +29,7 @@ void UI_Init(uint32_t width, uint32_t height)
 	UI_CreateWindow(width, height);
 }
 
-void UI_Shutdown()
+KN_API void UI_Shutdown()
 {
 	if (window) {
 		SDL_DestroyWindow(window);
@@ -40,7 +40,7 @@ void UI_Shutdown()
 /**
  * Parses events off of the SDL event queue.
  */
-void UI_ProcessWindowEvents()
+KN_API void UI_ProcessWindowEvents()
 {
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {

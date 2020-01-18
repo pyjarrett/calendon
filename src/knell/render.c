@@ -7,7 +7,7 @@
  * Initialize the rendering system assuming a rectangular region of the given
  * drawing dimensions.
  */
-void R_Init(const uint32_t width, const uint32_t height)
+KN_API void R_Init(const uint32_t width, const uint32_t height)
 {
 	RLL_Init(width, height);
 }
@@ -20,7 +20,7 @@ void R_Init(const uint32_t width, const uint32_t height)
  * All calls to render operations should be between a `R_StartFrame()` and
  * `R_EndFrame()`.
  */
-void R_StartFrame()
+KN_API void R_StartFrame()
 {
 	RLL_StartFrame();
 
@@ -38,7 +38,7 @@ void R_StartFrame()
 /**
  * The frame is now done and should be submitted for drawing.
  */
-void R_EndFrame()
+KN_API void R_EndFrame()
 {
 	RLL_EndFrame();
 }

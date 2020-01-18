@@ -127,6 +127,31 @@ endif (UNIX)
 # http://man7.org/linux/man-pages/man7/feature_test_macros.7.html
 add_definitions(-D_POSIX_C_SOURCE=199309L)
 
+add_definitions(-DKN_LIBRARY=0)
 add_subdirectory(src/knell)
 include_directories(SYSTEM src/)
+
+add_definitions(-DKN_LIBRARY=0)
 add_subdirectory(src/demos)
+
+add_definitions(-DKN_LIBRARY=0)
+add_executable(knell src/main.c)
+target_link_libraries(knell knell-lib sample sample2)
+
+    
+if (WIN32)
+	add_custom_command(TARGET knell POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_directory
+		${VENDOR_SDL2_ROOT}/lib/x64
+		$<TARGET_FILE_DIR:knell>
+		)
+
+	add_custom_command(TARGET knell POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_directory
+		${VENDOR_GLEW_ROOT}/bin/Release/x64
+		$<TARGET_FILE_DIR:knell>
+		)
+
+    add_custom_command(TARGET knell POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:knell-lib> $<TARGET_FILE_DIR:knell>)
+endif (WIN32)

@@ -15,7 +15,7 @@ LogHandle LogSysAssets;
  * Initial the asset system with the top level directory where assets should
  * be found.
  */
-void Assets_Init(const char* assetDir)
+KN_API void Assets_Init(const char* assetDir)
 {
 	if (strlen(assetDir) >= MAX_ASSET_PATH_LENGTH) {
 		KN_FATAL_ERROR("Asset path root is too long.  Cannot initialize asset path with %s", assetDir);
@@ -35,7 +35,7 @@ void Assets_Init(const char* assetDir)
 /**
  * Gets the path for accessing a specific resource within the assets system.
  */
-bool Assets_PathFor(const char* assertName, char* buffer, uint32_t bufferSize)
+KN_API bool Assets_PathFor(const char* assertName, char* buffer, uint32_t bufferSize)
 {
 	if (assetsRootLength == 0) {
 		KN_ERROR(LogSysAssets, "Asset system not initialized, cannot get path for %s", assertName);

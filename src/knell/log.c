@@ -3,13 +3,13 @@
 #include <stdio.h>
 
 static bool initialized = false;
-char LogVerbosityChar[KN_LOG_NUM_TYPES];
-uint32_t LogSystemsVerbosity[KN_LOG_MAX_SYSTEMS];
-const char* LogSystemsRegistered[KN_LOG_MAX_SYSTEMS];
-uint32_t LogSystemsNumRegistered;
-LogHandle LogSysMain;
+KN_API char LogVerbosityChar[KN_LOG_NUM_TYPES];
+KN_API uint32_t LogSystemsVerbosity[KN_LOG_MAX_SYSTEMS];
+KN_API const char* LogSystemsRegistered[KN_LOG_MAX_SYSTEMS];
+KN_API uint32_t LogSystemsNumRegistered;
+KN_API LogHandle LogSysMain;
 
-void Log_Init()
+KN_API void Log_Init(void)
 {
 	if (initialized) {
 		KN_FATAL_ERROR("Double initialization of logging system.");
@@ -35,7 +35,7 @@ void Log_Init()
  *
  * Assumes "name" is somewhere where it doesn't need dynamic allocation.
  */
-void Log_RegisterSystem(uint32_t* system, const char* name, uint32_t verbosity)
+KN_API void Log_RegisterSystem(uint32_t* system, const char* name, uint32_t verbosity)
 {
 	if (!initialized) {
 		KN_FATAL_ERROR("Log system not initialized, cannot register any systems.");

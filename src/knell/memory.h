@@ -1,7 +1,7 @@
 #ifndef KN_MEMORY_H
 #define KN_MEMORY_H
 
-#include <stdint.h>
+#include "kn.h"
 
 /**
  * A single contiguous block of dynamically allocated memory.
@@ -14,9 +14,9 @@ typedef struct {
 	uint32_t size;
 } DynamicBuffer;
 
-void Mem_Init();
-void Mem_Shutdown();
-void Mem_Allocate(DynamicBuffer* buffer, uint32_t size);
-void Mem_Free(DynamicBuffer* buffer);
+KN_API void Mem_Init();
+KN_API void Mem_Shutdown();
+KN_API void Mem_Allocate(DynamicBuffer* buffer, uint32_t size);
+KN_API void Mem_Free(DynamicBuffer* buffer);
 
 #endif /* KN_MEMORY_H */

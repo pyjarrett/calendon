@@ -23,27 +23,14 @@ if (UNIX)
 		)
 endif ()
 
-add_executable(knell ${KNELL_SRCS})
-target_link_libraries(knell ${KNELL_LIBS})
-
-if (WIN32)
-	add_custom_command(TARGET knell POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_directory
-		${VENDOR_SDL2_ROOT}/lib/x64
-		$<TARGET_FILE_DIR:knell>
-		)
-
-	add_custom_command(TARGET knell POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_directory
-		${VENDOR_GLEW_ROOT}/bin/Release/x64
-		$<TARGET_FILE_DIR:knell>
-		)
-endif (WIN32)
+add_definitions(-DKN_LIBRARY=1)
+add_library(knell-lib SHARED ${KNELL_SRCS})
+target_link_libraries(knell-lib ${KNELL_LIBS})
 
 # TODO: Replace this with a file describing where to find assets.
 if (UNIX)
 	add_custom_target(sync_assets
 			COMMAND rsync -avz "${CMAKE_SOURCE_DIR}/assets/" "${ASSET_DIR}"
 			COMMENT "Copying assets")
-	add_dependencies(knell sync_assets)
+	add_dependencies(knell-lib sync_assets)
 endif(UNIX)
