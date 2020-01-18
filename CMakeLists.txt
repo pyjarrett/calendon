@@ -42,16 +42,12 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	# so no header needs to be included (or possibly forgotten) to get this
 	# value.
 	add_definitions(-DKN_DEBUG=1)
-	if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+	if(CMAKE_C_COMPILER_ID MATCHES "Clang")
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
-	elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+	elseif(CMAKE_C_COMPILER_ID MATCHES "GNU")
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
 	endif()
 endif()
-
-# KNELL_LIBS is the list of all libraries to link with the Knell lib itself.
-# Client should be required to do minimum linking themselves.
-set(KNELL_LIBS "")
 
 if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
 	if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
