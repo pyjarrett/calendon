@@ -152,6 +152,9 @@ void runTest()
 
 int main(int argc, char* argv[])
 {
+	KN_UNUSED(argc);
+	KN_UNUSED(argv);
+
 	initAllSystems();
 	runTest();
 	runMainLoop();
