@@ -104,13 +104,15 @@ extern uint32_t LogSystemsVerbosity[KN_LOG_MAX_SYSTEMS];
  * Records a message to the log system.
  */
 #define KN_LOG(system, verbosity, msg, ...) \
-	printf("%c: %40s:%i SYS_%-10s: " msg " \n", \
-		LogVerbosityChar[verbosity], \
-		__FILE__, \
-		__LINE__, \
-		LogSystemsRegistered[system], \
-		##__VA_ARGS__ \
-		)
+	if (verbosity <= LogSystemsVerbosity[system]) { \
+		printf("%c: %40s:%i SYS_%-10s: " msg " \n", \
+			LogVerbosityChar[verbosity], \
+			__FILE__, \
+			__LINE__, \
+			LogSystemsRegistered[system], \
+			##__VA_ARGS__ \
+			); \
+    };
 
 /**
  * Errors are serious issues which must be addressed prior to shipping a product
