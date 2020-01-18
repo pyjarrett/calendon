@@ -1,5 +1,7 @@
 /*
  * Functions and types common to many parts of Knell.
+ *
+ * The size of this prelude-style header should be reduced to minimum practical.
  */
 #ifndef KN_H
 #define KN_H
@@ -47,6 +49,14 @@
 	#define KN_GAME_API __attribute((visibility("default")))
 #endif /* WIN32 */
 
+/*
+ * Assert and other debug functionality should be able to trigger a breakpoint
+ * in the debugger.
+ *
+ * Use cases:
+ * - assertion failure
+ * - excessive frame time
+*/
 #if KN_DEBUG
 	#if defined(_MSC_VER)
 		#include <intrin.h>
@@ -68,7 +78,7 @@
 
 /**
  * Runtime assert mechanism.
- */
+*/
 #define KN_ASSERT(condition, message, ...) do { \
 		if (!(condition)) { \
 			KN_DEBUG_BREAK(); \
@@ -86,26 +96,5 @@
  * Used to suppress errors resulting from unused values.
  */
 #define KN_UNUSED(value) (void)(value)
-
-#if KN_DEBUG
-	#if defined(_MSC_VER)
-		#if DY_CONFIG_DEBUG
-			#include <intrin.h>
-			#define KN_DEBUG_BREAK() __debugbreak();
-		#endif
-	#endif
-
-	#if defined(__GNUC__) || defined(__clang__)
-		#include <signal.h>
-		/**
-		 * Use to force the debugger to stop at a specific line.
-		 */
-		#define KN_DEBUG_BREAK() raise(SIGTRAP)
-	#endif
-#endif
-
-#ifndef KN_DEBUG_BREAK
-	#define KN_DEBUG_BREAK() do {} while(0)
-#endif
 
 #endif /* KN_H */
