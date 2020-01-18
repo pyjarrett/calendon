@@ -26,7 +26,7 @@ void Main_DescribeEnv(void)
 /**
  * Common initialization point for all global systems.
  */
-void Main_InitAllSystems()
+void Main_InitAllSystems(void)
 {
 	Log_Init();
 	Mem_Init();
@@ -55,7 +55,7 @@ void Main_InitAllSystems()
 #endif
 }
 
-void Main_Shutdown()
+void Main_Shutdown(void)
 {
 	Game_ShutdownFn();
 	Mem_Shutdown();
@@ -103,7 +103,7 @@ bool Main_GenerateTick(uint64_t* outDt)
 	return true;
 }
 
-void Main_Loop()
+void Main_Loop(void)
 {
 	while (isRunning()) {
 		// Event checking should be quick.  Always processing events prevents
