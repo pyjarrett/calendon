@@ -3,9 +3,6 @@
 
 #include "kn.h"
 
-#include <stdbool.h>
-#include <stdint.h>
-
 KN_API void Assets_Init(const char* assetDir);
 KN_API bool Assets_PathFor(const char* assertName, char* buffer, uint32_t bufferSize);
 

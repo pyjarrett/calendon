@@ -55,4 +55,3 @@ KN_API bool Assets_PathFor(const char* assertName, char* buffer, uint32_t buffer
 
 	return true;
 }
-

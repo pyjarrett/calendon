@@ -1,4 +1,5 @@
 #include "knell/control.h"
+#include "knell/env.h"
 #include "knell/kn.h"
 #include "knell/game.h"
 #include "knell/input.h"
@@ -14,6 +15,13 @@
 
 static uint64_t frames = 0;
 static uint64_t lastTick;
+
+void Main_DescribeEnv(void)
+{
+	char buffer[1024];
+	Env_CurrentWorkingDirectory(buffer, 1024);
+	KN_TRACE(LogSysMain, "CWD: '%s'", buffer);
+}
 
 /**
  * Common initialization point for all global systems.
@@ -124,6 +132,7 @@ int main(int argc, char* argv[])
 	KN_UNUSED(argc);
 	KN_UNUSED(argv);
 
+	Main_DescribeEnv();
 	Main_InitAllSystems();
 	Main_Loop();
 	Main_Shutdown();
