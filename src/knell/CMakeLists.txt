@@ -1,4 +1,5 @@
 file(GLOB_RECURSE KNELL_SRCS ./*.c)
+file(GLOB_RECURSE KNELL_HEADERS ./*.h)
 
 set(KNELL_LIBS
 	SDL2
@@ -25,7 +26,7 @@ endif ()
 
 remove_definitions(-DKN_LIBRARY)
 add_definitions(-DKN_LIBRARY=1)
-add_library(knell-lib SHARED ${KNELL_SRCS})
+add_library(knell-lib SHARED ${KNELL_SRCS} ${KNELL_HEADERS})
 target_link_libraries(knell-lib ${KNELL_LIBS})
 
 # TODO: Replace this with a file describing where to find assets.
