@@ -24,7 +24,11 @@ set(CMAKE_C_EXTENSIONS OFF)
 # Future configurations:
 # Profile: Add -pg flag for GCC to use with gprof
 # RelWIthDebugInfo: Optimized build with debug symbols included.
-set(CMAKE_CONFIGURATION_TYPES Debug;Release) # ;Coverage
+set(CMAKE_CONFIGURATION_TYPES Debug;Release;Coverage)
+if(NOT CMAKE_BUILD_TYPE)
+    # Visual studio might not correctly set CMAKEBUILD_TYPE
+	set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build Type: (Debug, Release)." FORCE)
+endif()
 
 # Provide standardized output locations.  This particularly
 # helps when dealing with additional directories such as for
@@ -45,14 +49,16 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	# Set the KN_DEBUG symbol to 1 at the top level within the build system
 	# so no header needs to be included (or possibly forgotten) to get this
 	# value.
-	add_definitions(-DKN_DEBUG=1)
 	if(CMAKE_C_COMPILER_ID MATCHES "Clang")
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
+	    add_definitions(-DKN_DEBUG=1)
 	elseif(CMAKE_C_COMPILER_ID MATCHES "GNU")
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
+	    add_definitions(-DKN_DEBUG=1)
     elseif(CMAKE_C_COMPILER_ID MATCHES "MSVC")
         # Allow symbol resolution when querying for symbols.
-        add_definitions(-DPSAPI_VERSION=1)
+        add_definitions(/DPSAPI_VERSION=1)
+        add_definitions(/DKN_DEBUG=1)
 		set(KNELL_LIBS ${KNELL_LIBS} psapi)
 	endif()
 endif()
