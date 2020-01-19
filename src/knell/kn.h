@@ -74,16 +74,38 @@
 */
 #define KN_ASSERT(condition, message, ...) do { \
 		if (!(condition)) { \
-			KN_DEBUG_BREAK(); \
 			KN_FATAL_ERROR(message, ##__VA_ARGS__); \
 		} \
     } while (0)
 
+/*
+ * Reserve space statically to write a fatal error message when things go wrong.
+ */
+enum { fatalErrorBufferLength = 1024 };
+extern KN_API char fatalErrorBuffer[fatalErrorBufferLength];
+
 /**
  * An unrecoverable event happened at this point in the program.
+ *
+ * This causes a crash.  Use this when the program cannot recover from whatever
+ * ill the program is in at this point.
  */
-#define KN_FATAL_ERROR(error_message, ...) \
-	do { printf(error_message, ##__VA_ARGS__); abort(); } while (0)
+#ifdef _WIN32
+	#define WIN32_LEAN_AND_MEAN
+	#include <windows.h>
+	#include <debugapi.h>
+	#define KN_FATAL_ERROR(error_message, ...) \
+		if (IsDebuggerPresent()) { \
+			KN_DEBUG_BREAK(); \
+            abort(); \
+		} else { \
+            snprintf(fatalErrorBuffer, fatalErrorBufferLength, "%s:%i\n" error_message, __FILE__, __LINE__, ##__VA_ARGS__); \
+            MessageBox(NULL, fatalErrorBuffer, "Fatal Error", MB_OK); abort(); \
+		}
+#else
+	#define KN_FATAL_ERROR(error_message, ...) \
+		do { printf(error_message, ##__VA_ARGS__); abort(); } while (0)
+#endif
 
 /**
  * Used to suppress errors resulting from unused values.
