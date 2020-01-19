@@ -1,3 +1,4 @@
+#include "knell/assets.h"
 #include "knell/control.h"
 #include "knell/env.h"
 #include "knell/kn.h"
@@ -5,11 +6,10 @@
 #include "knell/input.h"
 #include "knell/log.h"
 #include "knell/memory.h"
+#include "knell/process.h"
 #include "knell/time.h"
 #include "knell/render.h"
 #include "knell/ui.h"
-#include "knell/assets.h"
-#include "knell/process.h"
 
 #include <stdio.h>
 
@@ -138,4 +138,3 @@ int main(int argc, char* argv[])
 	Main_Shutdown();
 	return 0;
 }
-
