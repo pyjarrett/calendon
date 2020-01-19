@@ -3,9 +3,9 @@
 #include "kn.h"
 
 #ifdef _WIN32
+
+#include "compat-windows.h"
 #include "process.h"
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 static HMODULE GameModule;
 
 void Game_Load(const char* sharedLibraryName)
@@ -34,6 +34,7 @@ void Game_Load(const char* sharedLibraryName)
 #endif /* WIN32 */
 
 #ifdef __linux__
+
 #include <dlfcn.h>
 
 static void* GameModule;

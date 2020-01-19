@@ -11,13 +11,7 @@
 #include "math4.h"
 
 #ifdef _WIN32
-	#define NOMINMAX
-	#define WIN32_LEAN_AND_MEAN
-	#include <windows.h>
-
-	// Windows defines these to be empty.
-	#undef near
-	#undef far
+	#include "compat-windows.h"
 
 	#include <GL/glew.h>
 	#define GL_GLEXT_PROTOTYPES 1

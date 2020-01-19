@@ -91,8 +91,7 @@ extern KN_API char fatalErrorBuffer[fatalErrorBufferLength];
  * ill the program is in at this point.
  */
 #ifdef _WIN32
-	#define WIN32_LEAN_AND_MEAN
-	#include <windows.h>
+	#include "compat-windows.h"
 	#include <debugapi.h>
 	#define KN_FATAL_ERROR(error_message, ...) \
 		if (IsDebuggerPresent()) { \

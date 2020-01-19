@@ -4,8 +4,7 @@
 // Windows lacks the convenient POSIX API for this, so resort to using query
 // performance counters (QPC).
 // https://docs.microsoft.com/en-us/windows/win32/sysinfo/acquiring-high-resolution-time-stamps
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#include "compat-windows.h"
 
 LARGE_INTEGER qpcFrequency;
 
