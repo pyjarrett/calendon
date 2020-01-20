@@ -50,11 +50,19 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	# so no header needs to be included (or possibly forgotten) to get this
 	# value.
 	if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+		add_definitions(-DKN_DEBUG=1)
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
-	    add_definitions(-DKN_DEBUG=1)
+
+		add_definitions(-DKN_ENABLE_CORE_DUMPS=1)
+		# Enabling this prevents core dumps from working.
+		#set(KNELL_COMMON_C_FLAGS "${KNELL_COMMON_C_FLAGS} -fsanitize=address -fsanitize=undefined")
 	elseif(CMAKE_C_COMPILER_ID MATCHES "GNU")
+		add_definitions(-DKN_DEBUG=1)
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
-	    add_definitions(-DKN_DEBUG=1)
+
+		add_definitions(-DKN_ENABLE_CORE_DUMPS=1)
+		# Enabling this prevents core dumps from working.
+		#set(KNELL_COMMON_C_FLAGS "${KNELL_COMMON_C_FLAGS} -fsanitize=address -fsanitize=undefined")
     elseif(CMAKE_C_COMPILER_ID MATCHES "MSVC")
         # Allow symbol resolution when querying for symbols.
         add_definitions(/DPSAPI_VERSION=1)
@@ -78,7 +86,6 @@ endif()
 set(KNELL_COMMON_C_FLAGS "${KNELL_COMMON_C_FLAGS} -Wall -Wextra")
 #set(KNELL_COMMON_C_FLAGS "${KNELL_COMMON_C_FLAGS} -Wpedantic")
 set(KNELL_COMMON_C_FLAGS "${KNELL_COMMON_C_FLAGS} -Wshadow -Wdouble-promotion -Wundef -Wconversion -fno-common")
-set(KNELL_COMMON_C_FLAGS "${KNELL_COMMON_C_FLAGS} -fsanitize=address -fsanitize=undefined")
 set(KNELL_COMMON_C_FLAGS "${KNELL_COMMON_C_FLAGS} -fvisibility=hidden")
 
 # Eliminate extra dead code

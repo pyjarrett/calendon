@@ -1,5 +1,6 @@
 #include "knell/assets.h"
 #include "knell/control.h"
+#include "knell/crash.h"
 #include "knell/env.h"
 #include "knell/kn.h"
 #include "knell/game.h"
@@ -29,6 +30,7 @@ void Main_DescribeEnv(void)
 void Main_InitAllSystems(void)
 {
 	Log_Init();
+	Crash_Init();
 	Mem_Init();
 	Time_Init();
 
