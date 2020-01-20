@@ -130,6 +130,8 @@ if (WIN32)
 		glew32.lib
 		${KNELL_LIBS})
 
+	# dbghelp.dll isn't provided normally, it's part of the Debugging tools in
+	# the SDK, so an x64 version is included for creating minidumps.
 	vendorize(windows windows_sdk 10)
 endif (WIN32)
 
