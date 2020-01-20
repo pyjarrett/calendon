@@ -51,7 +51,7 @@ void Crash_PrintCoreDumpPattern(void)
 /**
  * Changes ulimit to maximum size, provided it is allowed by parent process.
  */
-bool Crash_EnableCoreDump()
+bool Crash_EnableCoreDump(void)
 {
 	struct rlimit newLimit;
 	newLimit.rlim_cur = RLIM_INFINITY;
