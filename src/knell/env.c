@@ -1,6 +1,11 @@
+
 #include "env.h"
 
-#include "compat-windows.h"
+#ifdef _WIN32
+	#include "compat-windows.h"
+#elif __linux__
+	#include <unistd.h>
+#endif
 
 KN_API bool Env_CurrentWorkingDirectory(char* buffer, uint32_t bufferSize)
 {
@@ -9,8 +14,6 @@ KN_API bool Env_CurrentWorkingDirectory(char* buffer, uint32_t bufferSize)
 	//https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getcurrentdirectory
 	return GetCurrentDirectory(bufferSize, buffer) != 0;
 #elif __linux__
-	constexpr size_t bufferSize = 1024;
-	char buffer[bufferSize];
-	getcwd(buffer, bufferSize) != NULL;
+	return getcwd(buffer, bufferSize) != NULL;
 #endif
 }
