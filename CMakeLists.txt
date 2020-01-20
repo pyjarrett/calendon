@@ -68,6 +68,10 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         add_definitions(/DPSAPI_VERSION=1)
         add_definitions(/DKN_DEBUG=1)
 		set(KNELL_LIBS ${KNELL_LIBS} psapi)
+
+		# Adds MiniDump reporting.
+		add_definitions(/DKN_ENABLE_CORE_DUMPS=1)
+		set(KNELL_LIBS ${KNELL_LIBS} dbghelp)
 	endif()
 endif()
 
@@ -125,6 +129,8 @@ if (WIN32)
 	set(KNELL_LIBS
 		glew32.lib
 		${KNELL_LIBS})
+
+	vendorize(windows windows_sdk 10)
 endif (WIN32)
 
 if (UNIX)
@@ -170,4 +176,16 @@ if (WIN32)
 
     add_custom_command(TARGET knell POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:knell-lib> $<TARGET_FILE_DIR:knell>)
+
+	# Only create dumps in Debug.
+	# Uses a x64 version of the dll.
+	# TODO: Provide an x86 and an ARM version.
+	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+		add_custom_command(TARGET knell POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy_directory
+			${VENDOR_WINDOWS_SDK_ROOT}
+			$<TARGET_FILE_DIR:knell>
+			)
+	endif()
+
 endif (WIN32)
