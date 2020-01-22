@@ -50,3 +50,8 @@ KN_API void R_DrawDebugLine(float x1, float y1, float x2, float y2, rgb8 color)
 {
 	RLL_DrawDebugLine(x1, y1, x2, y2, color);
 }
+
+KN_API void R_DrawDebugLineStrip(float2* points, uint32_t numPoints, rgb8 color)
+{
+	RLL_DrawDebugLineStrip(points, numPoints, color);
+}

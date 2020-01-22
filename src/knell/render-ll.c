@@ -41,6 +41,13 @@ static GLuint fullScreenQuadBuffer;
 static GLuint debugDrawBuffer;
 
 /**
+ * Allocated number of 4-element vertices for specifically debug drawing.
+ *
+ * TODO: 128 might be too high, look into tracking used buffer space.
+ */
+#define RLL_MAX_DEBUG_POINTS 128
+
+/**
  * Program to use for drawing debug shapes.
  */
 static GLuint solidPolygonProgram;
@@ -314,17 +321,15 @@ void RLL_FillFullScreenQuadBuffer()
 void RLL_FillDebugQuadBuffer()
 {
 	// Doesn't matter, will be overwritten.
-	float4 vertices[] = {
-		float4_Make(-1.0f, -1.0f, 0.0f, 0.0f),
-		float4_Make(-1.0f, 1.0f, 0.0f, 0.0f),
-		float4_Make(1.0f, -1.0f, 0.0f, 0.0f),
-		float4_Make(1.0f, 1.0f, 0.0f, 0.0f)
-	};
+	float4 vertices[RLL_MAX_DEBUG_POINTS];
+	memset(&vertices[0], 0, RLL_MAX_DEBUG_POINTS * sizeof(float4));
 	glGenBuffers(1, &debugDrawBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, debugDrawBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
 
-	KN_ASSERT(debugDrawBuffer, "Cannot allocate a buffer for the debug quad buffer");
+	// Allocate the maximum used spaced and then override it.
+	glBufferData(GL_ARRAY_BUFFER, RLL_MAX_DEBUG_POINTS * 4 * sizeof(float), vertices, GL_DYNAMIC_DRAW);
+
+	KN_ASSERT(debugDrawBuffer, "Cannot allocate a buffer for the debug drawing");
 	KN_ASSERT_NO_GL_ERROR();
 }
 
@@ -687,3 +692,46 @@ void RLL_DrawDebugLine(float x1, float y1, float x2, float y2, rgb8 color)
 	KN_ASSERT_NO_GL_ERROR();
 }
 
+void RLL_DrawDebugLineStrip(float2* points, uint32_t numPoints, rgb8 color)
+{
+	KN_ASSERT(numPoints < RLL_MAX_DEBUG_POINTS, "Exceeded number of debug points "
+		"to draw: %" PRIu32 " (%" PRIu32 " max)", numPoints, RLL_MAX_DEBUG_POINTS);
+
+	// TODO: Probably shouldn't reset viewport.
+	RLL_SetFullScreenViewport();
+
+	glUseProgram(solidPolygonProgram);
+	glBindBuffer(GL_ARRAY_BUFFER, debugDrawBuffer);
+
+	const GLint uniformProjection = glGetUniformLocation(solidPolygonProgram, "Projection");
+	glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, &projection.m[0][0]);
+
+	const float4x4 identity = float4x4_Identity();
+	const GLint uniformViewModel = glGetUniformLocation(solidPolygonProgram, "ViewModel");
+	glUniformMatrix4fv(uniformViewModel, 1, GL_FALSE, &identity.m[0][0]);
+
+	const GLint uniformColor = glGetUniformLocation(solidPolygonProgram, "PolygonColor");
+	glUniform4f(uniformColor, (float)color.r / 255.0f, (float)color.g / 255.0f, (float)color.b / 255.0f, 1.0f);
+
+	const GLint positionAttrib = glGetAttribLocation(solidPolygonProgram, "Position");
+	KN_ASSERT(positionAttrib >= 0, "Position attribute does not exist");
+	glEnableVertexAttribArray((GLuint)positionAttrib);
+	glVertexAttribPointer(
+		(GLuint)positionAttrib,
+		4,
+		GL_FLOAT,
+		GL_FALSE,
+		4 * sizeof(float),
+		(void *)0
+	);
+
+	float4 vertices[RLL_MAX_DEBUG_POINTS];
+	for (uint32_t i = 0; i < numPoints; ++i) {
+		vertices[i] = float4_Make(points[i].x, points[i].y, 0.0f, 1.0f);
+	}
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float4) * numPoints, vertices);
+	glDrawArrays(GL_LINE_STRIP, 0, (GLsizei)numPoints);
+	glDisableVertexAttribArray(positionAttrib);
+
+	KN_ASSERT_NO_GL_ERROR();
+}

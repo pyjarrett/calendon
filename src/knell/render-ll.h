@@ -8,6 +8,7 @@
 #define KN_RENDER_LL_H
 
 #include "color.h"
+#include "math2.h"
 #include "math4.h"
 
 #ifdef _WIN32
@@ -42,6 +43,7 @@ void RLL_Clear(rgba8i color);
 void RLL_DrawDebugFullScreenRect();
 void RLL_DrawDebugRect(float4 position, dimension2f dimensions, float4 color);
 void RLL_DrawDebugLine(float x1, float y1, float x2, float y2, rgb8 color);
+void RLL_DrawDebugLineStrip(float2* points, uint32_t numPoints, rgb8 color);
 
 #endif /* KN_RENDER_LL_H */
 
