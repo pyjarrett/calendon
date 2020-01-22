@@ -18,12 +18,13 @@
 #define KN_RENDER_HL_H
 
 #include "kn.h"
+#include "color.h"
 
 KN_API void R_Init(uint32_t width, uint32_t height);
 KN_API void R_StartFrame(void);
 KN_API void R_EndFrame(void);
 
 KN_API void R_DrawDebugFullScreenRect(void);
+KN_API void R_DrawDebugLine(float x1, float y1, float x2, float y2, rgb8 color);
 
 #endif /* KN_RENDER_HL_H */
-
