@@ -160,7 +160,9 @@ add_subdirectory(src/demos)
 remove_definitions(-DKN_LIBRARY)
 add_definitions(-DKN_LIBRARY=0)
 add_executable(knell src/main.c)
-target_link_libraries(knell knell-lib sample sample2)
+
+target_link_libraries(knell knell-lib ${SAMPLES_SHARED})
+add_dependencies(knell knell-lib ${SAMPLES_SHARED})
     
 if (WIN32)
 	add_custom_command(TARGET knell POST_BUILD

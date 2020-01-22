@@ -36,7 +36,7 @@ void Main_InitAllSystems(void)
 
 #ifdef _WIN32
     Assets_Init("C:/workshop/knell/assets");
-    Game_Load("C:/workshop/knell/cmake-build-debug/src/demos/sample.dll");
+    Game_Load("C:/workshop/knell/cmake-build-debug/src/demos/koch_curve.dll");
 #else
     Assets_Init("/home/paul/lab/knell/assets");
 	Game_Load("/home/paul/lab/knell/cmake-build-debug/src/demos/libsample.so");
