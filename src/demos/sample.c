@@ -17,7 +17,7 @@ KN_GAME_API void Game_Init(const char* target)
 	const float radius = 50.0f;
 	const float arcSize = 2 * 3.14159f / (NUM_CIRCLE_VERTICES - 1);
 	for (uint32_t i=0; i < NUM_CIRCLE_VERTICES-1; ++i) {
-		vertices[i] = float2_Make(50 + radius * cos(i*arcSize), 50 + radius * sinf(i*arcSize));
+		vertices[i] = float2_Make(50 + radius * cosf(i*arcSize), 50 + radius * sinf(i*arcSize));
 	}
 	vertices[NUM_CIRCLE_VERTICES-1] = vertices[0];
 }
