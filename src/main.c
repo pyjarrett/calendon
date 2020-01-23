@@ -7,7 +7,9 @@
 #include "knell/input.h"
 #include "knell/log.h"
 #include "knell/memory.h"
+#ifdef _WIN32
 #include "knell/process.h"
+#endif
 #include "knell/time.h"
 #include "knell/render.h"
 #include "knell/ui.h"
