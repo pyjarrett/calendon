@@ -41,6 +41,13 @@ set(ASSET_DIR "${PROJECT_BINARY_DIR}/assets")
 set(CONFIG_DIR "${PROJECT_BINARY_DIR}/configs")
 set(RESOURCE_DIR "${PROJECT_BINARY_DIR}/resources")
 
+message(STATUS "BINARY_DIR:   ${BINARY_DIR}")
+message(STATUS "LIBRARY_DIR:  ${LIBRARY_DIR}")
+message(STATUS "ARCHIVE_DIR:  ${ARCHIVE_DIR}")
+message(STATUS "ASSET_DIR:    ${ASSET_DIR}")
+message(STATUS "CONFIG_DIR:   ${CONFIG_DIR}")
+message(STATUS "RESOURCE_DIR: ${RESOURCE_DIR}")
+
 # KNELL_LIBS is the list of all libraries to link with the Knell lib itself.
 # Client should be required to do minimum linking themselves.
 set(KNELL_LIBS "")

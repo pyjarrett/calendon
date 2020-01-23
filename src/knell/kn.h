@@ -111,4 +111,13 @@ extern KN_API char fatalErrorBuffer[fatalErrorBufferLength];
  */
 #define KN_UNUSED(value) (void)(value)
 
+/**
+ * Macro to be used while writing code to indicate that this code should never
+ * be submitted for real.  Only define this is debug mode, since that mode should
+ * never be used in production.
+ */
+#if KN_DEBUG
+	#define KN_DO_NOT_SUBMIT
+#endif
+
 #endif /* KN_H */
