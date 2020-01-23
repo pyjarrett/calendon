@@ -6,8 +6,8 @@
 
 #include <spa_fu/spa_fu.h>
 
-#define MAX_ASSET_PATH_LENGTH 256
-static char assetsRoot[MAX_ASSET_PATH_LENGTH+1];
+#define MAX_ASSET_DIR_LENGTH 256
+static char assetsRoot[MAX_ASSET_DIR_LENGTH + 1];
 static uint32_t assetsRootLength = 0;
 LogHandle LogSysAssets;
 
@@ -17,7 +17,7 @@ LogHandle LogSysAssets;
  */
 KN_API void Assets_Init(const char* assetDir)
 {
-	if (strlen(assetDir) >= MAX_ASSET_PATH_LENGTH) {
+	if (strlen(assetDir) >= MAX_ASSET_DIR_LENGTH) {
 		KN_FATAL_ERROR("Asset path root is too long.  Cannot initialize asset path with %s", assetDir);
 	}
 	strcpy(assetsRoot, assetDir);

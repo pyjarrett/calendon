@@ -12,10 +12,93 @@
 #include "knell/render.h"
 #include "knell/ui.h"
 
+#include <spa_fu/spa_fu.h>
+
 #include <stdio.h>
 
 static uint64_t frames = 0;
 static uint64_t lastTick;
+
+#define MAX_GAME_LIB_NAME_LENGTH 1024
+#define MAX_ASSET_DIR_LENGTH 1024
+
+typedef struct {
+	char gameLib[MAX_GAME_LIB_NAME_LENGTH];
+	char assetDir[MAX_ASSET_DIR_LENGTH];
+} MainConfig;
+
+static MainConfig mainConfig;
+
+void Main_PrintUsage(void)
+{
+	printf("\nUsage: knell\n");
+	printf("  -a,--asset-dir=DIR      Change the directory for assets.\n");
+	printf("  -g,--game=SHARED_LIB    Change the game/demo to boot.\n");
+	printf("\n");
+}
+
+void Main_ParseCommandLineArguments(int argc, char* argv[])
+{
+	mainConfig.gameLib[0] = '\0';
+	mainConfig.assetDir[0] = '\0';
+
+	// The log system is not initialized at this point, so using printf and
+	// printf for now.
+	int32_t i = 1;
+	while (i < argc) {
+		// Game library name parameter.
+		if (strcmp(argv[i], "-g") == 0 || strcmp(argv[i], "--game") == 0) {
+			if (i + 1 >= argc) {
+				printf("-g must be provided a shared library (or DLL) to load");
+				exit(EXIT_FAILURE);
+			}
+			else {
+				if (strlen(argv[i+1]) < MAX_GAME_LIB_NAME_LENGTH) {
+					if (!SPA_IsFile(argv[i+1])) {
+						printf("Game library %s does not exist\n", argv[i+1]);
+						exit(EXIT_FAILURE);
+
+					}
+					strcpy(mainConfig.gameLib, argv[i+1]);
+					printf("Game library: '%s'\n", mainConfig.gameLib);
+					i += 2;
+				}
+				else {
+					printf( "Length of name of game library is too long");
+					exit(EXIT_FAILURE);
+				}
+			}
+		}
+		// Asset path name parameter
+		else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--asset-dir") == 0) {
+			if (i + 1 >= argc) {
+				printf("-a provide an asset directory to use");
+				exit(EXIT_FAILURE);
+			}
+			else {
+				if (strlen(argv[i+1]) < MAX_ASSET_DIR_LENGTH) {
+					if (!SPA_IsDir(argv[i+1])) {
+						printf("Asset directory %s does not exist\n", argv[i+1]);
+						exit(EXIT_FAILURE);
+					}
+
+					strcpy(mainConfig.assetDir, argv[i + 1]);
+					printf("Asset path: '%s'\n", mainConfig.assetDir);
+					i += 2;
+				}
+				else {
+					printf( "The asset path is too long.");
+					exit(EXIT_FAILURE);
+				}
+			}
+		}
+		else {
+			printf("Unknown command line option\n");
+			Main_PrintUsage();
+			exit(EXIT_FAILURE);
+		}
+	}
+}
 
 void Main_DescribeEnv(void)
 {
@@ -34,13 +117,27 @@ void Main_InitAllSystems(void)
 	Mem_Init();
 	Time_Init();
 
+	if (strlen(mainConfig.assetDir) == 0) {
 #ifdef _WIN32
-    Assets_Init("C:/workshop/knell/assets");
-    Game_Load("C:/workshop/knell/cmake-build-debug/src/demos/koch_curve.dll");
+		Assets_Init("C:/workshop/knell/assets");
 #else
-    Assets_Init("/home/paul/lab/knell/assets");
-	Game_Load("/home/paul/lab/knell/cmake-build-debug/src/demos/libsample.so");
+		Assets_Init("/home/paul/lab/knell/assets");
 #endif
+	}
+	else {
+		Assets_Init(mainConfig.assetDir);
+	}
+
+	if (strlen(mainConfig.gameLib) == 0) {
+#ifdef _WIN32
+		Game_Load("C:/workshop/knell/cmake-build-debug/src/demos/koch_curve.dll");
+#else
+		Game_Load("/home/paul/lab/knell/cmake-build-debug/src/demos/libkoch_curve.so");
+#endif
+	}
+	else {
+		Game_Load(mainConfig.gameLib);
+	}
 
 	lastTick = Time_NowNs();
 
@@ -123,9 +220,7 @@ void Main_Loop(void)
 
 int main(int argc, char* argv[])
 {
-	KN_UNUSED(argc);
-	KN_UNUSED(argv);
-
+	Main_ParseCommandLineArguments(argc, argv);
 	Main_DescribeEnv();
 	Main_InitAllSystems();
 	Main_Loop();
