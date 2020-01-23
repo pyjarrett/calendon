@@ -118,14 +118,6 @@ void Main_Loop(void)
 			++frames;
 		}
 		Game_DrawFn();
-
-		if (frames == 500) {
-#ifdef _WIN32
-			Game_Load("C:/workshop/knell/cmake-build-debug/src/demos/sample2.dll");
-#else
-			Game_Load("/home/paul/lab/knell/cmake-build-debug/src/demos/libsample2.so");
-#endif
-		}
 	}
 }
 
