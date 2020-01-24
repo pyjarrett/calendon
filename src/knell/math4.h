@@ -7,10 +7,6 @@
 #ifndef KN_MATH_H
 #define KN_MATH_H
 
-typedef struct {
-	float width, height;
-} dimension2f;
-
 /**
  * ROW vector.
  */

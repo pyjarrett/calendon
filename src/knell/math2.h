@@ -8,6 +8,10 @@
 #include "kn.h"
 
 typedef struct {
+	float width, height;
+} dimension2f;
+
+typedef struct {
 	float x, y;
 } float2;
 
