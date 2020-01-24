@@ -5,7 +5,7 @@ void KeySet_reset(KeySet* list)
 	list->size = 0;
 }
 
-bool KeySet_add(KeySet* list, SDL_Scancode key)
+bool KeySet_add(KeySet* list, SDL_Keycode key)
 {
 	if (KeySet_contains(list, key)) {
 		return false;
@@ -34,7 +34,7 @@ static void KeySet_removeIndex(KeySet* list, uint32_t index)
 	list->size = list->size - 1;
 }
 
-void KeySet_remove(KeySet* list, SDL_Scancode key)
+void KeySet_remove(KeySet* list, SDL_Keycode key)
 {
 	for (uint32_t i = 0; i < list->size; ++i) {
 		if (list->keys[i] == key) {
@@ -43,7 +43,7 @@ void KeySet_remove(KeySet* list, SDL_Scancode key)
 	}
 }
 
-bool KeySet_contains(KeySet* list, SDL_Scancode key)
+bool KeySet_contains(KeySet* list, SDL_Keycode key)
 {
 	for (uint32_t i = 0; i < list->size; ++i) {
 		if (list->keys[i] == key) {
@@ -52,4 +52,3 @@ bool KeySet_contains(KeySet* list, SDL_Scancode key)
 	}
 	return false;
 }
-
