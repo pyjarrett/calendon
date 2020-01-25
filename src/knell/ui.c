@@ -53,12 +53,12 @@ KN_API void UI_ProcessWindowEvents(void)
 				Main_QueueGracefulShutdown();
 				break;
 			case SDL_KEYDOWN:
-				KeySet_add(&lastInput.keySet.down, event.key.keysym.sym);
-				KeySet_remove(&lastInput.keySet.up, event.key.keysym.sym);
+				KeySet_Add(&lastInput.keySet.down, event.key.keysym.sym);
+				KeySet_Remove(&lastInput.keySet.up, event.key.keysym.sym);
 				break;
 			case SDL_KEYUP:
-				KeySet_add(&lastInput.keySet.up, event.key.keysym.sym);
-				KeySet_remove(&lastInput.keySet.down, event.key.keysym.sym);
+				KeySet_Add(&lastInput.keySet.up, event.key.keysym.sym);
+				KeySet_Remove(&lastInput.keySet.down, event.key.keysym.sym);
 				break;
 			case SDL_MOUSEMOTION:
 				// SDL mouse motion is recorded in accordance with an origin in

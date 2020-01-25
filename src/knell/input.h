@@ -27,10 +27,10 @@ typedef struct {
 	int dx, dy;
 } Mouse;
 
-void KeySet_reset(KeySet* list);
-bool KeySet_add(KeySet* list, SDL_Keycode key);
-void KeySet_remove(KeySet* list, SDL_Keycode key);
-bool KeySet_contains(KeySet* list, SDL_Keycode key);
+void KeySet_Reset(KeySet* list);
+bool KeySet_Add(KeySet* list, SDL_Keycode key);
+void KeySet_Remove(KeySet* list, SDL_Keycode key);
+bool KeySet_Contains(KeySet* list, SDL_Keycode key);
 
 void Mouse_Still(Mouse* m);
 void Mouse_Move(Mouse*, int32_t x, int32_t y, int32_t dx, int32_t dy);
