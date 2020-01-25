@@ -29,7 +29,7 @@ static uint64_t lastTick;
 	#define KN_DEFAULT_GAME_LIBRARY "C:/workshop/knell/cmake-build-debug/src/demos/koch_curve.dll"
 #else
 	#define KN_DEFAULT_ASSET_PATH "/home/paul/lab/knell/assets"
-	#define KN_DEFAULT_GAME_LIBRARY "/home/paul/lab/knell/cmake-build-debug/src/demos/libkoch_curve.so"
+	#define KN_DEFAULT_GAME_LIBRARY "/home/paul/lab/knell/cmake-build-debug/src/demos/libmouse-tracker.so"
 #endif
 
 typedef struct {

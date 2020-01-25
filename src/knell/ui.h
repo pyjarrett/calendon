@@ -6,6 +6,8 @@
 #define KN_UI_H
 
 #include "kn.h"
+#include "input.h"
+
 
 KN_API void UI_Init(uint32_t width, uint32_t height);
 KN_API void UI_Shutdown(void);
@@ -19,6 +21,16 @@ KN_API void UI_Shutdown(void);
  * them to be distributed to other systems.
  */
 KN_API void UI_ProcessWindowEvents(void);
+
+typedef struct {
+	KeyInputs keySet;
+	Mouse mouse;
+} Input;
+
+/**
+ * Reads data out of the input system.
+ */
+KN_API Input* UI_InputPoll(void);
 
 #endif /* KN_UI_H */
 

@@ -4,7 +4,8 @@
 #include "input.h"
 
 SDL_Window* window;
-KeyInputs keyInputs;
+static uint32_t width, height;
+Input lastInput;
 
 /**
  * Create the window for drawing according to the available program
@@ -21,12 +22,14 @@ static void UI_CreateWindow(const uint32_t width, const uint32_t height)
 	}
 }
 
-KN_API void UI_Init(uint32_t width, uint32_t height)
+KN_API void UI_Init(uint32_t w, uint32_t h)
 {
 	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
 		KN_FATAL_ERROR("Unable to init SDL");
 	}
-	UI_CreateWindow(width, height);
+	UI_CreateWindow(w, h);
+	width = w;
+	height = h;
 }
 
 KN_API void UI_Shutdown(void)
@@ -43,21 +46,40 @@ KN_API void UI_Shutdown(void)
 KN_API void UI_ProcessWindowEvents(void)
 {
 	SDL_Event event;
+	bool mouseMoved = false;
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
 			case SDL_QUIT:
 				Main_QueueGracefulShutdown();
 				break;
 			case SDL_KEYDOWN:
-				KeySet_add(&keyInputs.down, event.key.keysym.sym);
-				KeySet_remove(&keyInputs.up, event.key.keysym.sym);
+				KeySet_add(&lastInput.keySet.down, event.key.keysym.sym);
+				KeySet_remove(&lastInput.keySet.up, event.key.keysym.sym);
 				break;
 			case SDL_KEYUP:
-				KeySet_add(&keyInputs.up, event.key.keysym.sym);
-				KeySet_remove(&keyInputs.down, event.key.keysym.sym);
+				KeySet_add(&lastInput.keySet.up, event.key.keysym.sym);
+				KeySet_remove(&lastInput.keySet.down, event.key.keysym.sym);
+				break;
+			case SDL_MOUSEMOTION:
+				// SDL mouse motion is recorded in accordance with an origin in
+				// the top left, so convert to a cartesian coordiante system for
+				// inputs.
+				mouseMoved = true;
+				Mouse_Move(&lastInput.mouse, event.motion.x, (int32_t)height - event.motion.y, event.motion.xrel, -event.motion.yrel);
 				break;
 			default:
 				break;
 		}
 	}
+
+	if (!mouseMoved) {
+		Mouse_Still(&lastInput.mouse);
+	}
+}
+
+KN_API Input* UI_InputPoll(void)
+{
+	// TODO: Not the preferred the way to do this since it doesn't indicate
+	// how long the pointer lasts;
+	return &lastInput;
 }

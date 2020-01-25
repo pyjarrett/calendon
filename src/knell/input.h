@@ -14,11 +14,6 @@ typedef struct {
 	uint32_t size;
 } KeySet;
 
-void KeySet_reset(KeySet* list);
-bool KeySet_add(KeySet* list, SDL_Keycode key);
-void KeySet_remove(KeySet* list, SDL_Keycode key);
-bool KeySet_contains(KeySet* list, SDL_Keycode key);
-
 /**
  * Lists of which keys are down, and which are up.
  */
@@ -27,4 +22,17 @@ typedef struct {
 	KeySet up;
 } KeyInputs;
 
-#endif /* KN_INPUT_H */
+typedef struct {
+	int x, y;
+	int dx, dy;
+} Mouse;
+
+void KeySet_reset(KeySet* list);
+bool KeySet_add(KeySet* list, SDL_Keycode key);
+void KeySet_remove(KeySet* list, SDL_Keycode key);
+bool KeySet_contains(KeySet* list, SDL_Keycode key);
+
+void Mouse_Still(Mouse* m);
+void Mouse_Move(Mouse*, int32_t x, int32_t y, int32_t dx, int32_t dy);
+
+#endif /* KN_INPUT */

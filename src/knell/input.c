@@ -52,3 +52,22 @@ bool KeySet_contains(KeySet* list, SDL_Keycode key)
 	}
 	return false;
 }
+
+/**
+ * The mouse remained still, so clear out dx and dy movements.
+ */
+void Mouse_Still(Mouse* m)
+{
+	KN_ASSERT(m, "Cannot keep a null mouse still");
+	m->dx = 0;
+	m->dy = 0;
+}
+
+void Mouse_Move(Mouse* m, int32_t x, int32_t y, int32_t dx, int32_t dy)
+{
+	KN_ASSERT(m, "Cannot move a null mouse");
+	m->x = x;
+	m->y = y;
+	m->dx = dx;
+	m->dy = dy;
+}

@@ -26,11 +26,6 @@ KN_API void R_StartFrame(void)
 
 	const rgba8i black = { 0, 0, 0, 0 };
 	RLL_Clear(black);
-
-	float4 origin = float4_Make(100.0f, 100.0f, 0.0f, 1.0f);
-	float4 white = float4_Make(1.0f, 1.0f, 1.0f, 1.0f);
-	dimension2f sample = { 10.0f, 20.0f };
-	RLL_DrawDebugRect(origin, sample, white);
 }
 
 /**
@@ -44,6 +39,13 @@ KN_API void R_EndFrame(void)
 KN_API void R_DrawDebugFullScreenRect(void)
 {
 	RLL_DrawDebugFullScreenRect();
+}
+
+KN_API void R_DrawDebugRect(float2 position, dimension2f dimensions, rgb8 color)
+{
+	RLL_DrawDebugRect(float4_Make(position.x, position.y, 0.0f, 1.0f),
+		dimensions, float4_Make((float)color.r / 255.0f,
+			(float)color.g / 255.0f, (float)color.b / 255.0f, 1.0f));
 }
 
 KN_API void R_DrawDebugLine(float x1, float y1, float x2, float y2, rgb8 color)

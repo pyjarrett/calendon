@@ -26,6 +26,7 @@ KN_API void R_StartFrame(void);
 KN_API void R_EndFrame(void);
 
 KN_API void R_DrawDebugFullScreenRect(void);
+KN_API void R_DrawDebugRect(float2 position, dimension2f dimensions, rgb8 color);
 KN_API void R_DrawDebugLine(float x1, float y1, float x2, float y2, rgb8 color);
 KN_API void R_DrawDebugLineStrip(float2* points, uint32_t numPoints, rgb8 color);
 
