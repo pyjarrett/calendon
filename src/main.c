@@ -24,6 +24,14 @@ static uint64_t lastTick;
 #define MAX_GAME_LIB_NAME_LENGTH 1024
 #define MAX_ASSET_DIR_LENGTH 1024
 
+#ifdef _WIN32
+	#define KN_DEFAULT_ASSET_PATH "C:/workshop/knell/assets"
+	#define KN_DEFAULT_GAME_LIBRARY "C:/workshop/knell/cmake-build-debug/src/demos/koch_curve.dll"
+#else
+	#define KN_DEFAULT_ASSET_PATH "/home/paul/lab/knell/assets"
+	#define KN_DEFAULT_GAME_LIBRARY "/home/paul/lab/knell/cmake-build-debug/src/demos/libkoch_curve.so"
+#endif
+
 typedef struct {
 	char gameLib[MAX_GAME_LIB_NAME_LENGTH];
 	char assetDir[MAX_ASSET_DIR_LENGTH];
@@ -120,22 +128,14 @@ void Main_InitAllSystems(void)
 	Time_Init();
 
 	if (strlen(mainConfig.assetDir) == 0) {
-#ifdef _WIN32
-		Assets_Init("C:/workshop/knell/assets");
-#else
-		Assets_Init("/home/paul/lab/knell/assets");
-#endif
+		Assets_Init(KN_DEFAULT_ASSET_PATH);
 	}
 	else {
 		Assets_Init(mainConfig.assetDir);
 	}
 
 	if (strlen(mainConfig.gameLib) == 0) {
-#ifdef _WIN32
-		Game_Load("C:/workshop/knell/cmake-build-debug/src/demos/koch_curve.dll");
-#else
-		Game_Load("/home/paul/lab/knell/cmake-build-debug/src/demos/libkoch_curve.so");
-#endif
+		Game_Load(KN_DEFAULT_GAME_LIBRARY);
 	}
 	else {
 		Game_Load(mainConfig.gameLib);
