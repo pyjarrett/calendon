@@ -150,6 +150,31 @@ if (UNIX)
 	link_directories(SYSTEM "${VENDOR_SPARTAN_FILE_UTILS_ROOT}/lib")
 endif (UNIX)
 
+# The knell driver should depend on all demos to ensure that they are built
+# before running the driver to prevent problems where you're trying to
+# iterate but your shared lib isn't being built.
+set(KN_ALL_DEMOS "" CACHE INTERNAL "KN_ALL_DEMOS")
+# Describe a demo and link it against knell-lib, and add it to the demo list
+# so that knell will depend on it and force it to be build when knell is built.
+#
+# Format:
+#   add_demo(NAME test_name SOURCES a.cpp b.cpp)
+#   add_demo(NAME test_name SOURCES a.cpp b.cpp LIBS GL)
+#
+function(add_demo)
+	set(options "")
+	set(oneValueArgs NAME)
+	set(multiValueArgs SOURCES LIBS)
+	cmake_parse_arguments(DEMO "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+	add_library(${DEMO_NAME} SHARED ${DEMO_SOURCES})
+	target_link_libraries(${DEMO_NAME} knell-lib)
+	target_link_libraries(${DEMO_NAME} ${DEMO_LIBS})
+
+	set(KN_ALL_DEMOS ${KN_ALL_DEMOS} ${DEMO_NAME} CACHE INTERNAL "KN_ALL_DEMOS")
+	message("Adding ${DEMO_NAME} to demo list.")
+endfunction()
+
 # Use "feature test macro" to change POSIX support to allow use of
 # CLOCK_MONOTONIC.
 # http://man7.org/linux/man-pages/man7/feature_test_macros.7.html
@@ -168,8 +193,10 @@ remove_definitions(-DKN_LIBRARY)
 add_definitions(-DKN_LIBRARY=0)
 add_executable(knell src/main.c)
 
-target_link_libraries(knell knell-lib ${SAMPLES_SHARED})
-add_dependencies(knell knell-lib ${SAMPLES_SHARED})
+target_link_libraries(knell knell-lib ${KN_ALL_DEMOS})
+add_dependencies(knell knell-lib ${KN_ALL_DEMOS})
+
+message("Demos are ${KN_ALL_DEMOS}")
     
 if (WIN32)
 	add_custom_command(TARGET knell POST_BUILD
