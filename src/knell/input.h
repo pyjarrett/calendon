@@ -1,3 +1,6 @@
+#ifndef KN_INPUT_H
+#define KN_INPUT_H
+
 #include "kn.h"
 #include "compat-sdl.h"
 
@@ -23,3 +26,5 @@ typedef struct {
 	KeySet down;
 	KeySet up;
 } KeyInputs;
+
+#endif /* KN_INPUT_H */
