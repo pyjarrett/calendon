@@ -17,6 +17,9 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
+# For sourcetrail and other tools
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Debug: Include debugging symbols and most warnings.
 # Release: No debugging symbol and optimized for release.
 # Coverage: Flags for generated code coverage under GCC.
