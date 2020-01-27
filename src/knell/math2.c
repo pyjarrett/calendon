@@ -55,6 +55,11 @@ KN_API float2 float2_Sub(float2 left, float2 right)
 	return (float2) { left.x - right.x, left.y - right.y };
 }
 
+KN_API float2 float2_Multiply(float2 v, float s)
+{
+	return (float2) { v.x * s, v.y * s };
+}
+
 KN_API float2 float2_Divide(float2 v, float s)
 {
 	return (float2) { v.x / s, v.y / s };

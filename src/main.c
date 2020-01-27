@@ -26,7 +26,7 @@ static uint64_t lastTick;
 
 #ifdef _WIN32
 	#define KN_DEFAULT_ASSET_PATH "C:/workshop/knell/assets"
-	#define KN_DEFAULT_GAME_LIBRARY "C:/workshop/knell/cmake-build-debug/src/demos/koch_curve.dll"
+	#define KN_DEFAULT_GAME_LIBRARY "C:/workshop/knell/cmake-build-debug/src/demos/interpolated-transitions.dll"
 #else
 	#define KN_DEFAULT_ASSET_PATH "/home/paul/lab/knell/assets"
 	#define KN_DEFAULT_GAME_LIBRARY "/home/paul/lab/knell/cmake-build-debug/src/demos/libmouse-tracker.so"
@@ -152,7 +152,7 @@ void Main_InitAllSystems(void)
 
 #ifdef _WIN32
 	// TODO: This should be hidden unless doing an "diagnostic-startup-crash" or some other special behavior.
-	Proc_PrintLoadedDLLs();
+	//Proc_PrintLoadedDLLs();
 #endif
 }
 
