@@ -1,11 +1,11 @@
 #include "input.h"
 
-void KeySet_Reset(KeySet* list)
+KN_API void KeySet_Reset(KeySet* list)
 {
 	list->size = 0;
 }
 
-bool KeySet_Add(KeySet* list, SDL_Keycode key)
+KN_API bool KeySet_Add(KeySet* list, SDL_Keycode key)
 {
 	if (KeySet_Contains(list, key)) {
 		return false;
@@ -34,7 +34,7 @@ static void KeySet_removeIndex(KeySet* list, uint32_t index)
 	list->size = list->size - 1;
 }
 
-void KeySet_Remove(KeySet* list, SDL_Keycode key)
+KN_API void KeySet_Remove(KeySet* list, SDL_Keycode key)
 {
 	for (uint32_t i = 0; i < list->size; ++i) {
 		if (list->keys[i] == key) {
@@ -43,7 +43,7 @@ void KeySet_Remove(KeySet* list, SDL_Keycode key)
 	}
 }
 
-bool KeySet_Contains(KeySet* list, SDL_Keycode key)
+KN_API bool KeySet_Contains(KeySet* list, SDL_Keycode key)
 {
 	for (uint32_t i = 0; i < list->size; ++i) {
 		if (list->keys[i] == key) {
