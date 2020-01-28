@@ -28,11 +28,15 @@ typedef struct {
 	// elapsed time, used to determine t, based on the animation rate
 	uint64_t elapsed;
 
+	// The time it takes to change states.
+	uint64_t rate;
+
 	// current interpolation value
 	float t;
 
 	// Current state of the animation.
 	// need some sort of indication of which state being transitioned to.
+	// TODO: Convert to a Transform2
 	float2* last, *next;
 } BinaryAnimation;
 
@@ -45,10 +49,28 @@ void Anim_Start(BinaryAnimation* anim)
 		anim->next = temp;
 
 		anim->transitioning = true;
-		anim->elapsed = (uint64_t) 0;
+		anim->elapsed = (uint64_t)0;
+		anim->rate = Time_MsToNs(2000);
 		anim->t = 0.0f;
 		anim->position = float2_Add(float2_Multiply(*anim->last, 1.0f - anim->t), float2_Multiply(*anim->next, anim->t));
 	}
+}
+
+/**
+ * Cause an existing animation in transition to reverse directions.
+ */
+void Anim_Reverse(BinaryAnimation* anim)
+{
+	if (!anim->transitioning) return;
+
+	float2* temp = anim->last;
+	anim->last = anim->next;
+	anim->next = temp;
+
+	anim->t = 1.0f - anim->t;
+	anim->elapsed = anim->rate - anim->elapsed;
+
+	// Position should remain the same for this frame.
 }
 
 /**
@@ -59,25 +81,23 @@ void Anim_Recalculate(BinaryAnimation *anim)
 	anim->position = float2_Add(float2_Multiply(*anim->last, 1.0f - anim->t), float2_Multiply(*anim->next, anim->t));
 }
 
-void Anim_Update(BinaryAnimation* anim, uint64_t dt, uint64_t rate)
+void Anim_Update(BinaryAnimation* anim, uint64_t dt)
 {
 	if (anim->transitioning) {
 		anim->elapsed += dt;
-		anim->elapsed = fmin(anim->elapsed, rate);
-		anim->t = (1.0f * anim->elapsed / rate); // puts t in [0, 1];
-		anim->t = fmin(1.0f, fmax(anim->t, 0.0f));
+		anim->elapsed = fmin(anim->elapsed, anim->rate);
+		anim->t = (1.0f * anim->elapsed / anim->rate); // puts t in [0, 1];
+		anim->t = fminf(1.0f, fmaxf(anim->t, 0.0f));
 		KN_ASSERT(0.0f <= anim->t && anim->t <= 1.0f, "Interpolation t is not in range [0, 1]");
-		Anim_Recalculate(anim);
-
 		Anim_Recalculate(anim);
 	}
 }
 
-void Anim_Complete(BinaryAnimation* anim, uint64_t rate)
+void Anim_Complete(BinaryAnimation* anim)
 {
-	if (anim->transitioning && anim->elapsed >= rate) {
-		anim->elapsed = rate;
-		anim->t = (1.0f * anim->elapsed / rate); // puts t in [0, 1];
+	if (anim->transitioning && anim->elapsed >= anim->rate) {
+		anim->elapsed = anim->rate;
+		anim->t = (1.0f * anim->elapsed / anim->rate); // puts t in [0, 1];
 		anim->transitioning = false;
 	}
 }
@@ -117,17 +137,19 @@ KN_GAME_API void Game_Tick(uint64_t dt)
 	Input* input = UI_InputPoll();
 	KN_ASSERT(input, "Input poll provided a null pointer.");
 
-	const uint64_t rate = Time_MsToNs(400);
 	if (!squareAnim.transitioning) {
 		if (KeySet_Contains(&input->keySet.down, SDLK_SPACE)) {
 			Anim_Start(&squareAnim);
 		}
 	}
 	else {
-		Anim_Update(&squareAnim, dt, rate);
+		Anim_Update(&squareAnim, dt);
+		if (KeySet_Contains(&input->keySet.down, SDLK_SPACE)) {
+			Anim_Reverse(&squareAnim);
+		}
 	}
 
-	Anim_Complete(&squareAnim, rate);
+	Anim_Complete(&squareAnim);
 
 	//const float pi = 3.14159f;
 	//t *= (2.0f * pi); // convert to [0, 2*pi]
