@@ -13,21 +13,30 @@
 
 LogHandle LogSysSample;
 
-
+/**
+ * Stores the current state of an animation.
+ *
+ * This probably should be divided into multiple types.
+ */
 typedef struct {
 	// Current position.
 	float2 position;
 
+	// Is this animation currently active?
 	bool transitioning;
-	float t;  // current interpolation value
-	uint64_t elapsed; // elapsed time, used to determine t
+
+	// elapsed time, used to determine t, based on the animation rate
+	uint64_t elapsed;
+
+	// current interpolation value
+	float t;
 
 	// Current state of the animation.
 	// need some sort of indication of which state being transitioned to.
 	float2* last, *next;
 } BinaryAnimation;
 
-void anim_start(BinaryAnimation* anim)
+void Anim_Start(BinaryAnimation* anim)
 {
 	if (!anim->transitioning) {
 		// Move to the next state transition.
@@ -42,7 +51,15 @@ void anim_start(BinaryAnimation* anim)
 	}
 }
 
-void anim_update(BinaryAnimation* anim, uint64_t dt, uint64_t rate)
+/**
+ * Recalculates an animation position based upon its current "t" value.
+ */
+void Anim_Recalculate(BinaryAnimation *anim)
+{
+	anim->position = float2_Add(float2_Multiply(*anim->last, 1.0f - anim->t), float2_Multiply(*anim->next, anim->t));
+}
+
+void Anim_Update(BinaryAnimation* anim, uint64_t dt, uint64_t rate)
 {
 	if (anim->transitioning) {
 		anim->elapsed += dt;
@@ -50,12 +67,13 @@ void anim_update(BinaryAnimation* anim, uint64_t dt, uint64_t rate)
 		anim->t = (1.0f * anim->elapsed / rate); // puts t in [0, 1];
 		anim->t = fmin(1.0f, fmax(anim->t, 0.0f));
 		KN_ASSERT(0.0f <= anim->t && anim->t <= 1.0f, "Interpolation t is not in range [0, 1]");
-		anim->position = float2_Add(float2_Multiply(*anim->last, 1.0f - anim->t),
-			float2_Multiply(*anim->next, anim->t));
+		Anim_Recalculate(anim);
+
+		Anim_Recalculate(anim);
 	}
 }
 
-void anim_complete(BinaryAnimation* anim, uint64_t rate)
+void Anim_Complete(BinaryAnimation* anim, uint64_t rate)
 {
 	if (anim->transitioning && anim->elapsed >= rate) {
 		anim->elapsed = rate;
@@ -102,14 +120,14 @@ KN_GAME_API void Game_Tick(uint64_t dt)
 	const uint64_t rate = Time_MsToNs(400);
 	if (!squareAnim.transitioning) {
 		if (KeySet_Contains(&input->keySet.down, SDLK_SPACE)) {
-			anim_start(&squareAnim);
+			Anim_Start(&squareAnim);
 		}
 	}
 	else {
-		anim_update(&squareAnim, dt, rate);
+		Anim_Update(&squareAnim, dt, rate);
 	}
 
-	anim_complete(&squareAnim, rate);
+	Anim_Complete(&squareAnim, rate);
 
 	//const float pi = 3.14159f;
 	//t *= (2.0f * pi); // convert to [0, 2*pi]
