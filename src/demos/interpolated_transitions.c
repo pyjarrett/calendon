@@ -81,24 +81,25 @@ void Anim_Recalculate(BinaryAnimation *anim)
 	anim->position = float2_Add(float2_Multiply(*anim->last, 1.0f - anim->t), float2_Multiply(*anim->next, anim->t));
 }
 
-void Anim_Update(BinaryAnimation* anim, uint64_t dt)
-{
-	if (anim->transitioning) {
-		anim->elapsed += dt;
-		anim->elapsed = fmin(anim->elapsed, anim->rate);
-		anim->t = (1.0f * anim->elapsed / anim->rate); // puts t in [0, 1];
-		anim->t = fminf(1.0f, fmaxf(anim->t, 0.0f));
-		KN_ASSERT(0.0f <= anim->t && anim->t <= 1.0f, "Interpolation t is not in range [0, 1]");
-		Anim_Recalculate(anim);
-	}
-}
-
 void Anim_Complete(BinaryAnimation* anim)
 {
 	if (anim->transitioning && anim->elapsed >= anim->rate) {
 		anim->elapsed = anim->rate;
 		anim->t = (1.0f * anim->elapsed / anim->rate); // puts t in [0, 1];
 		anim->transitioning = false;
+	}
+}
+
+void Anim_Update(BinaryAnimation* anim, uint64_t dt)
+{
+	if (anim->transitioning) {
+		anim->elapsed += dt;
+		anim->elapsed = (uint64_t)fminf(anim->elapsed, anim->rate);
+		anim->t = (1.0f * (float)anim->elapsed / (float)anim->rate); // puts t in [0, 1];
+		anim->t = fminf(1.0f, fmaxf(anim->t, 0.0f));
+		KN_ASSERT(0.0f <= anim->t && anim->t <= 1.0f, "Interpolation t is not in range [0, 1]");
+		Anim_Recalculate(anim);
+		Anim_Complete(anim);
 	}
 }
 
@@ -137,25 +138,28 @@ KN_GAME_API void Game_Tick(uint64_t dt)
 	Input* input = UI_InputPoll();
 	KN_ASSERT(input, "Input poll provided a null pointer.");
 
+	// TODO: Add to Input detecting "un-reset" keys.
+	// Input_FreshlyPressed(keyname)
+	static bool spaceProcessed = false;
+	const bool spaceDown = KeySet_Contains(&input->keySet.down, SDLK_SPACE);
+
 	if (!squareAnim.transitioning) {
-		if (KeySet_Contains(&input->keySet.down, SDLK_SPACE)) {
+		if (spaceDown && !spaceProcessed) {
 			Anim_Start(&squareAnim);
+			spaceProcessed = true;
 		}
 	}
 	else {
 		Anim_Update(&squareAnim, dt);
-		if (KeySet_Contains(&input->keySet.down, SDLK_SPACE)) {
+		if (spaceDown && !spaceProcessed) {
 			Anim_Reverse(&squareAnim);
+			spaceProcessed = true;
 		}
 	}
 
-	Anim_Complete(&squareAnim);
-
-	//const float pi = 3.14159f;
-	//t *= (2.0f * pi); // convert to [0, 2*pi]
-	//t = sinf(t);  // convert to [-1, 1]
-	//t += 1; // convert to [0, 2]
-	//t *= 0.5f; // convert to [0, 1]
+	if (!spaceDown) {
+		spaceProcessed = false;
+	}
 }
 
 KN_GAME_API void Game_Shutdown()
