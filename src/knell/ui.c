@@ -11,11 +11,11 @@ Input lastInput;
  * Create the window for drawing according to the available program
  * configuration.
  */
-static void UI_CreateWindow(const uint32_t width, const uint32_t height)
+static void UI_CreateWindow(const uint32_t w, const uint32_t h)
 {
 	const uint32_t windowInitFlags = SDL_WINDOW_OPENGL;
 	window = SDL_CreateWindow("Powerblocks (knell)", SDL_WINDOWPOS_CENTERED,
-			SDL_WINDOWPOS_CENTERED, (int)width, (int)height, windowInitFlags);
+			SDL_WINDOWPOS_CENTERED, (int)w, (int)h, windowInitFlags);
 	if (window == NULL) {
 		SDL_Quit();
 		KN_FATAL_ERROR("Unable to create SDL windows\n");
