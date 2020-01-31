@@ -79,9 +79,9 @@ KN_GAME_API void Game_Init(void)
 	KN_TRACE(LogSysSample, "Sample loaded");
 
 	sampleLoop.numStates = SAMPLE_POINTS;
-	sampleLoop.elapsed[0] = Time_MsToNs(250);
+	sampleLoop.elapsed[0] = Time_MsToNs(400);
 	sampleLoop.elapsed[1] = Time_MsToNs(1000);
-	sampleLoop.elapsed[2] = Time_MsToNs(150);
+	sampleLoop.elapsed[2] = Time_MsToNs(2000);
 	sampleLoop.elapsed[3] = Time_MsToNs(500);
 
 	points[0] = float2_Make(200, 200);
