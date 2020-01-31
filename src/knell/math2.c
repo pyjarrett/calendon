@@ -1,5 +1,6 @@
 #include "math2.h"
 
+#include "kn.h"
 #include <math.h>
 
 static const float pi = 3.14159265f;
@@ -73,6 +74,12 @@ KN_API float float2_Length(float2 v)
 KN_API float2 float2_Midpoint(float2 left, float2 right)
 {
 	return float2_Divide(float2_Add(left, right), 2.0f);
+}
+
+KN_API float2 float2_Lerp(float2 from, float2 to, float alpha)
+{
+	KN_ASSERT(0.0f <= alpha && alpha <= 1.0f, "Alpha %f is not in range [0,1]", alpha);
+	return float2_Add(float2_Multiply(from, 1.0f - alpha), float2_Multiply(to, alpha));
 }
 
 KN_API PlanarAngle float2_DirectionBetween(float2 from, float2 to)
