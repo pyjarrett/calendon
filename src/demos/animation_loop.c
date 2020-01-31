@@ -19,7 +19,7 @@ typedef uint32_t AnimationStateId;
 typedef struct {
 	AnimationStateId current;
 	uint64_t elapsed;
-} AnimationCursor;
+} AnimationLoopCursor;
 
 /**
  * Animations really don't care about what data they are accessing.  A timed
@@ -41,7 +41,7 @@ static AnimationStateId AnimLoop_NextState(AnimationLoop* loop, uint64_t current
 /**
  * Calculates the fraction of the transition which is complete for the cursor.
  */
-float AnimLoop_CalcAlpha(AnimationLoop* loop, AnimationCursor* cursor)
+float AnimLoop_CalcAlpha(AnimationLoop* loop, AnimationLoopCursor* cursor)
 {
 	KN_ASSERT(loop != NULL, "Cannot update a null animation loop");
 	KN_ASSERT(cursor != NULL, "Cannot update a null animation cursor");
@@ -56,7 +56,7 @@ float AnimLoop_CalcAlpha(AnimationLoop* loop, AnimationCursor* cursor)
  * Using an animation loop, update the animation cursor to the next stage
  * if necessary.
  */
-void Anim_Tick(AnimationLoop* loop, AnimationCursor* cursor, uint64_t dt)
+void AnimLoop_Tick(AnimationLoop* loop, AnimationLoopCursor* cursor, uint64_t dt)
 {
 	KN_ASSERT(loop != NULL, "Cannot update a null animation loop");
 	KN_ASSERT(cursor != NULL, "Cannot update a null animation cursor");
@@ -69,7 +69,7 @@ void Anim_Tick(AnimationLoop* loop, AnimationCursor* cursor, uint64_t dt)
 }
 
 #define SAMPLE_POINTS 4
-AnimationCursor sampleCursor;
+AnimationLoopCursor sampleCursor;
 AnimationLoop sampleLoop;
 float2 points[SAMPLE_POINTS];
 
@@ -107,7 +107,7 @@ KN_GAME_API void Game_Draw(void)
 
 KN_GAME_API void Game_Tick(uint64_t dt)
 {
-	Anim_Tick(&sampleLoop, &sampleCursor, dt);
+	AnimLoop_Tick(&sampleLoop, &sampleCursor, dt);
 }
 
 KN_GAME_API void Game_Shutdown()
