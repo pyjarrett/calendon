@@ -96,6 +96,22 @@
     } while (0)
 
 /*
+ * The two different glue macros here allow for `__LINE__` to provide an
+ * accurate line value.
+ */
+#define KN_GLUE(a, b) a ## b
+#define KN_GLUE_(a, b) KN_GLUE(a, b)
+
+/**
+ * Implement a local version of static assert since `static_assert` is part of
+ * C11.
+ */
+#define KN_STATIC_ASSERT(expr, message) \
+	enum { \
+		KN_GLUE_(g_static_assert_fail, __LINE__) = 1 / (int)(!!(expr)) \
+	}
+
+/*
  * Reserve space statically to write a fatal error message when things go wrong.
  */
 enum { fatalErrorBufferLength = 1024 };

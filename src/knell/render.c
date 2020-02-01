@@ -29,11 +29,28 @@ KN_API void R_StartFrame(void)
 }
 
 /**
- * The frame is now done and should be submitted for drawing.
+ * The frame is now done and should be submitted for drawing.bookmarks
  */
 KN_API void R_EndFrame(void)
 {
 	RLL_EndFrame();
+}
+
+KN_API bool R_CreateSprite(SpriteId* id)
+{
+	KN_ASSERT(id != NULL, "Cannot assign a sprite to a null pointer.");
+
+	*id = ++nextSpriteId;
+}
+
+KN_API bool R_LoadSprite(SpriteId id, const char* path, uint32_t pathLength)
+{
+
+}
+
+KN_API void R_DrawSprite(SpriteId id, float2 position, dimension2f size)
+{
+
 }
 
 KN_API void R_DrawDebugFullScreenRect(void)

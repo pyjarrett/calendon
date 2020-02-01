@@ -13,6 +13,12 @@
  *
  * This engine supports 2D graphics only.  This includes sprites, lines,
  * text, and polygons.
+ *
+ * ## Design Notes
+ *
+ * There's a lot of duplication between this and the `render-ll.h`.  The
+ * intention is to allow for cases where the interface provided to game clients
+ * requires conversion to appropriate 3D functions to operate the back-end.
  */
 #ifndef KN_RENDER_HL_H
 #define KN_RENDER_HL_H
@@ -20,10 +26,15 @@
 #include "kn.h"
 #include "color.h"
 #include "math2.h"
+#include "sprite.h"
 
 KN_API void R_Init(uint32_t width, uint32_t height);
 KN_API void R_StartFrame(void);
 KN_API void R_EndFrame(void);
+
+KN_API bool R_CreateSprite(SpriteId* id);
+KN_API bool R_LoadSprite(SpriteId id, const char* path, uint32_t pathLength);
+KN_API void R_DrawSprite(SpriteId id, float2 position, dimension2f size);
 
 KN_API void R_DrawDebugFullScreenRect(void);
 KN_API void R_DrawDebugRect(float2 position, dimension2f dimensions, rgb8 color);

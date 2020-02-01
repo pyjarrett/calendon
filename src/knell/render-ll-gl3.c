@@ -574,6 +574,27 @@ void RLL_SetFullScreenViewport()
 	glViewport(0, 0, windowWidth, windowHeight);
 }
 
+bool RLL_CreateSprite(SpriteId* id)
+{
+	KN_ASSERT(id != NULL, "Cannot assign a sprite to a null id.");
+	return true;
+}
+
+bool RLL_LoadSprite(SpriteId id, const char* path, uint32_t pathLength)
+{
+	KN_UNUSED(id);
+	KN_UNUSED(path);
+	KN_UNUSED(pathLength);
+	return false;
+}
+
+void RLL_DrawSprite(SpriteId id, float2 position, dimension2f size)
+{
+	KN_UNUSED(id);
+	KN_UNUSED(position);
+	KN_UNUSED(size);
+}
+
 /**
  * Draw a fullscreen debug rect.
  */
