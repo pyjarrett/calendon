@@ -1,10 +1,14 @@
-/*
- * Functions and types common to many parts of Knell.
- *
- * The size of this prelude-style header should be reduced to minimum practical.
- */
 #ifndef KN_H
 #define KN_H
+
+/*
+ * This is the "standard" Knell header which most files should include to get
+ * the basic types and base functionality and macros used in Knell code.
+ *
+ * The size of this prelude-style header should be reduced to minimum practical
+ * to prevent introducing excessive elements throughout the engine and bloating
+ * compile times.
+ */
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -12,10 +16,10 @@
 #include <stdlib.h>
 
 /*
- * Markers for engine library functions.
+ * Symbol export/import markers for engine library functions.
  *
- * - `KN_API` marker for engine library functions
- * - `KN_GAME_API` marker for game library functions
+ * - Use `KN_API` for engine library functions (within knell-lib)
+ * - Use `KN_GAME_API` for game library functions (in demo/game code)
  *
  * Windows:
  * - dllimport - describe that we're going to find this when we link
@@ -23,8 +27,7 @@
  *
  * Linux:
  * - Overrides the hidden visibility set by default by our build.
- * - __attribute__((visibility("default"))
- *
+ * - __attribute__((visibility("default")) the symbol should be made visible
  */
 #ifdef _WIN32
 	#if KN_LIBRARY
@@ -46,6 +49,10 @@
  * Assert and other debug functionality should be able to trigger a breakpoint
  * in the debugger.
  *
+ * This behavior is exposed globally to allow breakpoints on non-fatal
+ * conditions to be placed in source control for difficult bugs which may
+ * require multiple check-ins to diagnose and fix.
+ *
  * Use cases:
  * - assertion failure
  * - excessive frame time
@@ -65,12 +72,22 @@
 	#endif
 #endif
 
+/*
+ * KN_DEBUG_BREAK might be defined in release builds created with debug symbols
+ * (e.g. RelWithDebugInfo).
+ */
 #ifndef KN_DEBUG_BREAK
 	#define KN_DEBUG_BREAK() do {} while(0)
 #endif
 
 /**
- * Runtime assert mechanism.
+ * Runtime assert mechanism.  `KN_ASSERT` is the preferred method of declaring
+ * pre- and post-conditions within code, and also conditions which must be
+ * true for correct code execution.
+ *
+ * `KN_ASSERT` is for declaring conditions which should only be violated as a
+ * result of a bug, not an abnormal condition found during runtime (e.g. a
+ * missing asset file).
 */
 #define KN_ASSERT(condition, message, ...) do { \
 		if (!(condition)) { \
@@ -84,11 +101,13 @@
 enum { fatalErrorBufferLength = 1024 };
 extern KN_API char fatalErrorBuffer[fatalErrorBufferLength];
 
-/**
+/*
  * An unrecoverable event happened at this point in the program.
  *
  * This causes a crash.  Use this when the program cannot recover from whatever
- * ill the program is in at this point.
+ * ill the program is in at this point.  Use `KN_FATAL_ERROR` to indicate
+ * problems where the program was expected to succeed at an operation but
+ * didn't, or an unrecoverable error occurred.
  */
 #ifdef _WIN32
 	#include "compat-windows.h"
@@ -108,16 +127,22 @@ extern KN_API char fatalErrorBuffer[fatalErrorBufferLength];
 
 /**
  * Used to suppress errors resulting from unused values.
+ *
+ * Typically this gets used during debugging to prevent from having to add and
+ * remove function parameter names.  Long-term usage of `KN_UNUSED` is
+ * discouraged and indicates that an API is likely to be deprecated or changed.
  */
 #define KN_UNUSED(value) (void)(value)
 
-/**
+/*
  * Macro to be used while writing code to indicate that this code should never
- * be submitted for real.  Only define this is debug mode, since that mode should
- * never be used in production.
+ * be submitted for real.  Define to something meaningless in production to
+ * trigger a compilation error.
  */
 #if KN_DEBUG
 	#define KN_DO_NOT_SUBMIT
+#else
+	#define KN_DO_NOT_SUBMIT production_code_has_do_not_submit
 #endif
 
 #endif /* KN_H */
