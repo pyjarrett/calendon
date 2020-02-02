@@ -52,7 +52,9 @@ KN_GAME_API void Game_Init(void)
 
 	// Get the path to load.
 	PathBuffer spritePath;
-	Assets_PathFor("sprites/test_sprite.png", spritePath.path, spritePath.length);
+    memset(&spritePath, 0, sizeof(PathBuffer));
+	Assets_PathFor("sprites/test_sprite.png", spritePath.path, KN_PATH_MAX);
+    spritePath.length = (uint32_t)strlen(spritePath.path);
 
 	// Load the data into a temporary format in memory.
 
@@ -63,8 +65,8 @@ KN_GAME_API void Game_Init(void)
 
 	// Create a texture from the temporary format and set up the texture
 	// environment.
-	if (!R_LoadSprite(spriteId, spritePath.path, spritePath.length)) {
-		KN_FATAL_ERROR("Unable to load texture for sprite");
+	if (!R_LoadSprite(spriteId, spritePath.path)) {
+		KN_FATAL_ERROR("Unable to load texture for sprite: '%s'", spritePath.path);
 	}
 }
 

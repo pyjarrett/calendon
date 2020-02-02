@@ -39,18 +39,17 @@ KN_API void R_EndFrame(void)
 KN_API bool R_CreateSprite(SpriteId* id)
 {
 	KN_ASSERT(id != NULL, "Cannot assign a sprite to a null pointer.");
-
-	*id = ++nextSpriteId;
+	return RLL_CreateSprite(id);
 }
 
-KN_API bool R_LoadSprite(SpriteId id, const char* path, uint32_t pathLength)
+KN_API bool R_LoadSprite(SpriteId id, const char* path)
 {
-
+	return RLL_LoadSprite(id, path);
 }
 
 KN_API void R_DrawSprite(SpriteId id, float2 position, dimension2f size)
 {
-
+	RLL_DrawSprite(id, position, size);
 }
 
 KN_API void R_DrawDebugFullScreenRect(void)

@@ -4,9 +4,22 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 
 extern LogHandle LogSysAssets;
 
+/**
+ * Reads file assets according to a specific file type format (binary or text).
+ * Text appends a trailing '\0' so functions requiring null-terminated input
+ * work correctly.
+ *
+ * @param filename some valid, null-terminated path
+ * @param format `KN_FILE_TYPE_BINARY` or `KN_FILE_TYPE_TEXT`
+ * @param buffer where the file data will be written to
+ * @return true if succeeded, false otherwise
+ *
+ * @see KN_FILE_TYPE_BINARY, KN_FILE_TYPE_TEXT
+ */
 bool Assets_ReadFile(const char *filename, uint32_t format, DynamicBuffer *buffer)
 {
 	if (!filename) {
@@ -62,5 +75,20 @@ bool Assets_ReadFile(const char *filename, uint32_t format, DynamicBuffer *buffe
 
 	buffer->size = (uint32_t)amountRead;
 
+	return true;
+}
+
+bool Assets_LastModifiedTime(const char* filename, uint64_t* lastModifiedTime)
+{
+	if (!filename) {
+		return false;
+	}
+
+	struct stat info;
+	if (stat(filename, &info) != 0) {
+		return false;
+	}
+
+	*lastModifiedTime = (uint64_t)info.st_mtime;
 	return true;
 }

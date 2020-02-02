@@ -10,11 +10,16 @@
 #include "color.h"
 #include "math2.h"
 #include "math4.h"
+#include "sprite.h"
 
 void RLL_Init(uint32_t width, uint32_t height);
 void RLL_StartFrame(void);
 void RLL_EndFrame(void);
 void RLL_Clear(rgba8i color);
+
+bool RLL_CreateSprite(SpriteId* id);
+bool RLL_LoadSprite(SpriteId id, const char* path);
+void RLL_DrawSprite(SpriteId id, float2 position, dimension2f size);
 
 void RLL_DrawDebugFullScreenRect();
 void RLL_DrawDebugRect(float4 position, dimension2f dimensions, float4 color);

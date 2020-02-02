@@ -27,7 +27,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Future configurations:
 # Profile: Add -pg flag for GCC to use with gprof
 # RelWIthDebugInfo: Optimized build with debug symbols included.
-set(CMAKE_CONFIGURATION_TYPES Debug;Release;Coverage)
+if (UNIX)
+    set(CMAKE_CONFIGURATION_TYPES Debug;Release;Coverage)
+elseif (WIN32)
+    # Coverage is not supported on Windows.
+    set(CMAKE_CONFIGURATION_TYPES Debug;Release)
+endif()
 if(NOT CMAKE_BUILD_TYPE)
     # Visual studio might not correctly set CMAKEBUILD_TYPE
 	set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build Type: (Debug, Release)." FORCE)
@@ -140,6 +145,12 @@ if (WIN32)
 		glew32.lib
 		${KNELL_LIBS})
 
+	# zlib is required by libspng
+	vendorize(windows zlib 1.2.11)
+	include_directories(SYSTEM ${VENDOR_ZLIB_ROOT}/include)
+	link_directories(${VENDOR_ZLIB_ROOT}/Release/x64)
+	set(KNELL_LIBS ${KNELL_LIBS} zlibwapi.dll)
+
 	# dbghelp.dll isn't provided normally, it's part of the Debugging tools in
 	# the SDK, so an x64 version is included for creating minidumps.
 	vendorize(windows windows_sdk 10)
@@ -185,8 +196,8 @@ add_definitions(-D_POSIX_C_SOURCE=199309L)
 
 remove_definitions(-DKN_LIBRARY)
 add_definitions(-DKN_LIBRARY=0)
-add_subdirectory(src/knell)
 include_directories(SYSTEM src/)
+add_subdirectory(src/knell)
 
 remove_definitions(-DKN_LIBRARY)
 add_definitions(-DKN_LIBRARY=0)
@@ -214,8 +225,16 @@ if (WIN32)
 		$<TARGET_FILE_DIR:knell>
 		)
 
+	add_custom_command(TARGET knell POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_directory
+		${VENDOR_ZLIB_ROOT}/Release/x64
+		$<TARGET_FILE_DIR:knell>
+		)
+
     add_custom_command(TARGET knell POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:knell-lib> $<TARGET_FILE_DIR:knell>)
+        COMMAND ${CMAKE_COMMAND} -E copy
+		$<TARGET_FILE:knell-lib>
+		$<TARGET_FILE_DIR:knell>)
 
 	# Only create dumps in Debug.
 	# Uses a x64 version of the dll.

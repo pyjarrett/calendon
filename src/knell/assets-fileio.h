@@ -11,6 +11,7 @@ enum {
 	KN_FILE_TYPE_TEXT
 };
 
-bool Assets_ReadFile(const char *filename, uint32_t format, DynamicBuffer *buffer);
+KN_API bool Assets_ReadFile(const char *filename, uint32_t format, DynamicBuffer *buffer);
+KN_API bool Assets_LastModifiedTime(const char* filename, uint64_t* lastModifiedTime);
 
 #endif /* KN_FILEIO_H */

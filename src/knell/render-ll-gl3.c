@@ -4,11 +4,13 @@
 
 #include "assets.h"
 #include "assets-fileio.h"
-#include "compat-sdl.h"
 #include "color.h"
+#include "compat-sdl.h"
+#include "image.h"
 #include "log.h"
 #include "math4.h"
 #include "memory.h"
+#include "sprite.h"
 
 #include <spa_fu/spa_fu.h>
 
@@ -30,7 +32,7 @@
 	#define KN_ASSERT_NO_GL_ERROR() RLL_CheckGLError(__FILE__, __LINE__)
 	const char* RLL_GLTypeToString(GLenum type);
 	void RLL_PrintProgram(GLuint program);
-	void RLL_PrintGLVersion();
+	void RLL_PrintGLVersion(void);
 	void RLL_CheckGLError(const char* file, int line);
 #else
 	#define KN_ASSERT_NO_GL_ERROR()
@@ -76,7 +78,14 @@ static GLuint debugDrawBuffer;
  */
 static GLuint solidPolygonProgram;
 
+/*
+ * TODO: Not supporting reusable sprites yet.
+ */
 #define RLL_NUM_SPRITES 128
+#define RLL_MAX_SPRITE_TYPES 512
+SpriteId nextSpriteId;
+GLuint spriteTextures[RLL_MAX_SPRITE_TYPES];
+
 uint32_t spritesUsed;
 float4x4 spriteTransforms[RLL_NUM_SPRITES];
 float4 spriteVertexBuffer[RLL_NUM_SPRITES];
@@ -90,8 +99,9 @@ float4 spriteTint[RLL_NUM_SPRITES];
 uint32_t LogSysRender;
 
 bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* program);
-void RLL_FillBuffers();
-void RLL_LoadShaders();
+void RLL_FillBuffers(void);
+void RLL_InitSprites(void);
+void RLL_LoadShaders(void);
 
 #if KN_DEBUG
 void RLL_CheckGLError(const char* file, const int line)
@@ -364,6 +374,11 @@ void RLL_FillBuffers()
 	RLL_FillDebugQuadBuffer();
 }
 
+void RLL_InitSprites()
+{
+	nextSpriteId = 0;
+}
+
 void RLL_LoadFullScreenDebugShader()
 {
 	const int maxShaderTextLength = 1024;
@@ -545,6 +560,7 @@ void RLL_Init(const uint32_t width, const uint32_t height)
 	RLL_ConfigureVSync();
 	RLL_InitDummyVAO();
 	RLL_FillBuffers();
+	RLL_InitSprites();
 	RLL_LoadShaders();
 
 	windowWidth = (GLsizei)width;
@@ -577,15 +593,43 @@ void RLL_SetFullScreenViewport()
 bool RLL_CreateSprite(SpriteId* id)
 {
 	KN_ASSERT(id != NULL, "Cannot assign a sprite to a null id.");
+	*id = ++nextSpriteId;
 	return true;
 }
 
-bool RLL_LoadSprite(SpriteId id, const char* path, uint32_t pathLength)
+bool RLL_LoadSprite(SpriteId id, const char* path)
 {
-	KN_UNUSED(id);
-	KN_UNUSED(path);
-	KN_UNUSED(pathLength);
-	return false;
+	ImagePixels image;
+	if (!Image_Load(&image, path)) {
+		return false;
+	}
+
+	glGenTextures(1, &spriteTextures[id]);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, spriteTextures[id]);
+
+	// Don't mipmap for now.
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+
+	// TODO: Use proxy textures to test to see if sufficient space exists.
+	// TODO: Should this be GL_RGBA8?
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.width, image.height, 0,
+		GL_RGBA, GL_UNSIGNED_BYTE, image.pixels.contents);
+    //Mem_Release(&image.pixels);
+
+	// Set the texture parameters.
+	// https://stackoverflow.com/questions/3643932/what-is-the-scope-of-gltexparameters-in-opengl
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	KN_ASSERT(glIsTexture(spriteTextures[id]), "Unable to reserve texture for "
+		"sprite loading from path: %s", path);
+
+	return true;
 }
 
 void RLL_DrawSprite(SpriteId id, float2 position, dimension2f size)

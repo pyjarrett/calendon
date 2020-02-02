@@ -33,7 +33,7 @@ KN_API void R_StartFrame(void);
 KN_API void R_EndFrame(void);
 
 KN_API bool R_CreateSprite(SpriteId* id);
-KN_API bool R_LoadSprite(SpriteId id, const char* path, uint32_t pathLength);
+KN_API bool R_LoadSprite(SpriteId id, const char* path);
 KN_API void R_DrawSprite(SpriteId id, float2 position, dimension2f size);
 
 KN_API void R_DrawDebugFullScreenRect(void);

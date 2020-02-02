@@ -16,6 +16,7 @@
 #include "knell/kn.h"
 
 #include "knell/assets.h"
+#include "knell/assets-fileio.h"
 #include "knell/control.h"
 #include "knell/crash.h"
 #include "knell/env.h"
@@ -33,6 +34,7 @@
 #include <spa_fu/spa_fu.h>
 
 #include <stdio.h>
+#include <time.h>
 
 static uint64_t frames = 0;
 static uint64_t lastTick;
@@ -42,7 +44,7 @@ static uint64_t lastTick;
 
 #ifdef _WIN32
 	#define KN_DEFAULT_ASSET_PATH "C:/workshop/knell/assets"
-	#define KN_DEFAULT_GAME_LIBRARY "C:/workshop/knell/cmake-build-debug/src/demos/interpolated-transitions.dll"
+	#define KN_DEFAULT_GAME_LIBRARY "C:/workshop/knell/cmake-build-debug/src/demos/texture-drawing.dll"
 #else
 	#define KN_DEFAULT_ASSET_PATH "/home/paul/lab/knell/assets"
 	#define KN_DEFAULT_GAME_LIBRARY "/home/paul/lab/knell/cmake-build-debug/src/demos/libmouse-tracker.so"
@@ -81,14 +83,16 @@ void Main_ParseCommandLineArguments(int argc, char* argv[])
 			else {
 				if (strlen(argv[i+1]) < MAX_GAME_LIB_NAME_LENGTH) {
 					if (!SPA_IsFile(argv[i+1])) {
+						char cwd[4096];
+						Env_CurrentWorkingDirectory(cwd, 4096);
+						printf("Current working directory is: %s\n", cwd);
 						printf("Game library %s does not exist\n", argv[i+1]);
 						exit(EXIT_FAILURE);
-
 					}
 					strcpy(mainConfig.gameLib, argv[i+1]);
 					printf("Game library: '%s'\n", mainConfig.gameLib);
 					i += 2;
-				}
+			}
 				else {
 					printf( "Length of name of game library is too long");
 					exit(EXIT_FAILURE);
@@ -150,19 +154,30 @@ void Main_InitAllSystems(void)
 		Assets_Init(mainConfig.assetDir);
 	}
 
-	if (strlen(mainConfig.gameLib) == 0) {
-		Game_Load(KN_DEFAULT_GAME_LIBRARY);
-	}
-	else {
-		Game_Load(mainConfig.gameLib);
-	}
-
-	lastTick = Time_NowNs();
-
 	const uint32_t width = 1024;
 	const uint32_t height = 768;
 	UI_Init(width, height);
 	R_Init(width, height);
+
+	const char* gameLib = KN_DEFAULT_GAME_LIBRARY;
+	if (strlen(mainConfig.gameLib) != 0) {
+		gameLib = mainConfig.gameLib;
+	}
+
+	uint64_t gameLibModified;
+	if (!Assets_LastModifiedTime(gameLib, &gameLibModified)) {
+		KN_FATAL_ERROR("Unable to determine last modified time of '%s'", gameLib);
+	}
+	//struct tm lt;
+
+	struct tm *lt = localtime(&(time_t)gameLibModified);
+	char timbuf[80];
+	strftime(timbuf, sizeof(timbuf), "%c", lt);
+	KN_TRACE(LogSysMain, "Last modified time: %llu", gameLibModified);
+	KN_TRACE(LogSysMain, "Last modified time: %s", timbuf);
+	Game_Load(gameLib);
+
+	lastTick = Time_NowNs();
 
 	KN_TRACE(LogSysMain, "Systems initialized.");
 

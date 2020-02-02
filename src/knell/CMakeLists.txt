@@ -1,6 +1,11 @@
 file(GLOB_RECURSE KNELL_SRCS ./*.c)
 file(GLOB_RECURSE KNELL_HEADERS ./*.h)
 
+# Add spng explicitly
+set(KNELL_SRCS
+	${KNELL_SRCS}
+	${VENDOR_LIBSPNG_ROOT}/spng.c)
+
 set(KNELL_LIBS
 	SDL2
 	spa-fu
