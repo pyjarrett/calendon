@@ -40,7 +40,7 @@ bool SPA_IsFile(const char* path)
 		return false;
 	}
 #ifdef _WIN32
-	return (info.st_mode & S_IFREG) != S_IFREG;
+	return (info.st_mode & S_IFREG) == S_IFREG;
 #else
 	return !S_ISDIR(info.st_mode);
 #endif
