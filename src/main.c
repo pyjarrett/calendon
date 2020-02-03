@@ -15,6 +15,11 @@
  */
 #include "knell/kn.h"
 
+#ifdef _WIN32
+// Force a rebuild to cause dll copy.
+#include "post_build_dummy.h"
+#endif
+
 #include "knell/assets.h"
 #include "knell/assets-fileio.h"
 #include "knell/control.h"
@@ -173,7 +178,6 @@ void Main_InitAllSystems(void)
 	struct tm *lt = localtime(&(time_t)gameLibModified);
 	char timbuf[80];
 	strftime(timbuf, sizeof(timbuf), "%c", lt);
-	KN_TRACE(LogSysMain, "Last modified time: %llu", gameLibModified);
 	KN_TRACE(LogSysMain, "Last modified time: %s", timbuf);
 	Game_Load(gameLib);
 

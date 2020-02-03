@@ -182,8 +182,8 @@ function(add_demo)
 	cmake_parse_arguments(DEMO "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
 	add_library(${DEMO_NAME} SHARED ${DEMO_SOURCES})
-	target_link_libraries(${DEMO_NAME} knell-lib)
-	target_link_libraries(${DEMO_NAME} ${DEMO_LIBS})
+	target_link_libraries(${DEMO_NAME} ${DEMO_LIBS} knell-lib)
+	add_dependencies(${DEMO_NAME} knell-lib)
 
 	set(KN_ALL_DEMOS ${KN_ALL_DEMOS} ${DEMO_NAME} CACHE INTERNAL "KN_ALL_DEMOS")
 	message("Adding ${DEMO_NAME} to demo list.")
@@ -203,11 +203,13 @@ remove_definitions(-DKN_LIBRARY)
 add_definitions(-DKN_LIBRARY=0)
 add_subdirectory(src/demos)
 
+add_subdirectory(src/build_tools)
+
 remove_definitions(-DKN_LIBRARY)
 add_definitions(-DKN_LIBRARY=0)
 add_executable(knell src/main.c)
 
-target_link_libraries(knell knell-lib ${KN_ALL_DEMOS})
+target_link_libraries(knell knell-lib)
 add_dependencies(knell knell-lib ${KN_ALL_DEMOS})
 
 message("Demos are ${KN_ALL_DEMOS}")
@@ -231,10 +233,23 @@ if (WIN32)
 		$<TARGET_FILE_DIR:knell>
 		)
 
+	# https://nickdademo.blogspot.com/2015/03/cmake-always-running-post-build-step.html
     add_custom_command(TARGET knell POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
 		$<TARGET_FILE:knell-lib>
-		$<TARGET_FILE_DIR:knell>)
+		$<TARGET_FILE_DIR:knell>
+		COMMENT "Copying knell-lib shared lib to driver directory")
+
+	add_custom_target(force-knell-post-build
+		COMMAND $<TARGET_FILE:stamp_file> ${CMAKE_SOURCE_DIR}/src/post_build_dummy.h
+		COMMENT "Updating timestamp to force knell post build."
+		)
+	add_dependencies(force-knell-post-build stamp_file)
+	add_dependencies(knell force-knell-post-build)
+
+	add_custom_target(knell-force-prebuild
+		DEPENDS src/post_build_dummy.h)
+	add_dependencies(knell knell-force-prebuild)
 
 	# Only create dumps in Debug.
 	# Uses a x64 version of the dll.

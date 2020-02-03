@@ -57,9 +57,11 @@ static SDL_GLContext* gl;
  */
 static float4x4 projection;
 
-static GLuint spriteProgram;
 static GLuint fullScreenDebugProgram;
 static GLuint fullScreenQuadBuffer;
+
+static GLuint spriteProgram;
+static GLuint spriteBuffer;
 
 /**
  * Vertex `GL_ARRAY_BUFFER` containing vertex information for drawing debug shapes.
@@ -91,6 +93,8 @@ float4x4 spriteTransforms[RLL_NUM_SPRITES];
 float4 spriteVertexBuffer[RLL_NUM_SPRITES];
 float4 spriteTint[RLL_NUM_SPRITES];
 
+static GLuint spriteProgram;
+
 #define MAX_INFO_LOG_LENGTH 4096
 
 /**
@@ -111,7 +115,7 @@ void RLL_CheckGLError(const char* file, const int line)
 	{
 		case GL_NO_ERROR:
 			return;
-#define label_print(label) case label: KN_TRACE(LogSysRender, "OpenGL Error: %s:%d " #label, file, line); break;
+#define label_print(label) case label: KN_ERROR(LogSysRender, "OpenGL Error: %s:%d " #label, file, line); break;
 		label_print(GL_INVALID_ENUM)
 		label_print(GL_INVALID_VALUE)
 		label_print(GL_INVALID_OPERATION)
@@ -121,7 +125,7 @@ void RLL_CheckGLError(const char* file, const int line)
 		label_print(GL_STACK_OVERFLOW)
 #undef label_print
 		default:
-			KN_TRACE(LogSysRender, "Unknown error: %s:%d %d", file, line, glError);
+			KN_ERROR(LogSysRender, "Unknown error: %s:%d %d", file, line, glError);
 	}
 	KN_DEBUG_BREAK();
 }
@@ -279,14 +283,14 @@ static bool RLL_CreateShader(GLuint* shader, const char* source, const uint32_t 
 
 void RLL_InitGL()
 {
-	Log_RegisterSystem(&LogSysRender, "Render", KN_LOG_TRACE);
+	Log_RegisterSystem(&LogSysRender, "Render", KN_LOG_ERROR);
 
 	// Get up and running quickly with OpenGL 3.1 with old-school functions.
 	// TODO: Replace with Core profile once something is working.
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	gl = SDL_GL_CreateContext(window);
 	if (gl == NULL) {
@@ -325,16 +329,6 @@ void RLL_InitDummyVAO()
     KN_ASSERT_NO_GL_ERROR();
 }
 
-void RLL_FillSpriteBuffer()
-{
-	for (uint32_t i=0; i<RLL_NUM_SPRITES; ++i) {
-		spriteVertexBuffer[0] = float4_Make(0.0f, 0.0f, 0.0f, 0.0f);
-		spriteVertexBuffer[1] = float4_Make(0.0f, 1.0f, 0.0f, 0.0f);
-		spriteVertexBuffer[2] = float4_Make(1.0f, 0.0f, 0.0f, 0.0f);
-		spriteVertexBuffer[3] = float4_Make(1.0f, 1.0f, 0.0f, 0.0f);
-	}
-}
-
 void RLL_FillFullScreenQuadBuffer()
 {
 	// OpenGL ndc is a cube from -1 to 1
@@ -349,6 +343,24 @@ void RLL_FillFullScreenQuadBuffer()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
 	KN_ASSERT(fullScreenQuadBuffer, "Cannot allocate a buffer for the full screen quad");
+	KN_ASSERT_NO_GL_ERROR();
+}
+
+void RLL_FillSpriteBuffer(void)
+{
+	float4 vertices[4];
+	vertices[0] = float4_Make(0.0f, 0.0f, 0.0f, 0.0f);
+	vertices[1] = float4_Make(0.0f, 1.0f, 0.0f, 0.0f);
+	vertices[2] = float4_Make(1.0f, 0.0f, 0.0f, 0.0f);
+	vertices[3] = float4_Make(1.0f, 1.0f, 0.0f, 0.0f);
+
+	glGenBuffers(1, &spriteBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, spriteBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	KN_ASSERT(spriteBuffer, "Cannot allocate a buffer for the sprite buffer");
+	KN_ASSERT(glIsBuffer(spriteBuffer), "Could not create sprite buffer");
+	KN_ASSERT_NO_GL_ERROR();
 	KN_ASSERT_NO_GL_ERROR();
 }
 
@@ -473,8 +485,8 @@ void RLL_LoadSolidPolygonShader()
 		KN_ERROR(LogSysRender, "Unable to read vertex shader text");
 	}
 
-	KN_TRACE(LogSysRender, "Fragment shader %s", fragmentShaderBuffer.contents);
-	KN_TRACE(LogSysRender, "Vertex shader %s", vertexShaderBuffer.contents);
+	//KN_TRACE(LogSysRender, "Fragment shader %s", fragmentShaderBuffer.contents);
+	//KN_TRACE(LogSysRender, "Vertex shader %s", vertexShaderBuffer.contents);
 
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -495,10 +507,69 @@ void RLL_LoadSolidPolygonShader()
 	Mem_Free(&fragmentShaderBuffer);
 }
 
+void RLL_LoadSpriteShader()
+{
+	const int maxShaderTextLength = 1024;
+	char fragmentShaderPath[1024];
+	char vertexShaderPath[1024];
+	DynamicBuffer fragmentShaderBuffer;
+	DynamicBuffer vertexShaderBuffer;
+
+	// Read fragment shader
+	if (Assets_PathFor("shaders/sprite.frag", fragmentShaderPath, maxShaderTextLength)) {
+		if (SPA_IsFile(fragmentShaderPath)) {
+			KN_TRACE(LogSysRender, "%s found", fragmentShaderPath);
+		}
+		else {
+			KN_TRACE(LogSysRender, "%s not found", fragmentShaderPath);
+		}
+	}
+
+	if (!Assets_ReadFile(fragmentShaderPath, KN_FILE_TYPE_TEXT, &fragmentShaderBuffer)) {
+		KN_ERROR(LogSysRender, "Unable to read fragment shader text");
+	}
+
+	// Read vertex shader
+	if (Assets_PathFor("shaders/sprite.vert", vertexShaderPath, maxShaderTextLength)) {
+		if (SPA_IsFile(vertexShaderPath)) {
+			KN_TRACE(LogSysRender, "%s found", vertexShaderPath);
+		}
+		else {
+			KN_TRACE(LogSysRender, "%s not found", vertexShaderPath);
+		}
+	}
+
+	if (!Assets_ReadFile(vertexShaderPath, KN_FILE_TYPE_TEXT, &vertexShaderBuffer)) {
+		KN_ERROR(LogSysRender, "Unable to read vertex shader text");
+	}
+
+	//KN_TRACE(LogSysRender, "Fragment shader %s", fragmentShaderBuffer.contents);
+	//KN_TRACE(LogSysRender, "Vertex shader %s", vertexShaderBuffer.contents);
+
+	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+
+	if (!glIsShader(vertexShader)) {
+		KN_ERROR(LogSysRender, "Unable to allocate space for vertex shader");
+	}
+
+	if (!glIsShader(fragmentShader)) {
+		KN_ERROR(LogSysRender, "Unable to allocate space for fragment shader");
+	}
+
+	RLL_CreateShader(&fragmentShader, fragmentShaderBuffer.contents, fragmentShaderBuffer.size);
+	RLL_CreateShader(&vertexShader, vertexShaderBuffer.contents, vertexShaderBuffer.size);
+
+	RLL_CreateProgram(vertexShader, fragmentShader, &spriteProgram);
+	Mem_Free(&vertexShaderBuffer);
+	Mem_Free(&fragmentShaderBuffer);
+}
+
 void RLL_LoadShaders()
 {
 	RLL_LoadSolidPolygonShader();
 	RLL_LoadFullScreenDebugShader();
+	RLL_LoadSpriteShader();
 }
 
 bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* program)
@@ -600,7 +671,7 @@ bool RLL_CreateSprite(SpriteId* id)
 bool RLL_LoadSprite(SpriteId id, const char* path)
 {
 	ImagePixels image;
-	if (!Image_Load(&image, path)) {
+	if (!Image_Allocate(&image, path)) {
 		return false;
 	}
 
@@ -612,31 +683,87 @@ bool RLL_LoadSprite(SpriteId id, const char* path)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 
+    KN_ASSERT_NO_GL_ERROR();
+
 	// TODO: Use proxy textures to test to see if sufficient space exists.
 	// TODO: Should this be GL_RGBA8?
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.width, image.height, 0,
 		GL_RGBA, GL_UNSIGNED_BYTE, image.pixels.contents);
-    //Mem_Release(&image.pixels);
+
+    KN_ASSERT_NO_GL_ERROR();
 
 	// Set the texture parameters.
 	// https://stackoverflow.com/questions/3643932/what-is-the-scope-of-gltexparameters-in-opengl
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    KN_ASSERT_NO_GL_ERROR();
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    KN_ASSERT_NO_GL_ERROR();
 
 	KN_ASSERT(glIsTexture(spriteTextures[id]), "Unable to reserve texture for "
 		"sprite loading from path: %s", path);
+    
+	Image_Free(&image);
 
+    KN_ASSERT_NO_GL_ERROR();
 	return true;
 }
 
 void RLL_DrawSprite(SpriteId id, float2 position, dimension2f size)
 {
-	KN_UNUSED(id);
-	KN_UNUSED(position);
-	KN_UNUSED(size);
+	KN_ASSERT_NO_GL_ERROR();
+
+	RLL_SetFullScreenViewport();
+
+	glUseProgram(spriteProgram);
+	glBindBuffer(GL_ARRAY_BUFFER, spriteBuffer);
+
+	// set vertex arrays
+	GLuint positionAttrib = glGetAttribLocation(spriteProgram, "Position");
+	glEnableVertexAttribArray(positionAttrib);
+	KN_ASSERT_NO_GL_ERROR();
+	glVertexAttribPointer(
+		positionAttrib,
+		4,
+		GL_FLOAT,
+		GL_FALSE,
+		4 * sizeof(float),
+		(void *)0
+	);
+
+    KN_ASSERT_NO_GL_ERROR();
+
+	GLuint uniformProjection = glGetUniformLocation(spriteProgram, "Projection");
+	glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, &projection.m[0][0]);
+
+	// TODO: This name is wrong, since Knell uses row-vectors, it should be ModelView.
+	GLuint uniformViewModel = glGetUniformLocation(spriteProgram, "ViewModel");
+	float4x4 viewModel = float4x4_Multiply(
+		float4x4_NonUniformScale(size.width, size.height, 1.0f),
+		float4x4_Translate(position.x, position.y, 0.0f));
+	glUniformMatrix4fv(uniformViewModel, 1, GL_FALSE, &viewModel.m[0][0]);
+    KN_ASSERT_NO_GL_ERROR();
+
+	GLuint uniformTexture = glGetUniformLocation(spriteProgram, "Texture");
+
+	GLuint texture = spriteTextures[id];
+	KN_ASSERT(glIsTexture(texture), "Sprite %" PRIu32 " does not have a valid"
+		"texture", texture);
+    KN_ASSERT_NO_GL_ERROR();
+	glActiveTexture(GL_TEXTURE0);
+    KN_ASSERT_NO_GL_ERROR();
+	glBindTexture(GL_TEXTURE_2D, texture);
+    KN_ASSERT_NO_GL_ERROR();
+	glUniform1i(uniformTexture, 0);
+    KN_ASSERT_NO_GL_ERROR();
+
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glDisableVertexAttribArray(positionAttrib);
+
+	KN_ASSERT_NO_GL_ERROR();
 }
 
 /**

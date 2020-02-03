@@ -1,9 +1,26 @@
+
+
+
 Rename DynamicBuffer -> ContiguousDynamicBuffer
-
 Put LogHandles in headers for things which might need them to be reusable: e.g. `extern LogHandle LogSysAssets;`
-
 Mem_Allocate should probably return a bool indicating success or failure.
-
 Remove KN_ASSERT for non-debug builds.
-
 Rename KN_PATH_MAX -> KN_MAX_PATH
+Remove colorized log entires in shader loading.
+Standardize uniform and attribute naming in shaders.
+
+Get a shader reference.
+
+
+Allow centering of sprites.
+
+Create a Vulkan back-end.
+
+
+Fix the many functions which take 0 parameters but aren't marked with `(void)`.
+
+Build dates into DLLs and print them on startup.
+
+
+Add startup project modifier in CMake to Knell.
+Add source groups to Knell for Visual Studio.

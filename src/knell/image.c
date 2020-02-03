@@ -6,7 +6,13 @@
 
 extern LogHandle LogSysAssets;
 
-bool Image_Load(ImagePixels* image, const char* fileName)
+/**
+ * Using `Allocate` as the name here to ensure the clients know to call
+ * `Image_Free`, and don't need to manually free the stored buffer of pixels.
+ *
+ * @todo support image types other than RGBA8.
+ */
+bool Image_Allocate(ImagePixels* image, const char* fileName)
 {
 	KN_ASSERT(image != NULL, "Cannot load data into a null image.");
 	KN_ASSERT(fileName != NULL, "Cannot load an image with a null file name.");
@@ -44,4 +50,10 @@ bool Image_Load(ImagePixels* image, const char* fileName)
     Mem_Free(&fileBuffer);
 
 	return true;
+}
+
+void Image_Free(ImagePixels* image)
+{
+	KN_ASSERT(image != NULL, "Cannot load data into a null image.");
+	Mem_Free(&image->pixels);
 }
