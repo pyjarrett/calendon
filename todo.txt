@@ -24,3 +24,6 @@ Build dates into DLLs and print them on startup.
 
 Add startup project modifier in CMake to Knell.
 Add source groups to Knell for Visual Studio.
+
+
+Fix usage of Assets_PathFor for PathBuffer
