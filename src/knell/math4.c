@@ -25,7 +25,7 @@ float4 float4_Multiply(float4 v, float4x4 m)
 	return (float4) {{ x, y, z, w }};
 }
 
-float4x4 float4x4_Identity()
+float4x4 float4x4_Identity(void)
 {
 	return (float4x4) {{
 		{ 1, 0, 0, 0 },

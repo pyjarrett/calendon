@@ -220,7 +220,7 @@ void RLL_PrintProgram(const GLuint program)
  * The renderer may have requested a specific version of OpenGL, but this
  * program provides the current version being used.
  */
-void RLL_PrintGLVersion()
+void RLL_PrintGLVersion(void)
 {
 	// TODO: set the opengl context?
 	KN_ASSERT_NO_GL_ERROR();
@@ -281,7 +281,7 @@ static bool RLL_CreateShader(GLuint* shader, const char* source, const uint32_t 
 	return true;
 }
 
-void RLL_InitGL()
+void RLL_InitGL(void)
 {
 	Log_RegisterSystem(&LogSysRender, "Render", KN_LOG_ERROR);
 
@@ -305,7 +305,7 @@ void RLL_InitGL()
 	KN_TRACE(LogSysRender, "OpenGL renderer initialized");
 }
 
-void RLL_ConfigureVSync()
+void RLL_ConfigureVSync(void)
 {
 	// VSync causes the draw to stall until the frame is displayed.
 	// This might be more useful if/when drawing gets moved to it's own thread.
@@ -321,7 +321,7 @@ void RLL_ConfigureVSync()
 /**
  * Even if VAOs aren't used, a dummy VAO must be bound.
  */
-void RLL_InitDummyVAO()
+void RLL_InitDummyVAO(void)
 {
 	static GLuint vao;
 	glGenVertexArrays(1, &vao);
@@ -329,7 +329,7 @@ void RLL_InitDummyVAO()
     KN_ASSERT_NO_GL_ERROR();
 }
 
-void RLL_FillFullScreenQuadBuffer()
+void RLL_FillFullScreenQuadBuffer(void)
 {
 	// OpenGL ndc is a cube from -1 to 1
 	float4 vertices[] = {
@@ -364,7 +364,7 @@ void RLL_FillSpriteBuffer(void)
 	KN_ASSERT_NO_GL_ERROR();
 }
 
-void RLL_FillDebugQuadBuffer()
+void RLL_FillDebugQuadBuffer(void)
 {
 	// Doesn't matter, will be overwritten.
 	float4 vertices[RLL_MAX_DEBUG_POINTS];
@@ -379,19 +379,19 @@ void RLL_FillDebugQuadBuffer()
 	KN_ASSERT_NO_GL_ERROR();
 }
 
-void RLL_FillBuffers()
+void RLL_FillBuffers(void)
 {
 	RLL_FillSpriteBuffer();
 	RLL_FillFullScreenQuadBuffer();
 	RLL_FillDebugQuadBuffer();
 }
 
-void RLL_InitSprites()
+void RLL_InitSprites(void)
 {
 	nextSpriteId = 0;
 }
 
-void RLL_LoadFullScreenDebugShader()
+void RLL_LoadFullScreenDebugShader(void)
 {
 	const int maxShaderTextLength = 1024;
 	char fragmentShaderPath[1024];
@@ -449,7 +449,7 @@ void RLL_LoadFullScreenDebugShader()
 	Mem_Free(&fragmentShaderBuffer);
 }
 
-void RLL_LoadSolidPolygonShader()
+void RLL_LoadSolidPolygonShader(void)
 {
 	const int maxShaderTextLength = 1024;
 	char fragmentShaderPath[1024];
@@ -507,7 +507,7 @@ void RLL_LoadSolidPolygonShader()
 	Mem_Free(&fragmentShaderBuffer);
 }
 
-void RLL_LoadSpriteShader()
+void RLL_LoadSpriteShader(void)
 {
 	const int maxShaderTextLength = 1024;
 	char fragmentShaderPath[1024];
@@ -565,7 +565,7 @@ void RLL_LoadSpriteShader()
 	Mem_Free(&fragmentShaderBuffer);
 }
 
-void RLL_LoadShaders()
+void RLL_LoadShaders(void)
 {
 	RLL_LoadSolidPolygonShader();
 	RLL_LoadFullScreenDebugShader();
@@ -769,7 +769,7 @@ void RLL_DrawSprite(SpriteId id, float2 position, dimension2f size)
 /**
  * Draw a fullscreen debug rect.
  */
-void RLL_DrawDebugFullScreenRect()
+void RLL_DrawDebugFullScreenRect(void)
 {
 	KN_ASSERT_NO_GL_ERROR();
 
