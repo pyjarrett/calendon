@@ -734,7 +734,7 @@ void RLL_DrawSprite(SpriteId id, float2 position, dimension2f size)
 		(void *)0
 	);
 
-    KN_ASSERT_NO_GL_ERROR();
+	KN_ASSERT_NO_GL_ERROR();
 
 	GLuint uniformProjection = glGetUniformLocation(spriteProgram, "Projection");
 	glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, &projection.m[0][0]);

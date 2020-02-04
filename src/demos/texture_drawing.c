@@ -53,7 +53,7 @@ KN_GAME_API void Game_Init(void)
 	// Get the path to load.
 	PathBuffer spritePath;
     memset(&spritePath, 0, sizeof(PathBuffer));
-	Assets_PathFor("sprites/test_sprite.png", spritePath.path, KN_PATH_MAX);
+	Assets_PathFor("sprites/stick_person.png", spritePath.path, KN_PATH_MAX);
     spritePath.length = (uint32_t)strlen(spritePath.path);
 
 	// Load the data into a temporary format in memory.

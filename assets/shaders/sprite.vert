@@ -6,6 +6,7 @@ uniform mat4 ViewModel;
 uniform mat4 Projection;
 
 void main() {
-    TexCoord = (Position.xy + 1) / 2.0;
+    // Assumes sprite coordinates are [0,0] lower left corner to [1,1] upper right.
+    TexCoord = Position.xy;
     gl_Position = Projection * ViewModel * vec4(Position.x, Position.y, 0.5, 1.0);
 }
