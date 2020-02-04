@@ -1,6 +1,3 @@
-
-
-
 Rename DynamicBuffer -> ContiguousDynamicBuffer
 Put LogHandles in headers for things which might need them to be reusable: e.g. `extern LogHandle LogSysAssets;`
 Mem_Allocate should probably return a bool indicating success or failure.
@@ -27,3 +24,7 @@ Add source groups to Knell for Visual Studio.
 
 
 Fix usage of Assets_PathFor for PathBuffer
+
+Clarify file abstractions.
+Document the image loading limits and requirements.
+Allow the use of images without alpha.
