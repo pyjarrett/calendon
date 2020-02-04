@@ -52,9 +52,6 @@ KN_GAME_API void Game_Draw(void)
 {
 	R_StartFrame();
 
-	dimension2f rectSize = { 50, 50 };
-	rgb8 white = { 255, 255, 255 };
-
 	float2 position = float2_Make(300, 300);
 	dimension2f size = { .width = 200.0f, .height = 200.0f };
 	R_DrawSprite(spriteFrames[sampleCursor.current], position, size);
