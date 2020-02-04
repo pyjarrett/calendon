@@ -1,4 +1,3 @@
-
 remove_definitions(-DKN_LIBRARY)
 add_definitions(-DKN_LIBRARY=0)
 
