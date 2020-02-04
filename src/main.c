@@ -175,7 +175,7 @@ void Main_InitAllSystems(void)
 	}
 	//struct tm lt;
 
-	struct tm *lt = localtime(&(time_t)gameLibModified);
+	struct tm *lt = localtime((time_t*)&gameLibModified);
 	char timbuf[80];
 	strftime(timbuf, sizeof(timbuf), "%c", lt);
 	KN_TRACE(LogSysMain, "Last modified time: %s", timbuf);

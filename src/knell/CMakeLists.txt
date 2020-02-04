@@ -25,6 +25,7 @@ if (UNIX)
 	set(KNELL_LIBS
 		GL
 		rt
+		z
 		${KNELL_LIBS}
 		)
 endif ()
