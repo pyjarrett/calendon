@@ -233,22 +233,29 @@ if (WIN32)
 		$<TARGET_FILE_DIR:knell>
 		)
 
+	# Fix a bug where knell-lib was not being copied into the working
+	# directory where knell.exe lives, leading to usage of stale versions
+	# of knell-lib in the binary.
+	#
+	# None of touch, type, and $null> work properly under CLion or Visual
+	# Studio, so Knell provides a simple executable for writing a 0 byte
+	# file (stamp_file.exe) which the Knell driver (knell) depends upon
+	# which triggers a rebuild, even if no changes have been made to Knell
+	# to ensure the post build step fires.
+	#
 	# https://nickdademo.blogspot.com/2015/03/cmake-always-running-post-build-step.html
     add_custom_command(TARGET knell POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
 		$<TARGET_FILE:knell-lib>
 		$<TARGET_FILE_DIR:knell>
 		COMMENT "Copying knell-lib shared lib to driver directory")
-
 	add_custom_target(force-knell-post-build
 		COMMAND $<TARGET_FILE:stamp_file> ${CMAKE_SOURCE_DIR}/src/post_build_dummy.h
 		COMMENT "Updating timestamp to force knell post build."
 		)
 	add_dependencies(force-knell-post-build stamp_file)
 	add_dependencies(knell force-knell-post-build)
-
-	add_custom_target(knell-force-prebuild
-		DEPENDS src/post_build_dummy.h)
+	add_custom_target(knell-force-prebuild DEPENDS src/post_build_dummy.h)
 	add_dependencies(knell knell-force-prebuild)
 
 	# Only create dumps in Debug.
