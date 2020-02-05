@@ -12,7 +12,7 @@ KN_API void Mem_Init(void)
 	Log_RegisterSystem(&LogSysMemory, "Memory", KN_LOG_TRACE);
 }
 
-KN_API void Mem_Allocate(DynamicBuffer* buffer, const uint32_t size)
+KN_API void Mem_Allocate(DynamicBuffer* buffer, uint32_t size)
 {
 	if (!buffer) {
 		KN_ERROR(LogSysMemory, "Cannot allocate for a null DynamicBuffer");

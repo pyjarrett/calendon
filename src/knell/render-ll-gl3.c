@@ -625,7 +625,7 @@ bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* progr
 	return linkResult == GL_TRUE;
 }
 
-void RLL_Init(const uint32_t width, const uint32_t height)
+void RLL_Init(uint32_t width, uint32_t height)
 {
 	RLL_InitGL();
 	RLL_ConfigureVSync();
@@ -656,7 +656,7 @@ void RLL_Clear(rgba8i color)
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void RLL_SetFullScreenViewport()
+void RLL_SetFullScreenViewport(void)
 {
 	glViewport(0, 0, windowWidth, windowHeight);
 }
@@ -800,8 +800,7 @@ void RLL_DrawDebugFullScreenRect(void)
 /**
  * Draws a rectangle at a given center point with known dimensions.
  */
-void RLL_DrawDebugRect(const float4 position, const dimension2f dimensions,
-	const float4 color)
+void RLL_DrawDebugRect(float4 position, dimension2f dimensions, float4 color)
 {
 	RLL_SetFullScreenViewport();
 

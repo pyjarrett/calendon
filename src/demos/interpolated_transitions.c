@@ -94,7 +94,7 @@ void Anim_Update(BinaryAnimation* anim, uint64_t dt)
 {
 	if (anim->transitioning) {
 		anim->elapsed += dt;
-		anim->elapsed = (uint64_t)fminf(anim->elapsed, anim->rate);
+		anim->elapsed = (uint64_t)fminf((float)anim->elapsed, (float)anim->rate);
 		anim->t = (1.0f * (float)anim->elapsed / (float)anim->rate); // puts t in [0, 1];
 		anim->t = fminf(1.0f, fmaxf(anim->t, 0.0f));
 		KN_ASSERT(0.0f <= anim->t && anim->t <= 1.0f, "Interpolation t is not in range [0, 1]");

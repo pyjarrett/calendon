@@ -7,7 +7,7 @@
  * Initialize the rendering system assuming a rectangular region of the given
  * drawing dimensions.
  */
-KN_API void R_Init(const uint32_t width, const uint32_t height)
+KN_API void R_Init(uint32_t width, uint32_t height)
 {
 	RLL_Init(width, height);
 }
