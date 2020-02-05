@@ -39,7 +39,7 @@ typedef struct {
 float4 float4_Make(float x, float y, float z, float w);
 float4 float4_Multiply(float4 v, float4x4 m);
 
-float4x4 float4x4_Identity();
+float4x4 float4x4_Identity(void);
 float4x4 float4x4_NonUniformScale(float x, float y, float z);
 float4x4 float4x4_Translate(float x, float y, float z);
 float4x4 float4x4_Transpose(float4x4 m);
