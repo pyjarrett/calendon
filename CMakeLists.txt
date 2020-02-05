@@ -107,6 +107,11 @@ set(KNELL_COMMON_C_FLAGS "${KNELL_COMMON_C_FLAGS} -Wall -Wextra")
 set(KNELL_COMMON_C_FLAGS "${KNELL_COMMON_C_FLAGS} -Wshadow -Wdouble-promotion -Wundef -Wconversion -fno-common")
 set(KNELL_COMMON_C_FLAGS "${KNELL_COMMON_C_FLAGS} -fvisibility=hidden")
 
+# Temporary workaround until strcpy, strlen, usages get replaced.
+if (WIN32)
+	add_definitions(-D_CRT_SECURE_NO_WARNINGS=1)
+endif (WIN32)
+
 # Eliminate extra dead code
 #set(KNELL_COMMON_C_FLAGS "-ffunction-sections -fdata-sections")
 
