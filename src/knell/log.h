@@ -108,7 +108,7 @@ extern KN_API uint32_t LogSystemsVerbosity[KN_LOG_MAX_SYSTEMS];
 /**
  * Records a message to the log system.
  */
-#define KN_LOG(system, verbosity, msg, ...) \
+#define KN_LOG(system, verbosity, msg, ...) do { \
 	if (verbosity <= LogSystemsVerbosity[system]) { \
 		printf("%c: %40s:%i SYS_%-10s: " msg " \n", \
 			LogVerbosityChar[verbosity], \
@@ -117,7 +117,7 @@ extern KN_API uint32_t LogSystemsVerbosity[KN_LOG_MAX_SYSTEMS];
 			LogSystemsRegistered[system], \
 			##__VA_ARGS__ \
 			); \
-    };
+    } } while(0)
 
 /**
  * Errors are serious issues which must be addressed prior to shipping a product
