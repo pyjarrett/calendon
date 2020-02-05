@@ -255,8 +255,6 @@ if (WIN32)
 		)
 	add_dependencies(force-knell-post-build stamp_file)
 	add_dependencies(knell force-knell-post-build)
-	add_custom_target(knell-force-prebuild DEPENDS src/post_build_dummy.h)
-	add_dependencies(knell knell-force-prebuild)
 
 	# Only create dumps in Debug.
 	# Uses a x64 version of the dll.
