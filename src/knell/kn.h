@@ -80,6 +80,39 @@
 	#define KN_DEBUG_BREAK() do {} while(0)
 #endif
 
+/*
+ * Deprecation functionality.
+ */
+
+// From MSDN docs
+// You can use the operators == (equality) and != (inequality) only to test for
+// the bool values true or false.
+#if KN_DEPRECATION_OMIT
+	/*
+	 * Don't declare deprecated APIs.
+	 */
+	#define KN_API_DEPRECATED(version, msg, decl)
+#else
+	/**
+	 * Behavior might need to be removed.  Functionality to be removed should be
+	 * marked, deprecated, and then removed in an understandable way.
+	 *
+	 * `KN_API_DEPRECATED` indicates an element is deprecated an will be removed
+	 * after the given version.
+	 */
+	#define KN_API_DEPRECATED(version, msg, decl) decl
+#endif
+
+#if KN_DEPRECATION_BREAK
+	/**
+	 * Inline marker to appear within the source of a deprecated function to trigger
+	 * a breakpoint to track down usage of deprecated functions.
+	 */
+	#define KN_WARN_DEPRECATED(msg) KN_DEBUG_BREAK()
+#else
+	#define KN_WARN_DEPRECATED(msg)
+#endif
+
 /**
  * Runtime assert mechanism.  `KN_ASSERT` is the preferred method of declaring
  * pre- and post-conditions within code, and also conditions which must be

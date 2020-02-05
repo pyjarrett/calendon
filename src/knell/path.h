@@ -30,13 +30,13 @@
  * for quick buffer creation on the stack.
  */
 typedef struct {
-	char path[KN_PATH_MAX];
-	uint32_t length;
+	char str[KN_PATH_MAX];
 } PathBuffer;
 
 KN_STATIC_ASSERT(KN_PATH_MAX <= sizeof(PathBuffer),
 				 "PathBuffer is not big enough");
 
-KN_API bool Path_Append(const char* toAdd, char* current, uint32_t length);
+KN_API_DEPRECATED("alpha", "Use PathBuffer_Join instead", KN_API bool Path_Append(const char* toAdd, char* current, uint32_t length));
+KN_API bool PathBuffer_Join(PathBuffer* root, const char* suffix);
 
 #endif /* KN_PATH_H */

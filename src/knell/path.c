@@ -13,3 +13,10 @@ KN_API bool Path_Append(const char* toAdd, char* current, uint32_t length)
 	strcpy(current + currentLength + 1, toAdd);
 	return true;
 }
+
+KN_API bool PathBuffer_Join(PathBuffer* root, const char* suffix)
+{
+	KN_ASSERT(root != NULL, "Cannot append to a null root path");
+	KN_ASSERT(suffix != NULL, "Trying to append a null path");
+	return Path_Append(suffix, root->str, KN_PATH_MAX);
+}

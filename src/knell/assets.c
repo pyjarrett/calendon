@@ -37,6 +37,7 @@ KN_API void Assets_Init(const char* assetDir)
  */
 KN_API bool Assets_PathFor(const char* assetName, char* buffer, uint32_t bufferSize)
 {
+	KN_WARN_DEPRECATED("Use PathBuffer* functions instead");
 	if (assetsRootLength == 0) {
 		KN_ERROR(LogSysAssets, "Asset system not initialized, cannot get path for %s", assetName);
 		return false;
@@ -52,6 +53,27 @@ KN_API bool Assets_PathFor(const char* assetName, char* buffer, uint32_t bufferS
 	strcpy(buffer + assetsRootLength + 1, assetName);
 
 	KN_TRACE(LogSysAssets, "Resolved asset path '%s' -> '%s'", assetName, buffer);
+
+	return true;
+}
+
+KN_API bool Assets_PathBufferFor(const char* assetName, PathBuffer* path)
+{
+	if (assetsRootLength == 0) {
+		KN_ERROR(LogSysAssets, "Asset system not initialized, cannot get path for %s", assetName);
+		return false;
+	}
+
+	// Output buffer cannot hold root + '/' + assetName + '\0'.
+	if (assetsRootLength + 1 + strlen(assetName) + 1 >= KN_PATH_MAX) {
+		return false;
+	}
+
+	memcpy(&path->str, assetsRoot, assetsRootLength);
+	path->str[assetsRootLength] = '/';
+	strcpy(path->str + assetsRootLength + 1, assetName);
+
+	KN_TRACE(LogSysAssets, "Resolved asset path '%s' -> '%s'", assetName, path->str);
 
 	return true;
 }

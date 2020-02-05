@@ -23,19 +23,20 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Debug: Include debugging symbols and most warnings.
 # Release: No debugging symbol and optimized for release.
 # Coverage: Flags for generated code coverage under GCC.
+# Future: Release mode which omits deprecated functionality.
 #
 # Future configurations:
 # Profile: Add -pg flag for GCC to use with gprof
 # RelWIthDebugInfo: Optimized build with debug symbols included.
 if (UNIX)
-    set(CMAKE_CONFIGURATION_TYPES Debug;Release;Coverage)
+    set(CMAKE_CONFIGURATION_TYPES Debug;Release;Coverage;Future)
 elseif (WIN32)
     # Coverage is not supported on Windows.
-    set(CMAKE_CONFIGURATION_TYPES Debug;Release)
+    set(CMAKE_CONFIGURATION_TYPES Debug;Release;Future)
 endif()
 if(NOT CMAKE_BUILD_TYPE)
     # Visual studio might not correctly set CMAKEBUILD_TYPE
-	set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build Type: (Debug, Release)." FORCE)
+	set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build Type: (Debug, Release, Future)." FORCE)
 endif()
 
 # Provide standardized output locations.  This particularly
@@ -98,6 +99,20 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
 		set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -fprofile-arcs -ftest-coverage")
 	endif()
+endif()
+
+if(CMAKE_BUILD_TYPE STREQUAL "Future")
+	# Omit deprecated functionality, causing build breakages.
+	add_definitions(-DKN_DEPRECATION_BREAK=0)
+	add_definitions(-DKN_DEPRECATION_OMIT=1)
+elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
+	# Make a breakpoint on deprecated behavior.
+	add_definitions(-DKN_DEPRECATION_BREAK=1)
+	add_definitions(-DKN_DEPRECATION_OMIT=0)
+elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+	# Release may need to ship with deprecated features to make a ship date.
+	add_definitions(-DKN_DEPRECATION_BREAK=0)
+	add_definitions(-DKN_DEPRECATION_OMIT=0)
 endif()
 
 # Bring in extra warnings to prevent errors.

@@ -169,7 +169,7 @@ const char* RLL_GLTypeToString(GLenum type)
  * is used before dropping into renderdoc or heavier tools for monitoring the
  * shader system while it is being developed.
  */
-void RLL_PrintProgram(const GLuint program)
+void RLL_PrintProgram(GLuint program)
 {
 	KN_ASSERT(glIsProgram(program), "Program is not a program");
 
@@ -394,36 +394,36 @@ void RLL_InitSprites(void)
 void RLL_LoadFullScreenDebugShader(void)
 {
 	const int maxShaderTextLength = 1024;
-	char fragmentShaderPath[1024];
-	char vertexShaderPath[1024];
+    PathBuffer fragmentShaderPath;
+    PathBuffer vertexShaderPath;
 	DynamicBuffer fragmentShaderBuffer;
 	DynamicBuffer vertexShaderBuffer;
 
 	// Read fragment shader
-	if (Assets_PathFor("shaders/uv_as_red_green.frag", fragmentShaderPath, maxShaderTextLength)) {
-		if (SPA_IsFile(fragmentShaderPath)) {
-			KN_TRACE(LogSysRender, "\e[32m" "%s found" "\e[39m", fragmentShaderPath);
+	if (Assets_PathBufferFor("shaders/uv_as_red_green.frag", &fragmentShaderPath)) {
+		if (SPA_IsFile(fragmentShaderPath.str)) {
+			KN_TRACE(LogSysRender, "%s found", fragmentShaderPath.str);
 		}
 		else {
-			KN_TRACE(LogSysRender, "%s not found", fragmentShaderPath);
+			KN_TRACE(LogSysRender, "%s not found", fragmentShaderPath.str);
 		}
 	}
 
-	if (!Assets_ReadFile(fragmentShaderPath, KN_FILE_TYPE_TEXT, &fragmentShaderBuffer)) {
+	if (!Assets_ReadFile(fragmentShaderPath.str, KN_FILE_TYPE_TEXT, &fragmentShaderBuffer)) {
 		KN_ERROR(LogSysRender, "Unable to read fragment shader text");
 	}
 
 	// Read vertex shader
-	if (Assets_PathFor("shaders/fullscreen_textured_quad.vert", vertexShaderPath, maxShaderTextLength)) {
-		if (SPA_IsFile(vertexShaderPath)) {
-			KN_TRACE(LogSysRender, "\e[32m" "%s found" "\e[39m", vertexShaderPath);
+	if (Assets_PathBufferFor("shaders/fullscreen_textured_quad.vert", &vertexShaderPath)) {
+		if (SPA_IsFile(vertexShaderPath.str)) {
+			KN_TRACE(LogSysRender, "%s found", vertexShaderPath.str);
 		}
 		else {
-			KN_TRACE(LogSysRender, "%s not found", vertexShaderPath);
+			KN_TRACE(LogSysRender, "%s not found", vertexShaderPath.str);
 		}
 	}
 
-	if (!Assets_ReadFile(vertexShaderPath, KN_FILE_TYPE_TEXT, &vertexShaderBuffer)) {
+	if (!Assets_ReadFile(vertexShaderPath.str, KN_FILE_TYPE_TEXT, &vertexShaderBuffer)) {
 		KN_ERROR(LogSysRender, "Unable to read vertex shader text");
 	}
 
@@ -452,36 +452,36 @@ void RLL_LoadFullScreenDebugShader(void)
 void RLL_LoadSolidPolygonShader(void)
 {
 	const int maxShaderTextLength = 1024;
-	char fragmentShaderPath[1024];
-	char vertexShaderPath[1024];
+    PathBuffer fragmentShaderPath;
+    PathBuffer vertexShaderPath;
 	DynamicBuffer fragmentShaderBuffer;
 	DynamicBuffer vertexShaderBuffer;
 
 	// Read fragment shader
-	if (Assets_PathFor("shaders/solid_polygon.frag", fragmentShaderPath, maxShaderTextLength)) {
-		if (SPA_IsFile(fragmentShaderPath)) {
-			KN_TRACE(LogSysRender, "\e[32m" "%s found" "\e[39m", fragmentShaderPath);
+	if (Assets_PathBufferFor("shaders/solid_polygon.frag", &fragmentShaderPath)) {
+		if (SPA_IsFile(fragmentShaderPath.str)) {
+			KN_TRACE(LogSysRender, "%s found", fragmentShaderPath.str);
 		}
 		else {
-			KN_TRACE(LogSysRender, "%s not found", fragmentShaderPath);
+			KN_TRACE(LogSysRender, "%s not found", fragmentShaderPath.str);
 		}
 	}
 
-	if (!Assets_ReadFile(fragmentShaderPath, KN_FILE_TYPE_TEXT, &fragmentShaderBuffer)) {
+	if (!Assets_ReadFile(fragmentShaderPath.str, KN_FILE_TYPE_TEXT, &fragmentShaderBuffer)) {
 		KN_ERROR(LogSysRender, "Unable to read fragment shader text");
 	}
 
 	// Read vertex shader
-	if (Assets_PathFor("shaders/solid_polygon.vert", vertexShaderPath, maxShaderTextLength)) {
-		if (SPA_IsFile(vertexShaderPath)) {
-			KN_TRACE(LogSysRender, "\e[32m" "%s found" "\e[39m", vertexShaderPath);
+	if (Assets_PathBufferFor("shaders/solid_polygon.vert", &vertexShaderPath)) {
+		if (SPA_IsFile(vertexShaderPath.str)) {
+			KN_TRACE(LogSysRender, "%s found", vertexShaderPath.str);
 		}
 		else {
-			KN_TRACE(LogSysRender, "%s not found", vertexShaderPath);
+			KN_TRACE(LogSysRender, "%s not found", vertexShaderPath.str);
 		}
 	}
 
-	if (!Assets_ReadFile(vertexShaderPath, KN_FILE_TYPE_TEXT, &vertexShaderBuffer)) {
+	if (!Assets_ReadFile(vertexShaderPath.str, KN_FILE_TYPE_TEXT, &vertexShaderBuffer)) {
 		KN_ERROR(LogSysRender, "Unable to read vertex shader text");
 	}
 
@@ -510,36 +510,36 @@ void RLL_LoadSolidPolygonShader(void)
 void RLL_LoadSpriteShader(void)
 {
 	const int maxShaderTextLength = 1024;
-	char fragmentShaderPath[1024];
-	char vertexShaderPath[1024];
+	PathBuffer fragmentShaderPath;
+	PathBuffer vertexShaderPath;
 	DynamicBuffer fragmentShaderBuffer;
 	DynamicBuffer vertexShaderBuffer;
 
 	// Read fragment shader
-	if (Assets_PathFor("shaders/sprite.frag", fragmentShaderPath, maxShaderTextLength)) {
-		if (SPA_IsFile(fragmentShaderPath)) {
-			KN_TRACE(LogSysRender, "%s found", fragmentShaderPath);
+	if (Assets_PathBufferFor("shaders/sprite.frag", &fragmentShaderPath)) {
+		if (SPA_IsFile(fragmentShaderPath.str)) {
+			KN_TRACE(LogSysRender, "%s found", fragmentShaderPath.str);
 		}
 		else {
-			KN_TRACE(LogSysRender, "%s not found", fragmentShaderPath);
+			KN_TRACE(LogSysRender, "%s not found", fragmentShaderPath.str);
 		}
 	}
 
-	if (!Assets_ReadFile(fragmentShaderPath, KN_FILE_TYPE_TEXT, &fragmentShaderBuffer)) {
+	if (!Assets_ReadFile(fragmentShaderPath.str, KN_FILE_TYPE_TEXT, &fragmentShaderBuffer)) {
 		KN_ERROR(LogSysRender, "Unable to read fragment shader text");
 	}
 
 	// Read vertex shader
-	if (Assets_PathFor("shaders/sprite.vert", vertexShaderPath, maxShaderTextLength)) {
-		if (SPA_IsFile(vertexShaderPath)) {
-			KN_TRACE(LogSysRender, "%s found", vertexShaderPath);
+	if (Assets_PathBufferFor("shaders/sprite.vert", &vertexShaderPath)) {
+		if (SPA_IsFile(vertexShaderPath.str)) {
+			KN_TRACE(LogSysRender, "%s found", vertexShaderPath.str);
 		}
 		else {
-			KN_TRACE(LogSysRender, "%s not found", vertexShaderPath);
+			KN_TRACE(LogSysRender, "%s not found", vertexShaderPath.str);
 		}
 	}
 
-	if (!Assets_ReadFile(vertexShaderPath, KN_FILE_TYPE_TEXT, &vertexShaderBuffer)) {
+	if (!Assets_ReadFile(vertexShaderPath.str, KN_FILE_TYPE_TEXT, &vertexShaderBuffer)) {
 		KN_ERROR(LogSysRender, "Unable to read vertex shader text");
 	}
 

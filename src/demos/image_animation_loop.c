@@ -43,8 +43,8 @@ KN_GAME_API void Game_Init(void)
 
 	for (uint32_t i = 0; i < 3; ++i) {
 		PathBuffer path;
-		Assets_PathFor(frameFilenames[i], path.path, KN_PATH_MAX);
-		R_LoadSprite(spriteFrames[i], path.path);
+        Assets_PathBufferFor(frameFilenames[i], &path);
+		R_LoadSprite(spriteFrames[i], path.str);
 	}
 }
 
