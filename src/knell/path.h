@@ -17,6 +17,12 @@
 		"Knell allows larger path sizes than the OS");
 #endif
 
+#ifdef _WIN32
+	#include <minwindef.h>
+	KN_STATIC_ASSERT(KN_PATH_MAX <= MAX_PATH,
+		"Knell allows larger path sizes than the OS");
+#endif
+
 /**
  * Rather than proliferate a ridiculous number of buffers and sizes all over the
  * place, agree on a "reasonable" path length.  This has the side-benefit of
