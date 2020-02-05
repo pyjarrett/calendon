@@ -35,23 +35,23 @@ KN_API void Assets_Init(const char* assetDir)
 /**
  * Gets the path for accessing a specific resource within the assets system.
  */
-KN_API bool Assets_PathFor(const char* assertName, char* buffer, uint32_t bufferSize)
+KN_API bool Assets_PathFor(const char* assetName, char* buffer, uint32_t bufferSize)
 {
 	if (assetsRootLength == 0) {
-		KN_ERROR(LogSysAssets, "Asset system not initialized, cannot get path for %s", assertName);
+		KN_ERROR(LogSysAssets, "Asset system not initialized, cannot get path for %s", assetName);
 		return false;
 	}
 
 	// Output buffer cannot hold root + '/' + assetName + '\0'.
-	if (assetsRootLength + 1 + strlen(assertName) + 1 >= bufferSize) {
+	if (assetsRootLength + 1 + strlen(assetName) + 1 >= bufferSize) {
 		return false;
 	}
 
 	memcpy(buffer, assetsRoot, assetsRootLength);
 	buffer[assetsRootLength] = '/';
-	strcpy(buffer + assetsRootLength + 1, assertName);
+	strcpy(buffer + assetsRootLength + 1, assetName);
 
-	KN_TRACE(LogSysAssets, "Resolved asset path '%s' -> '%s'", assertName, buffer);
+	KN_TRACE(LogSysAssets, "Resolved asset path '%s' -> '%s'", assetName, buffer);
 
 	return true;
 }
