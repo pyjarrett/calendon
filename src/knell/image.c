@@ -52,7 +52,7 @@ void Image_Flip(ImagePixels* image)
  *
  * @todo support image types other than RGBA8.
  */
-bool Image_Allocate(ImagePixels* image, const char* fileName)
+KN_API bool Image_Allocate(ImagePixels* image, const char* fileName)
 {
 	KN_ASSERT(image != NULL, "Cannot load data into a null image.");
 	KN_ASSERT(fileName != NULL, "Cannot load an image with a null file name.");
@@ -94,7 +94,7 @@ bool Image_Allocate(ImagePixels* image, const char* fileName)
 	return true;
 }
 
-void Image_Free(ImagePixels* image)
+KN_API void Image_Free(ImagePixels* image)
 {
 	KN_ASSERT(image != NULL, "Cannot load data into a null image.");
 	Mem_Free(&image->pixels);

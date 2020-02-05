@@ -20,7 +20,7 @@ typedef struct {
 	uint32_t width, height;
 } ImagePixels;
 
-bool Image_Allocate(ImagePixels* image, const char* fileName);
-void Image_Free(ImagePixels* image);
+KN_API bool Image_Allocate(ImagePixels* image, const char* fileName);
+KN_API void Image_Free(ImagePixels* image);
 
 #endif /* KN_IMAGE_H */

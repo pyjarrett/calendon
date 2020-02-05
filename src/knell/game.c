@@ -8,7 +8,7 @@
 #include "process.h"
 static HMODULE GameModule;
 
-void Game_Load(const char* sharedLibraryName)
+KN_API void Game_Load(const char* sharedLibraryName)
 {
 	// Shutdown any previous game.
 	if (Game_ShutdownFn) {
