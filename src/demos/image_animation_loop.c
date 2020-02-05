@@ -23,8 +23,8 @@ KN_GAME_API void Game_Init(void)
 	Log_RegisterSystem(&LogSysSample, "Sample", KN_LOG_TRACE);
 	KN_TRACE(LogSysSample, "Sample loaded");
 
-	KN_TRACE(LogSysSample, "Animation loop size:        %lu bytes", sizeof(AnimationLoop));
-	KN_TRACE(LogSysSample, "Animation loop cursor size: %lu bytes", sizeof(AnimationLoopCursor));
+	KN_TRACE(LogSysSample, "Animation loop size:        %zu bytes", sizeof(AnimationLoop));
+	KN_TRACE(LogSysSample, "Animation loop cursor size: %zu bytes", sizeof(AnimationLoopCursor));
 
 	sampleLoop.numStates = SPRITE_ANIMATION_FRAMES;
 	sampleLoop.elapsed[0] = Time_MsToNs(150);

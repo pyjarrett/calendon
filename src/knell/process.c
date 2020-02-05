@@ -36,7 +36,7 @@ KN_API bool Proc_PrintLoadedDLLs(void)
 				sizeof(szModName) / sizeof(TCHAR)))
 			{
 				// Print the module name and handle value.
-				KN_TRACE(LogSysMain, "  %s (0x%08X)", szModName, hMods[i]);
+				KN_TRACE(LogSysMain, "  %s (0x%llX)", szModName, (uintptr_t)hMods[i]);
 			}
 		}
 	}
