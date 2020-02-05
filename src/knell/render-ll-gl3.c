@@ -108,7 +108,7 @@ void RLL_InitSprites(void);
 void RLL_LoadShaders(void);
 
 #if KN_DEBUG
-void RLL_CheckGLError(const char* file, const int line)
+void RLL_CheckGLError(const char* file, int line)
 {
 	const GLenum glError = glGetError();
 	switch (glError)
