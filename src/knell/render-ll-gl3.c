@@ -102,6 +102,151 @@ static GLuint spriteProgram;
  */
 uint32_t LogSysRender;
 
+#define RLL_MAX_ATTRIBUTES 8
+
+KN_STATIC_ASSERT(RLL_MAX_ATTRIBUTES <= GL_MAX_VERTEX_ATTRIBS, "RLL supports more"
+	"active attributes than the API allows");
+#define RLL_MAX_UNIFORMS 32
+#define RLL_MAX_PROGRAMS 16
+#define RLL_MAX_ATTRIBUTE_NAME_LENGTH 64
+#define RLL_MAX_UNIFORM_NAME_LENGTH 64
+
+typedef union {
+	int i;
+	float2 f2;
+	float4 f4;
+	float4x4 f44;
+} AnyGLValue;
+
+typedef struct {
+	char name[RLL_MAX_ATTRIBUTE_NAME_LENGTH];
+
+	/** Corresponding semantic type to use at this index. */
+	uint32_t semanticName;
+	GLint size;
+	GLenum type;
+	GLboolean normalized;
+} Attribute;
+
+typedef struct {
+	char name[RLL_MAX_UNIFORM_NAME_LENGTH];
+	uint32_t semanticName;
+	GLint size;
+	GLenum type;
+} Uniform;
+
+typedef struct {
+	GLuint id;
+	Attribute attributes[RLL_MAX_ATTRIBUTES];
+	Uniform uniforms[RLL_MAX_UNIFORMS];
+	uint32_t numAttributes;
+	uint32_t numUniforms;
+} Program;
+
+static Program programs[RLL_MAX_PROGRAMS];
+
+enum {
+	AttributeSemanticNamePosition2 = 0,
+	AttributeSemanticNamePosition3 = 0,
+	AttributeSemanticNamePosition4 = 0,
+	AttributeSemanticNameTexCoord2 = 1,
+	AttributeSemanticNameTypes,
+	AttributeSemanticNameUnknown
+};
+
+enum {
+	UniformSemanticNameProjection = 0,
+	UniformSemanticNameTypes,
+	UniformSemanticNameUnknown
+};
+
+typedef struct {
+	const char* str;
+	uint32_t id;
+} SemanticName;
+
+static SemanticName semanticNames[] = {
+	{ "Position2", AttributeSemanticNamePosition2 },
+	{ "Position3", AttributeSemanticNamePosition3 },
+	{ "Position4", AttributeSemanticNamePosition4 },
+	{ "TexCoord2", AttributeSemanticNameTexCoord2 }
+};
+
+uint32_t lookupAttributeSemanticName(const char* name)
+{
+	for (uint32_t i=0; i < AttributeSemanticNameTypes; ++i) {
+		if (strcmp(semanticNames[i].str, name) == 0) {
+			return i;
+		}
+	}
+	return AttributeSemanticNameUnknown;
+}
+
+uint32_t lookupUniformSemanticName(const char* name)
+{
+	for (uint32_t i=0; i < UniformSemanticNameTypes; ++i) {
+		if (strcmp(semanticNames[i].str, name) == 0) {
+			return i;
+		}
+	}
+	return UniformSemanticNameUnknown;
+}
+
+AnyGLValue attributeSemanticStorage[AttributeSemanticNameTypes];
+AnyGLValue uniformSemanticStorage[UniformSemanticNameTypes];
+
+/**
+ * Registers a program to the given index.
+ *
+ * Pulls out a list of attributes to use.
+ *
+ * Also pulls out the list of uniforms to apply.
+ */
+void RLL_RegisterProgram(uint32_t index, GLuint program)
+{
+	KN_ASSERT_NO_GL_ERROR();
+	KN_ASSERT(index <= RLL_MAX_PROGRAMS, "Trying to register a program %" PRIu32
+		"outside of the valid range of programs %" PRIu32);
+	KN_TRACE(LogSysRender, "Registering: %u to %" PRIu32, program, index);
+	Program* p = &programs[index];
+	GLint numActiveAttributes;
+	glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &numActiveAttributes);
+	KN_TRACE(LogSysRender, "Active Attributes: %d", numActiveAttributes);
+	KN_ASSERT_NO_GL_ERROR();
+	for (GLint i = 0; i < numActiveAttributes; ++i) {
+		GLint size;
+		GLenum type;
+		glGetActiveAttrib(program, (GLuint)i, RLL_MAX_ATTRIBUTE_NAME_LENGTH,
+			NULL, &size, &type, p->attributes[i].name);
+		KN_TRACE(LogSysRender, "[%d]: %s '%s'   %d", i, RLL_GLTypeToString(type),
+			p->attributes[i].name, size);
+
+		p->attributes[i].semanticName = lookupAttributeSemanticName(p->attributes[i].name);
+		p->attributes[i].type = type;
+		p->attributes[i].size = size;
+		p->attributes[i].normalized = GL_FALSE; // TODO: make this configurable.
+
+		KN_ASSERT_NO_GL_ERROR();
+	}
+
+	GLint numActiveUniforms;
+	glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &numActiveUniforms);
+	KN_TRACE(LogSysRender, "Active Uniforms: %d", numActiveUniforms);
+	for (GLint i = 0; i < numActiveUniforms; ++i) {
+		GLint size;
+		GLenum type;
+		glGetActiveUniform(program, (GLuint)i, RLL_MAX_UNIFORM_NAME_LENGTH,
+			NULL, &size, &type, p->uniforms[i].name);
+		KN_TRACE(LogSysRender, "[%d]: %s '%s'   %d", i, RLL_GLTypeToString(type),
+			p->uniforms[i].name, size);
+		p->uniforms[i].size = size;
+		p->uniforms[i].type = type;
+		p->uniforms[i].semanticName = lookupUniformSemanticName(p->uniforms[i].name);
+	}
+
+	KN_ASSERT_NO_GL_ERROR();
+}
+
 bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* program);
 void RLL_FillBuffers(void);
 void RLL_InitSprites(void);
@@ -158,6 +303,14 @@ const char* RLL_GLTypeToString(GLenum type)
 		strType(GL_UNSIGNED_INT_VEC2);
 		strType(GL_UNSIGNED_INT_VEC3);
 		strType(GL_UNSIGNED_INT_VEC4);
+		strType(GL_SAMPLER);
+		strType(GL_SAMPLER_1D);
+		strType(GL_SAMPLER_2D);
+		strType(GL_SAMPLER_3D);
+		strType(GL_SAMPLER_1D_ARRAY);
+		strType(GL_SAMPLER_2D_ARRAY);
+		strType(GL_SAMPLER_1D_SHADOW);
+		strType(GL_SAMPLER_2D_SHADOW);
 		default: return "Unknown type";
 	}
 #undef strType
@@ -283,7 +436,7 @@ static bool RLL_CreateShader(GLuint* shader, const char* source, const uint32_t 
 
 void RLL_InitGL(void)
 {
-	Log_RegisterSystem(&LogSysRender, "Render", KN_LOG_ERROR);
+	Log_RegisterSystem(&LogSysRender, "Render", KN_LOG_TRACE);
 
 	// Get up and running quickly with OpenGL 3.1 with old-school functions.
 	// TODO: Replace with Core profile once something is working.
@@ -622,6 +775,14 @@ bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* progr
 #endif
 
 	KN_ASSERT_NO_GL_ERROR();
+
+	if (linkResult == GL_TRUE) {
+		KN_DO_NOT_SUBMIT
+		KN_WARN(LogSysRender, "Assign a program index!");
+		RLL_RegisterProgram(0, *program);
+	}
+	KN_ASSERT_NO_GL_ERROR();
+
 	return linkResult == GL_TRUE;
 }
 

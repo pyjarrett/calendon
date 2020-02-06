@@ -28,3 +28,9 @@ Fix usage of Assets_PathFor for PathBuffer
 Clarify file abstractions.
 Document the image loading limits and requirements.
 Allow the use of images without alpha.
+
+
+For a shader program:
+Get a list of attributes
+Get a list of uniforms
+
