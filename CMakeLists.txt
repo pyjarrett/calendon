@@ -4,14 +4,14 @@ project(knell)
 # Using basic C99 for this engine until reaching technical and complexity
 # limits with the language.  C11 was also considered, but C99 should be
 # readily supported by the most number of compilers.
-#
-# Why not C++?  Using C99 aims to use a low level language, which readily maps
-# to the generated assembly and  generates consistent binary symbols across
-# platforms.  C99 limits overdesign and simplifies design choices by providing
-# a subset of functionality of other languages, and hopes to boost productivity
-# by providing clear compile errors.
-#
-# As the lingua franca of programming bindings to other languages should able
+
+# Why not C++ (or Rust, or Nim, or Go)?  Using C99 aims to use a low level
+# language, which readily maps to the generated assembly and generates consistent
+# simple binary symbols. C99 limits overdesign and simplifies design choices by
+# providing a subset of functionality of other languages, and hopes to boost
+# productivity by providing clear compile errors.
+
+# As the lingua franca of programming, bindings to other languages should able
 # to be auto-generated or readily written by hand when appropriate.
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
