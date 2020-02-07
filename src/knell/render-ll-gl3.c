@@ -123,6 +123,7 @@ typedef struct {
 
 	/** Corresponding semantic type to use at this index. */
 	uint32_t semanticName;
+	GLint location;
 	GLint size;
 	GLenum type;
 	GLboolean normalized;
@@ -130,6 +131,7 @@ typedef struct {
 
 typedef struct {
 	char name[RLL_MAX_UNIFORM_NAME_LENGTH];
+	GLuint location;
 	uint32_t semanticName;
 	GLint size;
 	GLenum type;
@@ -156,6 +158,8 @@ enum {
 
 enum {
 	UniformSemanticNameProjection = 0,
+	UniformSemanticNameModelView = 1,
+	UniformSemanticNameTexture2D0 = 2,
 	UniformSemanticNameTypes,
 	UniformSemanticNameUnknown
 };
@@ -163,13 +167,20 @@ enum {
 typedef struct {
 	const char* str;
 	uint32_t id;
+	GLenum type;
 } SemanticName;
 
 static SemanticName semanticNames[] = {
-	{ "Position2", AttributeSemanticNamePosition2 },
-	{ "Position3", AttributeSemanticNamePosition3 },
-	{ "Position4", AttributeSemanticNamePosition4 },
-	{ "TexCoord2", AttributeSemanticNameTexCoord2 }
+	{ "Position2", AttributeSemanticNamePosition2, GL_FLOAT_VEC2 },
+	{ "Position3", AttributeSemanticNamePosition3, GL_FLOAT_VEC3 },
+	{ "Position4", AttributeSemanticNamePosition4, GL_FLOAT_VEC4 },
+	{ "TexCoord2", AttributeSemanticNameTexCoord2, GL_FLOAT_VEC2 }
+};
+
+static SemanticName uniformSemanticNames[] = {
+	{ "Projection", UniformSemanticNameProjection, GL_FLOAT_MAT4 },
+	{ "ModelView", UniformSemanticNameModelView, GL_FLOAT_MAT4 },
+	{ "Texture2D0", UniformSemanticNameTexture2D0, GL_SAMPLER_2D }
 };
 
 uint32_t lookupAttributeSemanticName(const char* name)
@@ -195,6 +206,72 @@ uint32_t lookupUniformSemanticName(const char* name)
 AnyGLValue attributeSemanticStorage[AttributeSemanticNameTypes];
 AnyGLValue uniformSemanticStorage[UniformSemanticNameTypes];
 
+void applyUniform(Uniform* u)
+{
+	SemanticName* s = &uniformSemanticNames[u->semanticName];
+
+	KN_ASSERT(s->type == u->type, "Type of %u semantic name and uniform %u do "
+		"not match", s->type, u->type);
+
+	switch(s->type) {
+		case GL_FLOAT_MAT4:
+			glUniformMatrix4fv(u->location, 1, GL_FALSE,
+				&uniformSemanticStorage[u->semanticName].f44.m[0][0]);
+			break;
+		case GL_SAMPLER_2D:
+			glActiveTexture(GL_TEXTURE0 + u->location);
+			glBindTexture(GL_TEXTURE_2D, uniformSemanticStorage[u->semanticName].i);
+			glUniform1i(u->location, uniformSemanticStorage[u->semanticName].i);
+			break;
+		default:
+			KN_FATAL_ERROR("Unknown uniform type: %i", u->type);
+	}
+/*
+	GLuint uniformProjection = glGetUniformLocation(spriteProgram, "Projection");
+	glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, &projection.m[0][0]);
+
+	GLuint uniformViewModel = glGetUniformLocation(spriteProgram, "ViewModel");
+	glUniformMatrix4fv(uniformViewModel, 1, GL_FALSE, &viewModel.m[0][0]);
+
+	GLuint uniformTexture = glGetUniformLocation(spriteProgram, "Texture");
+	GLuint texture = spriteTextures[id];
+	KN_ASSERT(glIsTexture(texture), "Sprite %" PRIu32 " does not have a valid"
+		"texture", texture);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glUniform1i(uniformTexture, 0);
+
+	glUniform2f(u->location, uniformSemanticStorage[u->semanticName].f2.x, uniformSemanticStorage[u->semanticName].f2.y);
+	GL_FLOAT
+	GL_FLOAT_VEC2
+	GL_FLOAT_VEC3
+	GL_FLOAT_VEC4
+	GL_FLOAT_MAT2
+	GL_FLOAT_MAT3
+	GL_FLOAT_MAT2x3
+	GL_FLOAT_MAT2x4
+	GL_FLOAT_MAT3x2
+	GL_FLOAT_MAT3x4
+	GL_FLOAT_MAT4x2
+	GL_FLOAT_MAT4x3
+	GL_INT
+	GL_INT_VEC2
+	GL_INT_VEC3
+	GL_INT_VEC4
+	GL_UNSIGNED_INT
+	GL_UNSIGNED_INT_VEC2
+	GL_UNSIGNED_INT_VEC3
+	GL_UNSIGNED_INT_VEC4
+	GL_SAMPLER
+	GL_SAMPLER_1D
+	GL_SAMPLER_3D
+	GL_SAMPLER_1D_ARRAY
+	GL_SAMPLER_2D_ARRAY
+	GL_SAMPLER_1D_SHADOW
+	GL_SAMPLER_2D_SHADOW
+*/
+}
+
 /**
  * Registers a program to the given index.
  *
@@ -206,7 +283,7 @@ void RLL_RegisterProgram(uint32_t index, GLuint program)
 {
 	KN_ASSERT_NO_GL_ERROR();
 	KN_ASSERT(index <= RLL_MAX_PROGRAMS, "Trying to register a program %" PRIu32
-		"outside of the valid range of programs %" PRIu32);
+		"outside of the valid range of programs %" PRIu32, index, program);
 	KN_TRACE(LogSysRender, "Registering: %u to %" PRIu32, program, index);
 	Program* p = &programs[index];
 	GLint numActiveAttributes;
@@ -221,6 +298,7 @@ void RLL_RegisterProgram(uint32_t index, GLuint program)
 		KN_TRACE(LogSysRender, "[%d]: %s '%s'   %d", i, RLL_GLTypeToString(type),
 			p->attributes[i].name, size);
 
+		p->attributes[i].location = i;
 		p->attributes[i].semanticName = lookupAttributeSemanticName(p->attributes[i].name);
 		p->attributes[i].type = type;
 		p->attributes[i].size = size;
@@ -228,6 +306,7 @@ void RLL_RegisterProgram(uint32_t index, GLuint program)
 
 		KN_ASSERT_NO_GL_ERROR();
 	}
+	p->numAttributes = numActiveAttributes;
 
 	GLint numActiveUniforms;
 	glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &numActiveUniforms);
@@ -243,8 +322,39 @@ void RLL_RegisterProgram(uint32_t index, GLuint program)
 		p->uniforms[i].type = type;
 		p->uniforms[i].semanticName = lookupUniformSemanticName(p->uniforms[i].name);
 	}
+	p->numUniforms = numActiveUniforms;
 
 	KN_ASSERT_NO_GL_ERROR();
+}
+
+void RLL_ApplyProgram(uint32_t id, GLsizei vertexStride, void* vertexPointer)
+{
+	Program* p = &programs[id];
+	KN_ASSERT(glIsProgram(p->id), "%" PRIu32 " is not a valid program.", id);
+	glUseProgram(p->id);
+
+	for (uint32_t i = 0; i < p->numAttributes; ++i) {
+		glEnableVertexAttribArray(p->attributes[i].location);
+		glVertexAttribPointer(
+			p->attributes[i].location,
+			p->attributes[i].size,
+			p->attributes[i].type,
+			p->attributes[i].normalized,
+			vertexStride,
+			vertexPointer
+		);
+	}
+
+	for (uint32_t i = 0; i < p->numUniforms; ++i) {
+		Uniform* u = &p->uniforms[i];
+		switch(u->semanticName) {
+			case UniformSemanticNameProjection:
+				uniformSemanticStorage[u->semanticName];
+				break;
+			default:
+				break;
+		}
+	}
 }
 
 bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* program);
