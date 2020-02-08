@@ -51,24 +51,6 @@ static GLsizei windowWidth, windowHeight;
 static SDL_GLContext* gl;
 
 /**
- * Orthographic projection matrix to match the same dimensions as the window
- * size.  Scaling based on the same aspect ratio but big enough to see might be
- * a better option.
- */
-static float4x4 projection;
-
-static GLuint fullScreenDebugProgram;
-static GLuint fullScreenQuadBuffer;
-
-static GLuint spriteProgram;
-static GLuint spriteBuffer;
-
-/**
- * Vertex `GL_ARRAY_BUFFER` containing vertex information for drawing debug shapes.
- */
-static GLuint debugDrawBuffer;
-
-/**
  * Allocated number of 4-element vertices for specifically debug drawing.
  *
  * TODO: 128 might be too high, look into tracking used buffer space.
@@ -76,24 +58,25 @@ static GLuint debugDrawBuffer;
 #define RLL_MAX_DEBUG_POINTS 128
 
 /**
+ * Vertex `GL_ARRAY_BUFFER` containing vertex information for drawing debug shapes.
+ */
+static GLuint debugDrawBuffer;
+static GLuint fullScreenQuadBuffer;
+static GLuint spriteBuffer;
+
+/**
  * Program to use for drawing debug shapes.
  */
 static GLuint solidPolygonProgram;
+static GLuint spriteProgram;
+static GLuint fullScreenDebugProgram;
 
 /*
  * TODO: Not supporting reusable sprites yet.
  */
-#define RLL_NUM_SPRITES 128
 #define RLL_MAX_SPRITE_TYPES 512
 SpriteId nextSpriteId;
 GLuint spriteTextures[RLL_MAX_SPRITE_TYPES];
-
-uint32_t spritesUsed;
-float4x4 spriteTransforms[RLL_NUM_SPRITES];
-float4 spriteVertexBuffer[RLL_NUM_SPRITES];
-float4 spriteTint[RLL_NUM_SPRITES];
-
-static GLuint spriteProgram;
 
 #define MAX_INFO_LOG_LENGTH 4096
 
@@ -180,7 +163,6 @@ enum {
 	UniformSemanticNameUnknown
 };
 
-AnyGLValue attributeSemanticStorage[AttributeSemanticNameTypes];
 AnyGLValue uniformSemanticStorage[UniformSemanticNameTypes];
 
 typedef struct {
@@ -250,11 +232,6 @@ void RLL_ReadyTexture2(GLuint index, GLuint texture)
 
 void RLL_ReadyUniform(Uniform* u)
 {
-//	SemanticName* s = &uniformSemanticNames[u->semanticName];
-
-//	KN_ASSERT(s->type == u->type, "Type of %s semantic name and uniform %s do "
-//		"not match", RLL_GLTypeToString(s->type), RLL_GLTypeToString(u->type));
-
 	switch(u->type) {
 		case GL_FLOAT_VEC2:
 			KN_ASSERT(u->size == 1, "Arrays of float2 are not supported");
@@ -278,9 +255,7 @@ void RLL_ReadyUniform(Uniform* u)
 	KN_ASSERT_NO_GL_ERROR();
 /*
 	GL_FLOAT
-	GL_FLOAT_VEC2
 	GL_FLOAT_VEC3
-	GL_FLOAT_VEC4
 	GL_FLOAT_MAT2
 	GL_FLOAT_MAT3
 	GL_FLOAT_MAT2x3
@@ -432,6 +407,7 @@ void RLL_DumpState()
 {
 	KN_ASSERT_NO_GL_ERROR();
 	int i;
+	KN_UNUSED(i);
 #define DebugI(name) glGetIntegerv(name, &i);  KN_TRACE(LogSysRender, "%s: %i", #name, i);
 	//DebugI(GL_ARRAY_BUFFER_BINDING);
 	//DebugI(GL_CURRENT_PROGRAM);
@@ -581,6 +557,10 @@ void RLL_PrintGLVersion(void)
 /**
  * An openGL orthographic matrix.  Note that DirectX will need a related, but
  * slightly different version.
+ *
+ * Orthographic projection matrix to match the same dimensions as the window
+ * size.  Scaling based on the same aspect ratio but big enough to see might be
+ * a better option.
  */
 static float4x4 RLL_OrthoProjection(const uint32_t width, const uint32_t height)
 {
@@ -969,8 +949,6 @@ bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* progr
 	KN_ASSERT_NO_GL_ERROR();
 
 	if (linkResult == GL_TRUE) {
-		KN_DO_NOT_SUBMIT
-		KN_WARN(LogSysRender, "Assign a program index!");
 		RLL_RegisterProgram(programIndex, *program);
 	}
 	KN_ASSERT_NO_GL_ERROR();
@@ -989,14 +967,12 @@ void RLL_Init(uint32_t width, uint32_t height)
 
 	windowWidth = (GLsizei)width;
 	windowHeight = (GLsizei)height;
-	projection = RLL_OrthoProjection(width, height);
 	uniformSemanticStorage[UniformSemanticNameProjection].f44 = RLL_OrthoProjection(width, height);
 }
 
 void RLL_StartFrame(void)
 {
 	SDL_GL_MakeCurrent(window, gl);
-	spritesUsed = 0;
 }
 
 void RLL_EndFrame(void)
