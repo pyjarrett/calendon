@@ -30,13 +30,14 @@
 
 #if KN_DEBUG
 	#define KN_ASSERT_NO_GL_ERROR() RLL_CheckGLError(__FILE__, __LINE__)
-	const char* RLL_GLTypeToString(GLenum type);
-	void RLL_PrintProgram(GLuint program);
-	void RLL_PrintGLVersion(void);
-	void RLL_CheckGLError(const char* file, int line);
 #else
 	#define KN_ASSERT_NO_GL_ERROR()
 #endif
+
+const char* RLL_GLTypeToString(GLenum type);
+void RLL_PrintProgram(GLuint program);
+void RLL_PrintGLVersion(void);
+void RLL_CheckGLError(const char* file, int line);
 
 /**
  * The window on which to draw.
@@ -409,7 +410,6 @@ void RLL_DumpState()
 	KN_ASSERT_NO_GL_ERROR();
 }
 
-#if KN_DEBUG
 void RLL_CheckGLError(const char* file, int line)
 {
 	const GLenum glError = glGetError();
@@ -544,8 +544,6 @@ void RLL_PrintGLVersion(void)
 	KN_TRACE(LogSysRender, "    GLSL Version: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
 	KN_ASSERT_NO_GL_ERROR();
 }
-
-#endif /* KN_DEBUG */
 
 /**
  * An openGL orthographic matrix.  Note that DirectX will need a related, but
