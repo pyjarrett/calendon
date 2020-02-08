@@ -127,6 +127,7 @@ set(KNELL_COMMON_C_FLAGS "${KNELL_COMMON_C_FLAGS} -fvisibility=hidden")
 # Temporary workaround until strcpy, strlen, usages get replaced.
 if (WIN32)
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS=1)
+    set(KNELL_COMMON_C_FLAGS "${KNELL_COMMON_C_FLAGS} /W4")
 endif (WIN32)
 
 # Eliminate extra dead code
