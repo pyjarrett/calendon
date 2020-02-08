@@ -91,8 +91,6 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	endif()
 endif()
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")      # Enable parallel build
-
 if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
 	if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 		message(FATAL_ERROR "Coverage is not available in Clang.")
@@ -128,6 +126,7 @@ set(KNELL_COMMON_C_FLAGS "${KNELL_COMMON_C_FLAGS} -fvisibility=hidden")
 if (WIN32)
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS=1)
     set(KNELL_COMMON_C_FLAGS "${KNELL_COMMON_C_FLAGS} /W4")
+	set(KNELL_COMMON_C_FLAGS "${KNELL_COMMON_C_FLAGS} /MP")      # Enable parallel build
 endif (WIN32)
 
 # Eliminate extra dead code
