@@ -1250,31 +1250,13 @@ void RLL_DrawDebugLine(float x1, float y1, float x2, float y2, rgb8 color)
 	// TODO: Probably shouldn't reset viewport.
 	RLL_SetFullScreenViewport();
 
-	glUseProgram(solidPolygonProgram);
 	glBindBuffer(GL_ARRAY_BUFFER, debugDrawBuffer);
 
-	const GLint uniformProjection = glGetUniformLocation(solidPolygonProgram, "Projection");
-	glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, &projection.m[0][0]);
+	uniformSemanticStorage[UniformSemanticNameViewModel].f44 = float4x4_Identity();
+	uniformSemanticStorage[UniformSemanticNamePolygonColor].f4 = float4_Make(
+		(float)color.r / 255.0f, (float)color.g / 255.0f, (float)color.b / 255.0f, 1.0f);
 
-	const float4x4 identity = float4x4_Identity();
-	const GLint uniformViewModel = glGetUniformLocation(solidPolygonProgram, "ViewModel");
-	glUniformMatrix4fv(uniformViewModel, 1, GL_FALSE, &identity.m[0][0]);
-
-	const GLint uniformColor = glGetUniformLocation(solidPolygonProgram, "PolygonColor");
-	glUniform4f(uniformColor, (float)color.r / 255.0f, (float)color.g / 255.0f, (float)color.b / 255.0f, 1.0f);
-
-	const GLint positionAttrib = glGetAttribLocation(solidPolygonProgram, "Position");
-	KN_ASSERT(positionAttrib >= 0, "Position attribute does not exist");
-	glEnableVertexAttribArray((GLuint)positionAttrib);
-	KN_ASSERT_NO_GL_ERROR();
-	glVertexAttribPointer(
-		(GLuint)positionAttrib,
-		4,
-		GL_FLOAT,
-		GL_FALSE,
-		4 * sizeof(float),
-		(void *)0
-	);
+	RLL_EnableProgram(ProgramIndexSolidPolygon, 4 * sizeof(float), 0);
 
 	float4 vertices[2];
 	vertices[0] = float4_Make(x1, y1, 0.0f, 1.0f);
@@ -1283,8 +1265,7 @@ void RLL_DrawDebugLine(float x1, float y1, float x2, float y2, rgb8 color)
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
 	glDrawArrays(GL_LINES, 0, 2);
 
-	glDisableVertexAttribArray(positionAttrib);
-
+	RLL_DisableProgram(ProgramIndexSolidPolygon);
 	KN_ASSERT_NO_GL_ERROR();
 }
 
@@ -1296,30 +1277,12 @@ void RLL_DrawDebugLineStrip(float2* points, uint32_t numPoints, rgb8 color)
 	// TODO: Probably shouldn't reset viewport.
 	RLL_SetFullScreenViewport();
 
-	glUseProgram(solidPolygonProgram);
 	glBindBuffer(GL_ARRAY_BUFFER, debugDrawBuffer);
+	RLL_EnableProgram(ProgramIndexSolidPolygon, 4 * sizeof(float), 0);
 
-	const GLint uniformProjection = glGetUniformLocation(solidPolygonProgram, "Projection");
-	glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, &projection.m[0][0]);
-
-	const float4x4 identity = float4x4_Identity();
-	const GLint uniformViewModel = glGetUniformLocation(solidPolygonProgram, "ViewModel");
-	glUniformMatrix4fv(uniformViewModel, 1, GL_FALSE, &identity.m[0][0]);
-
-	const GLint uniformColor = glGetUniformLocation(solidPolygonProgram, "PolygonColor");
-	glUniform4f(uniformColor, (float)color.r / 255.0f, (float)color.g / 255.0f, (float)color.b / 255.0f, 1.0f);
-
-	const GLint positionAttrib = glGetAttribLocation(solidPolygonProgram, "Position");
-	KN_ASSERT(positionAttrib >= 0, "Position attribute does not exist");
-	glEnableVertexAttribArray((GLuint)positionAttrib);
-	glVertexAttribPointer(
-		(GLuint)positionAttrib,
-		4,
-		GL_FLOAT,
-		GL_FALSE,
-		4 * sizeof(float),
-		(void *)0
-	);
+	uniformSemanticStorage[UniformSemanticNameViewModel].f44 = float4x4_Identity();
+	uniformSemanticStorage[UniformSemanticNamePolygonColor].f4 = float4_Make(
+		(float)color.r / 255.0f, (float)color.g / 255.0f, (float)color.b / 255.0f, 1.0f);
 
 	float4 vertices[RLL_MAX_DEBUG_POINTS];
 	for (uint32_t i = 0; i < numPoints; ++i) {
@@ -1327,7 +1290,8 @@ void RLL_DrawDebugLineStrip(float2* points, uint32_t numPoints, rgb8 color)
 	}
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float4) * numPoints, vertices);
 	glDrawArrays(GL_LINE_STRIP, 0, (GLsizei)numPoints);
-	glDisableVertexAttribArray(positionAttrib);
+
+	RLL_DisableProgram(ProgramIndexSolidPolygon);
 
 	KN_ASSERT_NO_GL_ERROR();
 }
