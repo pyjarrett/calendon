@@ -718,28 +718,30 @@ void RLL_LoadSimpleShader(const char* vertexShaderFileName,
 	DynamicBuffer fragmentShaderBuffer;
 	DynamicBuffer vertexShaderBuffer;
 
-	// Read fragment shader
-	if (Assets_PathBufferFor(fragmentShaderFileName, &fragmentShaderPath)) {
-		if (SPA_IsFile(fragmentShaderPath.str)) {
-			KN_TRACE(LogSysRender, "%s found", fragmentShaderPath.str);
-		}
-		else {
-			KN_TRACE(LogSysRender, "%s not found", fragmentShaderPath.str);
-		}
+	// Find the fragment shader.
+	if (!Assets_PathBufferFor(fragmentShaderFileName, &fragmentShaderPath)) {
+		KN_ERROR(LogSysRender, "Unable to find asset for fragment shader: %s",
+			fragmentShaderFileName);
+	}
+
+	if (!SPA_IsFile(fragmentShaderPath.str)) {
+		KN_ERROR(LogSysRender, "Fragment shader is not a file: %s",
+			fragmentShaderPath.str);
 	}
 
 	if (!Assets_ReadFile(fragmentShaderPath.str, KN_FILE_TYPE_TEXT, &fragmentShaderBuffer)) {
 		KN_ERROR(LogSysRender, "Unable to read fragment shader text");
 	}
 
-	// Read vertex shader
-	if (Assets_PathBufferFor(vertexShaderFileName, &vertexShaderPath)) {
-		if (SPA_IsFile(vertexShaderPath.str)) {
-			KN_TRACE(LogSysRender, "%s found", vertexShaderPath.str);
-		}
-		else {
-			KN_TRACE(LogSysRender, "%s not found", vertexShaderPath.str);
-		}
+	// Find the vertex shader.
+	if (!Assets_PathBufferFor(vertexShaderFileName, &vertexShaderPath)) {
+		KN_ERROR(LogSysRender, "Unable to find asset for vertex shader: %s",
+			vertexShaderFileName);
+	}
+
+	if (!SPA_IsFile(vertexShaderPath.str)) {
+		KN_ERROR(LogSysRender, "Vertex shader is not a file: %s",
+			vertexShaderPath.str);
 	}
 
 	if (!Assets_ReadFile(vertexShaderPath.str, KN_FILE_TYPE_TEXT,&vertexShaderBuffer)) {
