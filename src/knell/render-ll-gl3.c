@@ -1093,60 +1093,6 @@ void RLL_DrawSprite(SpriteId id, float2 position, dimension2f size)
 	KN_ASSERT_NO_GL_ERROR();
 }
 
-void RLL_DrawSprite2(SpriteId id, float2 position, dimension2f size)
-{
-	KN_ASSERT_NO_GL_ERROR();
-
-	RLL_SetFullScreenViewport();
-
-	glUseProgram(spriteProgram);
-	glBindBuffer(GL_ARRAY_BUFFER, spriteBuffer);
-
-	// set vertex arrays
-	GLuint positionAttrib = glGetAttribLocation(spriteProgram, "Position");
-	glEnableVertexAttribArray(positionAttrib);
-	KN_ASSERT_NO_GL_ERROR();
-	glVertexAttribPointer(
-		positionAttrib,
-		4,
-		GL_FLOAT,
-		GL_FALSE,
-		4 * sizeof(float),
-		(void *)0
-	);
-
-	KN_ASSERT_NO_GL_ERROR();
-
-	GLuint uniformProjection = glGetUniformLocation(spriteProgram, "Projection");
-	glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, &projection.m[0][0]);
-
-	// TODO: This name is wrong, since Knell uses row-vectors, it should be ModelView.
-	GLuint uniformViewModel = glGetUniformLocation(spriteProgram, "ViewModel");
-	float4x4 viewModel = float4x4_Multiply(
-		float4x4_NonUniformScale(size.width, size.height, 1.0f),
-		float4x4_Translate(position.x, position.y, 0.0f));
-	glUniformMatrix4fv(uniformViewModel, 1, GL_FALSE, &viewModel.m[0][0]);
-    KN_ASSERT_NO_GL_ERROR();
-
-	GLuint uniformTexture = glGetUniformLocation(spriteProgram, "Texture");
-
-	GLuint texture = spriteTextures[id];
-	KN_ASSERT(glIsTexture(texture), "Sprite %" PRIu32 " does not have a valid"
-		"texture", texture);
-    KN_ASSERT_NO_GL_ERROR();
-	glActiveTexture(GL_TEXTURE0);
-    KN_ASSERT_NO_GL_ERROR();
-	glBindTexture(GL_TEXTURE_2D, texture);
-    KN_ASSERT_NO_GL_ERROR();
-	glUniform1i(uniformTexture, 0);
-    KN_ASSERT_NO_GL_ERROR();
-
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	glDisableVertexAttribArray(positionAttrib);
-
-	KN_ASSERT_NO_GL_ERROR();
-}
-
 /**
  * Draw a fullscreen debug rect.
  */
