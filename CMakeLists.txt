@@ -91,6 +91,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	endif()
 endif()
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")      # Enable parallel build
+
 if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
 	if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 		message(FATAL_ERROR "Coverage is not available in Clang.")
