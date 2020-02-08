@@ -1,21 +1,21 @@
-#include "render-ll.h"
+#include <knell/render-ll.h>
 
-#include "kn.h"
+#include <knell/kn.h>
 
-#include "assets.h"
-#include "assets-fileio.h"
-#include "color.h"
-#include "compat-sdl.h"
-#include "image.h"
-#include "log.h"
-#include "math4.h"
-#include "memory.h"
-#include "sprite.h"
+#include <knell/assets.h>
+#include <knell/assets-fileio.h>
+#include <knell/color.h>
+#include <knell/compat-sdl.h>
+#include <knell/image.h>
+#include <knell/log.h>
+#include <knell/math4.h>
+#include <knell/memory.h>
+#include <knell/sprite.h>
 
 #include <spa_fu/spa_fu.h>
 
 #ifdef _WIN32
-	#include "compat-windows.h"
+	#include <knell/compat-windows.h>
 
 	#include <GL/glew.h>
 	#define GL_GLEXT_PROTOTYPES 1
