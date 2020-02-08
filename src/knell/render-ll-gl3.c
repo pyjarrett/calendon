@@ -64,11 +64,6 @@ static GLuint debugDrawBuffer;
 static GLuint fullScreenQuadBuffer;
 static GLuint spriteBuffer;
 
-/**
- * Program to use for drawing debug shapes.
- */
-static GLuint fullScreenDebugProgram;
-
 /*
  * TODO: Not supporting reusable sprites yet.
  */
@@ -772,84 +767,14 @@ void RLL_LoadSimpleShader(const char* vertexShaderFileName,
 	Mem_Free(&fragmentShaderBuffer);
 }
 
-void RLL_LoadFullScreenDebugShader(void)
-{
-//	RLL_LoadSimpleShader("shaders/fullscreen_textured_quad.vert",
-//		"shaders/uv_as_red_green.frag", ProgramIndexFullScreen);
-
-	const int maxShaderTextLength = 1024;
-    PathBuffer fragmentShaderPath;
-    PathBuffer vertexShaderPath;
-	DynamicBuffer fragmentShaderBuffer;
-	DynamicBuffer vertexShaderBuffer;
-
-	// Read fragment shader
-	if (Assets_PathBufferFor("shaders/uv_as_red_green.frag", &fragmentShaderPath)) {
-		if (SPA_IsFile(fragmentShaderPath.str)) {
-			KN_TRACE(LogSysRender, "%s found", fragmentShaderPath.str);
-		}
-		else {
-			KN_TRACE(LogSysRender, "%s not found", fragmentShaderPath.str);
-		}
-	}
-
-	if (!Assets_ReadFile(fragmentShaderPath.str, KN_FILE_TYPE_TEXT, &fragmentShaderBuffer)) {
-		KN_ERROR(LogSysRender, "Unable to read fragment shader text");
-	}
-
-	// Read vertex shader
-	if (Assets_PathBufferFor("shaders/fullscreen_textured_quad.vert", &vertexShaderPath)) {
-		if (SPA_IsFile(vertexShaderPath.str)) {
-			KN_TRACE(LogSysRender, "%s found", vertexShaderPath.str);
-		}
-		else {
-			KN_TRACE(LogSysRender, "%s not found", vertexShaderPath.str);
-		}
-	}
-
-	if (!Assets_ReadFile(vertexShaderPath.str, KN_FILE_TYPE_TEXT, &vertexShaderBuffer)) {
-		KN_ERROR(LogSysRender, "Unable to read vertex shader text");
-	}
-
-	//KN_TRACE(LogSysRender, "Fragment shader %s", fragmentShaderBuffer.contents);
-	//KN_TRACE(LogSysRender, "Vertex shader %s", vertexShaderBuffer.contents);
-
-	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-
-	if (!glIsShader(vertexShader)) {
-		KN_ERROR(LogSysRender, "Unable to allocate space for vertex shader");
-	}
-
-	if (!glIsShader(fragmentShader)) {
-		KN_ERROR(LogSysRender, "Unable to allocate space for fragment shader");
-	}
-
-	RLL_CreateShader(&fragmentShader, fragmentShaderBuffer.contents, fragmentShaderBuffer.size);
-	RLL_CreateShader(&vertexShader, vertexShaderBuffer.contents, vertexShaderBuffer.size);
-
-	RLL_CreateProgram(vertexShader, fragmentShader, &fullScreenDebugProgram, ProgramIndexFullScreen);
-	Mem_Free(&vertexShaderBuffer);
-	Mem_Free(&fragmentShaderBuffer);
-}
-
-void RLL_LoadSolidPolygonShader(void)
-{
-	RLL_LoadSimpleShader("shaders/solid_polygon.vert",
-		"shaders/solid_polygon.frag", ProgramIndexSolidPolygon);
-}
-
-void RLL_LoadSpriteShader(void)
-{
-	RLL_LoadSimpleShader("shaders/sprite.vert", "shaders/sprite.frag",
-		ProgramIndexSprite);
-}
-
 void RLL_LoadShaders(void)
 {
-	RLL_LoadSolidPolygonShader();
-	RLL_LoadFullScreenDebugShader();
-	RLL_LoadSpriteShader();
+	RLL_LoadSimpleShader("shaders/fullscreen_textured_quad.vert",
+		"shaders/uv_as_red_green.frag", ProgramIndexFullScreen);
+	RLL_LoadSimpleShader("shaders/solid_polygon.vert",
+		"shaders/solid_polygon.frag", ProgramIndexSolidPolygon);
+	RLL_LoadSimpleShader("shaders/sprite.vert",
+		"shaders/sprite.frag", ProgramIndexSprite);
 }
 
 bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* program,
@@ -1034,24 +959,13 @@ void RLL_DrawDebugFullScreenRect(void)
 
 	RLL_SetFullScreenViewport();
 
-	glUseProgram(fullScreenDebugProgram);
 	glBindBuffer(GL_ARRAY_BUFFER, fullScreenQuadBuffer);
 
-	// set vertex arrays
-	GLuint positionAttrib = glGetAttribLocation(fullScreenDebugProgram, "Position");
-	glEnableVertexAttribArray(positionAttrib);
-	KN_ASSERT_NO_GL_ERROR();
-	glVertexAttribPointer(
-		positionAttrib,
-		4,
-		GL_FLOAT,
-		GL_FALSE,
-		4 * sizeof(float),
-		(void *)0
-	);
+	RLL_EnableProgram(ProgramIndexFullScreen, 4 * sizeof(float), 0);
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	glDisableVertexAttribArray(positionAttrib);
+
+	RLL_DisableProgram(ProgramIndexFullScreen);
 
 	KN_ASSERT_NO_GL_ERROR();
 }
