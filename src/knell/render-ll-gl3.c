@@ -1131,31 +1131,12 @@ void RLL_DrawDebugRect(float4 position, dimension2f dimensions, float4 color)
 {
 	RLL_SetFullScreenViewport();
 
-	glUseProgram(solidPolygonProgram);
 	glBindBuffer(GL_ARRAY_BUFFER, debugDrawBuffer);
 
-	const GLint uniformProjection = glGetUniformLocation(solidPolygonProgram, "Projection");
-	glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, &projection.m[0][0]);
+	RLL_EnableProgram(ProgramIndexSolidPolygon, 4 * sizeof(float), 0);
 
-	const float4x4 identity = float4x4_Identity();
-	const GLint uniformViewModel = glGetUniformLocation(solidPolygonProgram, "ViewModel");
-	glUniformMatrix4fv(uniformViewModel, 1, GL_FALSE, &identity.m[0][0]);
-
-	const GLint uniformColor = glGetUniformLocation(solidPolygonProgram, "PolygonColor");
-	glUniform4f(uniformColor, color.x, color.y, color.z, color.w);
-
-	const GLint positionAttrib = glGetAttribLocation(solidPolygonProgram, "Position");
-	KN_ASSERT(positionAttrib >= 0, "Position attribute does not exist");
-	glEnableVertexAttribArray((GLuint)positionAttrib);
-	KN_ASSERT_NO_GL_ERROR();
-	glVertexAttribPointer(
-		(GLuint)positionAttrib,
-		4,
-		GL_FLOAT,
-		GL_FALSE,
-		4 * sizeof(float),
-		(void *)0
-	);
+	uniformSemanticStorage[UniformSemanticNameViewModel].f44 = float4x4_Identity();
+	uniformSemanticStorage[UniformSemanticNamePolygonColor].f4 = color;
 
 	float4 vertices[4];
 	vertices[0] = float4_Make(-dimensions.width / 2.0f, -dimensions.height / 2.0f, 0.0f, 1.0f);
@@ -1169,24 +1150,10 @@ void RLL_DrawDebugRect(float4 position, dimension2f dimensions, float4 color)
 		vertices[i].z += position.z;
 	}
 
-	static uint32_t flag = 0;
-	if (!flag) {
-		for (uint32_t i = 0; i < 4; ++i) {
-			float4_DebugPrint(stdout, vertices[i]);
-		}
-
-		printf("Transformed:\n");
-		for (uint32_t i = 0; i < 4; ++i) {
-			float4_DebugPrint(stdout, float4_Multiply(vertices[i], projection));
-		}
-		flag = 1;
-		printf("\n");
-	}
-
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-	glDisableVertexAttribArray(positionAttrib);
+	RLL_DisableProgram(ProgramIndexSolidPolygon);
 
 	KN_ASSERT_NO_GL_ERROR();
 }
