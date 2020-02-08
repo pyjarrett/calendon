@@ -148,6 +148,12 @@ typedef struct {
 static Program programs[RLL_MAX_PROGRAMS];
 
 enum {
+	ProgramIndexSprite = 0,
+	ProgramIndexFullScreen = 1,
+	ProgramIndexSolidPolygon = 2
+};
+
+enum {
 	AttributeSemanticNamePosition2 = 0,
 	AttributeSemanticNamePosition3 = 0,
 	AttributeSemanticNamePosition4 = 0,
@@ -206,6 +212,12 @@ uint32_t lookupUniformSemanticName(const char* name)
 AnyGLValue attributeSemanticStorage[AttributeSemanticNameTypes];
 AnyGLValue uniformSemanticStorage[UniformSemanticNameTypes];
 
+void prepareTexture2(GLuint index, GLuint texture)
+{
+	glActiveTexture(GL_TEXTURE0 + index);
+	glBindTexture(GL_TEXTURE_2D, texture);
+}
+
 void applyUniform(Uniform* u)
 {
 	SemanticName* s = &uniformSemanticNames[u->semanticName];
@@ -214,34 +226,26 @@ void applyUniform(Uniform* u)
 		"not match", s->type, u->type);
 
 	switch(s->type) {
+		case GL_FLOAT_VEC2:
+			KN_ASSERT(u->size == 1, "Arrays of float2 are not supported");
+			glUniform2fv(u->location, 1, uniformSemanticStorage[u->semanticName].f2.v);
+			break;
+		case GL_FLOAT_VEC3:
+			KN_ASSERT(u->size == 1, "Arrays of float3 are not supported");
+			glUniform4fv(u->location, 1, uniformSemanticStorage[u->semanticName].f4.v);
+			break;
 		case GL_FLOAT_MAT4:
+			KN_ASSERT(u->size == 1, "Arrays of float4x4 are not supported");
 			glUniformMatrix4fv(u->location, 1, GL_FALSE,
 				&uniformSemanticStorage[u->semanticName].f44.m[0][0]);
 			break;
 		case GL_SAMPLER_2D:
-			glActiveTexture(GL_TEXTURE0 + u->location);
-			glBindTexture(GL_TEXTURE_2D, uniformSemanticStorage[u->semanticName].i);
 			glUniform1i(u->location, uniformSemanticStorage[u->semanticName].i);
 			break;
 		default:
 			KN_FATAL_ERROR("Unknown uniform type: %i", u->type);
 	}
 /*
-	GLuint uniformProjection = glGetUniformLocation(spriteProgram, "Projection");
-	glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, &projection.m[0][0]);
-
-	GLuint uniformViewModel = glGetUniformLocation(spriteProgram, "ViewModel");
-	glUniformMatrix4fv(uniformViewModel, 1, GL_FALSE, &viewModel.m[0][0]);
-
-	GLuint uniformTexture = glGetUniformLocation(spriteProgram, "Texture");
-	GLuint texture = spriteTextures[id];
-	KN_ASSERT(glIsTexture(texture), "Sprite %" PRIu32 " does not have a valid"
-		"texture", texture);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glUniform1i(uniformTexture, 0);
-
-	glUniform2f(u->location, uniformSemanticStorage[u->semanticName].f2.x, uniformSemanticStorage[u->semanticName].f2.y);
 	GL_FLOAT
 	GL_FLOAT_VEC2
 	GL_FLOAT_VEC3
@@ -357,7 +361,8 @@ void RLL_ApplyProgram(uint32_t id, GLsizei vertexStride, void* vertexPointer)
 	}
 }
 
-bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* program);
+bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* program,
+	uint32_t programIndex);
 void RLL_FillBuffers(void);
 void RLL_InitSprites(void);
 void RLL_LoadShaders(void);
@@ -707,7 +712,7 @@ void RLL_LoadFullScreenDebugShader(void)
 	RLL_CreateShader(&fragmentShader, fragmentShaderBuffer.contents, fragmentShaderBuffer.size);
 	RLL_CreateShader(&vertexShader, vertexShaderBuffer.contents, vertexShaderBuffer.size);
 
-	RLL_CreateProgram(vertexShader, fragmentShader, &fullScreenDebugProgram);
+	RLL_CreateProgram(vertexShader, fragmentShader, &fullScreenDebugProgram, ProgramIndexFullScreen);
 	Mem_Free(&vertexShaderBuffer);
 	Mem_Free(&fragmentShaderBuffer);
 }
@@ -765,7 +770,7 @@ void RLL_LoadSolidPolygonShader(void)
 	RLL_CreateShader(&fragmentShader, fragmentShaderBuffer.contents, fragmentShaderBuffer.size);
 	RLL_CreateShader(&vertexShader, vertexShaderBuffer.contents, vertexShaderBuffer.size);
 
-	RLL_CreateProgram(vertexShader, fragmentShader, &solidPolygonProgram);
+	RLL_CreateProgram(vertexShader, fragmentShader, &solidPolygonProgram, ProgramIndexSolidPolygon);
 	Mem_Free(&vertexShaderBuffer);
 	Mem_Free(&fragmentShaderBuffer);
 }
@@ -823,7 +828,7 @@ void RLL_LoadSpriteShader(void)
 	RLL_CreateShader(&fragmentShader, fragmentShaderBuffer.contents, fragmentShaderBuffer.size);
 	RLL_CreateShader(&vertexShader, vertexShaderBuffer.contents, vertexShaderBuffer.size);
 
-	RLL_CreateProgram(vertexShader, fragmentShader, &spriteProgram);
+	RLL_CreateProgram(vertexShader, fragmentShader, &spriteProgram, ProgramIndexSprite);
 	Mem_Free(&vertexShaderBuffer);
 	Mem_Free(&fragmentShaderBuffer);
 }
@@ -835,7 +840,8 @@ void RLL_LoadShaders(void)
 	RLL_LoadSpriteShader();
 }
 
-bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* program)
+bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* program,
+	uint32_t programIndex)
 {
 	KN_ASSERT_NO_GL_ERROR();
 
@@ -889,7 +895,7 @@ bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* progr
 	if (linkResult == GL_TRUE) {
 		KN_DO_NOT_SUBMIT
 		KN_WARN(LogSysRender, "Assign a program index!");
-		RLL_RegisterProgram(0, *program);
+		RLL_RegisterProgram(programIndex, *program);
 	}
 	KN_ASSERT_NO_GL_ERROR();
 
@@ -984,6 +990,59 @@ bool RLL_LoadSprite(SpriteId id, const char* path)
 }
 
 void RLL_DrawSprite(SpriteId id, float2 position, dimension2f size)
+{	KN_ASSERT_NO_GL_ERROR();
+
+	RLL_SetFullScreenViewport();
+
+	glUseProgram(spriteProgram);
+	glBindBuffer(GL_ARRAY_BUFFER, spriteBuffer);
+	KN_ASSERT_NO_GL_ERROR();
+
+	GLuint texture = spriteTextures[id];
+	KN_ASSERT(glIsTexture(texture), "Sprite %" PRIu32 " does not have a valid"
+													  "texture", texture);
+	KN_ASSERT_NO_GL_ERROR();
+	prepareTexture2(0, texture);
+	KN_ASSERT_NO_GL_ERROR();
+
+
+	// set vertex arrays
+	GLuint positionAttrib = glGetAttribLocation(spriteProgram, "Position");
+	glEnableVertexAttribArray(positionAttrib);
+	KN_ASSERT_NO_GL_ERROR();
+	glVertexAttribPointer(
+		positionAttrib,
+		4,
+		GL_FLOAT,
+		GL_FALSE,
+		4 * sizeof(float),
+		(void *)0
+	);
+
+	KN_ASSERT_NO_GL_ERROR();
+
+	GLuint uniformProjection = glGetUniformLocation(spriteProgram, "Projection");
+	glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, &projection.m[0][0]);
+
+	// TODO: This name is wrong, since Knell uses row-vectors, it should be ModelView.
+	GLuint uniformViewModel = glGetUniformLocation(spriteProgram, "ViewModel");
+	float4x4 viewModel = float4x4_Multiply(
+		float4x4_NonUniformScale(size.width, size.height, 1.0f),
+		float4x4_Translate(position.x, position.y, 0.0f));
+	glUniformMatrix4fv(uniformViewModel, 1, GL_FALSE, &viewModel.m[0][0]);
+	KN_ASSERT_NO_GL_ERROR();
+
+	GLuint uniformTexture = glGetUniformLocation(spriteProgram, "Texture");
+
+	KN_ASSERT_NO_GL_ERROR();
+
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glDisableVertexAttribArray(positionAttrib);
+
+	KN_ASSERT_NO_GL_ERROR();
+}
+
+void RLL_DrawSprite2(SpriteId id, float2 position, dimension2f size)
 {
 	KN_ASSERT_NO_GL_ERROR();
 
