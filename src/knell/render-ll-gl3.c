@@ -156,6 +156,9 @@ typedef struct {
 
 static Program programs[RLL_MAX_PROGRAMS];
 
+/**
+ * Indexes into `programs` array, of which shader program to use.
+ */
 enum {
 	ProgramIndexSprite = 0,
 	ProgramIndexFullScreen = 1,
@@ -173,17 +176,17 @@ enum {
 };
 
 enum {
-	UniformSemanticNameProjection = 0,
-	UniformSemanticNameModelView = 1,
-	UniformSemanticNameViewModel = 1,
-	UniformSemanticNameTexture = 2,
-	UniformSemanticNameTexture2D0 = 2,
-	UniformSemanticNamePolygonColor = 3,
-	UniformSemanticNameTypes = 6,
-	UniformSemanticNameUnknown
+	UniformNameProjection = 0,
+	UniformNameModelView = 1,
+	UniformNameViewModel = 1,
+	UniformNameTexture = 2,
+	UniformNameTexture2D0 = 2,
+	UniformNamePolygonColor = 3,
+	UniformNameTypes = 6,
+	UniformNameUnknown
 };
 
-static AnyGLValue uniformStorage[UniformSemanticNameTypes];
+static AnyGLValue uniformStorage[UniformNameTypes];
 
 /**
  * Associates a name along with an indexed location, and type information.
@@ -208,19 +211,19 @@ KN_STATIC_ASSERT(AttributeSemanticNameTypes == sizeof(attributeSemanticNames) / 
 
 // TODO: Naming misnomer, uniform->semanticName doesn't map into this array,
 // it maps into the uniform storage.
-static SemanticName uniformSemanticNames[] = {
-	{ "Projection", UniformSemanticNameProjection, GL_FLOAT_MAT4, 1 },
-	{ "ModelView", UniformSemanticNameModelView, GL_FLOAT_MAT4, 1 },
-	{ "ViewModel", UniformSemanticNameViewModel, GL_FLOAT_MAT4, 1 },
-	{ "Texture", UniformSemanticNameTexture, GL_SAMPLER_2D, 1 },
-	{ "Texture2D0", UniformSemanticNameTexture2D0, GL_SAMPLER_2D, 1 },
-	{ "PolygonColor", UniformSemanticNamePolygonColor, GL_FLOAT_VEC4, 1 }
+static SemanticName UniformNames[] = {
+	{ "Projection", UniformNameProjection, GL_FLOAT_MAT4, 1 },
+	{ "ModelView", UniformNameModelView, GL_FLOAT_MAT4, 1 },
+	{ "ViewModel", UniformNameViewModel, GL_FLOAT_MAT4, 1 },
+	{ "Texture", UniformNameTexture, GL_SAMPLER_2D, 1 },
+	{ "Texture2D0", UniformNameTexture2D0, GL_SAMPLER_2D, 1 },
+	{ "PolygonColor", UniformNamePolygonColor, GL_FLOAT_VEC4, 1 }
 };
 
-KN_STATIC_ASSERT(UniformSemanticNameTypes == sizeof(uniformSemanticNames) / sizeof(uniformSemanticNames[0]),
-				 "Number of uniform semantic names doesn't match data array");
+KN_STATIC_ASSERT(UniformNameTypes == sizeof(UniformNames) / sizeof(UniformNames[0]),
+	"Number of uniform semantic names doesn't match data array");
 
-uint32_t lookupAttributeSemanticName(const char* name)
+uint32_t RLL_LookupAttributeSemanticName(const char* name)
 {
 	for (uint32_t i=0; i < AttributeSemanticNameTypes; ++i) {
 		if (strcmp(attributeSemanticNames[i].str, name) == 0) {
@@ -230,21 +233,19 @@ uint32_t lookupAttributeSemanticName(const char* name)
 	return AttributeSemanticNameUnknown;
 }
 
-uint32_t lookupUniformStorageLocation(const char* name)
+uint32_t RLL_LookupUniformStorageLocation(const char* name)
 {
-	for (uint32_t i=0; i < UniformSemanticNameTypes; ++i) {
-		if (strcmp(uniformSemanticNames[i].str, name) == 0) {
-			// TODO: bad mapping here?
-			return uniformSemanticNames[i].id;
-			//return i;
+	for (uint32_t i=0; i < UniformNameTypes; ++i) {
+		if (strcmp(UniformNames[i].str, name) == 0) {
+			return UniformNames[i].id;
 		}
 	}
 
-	for (uint32_t i=0; i < UniformSemanticNameTypes; ++i) {
-		KN_TRACE(LogSysRender, "uniform: %s", uniformSemanticNames[i].str);
+	for (uint32_t i=0; i < UniformNameTypes; ++i) {
+		KN_TRACE(LogSysRender, "uniform: %s", UniformNames[i].str);
 	}
 	KN_TRACE(LogSysRender, "Unable to find %s", name);
-	return UniformSemanticNameUnknown;
+	return UniformNameUnknown;
 }
 
 /**
@@ -336,7 +337,7 @@ void RLL_RegisterProgram(uint32_t index, GLuint program)
 		KN_TRACE(LogSysRender, "[%d]: %s '%s'   %d", i, RLL_GLTypeToString(type),
 			p->attributes[i].name, size);
 		
-		uint32_t semanticName = lookupAttributeSemanticName(p->attributes[i].name);
+		uint32_t semanticName = RLL_LookupAttributeSemanticName(p->attributes[i].name);
 		KN_ASSERT(semanticName < AttributeSemanticNameTypes, "Couldn't find attribute "
 			"semantic name for %s", p->attributes[i].name);
 		p->attributes[i].location = i;
@@ -359,8 +360,8 @@ void RLL_RegisterProgram(uint32_t index, GLuint program)
 		KN_TRACE(LogSysRender, "[%d]: %s '%s'   %d", i, RLL_GLTypeToString(type),
 			p->uniforms[i].name, size);
 
-		uint32_t storageLocation = lookupUniformStorageLocation(p->uniforms[i].name);
-		KN_ASSERT(storageLocation < UniformSemanticNameTypes, "Couldn't find uniform "
+		uint32_t storageLocation = RLL_LookupUniformStorageLocation(p->uniforms[i].name);
+		KN_ASSERT(storageLocation < UniformNameTypes, "Couldn't find uniform "
 			"semantic name for %s", p->uniforms[i].name);
 		p->uniforms[i].size = size;
 		p->uniforms[i].type = type;
@@ -467,7 +468,7 @@ void RLL_CheckGLError(const char* file, int line)
 }
 
 /**
- * Converts `GLenum` to a string for debugging.
+ * Converts `GLenum` to a string for debugging and error reporting.
  */
 const char* RLL_GLTypeToString(GLenum type)
 {
@@ -880,7 +881,7 @@ void RLL_Init(uint32_t width, uint32_t height)
 
 	windowWidth = (GLsizei)width;
 	windowHeight = (GLsizei)height;
-	uniformStorage[UniformSemanticNameProjection].f44 = RLL_OrthoProjection(width, height);
+	uniformStorage[UniformNameProjection].f44 = RLL_OrthoProjection(width, height);
 }
 
 void RLL_StartFrame(void)
@@ -956,7 +957,8 @@ bool RLL_LoadSprite(SpriteId id, const char* path)
 }
 
 void RLL_DrawSprite(SpriteId id, float2 position, dimension2f size)
-{	KN_ASSERT_NO_GL_ERROR();
+{
+	KN_ASSERT_NO_GL_ERROR();
 
 	RLL_SetFullScreenViewport();
 
@@ -965,7 +967,7 @@ void RLL_DrawSprite(SpriteId id, float2 position, dimension2f size)
 		"texture", texture);
 	RLL_ReadyTexture2(0, spriteTextures[id]);
 
-	uniformStorage[UniformSemanticNameModelView].f44 = float4x4_Multiply(
+	uniformStorage[UniformNameModelView].f44 = float4x4_Multiply(
 		float4x4_NonUniformScale(size.width, size.height, 1.0f),
 		float4x4_Translate(position.x, position.y, 0.0f));;
 
@@ -1010,8 +1012,8 @@ void RLL_DrawDebugRect(float4 center, dimension2f dimensions, float4 color)
 
 	glBindBuffer(GL_ARRAY_BUFFER, debugDrawBuffer);
 
-	uniformStorage[UniformSemanticNameViewModel].f44 = float4x4_Identity();
-	uniformStorage[UniformSemanticNamePolygonColor].f4 = color;
+	uniformStorage[UniformNameViewModel].f44 = float4x4_Identity();
+	uniformStorage[UniformNamePolygonColor].f4 = color;
 
 	RLL_EnableProgram(ProgramIndexSolidPolygon, 4 * sizeof(float), 0);
 
@@ -1042,8 +1044,8 @@ void RLL_DrawDebugLine(float x1, float y1, float x2, float y2, rgb8 color)
 
 	glBindBuffer(GL_ARRAY_BUFFER, debugDrawBuffer);
 
-	uniformStorage[UniformSemanticNameViewModel].f44 = float4x4_Identity();
-	uniformStorage[UniformSemanticNamePolygonColor].f4 = float4_Make(
+	uniformStorage[UniformNameViewModel].f44 = float4x4_Identity();
+	uniformStorage[UniformNamePolygonColor].f4 = float4_Make(
 		(float)color.r / 255.0f, (float)color.g / 255.0f, (float)color.b / 255.0f, 1.0f);
 
 	RLL_EnableProgram(ProgramIndexSolidPolygon, 4 * sizeof(float), 0);
@@ -1069,8 +1071,8 @@ void RLL_DrawDebugLineStrip(float2* points, uint32_t numPoints, rgb8 color)
 
 	glBindBuffer(GL_ARRAY_BUFFER, debugDrawBuffer);
 
-	uniformStorage[UniformSemanticNameViewModel].f44 = float4x4_Identity();
-	uniformStorage[UniformSemanticNamePolygonColor].f4 = float4_Make(
+	uniformStorage[UniformNameViewModel].f44 = float4x4_Identity();
+	uniformStorage[UniformNamePolygonColor].f4 = float4_Make(
 		(float)color.r / 255.0f, (float)color.g / 255.0f, (float)color.b / 255.0f, 1.0f);
 
 	RLL_EnableProgram(ProgramIndexSolidPolygon, 4 * sizeof(float), 0);
