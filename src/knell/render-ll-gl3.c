@@ -243,7 +243,8 @@ enum {
 	UniformNameUnknown
 };
 
-static AnyGLValue uniformStorage[UniformNameTypes];
+typedef AnyGLValue UniformStorage[UniformNameTypes];
+static UniformStorage uniformStorage;
 
 /**
  * Associates a name along with an indexed location, and type information.
@@ -323,16 +324,19 @@ void RLL_ReadyTexture2(GLuint index, GLuint texture)
 	glBindTexture(GL_TEXTURE_2D, texture);
 }
 
-void RLL_ReadyUniform(Uniform* u)
+/**
+ * Applies a uniform from the given uniform storage.
+ */
+void RLL_ApplyUniform(Uniform* u, UniformStorage storage)
 {
 	switch(u->type) {
 		case GL_FLOAT_VEC2:
 			KN_ASSERT(u->size == 1, "Arrays of float2 are not supported");
-			glUniform2fv(u->location, 1, uniformStorage[u->storageLocation].f2.v);
+			glUniform2fv(u->location, 1, storage[u->storageLocation].f2.v);
 			break;
 		case GL_FLOAT_VEC4:
 			KN_ASSERT(u->size == 1, "Arrays of float3 are not supported");
-			glUniform4fv(u->location, 1, uniformStorage[u->storageLocation].f4.v);
+			glUniform4fv(u->location, 1, storage[u->storageLocation].f4.v);
 			break;
 		case GL_FLOAT_MAT4:
 			KN_ASSERT(u->size == 1, "Arrays of float4x4 are not supported");
@@ -340,7 +344,7 @@ void RLL_ReadyUniform(Uniform* u)
 				&uniformStorage[u->storageLocation].f44.m[0][0]);
 			break;
 		case GL_SAMPLER_2D:
-			glUniform1i(u->location, uniformStorage[u->storageLocation].i);
+			glUniform1i(u->location, storage[u->storageLocation].i);
 			break;
 		default:
 			KN_FATAL_ERROR("Unknown uniform type: %i", u->type);
@@ -477,7 +481,7 @@ void RLL_EnableProgram(uint32_t id, GLsizei vertexStride, void* vertexPointer)
 	}
 
 	for (uint32_t i = 0; i < p->numUniforms; ++i) {
-		RLL_ReadyUniform(&p->uniforms[i]);
+		RLL_ApplyUniform(&p->uniforms[i], uniformStorage);
 	}
 }
 
