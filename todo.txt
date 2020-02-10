@@ -34,3 +34,5 @@ For a shader program:
 Get a list of attributes
 Get a list of uniforms
 
+Replace malloc calls with calloc for getting zeroed memory?
+
