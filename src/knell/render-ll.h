@@ -7,10 +7,10 @@
 #ifndef KN_RENDER_LL_H
 #define KN_RENDER_LL_H
 
-#include "color.h"
-#include "math2.h"
-#include "math4.h"
-#include "sprite.h"
+#include <knell/color.h>
+#include <knell/math2.h>
+#include <knell/math4.h>
+#include <knell/sprite.h>
 
 void RLL_Init(uint32_t width, uint32_t height);
 void RLL_StartFrame(void);
