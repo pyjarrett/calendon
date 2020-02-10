@@ -286,6 +286,7 @@ KN_STATIC_ASSERT(UniformNameTypes == sizeof(UniformNames) / sizeof(UniformNames[
 
 uint32_t RLL_LookupAttributeSemanticName(const char* name)
 {
+	KN_ASSERT(name != NULL, "Cannot lookup a null attribute name.");
 	for (uint32_t i=0; i < AttributeSemanticNameTypes; ++i) {
 		if (strcmp(attributeSemanticNames[i].str, name) == 0) {
 			return i;
@@ -299,6 +300,7 @@ uint32_t RLL_LookupAttributeSemanticName(const char* name)
  */
 uint32_t RLL_LookupUniformStorageLocation(const char* name)
 {
+	KN_ASSERT(name != NULL, "Cannot lookup a null uniform name.");
 	for (uint32_t i=0; i < UniformNameTypes; ++i) {
 		if (strcmp(UniformNames[i].str, name) == 0) {
 			return UniformNames[i].id;
