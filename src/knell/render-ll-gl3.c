@@ -570,12 +570,6 @@ void RLL_PrintProgram(GLuint program)
 		KN_TRACE(LogSysRender, "[%d]: %s '%s'   %d", i, RLL_GLTypeToString(type), name, size);
 	}
 
-	// Print validation status.
-	glValidateProgram(program);
-	GLint validateStatus;
-	glGetProgramiv(program, GL_VALIDATE_STATUS, &validateStatus);
-	KN_TRACE(LogSysRender, "Validate status: %d", validateStatus);
-
 	// Print the info log.
 	GLint infoLogLength;
 	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
