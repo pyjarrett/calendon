@@ -362,7 +362,7 @@ void RLL_RegisterProgram(uint32_t index, GLuint program)
 	KN_ASSERT_NO_GL_ERROR();
 	KN_ASSERT(index <= RLL_MAX_PROGRAMS, "Trying to register a program %" PRIu32
 		"outside of the valid range of programs %" PRIu32, index, program);
-	KN_TRACE(LogSysRender, "Registering: %u to %" PRIu32, program, index);
+	KN_TRACE(LogSysRender, " programRegistering: %u to global program index %" PRIu32, program, index);
 	Program* p = &programs[index];
 
 	p->id = program;
@@ -422,6 +422,7 @@ void RLL_EnableProgram(uint32_t id, GLsizei vertexStride, void* vertexPointer)
 {
 	Program* p = &programs[id];
 	KN_ASSERT(glIsProgram(p->id), "%" PRIu32 " is not a valid program.", id);
+
 	glUseProgram(p->id);
 	KN_ASSERT_NO_GL_ERROR();
 
@@ -589,8 +590,8 @@ void RLL_PrintProgram(GLuint program)
  */
 void RLL_PrintGLVersion(void)
 {
-	// TODO: set the opengl context?
 	KN_ASSERT_NO_GL_ERROR();
+	SDL_GL_MakeCurrent(window, gl);
 	GLint majorVersion, minorVersion;
 	glGetIntegerv(GL_MAJOR_VERSION, &majorVersion);
 	glGetIntegerv(GL_MINOR_VERSION, &minorVersion);
@@ -672,6 +673,7 @@ void RLL_InitGL(void)
 #endif
 
 	KN_TRACE(LogSysRender, "OpenGL renderer initialized");
+	RLL_PrintGLVersion();
 }
 
 void RLL_ConfigureVSync(void)
