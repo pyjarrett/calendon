@@ -1,3 +1,12 @@
+/*
+ * Single-threaded, single context, OpenGL rendering backend.
+ *
+ * The renderer works by analyzing the shader programs loaded and caching the
+ * vertex attributes and uniforms to apply.  Uniforms get set from a bulk
+ * storage location containing all uniforms, so non-object specific uniforms,
+ * such as the camera transform can be placed into a common location to be
+ * found for all shaders.
+*/
 #include <knell/render-ll.h>
 
 #include <knell/kn.h>
@@ -18,6 +27,8 @@
 	#include <knell/compat-windows.h>
 
 	#include <GL/glew.h>
+
+	// Bring in additional OpenGL function names.
 	#define GL_GLEXT_PROTOTYPES 1
 	#include <GL/gl.h>
 	#include <SDL_opengl_glext.h>
@@ -28,6 +39,9 @@
 	#include <GL/glext.h>
 #endif
 
+/*
+ * A macro to provide OpenGL error checking and reporting.
+ */
 #if KN_DEBUG
 	#define KN_ASSERT_NO_GL_ERROR() RLL_CheckGLError(__FILE__, __LINE__)
 #else
@@ -69,9 +83,21 @@ static GLuint spriteBuffer;
  * TODO: Not supporting reusable sprites yet.
  */
 #define RLL_MAX_SPRITE_TYPES 512
+
+/**
+ * The next sprite ID to be allocated.  Sprite IDs cannot be deallocated, though
+ * this is lieoly to change in the future.
+ */
 static SpriteId nextSpriteId;
+
+/**
+ * Maps sprite IDs to their OpenGL textures.
+ */
 static GLuint spriteTextures[RLL_MAX_SPRITE_TYPES];
 
+/**
+ * The maximum length of shader information logs which can be read.
+ */
 #define MAX_INFO_LOG_LENGTH 4096
 
 /**
@@ -79,12 +105,24 @@ static GLuint spriteTextures[RLL_MAX_SPRITE_TYPES];
  */
 uint32_t LogSysRender;
 
+/**
+ * Support a limited number of vertex attributes to maintain the best
+ * compatibility.
+ */
 #define RLL_MAX_ATTRIBUTES 8
 
 KN_STATIC_ASSERT(RLL_MAX_ATTRIBUTES <= GL_MAX_VERTEX_ATTRIBS, "RLL supports more"
 	"active attributes than the API allows");
 #define RLL_MAX_UNIFORMS 32
 #define RLL_MAX_PROGRAMS 16
+
+/*
+ * Statically define the maximum attribute name length to prevent from having to
+ * dynamically allocate memory for attribute or uniform names.  The flexibility
+ * lost in name length is more than made up for in simplicity.  The value used
+ * is a balance between allowing reasonably sized names and not using excessive
+ * amounts of storage.
+ */
 #define RLL_MAX_ATTRIBUTE_NAME_LENGTH 64
 #define RLL_MAX_UNIFORM_NAME_LENGTH 64
 
@@ -99,9 +137,11 @@ typedef union {
 } AnyGLValue;
 
 /**
- * Attributes determine which data gets sent to the vertex shader.
+ * Attributes determine which data gets sent to the vertex shader.  Caching the
+ * attributes used by a program prevent from having to query for it every time
+ * that program is used.
  *
- * Normalized attributed as not currently supported.
+ * Normalized attributed are not currently supported.
  */
 typedef struct {
 	/**
@@ -110,9 +150,13 @@ typedef struct {
 	char name[RLL_MAX_ATTRIBUTE_NAME_LENGTH];
 
 	/** Corresponding semantic type to use at this index. */
+	// TODO: Implement and use this when adding vertex formats.
 	//uint32_t semanticName;
 
-	/** The layout location of where the attribute will go. */
+	/**
+	 * The layout location of where the attribute will go.  This is in
+	 * relation to the shader, and unrelated to the vertex format.
+	 */
 	GLint location;
 
 	/**
@@ -123,7 +167,10 @@ typedef struct {
 	/**
 	 * Not necessarily the actual type to use for the vertex pointer.  Note that
 	 * the type returned by glGetActiveAttrib IS NOT the same type as used by
-	 * glVertexAttribPointer
+	 * glVertexAttribPointer.
+	 *
+	 * e.g. `size` might be 1 and `type` `GL_FLOAT_VEC4` whereas
+	 * `glVertexAttribPointer` is expecting to be given 4 and type `GL_FLOAT`.
 	 */
 	GLenum type;
 } Attribute;
@@ -132,8 +179,16 @@ typedef struct {
  * Uniforms used during the vertex or fragment shaders.
  */
 typedef struct {
+	/**
+	 * The name of the uniform, as it appears in the shader source.
+	 */
 	char name[RLL_MAX_UNIFORM_NAME_LENGTH];
+
+	/**
+	 * The location to apply the uniform at, as returned by `glGetActiveUniform`.
+	 */
 	GLuint location;
+
 	/**
 	 * Points to the storage used to apply this uniform.
 	 */
@@ -198,6 +253,10 @@ typedef struct {
 	GLint size;
 } SemanticName;
 
+/**
+ * Currently unused.  Being set up in preparation for applying vertex formats
+ * based on a mapping of shader inputs to semantic names.
+ */
 static SemanticName attributeSemanticNames[] = {
 	{ "Position", AttributeSemanticNamePosition, GL_FLOAT, 4 },
 	{ "Position2", AttributeSemanticNamePosition2, GL_FLOAT, 2 },
@@ -233,6 +292,9 @@ uint32_t RLL_LookupAttributeSemanticName(const char* name)
 	return AttributeSemanticNameUnknown;
 }
 
+/**
+ * Looks up the storage index for a uniform of the given name.
+ */
 uint32_t RLL_LookupUniformStorageLocation(const char* name)
 {
 	for (uint32_t i=0; i < UniformNameTypes; ++i) {
