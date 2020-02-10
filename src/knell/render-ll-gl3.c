@@ -473,19 +473,6 @@ void RLL_FillBuffers(void);
 void RLL_InitSprites(void);
 void RLL_LoadShaders(void);
 
-void RLL_DumpState()
-{
-	KN_ASSERT_NO_GL_ERROR();
-	int i;
-	KN_UNUSED(i);
-#define DebugI(name) glGetIntegerv(name, &i);  KN_TRACE(LogSysRender, "%s: %i", #name, i);
-	//DebugI(GL_ARRAY_BUFFER_BINDING);
-	//DebugI(GL_CURRENT_PROGRAM);
-	//DebugI(GL_ACTIVE_TEXTURE);
-#undef DebugI
-	KN_ASSERT_NO_GL_ERROR();
-}
-
 void RLL_CheckGLError(const char* file, int line)
 {
 	const GLenum glError = glGetError();
@@ -1016,7 +1003,6 @@ void RLL_DrawSprite(SpriteId id, float2 position, dimension2f size)
 	KN_ASSERT_NO_GL_ERROR();
 	RLL_EnableProgram(ProgramIndexSprite, 4 * sizeof(float), 0);
 
-	RLL_DumpState();
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 	RLL_DisableProgram(ProgramIndexSprite);
