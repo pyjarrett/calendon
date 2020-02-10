@@ -46,6 +46,7 @@
  */
 #if KN_DEBUG
 	#define KN_ASSERT_NO_GL_ERROR() RLL_CheckGLError(__FILE__, __LINE__)
+	void RLL_CheckGLError(const char* file, int line);
 #else
 	#define KN_ASSERT_NO_GL_ERROR()
 #endif
@@ -53,7 +54,6 @@
 const char* RLL_GLTypeToString(GLenum type);
 void RLL_PrintProgram(GLuint program);
 void RLL_PrintGLVersion(void);
-void RLL_CheckGLError(const char* file, int line);
 
 /**
  * The window on which to draw.
