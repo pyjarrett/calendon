@@ -25,7 +25,6 @@
 
 #if defined(_WIN32)
 	#include <knell/compat-windows.h>
-
 	#include <GL/glew.h>
 
 	// Bring in additional OpenGL function names.
@@ -112,7 +111,6 @@ uint32_t LogSysRender;
  * compatibility.
  */
 #define RLL_MAX_ATTRIBUTES 8
-
 KN_STATIC_ASSERT(RLL_MAX_ATTRIBUTES <= GL_MAX_VERTEX_ATTRIBS, "RLL supports more"
 	"active attributes than the API allows");
 #define RLL_MAX_UNIFORMS 32
@@ -350,33 +348,6 @@ void RLL_ApplyUniform(Uniform* u, UniformStorage storage)
 			KN_FATAL_ERROR("Unknown uniform type: %i", u->type);
 	}
 	KN_ASSERT_NO_GL_ERROR();
-/*
-	GL_FLOAT
-	GL_FLOAT_VEC3
-	GL_FLOAT_MAT2
-	GL_FLOAT_MAT3
-	GL_FLOAT_MAT2x3
-	GL_FLOAT_MAT2x4
-	GL_FLOAT_MAT3x2
-	GL_FLOAT_MAT3x4
-	GL_FLOAT_MAT4x2
-	GL_FLOAT_MAT4x3
-	GL_INT
-	GL_INT_VEC2
-	GL_INT_VEC3
-	GL_INT_VEC4
-	GL_UNSIGNED_INT
-	GL_UNSIGNED_INT_VEC2
-	GL_UNSIGNED_INT_VEC3
-	GL_UNSIGNED_INT_VEC4
-	GL_SAMPLER
-	GL_SAMPLER_1D
-	GL_SAMPLER_3D
-	GL_SAMPLER_1D_ARRAY
-	GL_SAMPLER_2D_ARRAY
-	GL_SAMPLER_1D_SHADOW
-	GL_SAMPLER_2D_SHADOW
-*/
 }
 
 /**
