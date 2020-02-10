@@ -1,42 +1,58 @@
-#include "render-ll.h"
+/*
+ * Single-threaded, single context, OpenGL rendering backend.
+ *
+ * The renderer works by analyzing the shader programs loaded and caching the
+ * vertex attributes and uniforms to apply.  Uniforms get set from a bulk
+ * storage location containing all uniforms, so non-object specific uniforms,
+ * such as the camera transform can be placed into a common location to be
+ * found for all shaders.
+*/
+#include <knell/render-ll.h>
 
-#include "kn.h"
+#include <knell/kn.h>
 
-#include "assets.h"
-#include "assets-fileio.h"
-#include "color.h"
-#include "compat-sdl.h"
-#include "image.h"
-#include "log.h"
-#include "math4.h"
-#include "memory.h"
-#include "sprite.h"
+#include <knell/assets.h>
+#include <knell/assets-fileio.h>
+#include <knell/color.h>
+#include <knell/compat-sdl.h>
+#include <knell/image.h>
+#include <knell/log.h>
+#include <knell/math4.h>
+#include <knell/memory.h>
+#include <knell/sprite.h>
 
 #include <spa_fu/spa_fu.h>
 
-#ifdef _WIN32
-	#include "compat-windows.h"
-
+#if defined(_WIN32)
+	#include <knell/compat-windows.h>
 	#include <GL/glew.h>
+
+	// Bring in additional OpenGL function names.
 	#define GL_GLEXT_PROTOTYPES 1
 	#include <GL/gl.h>
 	#include <SDL_opengl_glext.h>
-#else // linux
+#elif defined(__linux__)
 	// Get prototypes without manually loading each one.
 	#define GL_GLEXT_PROTOTYPES 1
 	#include <GL/gl.h>
 	#include <GL/glext.h>
+#else
+	#error "OpenGL rendering is not supported on this platform."
 #endif
 
+/*
+ * A macro to provide OpenGL error checking and reporting.
+ */
 #if KN_DEBUG
 	#define KN_ASSERT_NO_GL_ERROR() RLL_CheckGLError(__FILE__, __LINE__)
-	const char* RLL_GLTypeToString(GLenum type);
-	void RLL_PrintProgram(GLuint program);
-	void RLL_PrintGLVersion(void);
 	void RLL_CheckGLError(const char* file, int line);
 #else
 	#define KN_ASSERT_NO_GL_ERROR()
 #endif
+
+const char* RLL_GLTypeToString(GLenum type);
+void RLL_PrintProgram(GLuint program);
+void RLL_PrintGLVersion(void);
 
 /**
  * The window on which to draw.
@@ -51,24 +67,6 @@ static GLsizei windowWidth, windowHeight;
 static SDL_GLContext* gl;
 
 /**
- * Orthographic projection matrix to match the same dimensions as the window
- * size.  Scaling based on the same aspect ratio but big enough to see might be
- * a better option.
- */
-static float4x4 projection;
-
-static GLuint fullScreenDebugProgram;
-static GLuint fullScreenQuadBuffer;
-
-static GLuint spriteProgram;
-static GLuint spriteBuffer;
-
-/**
- * Vertex `GL_ARRAY_BUFFER` containing vertex information for drawing debug shapes.
- */
-static GLuint debugDrawBuffer;
-
-/**
  * Allocated number of 4-element vertices for specifically debug drawing.
  *
  * TODO: 128 might be too high, look into tracking used buffer space.
@@ -76,25 +74,31 @@ static GLuint debugDrawBuffer;
 #define RLL_MAX_DEBUG_POINTS 128
 
 /**
- * Program to use for drawing debug shapes.
+ * Vertex `GL_ARRAY_BUFFER` containing vertex information for drawing debug shapes.
  */
-static GLuint solidPolygonProgram;
+static GLuint debugDrawBuffer;
+static GLuint fullScreenQuadBuffer;
+static GLuint spriteBuffer;
 
 /*
  * TODO: Not supporting reusable sprites yet.
  */
-#define RLL_NUM_SPRITES 128
 #define RLL_MAX_SPRITE_TYPES 512
-SpriteId nextSpriteId;
-GLuint spriteTextures[RLL_MAX_SPRITE_TYPES];
 
-uint32_t spritesUsed;
-float4x4 spriteTransforms[RLL_NUM_SPRITES];
-float4 spriteVertexBuffer[RLL_NUM_SPRITES];
-float4 spriteTint[RLL_NUM_SPRITES];
+/**
+ * The next sprite ID to be allocated.  Sprite IDs cannot be deallocated, though
+ * this is lieoly to change in the future.
+ */
+static SpriteId nextSpriteId;
 
-static GLuint spriteProgram;
+/**
+ * Maps sprite IDs to their OpenGL textures.
+ */
+static GLuint spriteTextures[RLL_MAX_SPRITE_TYPES];
 
+/**
+ * The maximum length of shader information logs which can be read.
+ */
 #define MAX_INFO_LOG_LENGTH 4096
 
 /**
@@ -102,12 +106,374 @@ static GLuint spriteProgram;
  */
 uint32_t LogSysRender;
 
-bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* program);
+/**
+ * Support a limited number of vertex attributes to maintain the best
+ * compatibility.
+ */
+#define RLL_MAX_ATTRIBUTES 8
+KN_STATIC_ASSERT(RLL_MAX_ATTRIBUTES <= GL_MAX_VERTEX_ATTRIBS, "RLL supports more"
+	"active attributes than the API allows");
+#define RLL_MAX_UNIFORMS 32
+#define RLL_MAX_PROGRAMS 16
+
+/*
+ * Statically define the maximum attribute name length to prevent from having to
+ * dynamically allocate memory for attribute or uniform names.  The flexibility
+ * lost in name length is more than made up for in simplicity.  The value used
+ * is a balance between allowing reasonably sized names and not using excessive
+ * amounts of storage.
+ */
+#define RLL_MAX_ATTRIBUTE_NAME_LENGTH 64
+#define RLL_MAX_UNIFORM_NAME_LENGTH 64
+
+/**
+ * Allocates enough space to store whatever data type is needed for a uniform.
+ */
+typedef union {
+	int i;
+	float2 f2;
+	float4 f4;
+	float4x4 f44;
+} AnyGLValue;
+
+/**
+ * Attributes determine which data gets sent to the vertex shader.  Caching the
+ * attributes used by a program prevent from having to query for it every time
+ * that program is used.
+ *
+ * Normalized attributed are not currently supported.
+ */
+typedef struct {
+	/**
+	 * The name of the attribute as it appears in the shader source.
+	 */
+	char name[RLL_MAX_ATTRIBUTE_NAME_LENGTH];
+
+	/** Corresponding semantic type to use at this index. */
+	// TODO: Implement and use this when adding vertex formats.
+	//uint32_t semanticName;
+
+	/**
+	 * The layout location of where the attribute will go.  This is in
+	 * relation to the shader, and unrelated to the vertex format.
+	 */
+	GLint location;
+
+	/**
+	 * The size of the attribute, in terms of the given type.
+	 */
+	GLint size;
+
+	/**
+	 * Not necessarily the actual type to use for the vertex pointer.  Note that
+	 * the type returned by glGetActiveAttrib IS NOT the same type as used by
+	 * glVertexAttribPointer.
+	 *
+	 * e.g. `size` might be 1 and `type` `GL_FLOAT_VEC4` whereas
+	 * `glVertexAttribPointer` is expecting to be given 4 and type `GL_FLOAT`.
+	 */
+	GLenum type;
+} Attribute;
+
+/**
+ * Uniforms used during the vertex or fragment shaders.
+ */
+typedef struct {
+	/**
+	 * The name of the uniform, as it appears in the shader source.
+	 */
+	char name[RLL_MAX_UNIFORM_NAME_LENGTH];
+
+	/**
+	 * The location to apply the uniform at, as returned by `glGetActiveUniform`.
+	 */
+	GLuint location;
+
+	/**
+	 * Points to the storage used to apply this uniform.
+	 */
+	uint32_t storageLocation;
+	GLint size;
+	GLenum type;
+} Uniform;
+
+/**
+ * Cache attribute and uniform locations and types used by a program to make
+ * setting these things faster without needing lookups.
+ */
+typedef struct {
+	GLuint id;
+	Attribute attributes[RLL_MAX_ATTRIBUTES];
+	Uniform uniforms[RLL_MAX_UNIFORMS];
+	uint32_t numAttributes;
+	uint32_t numUniforms;
+} Program;
+
+static Program programs[RLL_MAX_PROGRAMS];
+
+/**
+ * Indexes into `programs` array, of which shader program to use.
+ */
+enum {
+	ProgramIndexSprite = 0,
+	ProgramIndexFullScreen = 1,
+	ProgramIndexSolidPolygon = 2
+};
+
+enum {
+	AttributeSemanticNamePosition = 0,
+	AttributeSemanticNamePosition2 = 0,
+	AttributeSemanticNamePosition3 = 0,
+	AttributeSemanticNamePosition4 = 0,
+	AttributeSemanticNameTexCoord2 = 1,
+	AttributeSemanticNameTypes = 5,
+	AttributeSemanticNameUnknown
+};
+
+enum {
+	UniformNameProjection = 0,
+	UniformNameModelView = 1,
+	UniformNameViewModel = 1,
+	UniformNameTexture = 2,
+	UniformNameTexture2D0 = 2,
+	UniformNamePolygonColor = 3,
+	UniformNameTypes = 6,
+	UniformNameUnknown
+};
+
+typedef AnyGLValue UniformStorage[UniformNameTypes];
+static UniformStorage uniformStorage;
+
+/**
+ * Associates a name along with an indexed location, and type information.
+ */
+typedef struct {
+	const char* str;
+	uint32_t id; // TODO: Rename "location"
+	GLenum type;
+	GLint size;
+} SemanticName;
+
+/**
+ * Currently unused.  Being set up in preparation for applying vertex formats
+ * based on a mapping of shader inputs to semantic names.
+ */
+static SemanticName attributeSemanticNames[] = {
+	{ "Position", AttributeSemanticNamePosition, GL_FLOAT, 4 },
+	{ "Position2", AttributeSemanticNamePosition2, GL_FLOAT, 2 },
+	{ "Position3", AttributeSemanticNamePosition3, GL_FLOAT, 3 },
+	{ "Position4", AttributeSemanticNamePosition4, GL_FLOAT, 4 },
+	{ "TexCoord2", AttributeSemanticNameTexCoord2, GL_FLOAT, 2 }
+};
+
+KN_STATIC_ASSERT(AttributeSemanticNameTypes == sizeof(attributeSemanticNames) / sizeof(attributeSemanticNames[0]),
+	"Number of attribute semantic names doesn't match data array");
+
+// TODO: Naming misnomer, uniform->semanticName doesn't map into this array,
+// it maps into the uniform storage.
+static SemanticName UniformNames[] = {
+	{ "Projection", UniformNameProjection, GL_FLOAT_MAT4, 1 },
+	{ "ModelView", UniformNameModelView, GL_FLOAT_MAT4, 1 },
+	{ "ViewModel", UniformNameViewModel, GL_FLOAT_MAT4, 1 },
+	{ "Texture", UniformNameTexture, GL_SAMPLER_2D, 1 },
+	{ "Texture2D0", UniformNameTexture2D0, GL_SAMPLER_2D, 1 },
+	{ "PolygonColor", UniformNamePolygonColor, GL_FLOAT_VEC4, 1 }
+};
+
+KN_STATIC_ASSERT(UniformNameTypes == sizeof(UniformNames) / sizeof(UniformNames[0]),
+	"Number of uniform semantic names doesn't match data array");
+
+uint32_t RLL_LookupAttributeSemanticName(const char* name)
+{
+	KN_ASSERT(name != NULL, "Cannot lookup a null attribute name.");
+	for (uint32_t i=0; i < AttributeSemanticNameTypes; ++i) {
+		if (strcmp(attributeSemanticNames[i].str, name) == 0) {
+			return i;
+		}
+	}
+	return AttributeSemanticNameUnknown;
+}
+
+/**
+ * Looks up the storage index for a uniform of the given name.
+ */
+uint32_t RLL_LookupUniformStorageLocation(const char* name)
+{
+	KN_ASSERT(name != NULL, "Cannot lookup a null uniform name.");
+	for (uint32_t i=0; i < UniformNameTypes; ++i) {
+		if (strcmp(UniformNames[i].str, name) == 0) {
+			return UniformNames[i].id;
+		}
+	}
+
+	for (uint32_t i=0; i < UniformNameTypes; ++i) {
+		KN_TRACE(LogSysRender, "uniform: %s", UniformNames[i].str);
+	}
+	KN_TRACE(LogSysRender, "Unable to find %s", name);
+	return UniformNameUnknown;
+}
+
+/**
+ * Applies a given texture to the given texture unit.
+ */
+void RLL_ReadyTexture2(GLuint index, GLuint texture)
+{
+	glActiveTexture(GL_TEXTURE0 + index);
+	glBindTexture(GL_TEXTURE_2D, texture);
+}
+
+/**
+ * Applies a uniform from the given uniform storage.
+ */
+void RLL_ApplyUniform(Uniform* u, UniformStorage storage)
+{
+	switch(u->type) {
+		case GL_FLOAT_VEC2:
+			KN_ASSERT(u->size == 1, "Arrays of float2 are not supported");
+			glUniform2fv(u->location, 1, storage[u->storageLocation].f2.v);
+			break;
+		case GL_FLOAT_VEC4:
+			KN_ASSERT(u->size == 1, "Arrays of float3 are not supported");
+			glUniform4fv(u->location, 1, storage[u->storageLocation].f4.v);
+			break;
+		case GL_FLOAT_MAT4:
+			KN_ASSERT(u->size == 1, "Arrays of float4x4 are not supported");
+			glUniformMatrix4fv(u->location, 1, GL_FALSE,
+				&uniformStorage[u->storageLocation].f44.m[0][0]);
+			break;
+		case GL_SAMPLER_2D:
+			glUniform1i(u->location, storage[u->storageLocation].i);
+			break;
+		default:
+			KN_FATAL_ERROR("Unknown uniform type: %i", u->type);
+	}
+	KN_ASSERT_NO_GL_ERROR();
+}
+
+/**
+ * Registers a program to the given index.
+ *
+ * Pulls out a list of attributes to use.
+ *
+ * Also pulls out the list of uniforms to apply.
+ */
+void RLL_RegisterProgram(uint32_t index, GLuint program)
+{
+	KN_ASSERT_NO_GL_ERROR();
+	KN_ASSERT(index <= RLL_MAX_PROGRAMS, "Trying to register a program %" PRIu32
+		"outside of the valid range of programs %" PRIu32, index, program);
+	KN_TRACE(LogSysRender, " programRegistering: %u to global program index %" PRIu32, program, index);
+	Program* p = &programs[index];
+
+	p->id = program;
+	GLint numActiveAttributes;
+	glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &numActiveAttributes);
+	KN_TRACE(LogSysRender, "Active Attributes: %d", numActiveAttributes);
+	KN_ASSERT_NO_GL_ERROR();
+	for (GLint i = 0; i < numActiveAttributes; ++i) {
+		GLint size;
+		GLenum type;
+		glGetActiveAttrib(program, (GLuint)i, RLL_MAX_ATTRIBUTE_NAME_LENGTH,
+			NULL, &size, &type, p->attributes[i].name);
+		KN_TRACE(LogSysRender, "[%d]: %s '%s'   %d", i, RLL_GLTypeToString(type),
+			p->attributes[i].name, size);
+		
+		uint32_t semanticName = RLL_LookupAttributeSemanticName(p->attributes[i].name);
+		KN_ASSERT(semanticName < AttributeSemanticNameTypes, "Couldn't find attribute "
+			"semantic name for %s", p->attributes[i].name);
+		p->attributes[i].location = i;
+		//p->attributes[i].semanticName = semanticName;
+		p->attributes[i].type = type;
+		p->attributes[i].size = size;
+
+		KN_ASSERT_NO_GL_ERROR();
+	}
+	p->numAttributes = numActiveAttributes;
+
+	GLint numActiveUniforms;
+	glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &numActiveUniforms);
+	KN_TRACE(LogSysRender, "Active Uniforms: %d", numActiveUniforms);
+	for (GLint i = 0; i < numActiveUniforms; ++i) {
+		GLint size;
+		GLenum type;
+		glGetActiveUniform(program, (GLuint)i, RLL_MAX_UNIFORM_NAME_LENGTH,
+			NULL, &size, &type, p->uniforms[i].name);
+		KN_TRACE(LogSysRender, "[%d]: %s '%s'   %d", i, RLL_GLTypeToString(type),
+			p->uniforms[i].name, size);
+
+		uint32_t storageLocation = RLL_LookupUniformStorageLocation(p->uniforms[i].name);
+		KN_ASSERT(storageLocation < UniformNameTypes, "Couldn't find uniform "
+			"semantic name for %s", p->uniforms[i].name);
+		p->uniforms[i].size = size;
+		p->uniforms[i].type = type;
+		p->uniforms[i].location = i;
+		p->uniforms[i].storageLocation = storageLocation;
+	}
+	p->numUniforms = numActiveUniforms;
+
+	KN_ASSERT_NO_GL_ERROR();
+}
+
+/**
+ * Set uniforms according to global uniform storage, and enable attribute
+ * pointers.
+ */
+void RLL_EnableProgram(uint32_t id, GLsizei vertexStride, void* vertexPointer)
+{
+	Program* p = &programs[id];
+	KN_ASSERT(glIsProgram(p->id), "%" PRIu32 " is not a valid program.", id);
+
+	glUseProgram(p->id);
+	KN_ASSERT_NO_GL_ERROR();
+
+	for (uint32_t i = 0; i < p->numAttributes; ++i) {
+		GLint size = 0;
+		GLenum type;
+
+		switch (p->attributes[i].type) {
+			case GL_FLOAT_VEC4:
+				size = 4;
+				type = GL_FLOAT;
+				break;
+			default:
+				KN_FATAL_ERROR("Unknown attribute type: %s", RLL_GLTypeToString(p->attributes[i].type));
+		}
+
+		glEnableVertexAttribArray(p->attributes[i].location);
+		KN_ASSERT_NO_GL_ERROR();
+		glVertexAttribPointer(
+			p->attributes[i].location,
+			size,
+			type,
+			GL_FALSE,
+			vertexStride,
+			vertexPointer
+		);
+		KN_ASSERT_NO_GL_ERROR();
+	}
+
+	for (uint32_t i = 0; i < p->numUniforms; ++i) {
+		RLL_ApplyUniform(&p->uniforms[i], uniformStorage);
+	}
+}
+
+/**
+ * Turns off vertex attributes associated with the given program.
+ */
+void RLL_DisableProgram(uint32_t id)
+{
+	Program* p = &programs[id];
+	for (uint32_t i = 0; i < p->numAttributes; ++i) {
+		glDisableVertexAttribArray(p->attributes[i].location);
+	}
+}
+
+bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* program,
+	uint32_t programIndex);
 void RLL_FillBuffers(void);
 void RLL_InitSprites(void);
 void RLL_LoadShaders(void);
 
-#if KN_DEBUG
 void RLL_CheckGLError(const char* file, int line)
 {
 	const GLenum glError = glGetError();
@@ -131,7 +497,7 @@ void RLL_CheckGLError(const char* file, int line)
 }
 
 /**
- * Converts `GLenum` to a string for debugging.
+ * Converts `GLenum` to a string for debugging and error reporting.
  */
 const char* RLL_GLTypeToString(GLenum type)
 {
@@ -158,6 +524,14 @@ const char* RLL_GLTypeToString(GLenum type)
 		strType(GL_UNSIGNED_INT_VEC2);
 		strType(GL_UNSIGNED_INT_VEC3);
 		strType(GL_UNSIGNED_INT_VEC4);
+		strType(GL_SAMPLER);
+		strType(GL_SAMPLER_1D);
+		strType(GL_SAMPLER_2D);
+		strType(GL_SAMPLER_3D);
+		strType(GL_SAMPLER_1D_ARRAY);
+		strType(GL_SAMPLER_2D_ARRAY);
+		strType(GL_SAMPLER_1D_SHADOW);
+		strType(GL_SAMPLER_2D_SHADOW);
 		default: return "Unknown type";
 	}
 #undef strType
@@ -197,12 +571,6 @@ void RLL_PrintProgram(GLuint program)
 		KN_TRACE(LogSysRender, "[%d]: %s '%s'   %d", i, RLL_GLTypeToString(type), name, size);
 	}
 
-	// Print validation status.
-	glValidateProgram(program);
-	GLint validateStatus;
-	glGetProgramiv(program, GL_VALIDATE_STATUS, &validateStatus);
-	KN_TRACE(LogSysRender, "Validate status: %d", validateStatus);
-
 	// Print the info log.
 	GLint infoLogLength;
 	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
@@ -222,8 +590,8 @@ void RLL_PrintProgram(GLuint program)
  */
 void RLL_PrintGLVersion(void)
 {
-	// TODO: set the opengl context?
 	KN_ASSERT_NO_GL_ERROR();
+	SDL_GL_MakeCurrent(window, gl);
 	GLint majorVersion, minorVersion;
 	glGetIntegerv(GL_MAJOR_VERSION, &majorVersion);
 	glGetIntegerv(GL_MINOR_VERSION, &minorVersion);
@@ -235,11 +603,13 @@ void RLL_PrintGLVersion(void)
 	KN_ASSERT_NO_GL_ERROR();
 }
 
-#endif /* KN_DEBUG */
-
 /**
  * An openGL orthographic matrix.  Note that DirectX will need a related, but
  * slightly different version.
+ *
+ * Orthographic projection matrix to match the same dimensions as the window
+ * size.  Scaling based on the same aspect ratio but big enough to see might be
+ * a better option.
  */
 static float4x4 RLL_OrthoProjection(const uint32_t width, const uint32_t height)
 {
@@ -283,7 +653,7 @@ static bool RLL_CreateShader(GLuint* shader, const char* source, const uint32_t 
 
 void RLL_InitGL(void)
 {
-	Log_RegisterSystem(&LogSysRender, "Render", KN_LOG_ERROR);
+	Log_RegisterSystem(&LogSysRender, "Render", KN_LOG_TRACE);
 
 	// Get up and running quickly with OpenGL 3.1 with old-school functions.
 	// TODO: Replace with Core profile once something is working.
@@ -303,6 +673,7 @@ void RLL_InitGL(void)
 #endif
 
 	KN_TRACE(LogSysRender, "OpenGL renderer initialized");
+	RLL_PrintGLVersion();
 }
 
 void RLL_ConfigureVSync(void)
@@ -391,160 +762,43 @@ void RLL_InitSprites(void)
 	nextSpriteId = 0;
 }
 
-void RLL_LoadFullScreenDebugShader(void)
+void RLL_LoadSimpleShader(const char* vertexShaderFileName,
+	const char* fragmentShaderFileName, uint32_t programIndex)
 {
-	const int maxShaderTextLength = 1024;
-    PathBuffer fragmentShaderPath;
-    PathBuffer vertexShaderPath;
-	DynamicBuffer fragmentShaderBuffer;
-	DynamicBuffer vertexShaderBuffer;
-
-	// Read fragment shader
-	if (Assets_PathBufferFor("shaders/uv_as_red_green.frag", &fragmentShaderPath)) {
-		if (SPA_IsFile(fragmentShaderPath.str)) {
-			KN_TRACE(LogSysRender, "%s found", fragmentShaderPath.str);
-		}
-		else {
-			KN_TRACE(LogSysRender, "%s not found", fragmentShaderPath.str);
-		}
-	}
-
-	if (!Assets_ReadFile(fragmentShaderPath.str, KN_FILE_TYPE_TEXT, &fragmentShaderBuffer)) {
-		KN_ERROR(LogSysRender, "Unable to read fragment shader text");
-	}
-
-	// Read vertex shader
-	if (Assets_PathBufferFor("shaders/fullscreen_textured_quad.vert", &vertexShaderPath)) {
-		if (SPA_IsFile(vertexShaderPath.str)) {
-			KN_TRACE(LogSysRender, "%s found", vertexShaderPath.str);
-		}
-		else {
-			KN_TRACE(LogSysRender, "%s not found", vertexShaderPath.str);
-		}
-	}
-
-	if (!Assets_ReadFile(vertexShaderPath.str, KN_FILE_TYPE_TEXT, &vertexShaderBuffer)) {
-		KN_ERROR(LogSysRender, "Unable to read vertex shader text");
-	}
-
-	//KN_TRACE(LogSysRender, "Fragment shader %s", fragmentShaderBuffer.contents);
-	//KN_TRACE(LogSysRender, "Vertex shader %s", vertexShaderBuffer.contents);
-
-	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-
-	if (!glIsShader(vertexShader)) {
-		KN_ERROR(LogSysRender, "Unable to allocate space for vertex shader");
-	}
-
-	if (!glIsShader(fragmentShader)) {
-		KN_ERROR(LogSysRender, "Unable to allocate space for fragment shader");
-	}
-
-	RLL_CreateShader(&fragmentShader, fragmentShaderBuffer.contents, fragmentShaderBuffer.size);
-	RLL_CreateShader(&vertexShader, vertexShaderBuffer.contents, vertexShaderBuffer.size);
-
-	RLL_CreateProgram(vertexShader, fragmentShader, &fullScreenDebugProgram);
-	Mem_Free(&vertexShaderBuffer);
-	Mem_Free(&fragmentShaderBuffer);
-}
-
-void RLL_LoadSolidPolygonShader(void)
-{
-	const int maxShaderTextLength = 1024;
-    PathBuffer fragmentShaderPath;
-    PathBuffer vertexShaderPath;
-	DynamicBuffer fragmentShaderBuffer;
-	DynamicBuffer vertexShaderBuffer;
-
-	// Read fragment shader
-	if (Assets_PathBufferFor("shaders/solid_polygon.frag", &fragmentShaderPath)) {
-		if (SPA_IsFile(fragmentShaderPath.str)) {
-			KN_TRACE(LogSysRender, "%s found", fragmentShaderPath.str);
-		}
-		else {
-			KN_TRACE(LogSysRender, "%s not found", fragmentShaderPath.str);
-		}
-	}
-
-	if (!Assets_ReadFile(fragmentShaderPath.str, KN_FILE_TYPE_TEXT, &fragmentShaderBuffer)) {
-		KN_ERROR(LogSysRender, "Unable to read fragment shader text");
-	}
-
-	// Read vertex shader
-	if (Assets_PathBufferFor("shaders/solid_polygon.vert", &vertexShaderPath)) {
-		if (SPA_IsFile(vertexShaderPath.str)) {
-			KN_TRACE(LogSysRender, "%s found", vertexShaderPath.str);
-		}
-		else {
-			KN_TRACE(LogSysRender, "%s not found", vertexShaderPath.str);
-		}
-	}
-
-	if (!Assets_ReadFile(vertexShaderPath.str, KN_FILE_TYPE_TEXT, &vertexShaderBuffer)) {
-		KN_ERROR(LogSysRender, "Unable to read vertex shader text");
-	}
-
-	//KN_TRACE(LogSysRender, "Fragment shader %s", fragmentShaderBuffer.contents);
-	//KN_TRACE(LogSysRender, "Vertex shader %s", vertexShaderBuffer.contents);
-
-	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-
-	if (!glIsShader(vertexShader)) {
-		KN_ERROR(LogSysRender, "Unable to allocate space for vertex shader");
-	}
-
-	if (!glIsShader(fragmentShader)) {
-		KN_ERROR(LogSysRender, "Unable to allocate space for fragment shader");
-	}
-
-	RLL_CreateShader(&fragmentShader, fragmentShaderBuffer.contents, fragmentShaderBuffer.size);
-	RLL_CreateShader(&vertexShader, vertexShaderBuffer.contents, vertexShaderBuffer.size);
-
-	RLL_CreateProgram(vertexShader, fragmentShader, &solidPolygonProgram);
-	Mem_Free(&vertexShaderBuffer);
-	Mem_Free(&fragmentShaderBuffer);
-}
-
-void RLL_LoadSpriteShader(void)
-{
-	const int maxShaderTextLength = 1024;
 	PathBuffer fragmentShaderPath;
 	PathBuffer vertexShaderPath;
 	DynamicBuffer fragmentShaderBuffer;
 	DynamicBuffer vertexShaderBuffer;
 
-	// Read fragment shader
-	if (Assets_PathBufferFor("shaders/sprite.frag", &fragmentShaderPath)) {
-		if (SPA_IsFile(fragmentShaderPath.str)) {
-			KN_TRACE(LogSysRender, "%s found", fragmentShaderPath.str);
-		}
-		else {
-			KN_TRACE(LogSysRender, "%s not found", fragmentShaderPath.str);
-		}
+	// Find the fragment shader.
+	if (!Assets_PathBufferFor(fragmentShaderFileName, &fragmentShaderPath)) {
+		KN_ERROR(LogSysRender, "Unable to find asset for fragment shader: %s",
+			fragmentShaderFileName);
+	}
+
+	if (!SPA_IsFile(fragmentShaderPath.str)) {
+		KN_ERROR(LogSysRender, "Fragment shader is not a file: %s",
+			fragmentShaderPath.str);
 	}
 
 	if (!Assets_ReadFile(fragmentShaderPath.str, KN_FILE_TYPE_TEXT, &fragmentShaderBuffer)) {
 		KN_ERROR(LogSysRender, "Unable to read fragment shader text");
 	}
 
-	// Read vertex shader
-	if (Assets_PathBufferFor("shaders/sprite.vert", &vertexShaderPath)) {
-		if (SPA_IsFile(vertexShaderPath.str)) {
-			KN_TRACE(LogSysRender, "%s found", vertexShaderPath.str);
-		}
-		else {
-			KN_TRACE(LogSysRender, "%s not found", vertexShaderPath.str);
-		}
+	// Find the vertex shader.
+	if (!Assets_PathBufferFor(vertexShaderFileName, &vertexShaderPath)) {
+		KN_ERROR(LogSysRender, "Unable to find asset for vertex shader: %s",
+			vertexShaderFileName);
 	}
 
-	if (!Assets_ReadFile(vertexShaderPath.str, KN_FILE_TYPE_TEXT, &vertexShaderBuffer)) {
+	if (!SPA_IsFile(vertexShaderPath.str)) {
+		KN_ERROR(LogSysRender, "Vertex shader is not a file: %s",
+			vertexShaderPath.str);
+	}
+
+	if (!Assets_ReadFile(vertexShaderPath.str, KN_FILE_TYPE_TEXT,&vertexShaderBuffer)) {
 		KN_ERROR(LogSysRender, "Unable to read vertex shader text");
 	}
-
-	//KN_TRACE(LogSysRender, "Fragment shader %s", fragmentShaderBuffer.contents);
-	//KN_TRACE(LogSysRender, "Vertex shader %s", vertexShaderBuffer.contents);
 
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -560,19 +814,28 @@ void RLL_LoadSpriteShader(void)
 	RLL_CreateShader(&fragmentShader, fragmentShaderBuffer.contents, fragmentShaderBuffer.size);
 	RLL_CreateShader(&vertexShader, vertexShaderBuffer.contents, vertexShaderBuffer.size);
 
-	RLL_CreateProgram(vertexShader, fragmentShader, &spriteProgram);
+	GLuint program;
+	if (!RLL_CreateProgram(vertexShader, fragmentShader, &program, programIndex)) {
+		KN_TRACE(LogSysRender, "Fragment shader %s", fragmentShaderBuffer.contents);
+		KN_TRACE(LogSysRender, "Vertex shader %s", vertexShaderBuffer.contents);
+		KN_ERROR(LogSysRender, "Unable to create shader program");
+	}
 	Mem_Free(&vertexShaderBuffer);
 	Mem_Free(&fragmentShaderBuffer);
 }
 
 void RLL_LoadShaders(void)
 {
-	RLL_LoadSolidPolygonShader();
-	RLL_LoadFullScreenDebugShader();
-	RLL_LoadSpriteShader();
+	RLL_LoadSimpleShader("shaders/fullscreen_textured_quad.vert",
+		"shaders/uv_as_red_green.frag", ProgramIndexFullScreen);
+	RLL_LoadSimpleShader("shaders/solid_polygon.vert",
+		"shaders/solid_polygon.frag", ProgramIndexSolidPolygon);
+	RLL_LoadSimpleShader("shaders/sprite.vert",
+		"shaders/sprite.frag", ProgramIndexSprite);
 }
 
-bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* program)
+bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* program,
+	uint32_t programIndex)
 {
 	KN_ASSERT_NO_GL_ERROR();
 
@@ -622,6 +885,12 @@ bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* progr
 #endif
 
 	KN_ASSERT_NO_GL_ERROR();
+
+	if (linkResult == GL_TRUE) {
+		RLL_RegisterProgram(programIndex, *program);
+	}
+	KN_ASSERT_NO_GL_ERROR();
+
 	return linkResult == GL_TRUE;
 }
 
@@ -636,13 +905,12 @@ void RLL_Init(uint32_t width, uint32_t height)
 
 	windowWidth = (GLsizei)width;
 	windowHeight = (GLsizei)height;
-	projection = RLL_OrthoProjection(width, height);
+	uniformStorage[UniformNameProjection].f44 = RLL_OrthoProjection(width, height);
 }
 
 void RLL_StartFrame(void)
 {
 	SDL_GL_MakeCurrent(window, gl);
-	spritesUsed = 0;
 }
 
 void RLL_EndFrame(void)
@@ -718,50 +986,22 @@ void RLL_DrawSprite(SpriteId id, float2 position, dimension2f size)
 
 	RLL_SetFullScreenViewport();
 
-	glUseProgram(spriteProgram);
-	glBindBuffer(GL_ARRAY_BUFFER, spriteBuffer);
-
-	// set vertex arrays
-	GLuint positionAttrib = glGetAttribLocation(spriteProgram, "Position");
-	glEnableVertexAttribArray(positionAttrib);
-	KN_ASSERT_NO_GL_ERROR();
-	glVertexAttribPointer(
-		positionAttrib,
-		4,
-		GL_FLOAT,
-		GL_FALSE,
-		4 * sizeof(float),
-		(void *)0
-	);
-
-	KN_ASSERT_NO_GL_ERROR();
-
-	GLuint uniformProjection = glGetUniformLocation(spriteProgram, "Projection");
-	glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, &projection.m[0][0]);
-
-	// TODO: This name is wrong, since Knell uses row-vectors, it should be ModelView.
-	GLuint uniformViewModel = glGetUniformLocation(spriteProgram, "ViewModel");
-	float4x4 viewModel = float4x4_Multiply(
-		float4x4_NonUniformScale(size.width, size.height, 1.0f),
-		float4x4_Translate(position.x, position.y, 0.0f));
-	glUniformMatrix4fv(uniformViewModel, 1, GL_FALSE, &viewModel.m[0][0]);
-    KN_ASSERT_NO_GL_ERROR();
-
-	GLuint uniformTexture = glGetUniformLocation(spriteProgram, "Texture");
-
 	GLuint texture = spriteTextures[id];
 	KN_ASSERT(glIsTexture(texture), "Sprite %" PRIu32 " does not have a valid"
 		"texture", texture);
-    KN_ASSERT_NO_GL_ERROR();
-	glActiveTexture(GL_TEXTURE0);
-    KN_ASSERT_NO_GL_ERROR();
-	glBindTexture(GL_TEXTURE_2D, texture);
-    KN_ASSERT_NO_GL_ERROR();
-	glUniform1i(uniformTexture, 0);
-    KN_ASSERT_NO_GL_ERROR();
+	RLL_ReadyTexture2(0, spriteTextures[id]);
+
+	uniformStorage[UniformNameModelView].f44 = float4x4_Multiply(
+		float4x4_NonUniformScale(size.width, size.height, 1.0f),
+		float4x4_Translate(position.x, position.y, 0.0f));;
+
+	glBindBuffer(GL_ARRAY_BUFFER, spriteBuffer);
+	KN_ASSERT_NO_GL_ERROR();
+	RLL_EnableProgram(ProgramIndexSprite, 4 * sizeof(float), 0);
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	glDisableVertexAttribArray(positionAttrib);
+
+	RLL_DisableProgram(ProgramIndexSprite);
 
 	KN_ASSERT_NO_GL_ERROR();
 }
@@ -775,24 +1015,13 @@ void RLL_DrawDebugFullScreenRect(void)
 
 	RLL_SetFullScreenViewport();
 
-	glUseProgram(fullScreenDebugProgram);
 	glBindBuffer(GL_ARRAY_BUFFER, fullScreenQuadBuffer);
 
-	// set vertex arrays
-	GLuint positionAttrib = glGetAttribLocation(fullScreenDebugProgram, "Position");
-	glEnableVertexAttribArray(positionAttrib);
-	KN_ASSERT_NO_GL_ERROR();
-	glVertexAttribPointer(
-		positionAttrib,
-		4,
-		GL_FLOAT,
-		GL_FALSE,
-		4 * sizeof(float),
-		(void *)0
-	);
+	RLL_EnableProgram(ProgramIndexFullScreen, 4 * sizeof(float), 0);
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	glDisableVertexAttribArray(positionAttrib);
+
+	RLL_DisableProgram(ProgramIndexFullScreen);
 
 	KN_ASSERT_NO_GL_ERROR();
 }
@@ -800,35 +1029,16 @@ void RLL_DrawDebugFullScreenRect(void)
 /**
  * Draws a rectangle at a given center point with known dimensions.
  */
-void RLL_DrawDebugRect(float4 position, dimension2f dimensions, float4 color)
+void RLL_DrawDebugRect(float4 center, dimension2f dimensions, float4 color)
 {
 	RLL_SetFullScreenViewport();
 
-	glUseProgram(solidPolygonProgram);
 	glBindBuffer(GL_ARRAY_BUFFER, debugDrawBuffer);
 
-	const GLint uniformProjection = glGetUniformLocation(solidPolygonProgram, "Projection");
-	glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, &projection.m[0][0]);
+	uniformStorage[UniformNameViewModel].f44 = float4x4_Identity();
+	uniformStorage[UniformNamePolygonColor].f4 = color;
 
-	const float4x4 identity = float4x4_Identity();
-	const GLint uniformViewModel = glGetUniformLocation(solidPolygonProgram, "ViewModel");
-	glUniformMatrix4fv(uniformViewModel, 1, GL_FALSE, &identity.m[0][0]);
-
-	const GLint uniformColor = glGetUniformLocation(solidPolygonProgram, "PolygonColor");
-	glUniform4f(uniformColor, color.x, color.y, color.z, color.w);
-
-	const GLint positionAttrib = glGetAttribLocation(solidPolygonProgram, "Position");
-	KN_ASSERT(positionAttrib >= 0, "Position attribute does not exist");
-	glEnableVertexAttribArray((GLuint)positionAttrib);
-	KN_ASSERT_NO_GL_ERROR();
-	glVertexAttribPointer(
-		(GLuint)positionAttrib,
-		4,
-		GL_FLOAT,
-		GL_FALSE,
-		4 * sizeof(float),
-		(void *)0
-	);
+	RLL_EnableProgram(ProgramIndexSolidPolygon, 4 * sizeof(float), 0);
 
 	float4 vertices[4];
 	vertices[0] = float4_Make(-dimensions.width / 2.0f, -dimensions.height / 2.0f, 0.0f, 1.0f);
@@ -837,29 +1047,15 @@ void RLL_DrawDebugRect(float4 position, dimension2f dimensions, float4 color)
 	vertices[3] = float4_Make(dimensions.width / 2.0f, dimensions.height / 2.0f, 0.0f, 1.0f);
 
 	for (uint32_t i = 0; i < 4; ++i) {
-		vertices[i].x += position.x;
-		vertices[i].y += position.y;
-		vertices[i].z += position.z;
-	}
-
-	static uint32_t flag = 0;
-	if (!flag) {
-		for (uint32_t i = 0; i < 4; ++i) {
-			float4_DebugPrint(stdout, vertices[i]);
-		}
-
-		printf("Transformed:\n");
-		for (uint32_t i = 0; i < 4; ++i) {
-			float4_DebugPrint(stdout, float4_Multiply(vertices[i], projection));
-		}
-		flag = 1;
-		printf("\n");
+		vertices[i].x += center.x;
+		vertices[i].y += center.y;
+		vertices[i].z += center.z;
 	}
 
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-	glDisableVertexAttribArray(positionAttrib);
+	RLL_DisableProgram(ProgramIndexSolidPolygon);
 
 	KN_ASSERT_NO_GL_ERROR();
 }
@@ -869,31 +1065,13 @@ void RLL_DrawDebugLine(float x1, float y1, float x2, float y2, rgb8 color)
 	// TODO: Probably shouldn't reset viewport.
 	RLL_SetFullScreenViewport();
 
-	glUseProgram(solidPolygonProgram);
 	glBindBuffer(GL_ARRAY_BUFFER, debugDrawBuffer);
 
-	const GLint uniformProjection = glGetUniformLocation(solidPolygonProgram, "Projection");
-	glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, &projection.m[0][0]);
+	uniformStorage[UniformNameViewModel].f44 = float4x4_Identity();
+	uniformStorage[UniformNamePolygonColor].f4 = float4_Make(
+		(float)color.r / 255.0f, (float)color.g / 255.0f, (float)color.b / 255.0f, 1.0f);
 
-	const float4x4 identity = float4x4_Identity();
-	const GLint uniformViewModel = glGetUniformLocation(solidPolygonProgram, "ViewModel");
-	glUniformMatrix4fv(uniformViewModel, 1, GL_FALSE, &identity.m[0][0]);
-
-	const GLint uniformColor = glGetUniformLocation(solidPolygonProgram, "PolygonColor");
-	glUniform4f(uniformColor, (float)color.r / 255.0f, (float)color.g / 255.0f, (float)color.b / 255.0f, 1.0f);
-
-	const GLint positionAttrib = glGetAttribLocation(solidPolygonProgram, "Position");
-	KN_ASSERT(positionAttrib >= 0, "Position attribute does not exist");
-	glEnableVertexAttribArray((GLuint)positionAttrib);
-	KN_ASSERT_NO_GL_ERROR();
-	glVertexAttribPointer(
-		(GLuint)positionAttrib,
-		4,
-		GL_FLOAT,
-		GL_FALSE,
-		4 * sizeof(float),
-		(void *)0
-	);
+	RLL_EnableProgram(ProgramIndexSolidPolygon, 4 * sizeof(float), 0);
 
 	float4 vertices[2];
 	vertices[0] = float4_Make(x1, y1, 0.0f, 1.0f);
@@ -902,8 +1080,7 @@ void RLL_DrawDebugLine(float x1, float y1, float x2, float y2, rgb8 color)
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
 	glDrawArrays(GL_LINES, 0, 2);
 
-	glDisableVertexAttribArray(positionAttrib);
-
+	RLL_DisableProgram(ProgramIndexSolidPolygon);
 	KN_ASSERT_NO_GL_ERROR();
 }
 
@@ -915,30 +1092,13 @@ void RLL_DrawDebugLineStrip(float2* points, uint32_t numPoints, rgb8 color)
 	// TODO: Probably shouldn't reset viewport.
 	RLL_SetFullScreenViewport();
 
-	glUseProgram(solidPolygonProgram);
 	glBindBuffer(GL_ARRAY_BUFFER, debugDrawBuffer);
 
-	const GLint uniformProjection = glGetUniformLocation(solidPolygonProgram, "Projection");
-	glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, &projection.m[0][0]);
+	uniformStorage[UniformNameViewModel].f44 = float4x4_Identity();
+	uniformStorage[UniformNamePolygonColor].f4 = float4_Make(
+		(float)color.r / 255.0f, (float)color.g / 255.0f, (float)color.b / 255.0f, 1.0f);
 
-	const float4x4 identity = float4x4_Identity();
-	const GLint uniformViewModel = glGetUniformLocation(solidPolygonProgram, "ViewModel");
-	glUniformMatrix4fv(uniformViewModel, 1, GL_FALSE, &identity.m[0][0]);
-
-	const GLint uniformColor = glGetUniformLocation(solidPolygonProgram, "PolygonColor");
-	glUniform4f(uniformColor, (float)color.r / 255.0f, (float)color.g / 255.0f, (float)color.b / 255.0f, 1.0f);
-
-	const GLint positionAttrib = glGetAttribLocation(solidPolygonProgram, "Position");
-	KN_ASSERT(positionAttrib >= 0, "Position attribute does not exist");
-	glEnableVertexAttribArray((GLuint)positionAttrib);
-	glVertexAttribPointer(
-		(GLuint)positionAttrib,
-		4,
-		GL_FLOAT,
-		GL_FALSE,
-		4 * sizeof(float),
-		(void *)0
-	);
+	RLL_EnableProgram(ProgramIndexSolidPolygon, 4 * sizeof(float), 0);
 
 	float4 vertices[RLL_MAX_DEBUG_POINTS];
 	for (uint32_t i = 0; i < numPoints; ++i) {
@@ -946,7 +1106,8 @@ void RLL_DrawDebugLineStrip(float2* points, uint32_t numPoints, rgb8 color)
 	}
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float4) * numPoints, vertices);
 	glDrawArrays(GL_LINE_STRIP, 0, (GLsizei)numPoints);
-	glDisableVertexAttribArray(positionAttrib);
+
+	RLL_DisableProgram(ProgramIndexSolidPolygon);
 
 	KN_ASSERT_NO_GL_ERROR();
 }

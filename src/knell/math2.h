@@ -12,7 +12,12 @@ typedef struct {
 } dimension2f;
 
 typedef struct {
-	float x, y;
+	union {
+		struct {
+			float x, y;
+		};
+		float v[2];
+	};
 } float2;
 
 /**
