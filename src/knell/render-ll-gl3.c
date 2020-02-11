@@ -938,38 +938,33 @@ bool RLL_CreateSprite(SpriteId* id)
 
 bool RLL_LoadSprite(SpriteId id, const char* path)
 {
-	ImagePixels image;
-	if (!Image_Allocate(&image, path)) {
-		return false;
-	}
+	KN_ASSERT_NO_GL_ERROR();
 
 	glGenTextures(1, &spriteTextures[id]);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, spriteTextures[id]);
 
+	ImagePixels image;
+	if (!Image_Allocate(&image, path)) {
+		return false;
+	}
+
 	// Don't mipmap for now.
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-
-    KN_ASSERT_NO_GL_ERROR();
 
 	// TODO: Use proxy textures to test to see if sufficient space exists.
 	// TODO: Should this be GL_RGBA8?
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.width, image.height, 0,
 		GL_RGBA, GL_UNSIGNED_BYTE, image.pixels.contents);
 
-    KN_ASSERT_NO_GL_ERROR();
-
 	// Set the texture parameters.
 	// https://stackoverflow.com/questions/3643932/what-is-the-scope-of-gltexparameters-in-opengl
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    KN_ASSERT_NO_GL_ERROR();
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    KN_ASSERT_NO_GL_ERROR();
 
 	KN_ASSERT(glIsTexture(spriteTextures[id]), "Unable to reserve texture for "
 		"sprite loading from path: %s", path);
