@@ -1078,16 +1078,16 @@ bool RLL_LoadPSFFont(FontId* id, const char* path)
 				uint8_t nextByte = *bitmap;
 				for (int32_t bit = 7; bit >= 0; --bit) {
 					if ((1 << bit) & nextByte) {
-						printf("X");
+						//printf("X");
 					}
 					else {
-						printf(" ");
+						//printf(" ");
 					}
 				}
 				++bitmap;
-				printf("_");
+				//printf("_");
 			}
-			printf("\n");
+			//printf("\n");
 		}
 	}
 
@@ -1096,19 +1096,71 @@ bool RLL_LoadPSFFont(FontId* id, const char* path)
 	}
 	else {
 		KN_TRACE(LogSysRender, "No unicode table");
-		return;
+		return false;
 	}
 
 #if 0
+Example: At the font position for a capital A-ring glyph, we may have (psf1):
+         00C5,212B,FFFE,0041,030A,FFFF
+
+ 00C5 LATIN CAPITAL LETTER A WITH RING ABOVE
+ 212B ANGSTROM SIGN
+ 0041 LATIN CAPITAL LETTER A
+ 030A COMBINING RING ABOVE
+
+where the Unicode values here are LATIN CAPITAL LETTER A WITH RING ABOVE and
+ANGSTROM SIGN and LATIN CAPITAL LETTER A and COMBINING RING ABOVE. Some font
+positions may be described by sequences only, namely when there is no
+precomposed Unicode value for the glyph.
+#endif
+
 	// TODO: Read the unicode table
-	uint8_t* unicodeTable = (uint8_t*)bitmap + (header->charsize * header->length);
+	uint8_t* unicodeTable = (uint8_t*)bitmap + header->headersize; //(header->charsize * header->length);
 	uint8_t unicodeValue[16];
 	uint8_t unicodeValueLength;
 	// TODO: Guard against running off the end of the array.
-	for (uint32_t i = 0; i < 16 && *unicodeTable != ; ++i) {
-		unicodeValue[i] = *unicodeTable;
+
+#define PSF2_SEPARATOR  0xFF
+#define PSF2_SEQEND   0xFE
+#define MAX_UNICODE_SEQ_LENGTH 16
+#define MAX_UTF8_CHAR_LENGTH 4
+
+#if 0
+	for (uint32_t i = 0; i < MAX_UNICODE_SEQ_LENGTH; ++i) {
+		if (*unicodeTable == PSF2_SEPARATOR) {
+			// Move to the next item.
+		}
+
+		if (*unicodeTable == PSF2_SEQEND) {
+
+		}
+	}
+#endif
+	uint8_t utf8char[MAX_UTF8_CHAR_LENGTH];
+
+
+
+	printf("Unicode bytes\n");
+	uint8_t* endOfData = (uint8_t*)fileBuffer.contents + fileBuffer.size;
+	uint32_t i = 0;
+	while (unicodeTable < endOfData) {
+		if (*unicodeTable == PSF2_SEPARATOR) {
+			printf("\n");
+		}
+		else if (*unicodeTable == PSF2_SEQEND) {
+			printf("    ");
+		}
+		else {
+			printf("%X ", *unicodeTable);
+		}
 		++unicodeTable;
 	}
+
+//	for (uint32_t i = 0; i < 16 && *unicodeTable != ; ++i) {
+//		unicodeValue[i] = *unicodeTable;
+//		++unicodeTable;
+//	}
+#if 0
 #endif
 
 	// The bitmap for a glyph is stored as height consecutive pixel rows, where
