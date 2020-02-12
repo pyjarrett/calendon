@@ -52,6 +52,21 @@ KN_API void R_DrawSprite(SpriteId id, float2 position, dimension2f size)
 	RLL_DrawSprite(id, position, size);
 }
 
+bool R_CreateFont(FontId* id)
+{
+	return RLL_CreateFont(id);
+}
+
+bool R_LoadPSFFont(FontId* id, const char* path)
+{
+	return RLL_LoadPSFFont(id, path);
+}
+
+void R_DrawSimpleText(FontId* id, float2 position, const char* text)
+{
+	RLL_DrawSimpleText(id, position, text);
+}
+
 KN_API void R_DrawDebugFullScreenRect(void)
 {
 	RLL_DrawDebugFullScreenRect();
