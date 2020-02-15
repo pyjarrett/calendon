@@ -8,7 +8,6 @@ set(KNELL_SRCS
 
 set(KNELL_LIBS
 	SDL2
-	spa-fu
 	${KNELL_LIBS}
 	)
 

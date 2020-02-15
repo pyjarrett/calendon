@@ -19,9 +19,8 @@
 #include <knell/log.h>
 #include <knell/math4.h>
 #include <knell/memory.h>
+#include <knell/path.h>
 #include <knell/render-resources.h>
-
-#include <spa_fu/spa_fu.h>
 
 #if defined(_WIN32)
 	#include <knell/compat-windows.h>
@@ -786,7 +785,7 @@ void RLL_LoadSimpleShader(const char* vertexShaderFileName,
 			fragmentShaderFileName);
 	}
 
-	if (!SPA_IsFile(fragmentShaderPath.str)) {
+	if (!Path_IsFile(fragmentShaderPath.str)) {
 		KN_ERROR(LogSysRender, "Fragment shader is not a file: %s",
 			fragmentShaderPath.str);
 	}
@@ -801,7 +800,7 @@ void RLL_LoadSimpleShader(const char* vertexShaderFileName,
 			vertexShaderFileName);
 	}
 
-	if (!SPA_IsFile(vertexShaderPath.str)) {
+	if (!Path_IsFile(vertexShaderPath.str)) {
 		KN_ERROR(LogSysRender, "Vertex shader is not a file: %s",
 			vertexShaderPath.str);
 	}

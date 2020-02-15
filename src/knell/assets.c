@@ -2,9 +2,8 @@
 
 #include "kn.h"
 #include "log.h"
+#include "path.h"
 #include <string.h>
-
-#include <spa_fu/spa_fu.h>
 
 #define MAX_ASSET_DIR_LENGTH 256
 static char assetsRoot[MAX_ASSET_DIR_LENGTH + 1];
@@ -23,7 +22,7 @@ KN_API void Assets_Init(const char* assetDir)
 	strcpy(assetsRoot, assetDir);
 	assetsRootLength = (uint32_t)strlen(assetsRoot);
 
-	if (!SPA_IsDir(assetsRoot)) {
+	if (!Path_IsDir(assetsRoot)) {
 		KN_FATAL_ERROR("Assets root directory doesn't exist: %s", assetsRoot);
 	}
 

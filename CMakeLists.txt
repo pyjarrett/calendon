@@ -152,12 +152,6 @@ if (WIN32)
 	include_directories(SYSTEM "${VENDOR_SDL2_ROOT}/include")
 	link_directories(SYSTEM "${VENDOR_SDL2_ROOT}/lib/x64")
 
-	# spartan file utils in an in-house library for cross platform quick file
-	# operations such as seeing if a file exists, or if a path is a dir or a file.
-	vendorize(windows spartan_file_utils 0.0.1)
-	include_directories(SYSTEM "${VENDOR_SPARTAN_FILE_UTILS_ROOT}/include")
-	link_directories(SYSTEM "${VENDOR_SPARTAN_FILE_UTILS_ROOT}/lib")
-
 	# glew (GL Extension Wranger) is used to load OpenGL extension functions so we
 	# don't need to manually load function pointers.
 	vendorize(windows glew 2.1.0)
@@ -177,14 +171,6 @@ if (WIN32)
 	# the SDK, so an x64 version is included for creating minidumps.
 	vendorize(windows windows_sdk 10)
 endif (WIN32)
-
-if (UNIX)
-	# spartan file utils in an in-house library for cross platform quick file
-	# operations such as seeing if a file exists, or if a path is a dir or a file.
-	vendorize(linux spartan_file_utils 0.0.1)
-	include_directories(SYSTEM "${VENDOR_SPARTAN_FILE_UTILS_ROOT}/include")
-	link_directories(SYSTEM "${VENDOR_SPARTAN_FILE_UTILS_ROOT}/lib")
-endif (UNIX)
 
 # The knell driver should depend on all demos to ensure that they are built
 # before running the driver to prevent problems where you're trying to
