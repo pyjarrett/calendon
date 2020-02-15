@@ -953,8 +953,8 @@ bool RLL_LoadSprite(SpriteId id, const char* path)
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, spriteTextures[id]);
 
-	ImagePixels image;
-	if (!Image_Allocate(&image, path)) {
+	ImageRGBA8 image;
+	if (!ImageRGBA8_Allocate(&image, path)) {
 		return false;
 	}
 
@@ -977,8 +977,8 @@ bool RLL_LoadSprite(SpriteId id, const char* path)
 
 	KN_ASSERT(glIsTexture(spriteTextures[id]), "Unable to reserve texture for "
 		"sprite loading from path: %s", path);
-    
-	Image_Free(&image);
+
+	ImageRGBA8_Free(&image);
 
     KN_ASSERT_NO_GL_ERROR();
 	return true;

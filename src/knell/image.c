@@ -7,7 +7,7 @@
 
 extern LogHandle LogSysAssets;
 
-void Image_Flip(ImagePixels* image)
+void ImageRGBA8_Flip(ImageRGBA8* image)
 {
 	KN_ASSERT(image != NULL, "Cannot load flip a null image.");
 	KN_ASSERT(image->pixels.size > 0, "No pixels to flip.");
@@ -47,12 +47,12 @@ void Image_Flip(ImagePixels* image)
 }
 
 /**
- * Using `Allocate` as the name here to ensure the clients know to call
- * `Image_Free`, and don't need to manually free the stored buffer of pixels.
+ * Using `ImageRGBA_Allocate` as the name here to ensure the clients know to call
+ * `ImageRGBA8_Free`, and don't need to manually free the stored buffer of pixels.
  *
  * @todo support image types other than RGBA8.
  */
-KN_API bool Image_Allocate(ImagePixels* image, const char* fileName)
+KN_API bool ImageRGBA8_Allocate(ImageRGBA8* image, const char* fileName)
 {
 	KN_ASSERT(image != NULL, "Cannot load data into a null image.");
 	KN_ASSERT(fileName != NULL, "Cannot load an image with a null file name.");
@@ -82,7 +82,7 @@ KN_API bool Image_Allocate(ImagePixels* image, const char* fileName)
 	image->width = header.width;
 	image->height = header.height;
 
-	Image_Flip(image);
+	ImageRGBA8_Flip(image);
 
 	KN_TRACE(LogSysAssets, "Loading image: %s", fileName);
 	KN_TRACE(LogSysAssets, "Image size %d, %d", header.width, header.height);
@@ -94,7 +94,7 @@ KN_API bool Image_Allocate(ImagePixels* image, const char* fileName)
 	return true;
 }
 
-KN_API void Image_Free(ImagePixels* image)
+KN_API void ImageRGBA8_Free(ImageRGBA8* image)
 {
 	KN_ASSERT(image != NULL, "Cannot load data into a null image.");
 	Mem_Free(&image->pixels);
