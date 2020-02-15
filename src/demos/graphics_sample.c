@@ -80,7 +80,7 @@ KN_GAME_API void Game_Init(void)
 	PathBuffer fontPath;
 	Assets_PathBufferFor("fonts/bizcat.psf", &fontPath);
 	R_CreateFont(&font);
-	if (!R_LoadPSF2Font(&font, fontPath.str))	{
+	if (!R_LoadPSF2Font(font, fontPath.str))	{
 		KN_FATAL_ERROR("Unable to load font: %s", fontPath.str);
 	}
 }

@@ -1042,7 +1042,7 @@ typedef struct {
 } PSF2Header;
 
 
-bool RLL_LoadPSF2Font(FontId* id, const char* path)
+bool RLL_LoadPSF2Font(FontId id, const char* path)
 {
 	KN_ASSERT_NO_GL_ERROR();
 
@@ -1166,9 +1166,9 @@ bool RLL_LoadPSF2Font(FontId* id, const char* path)
 	 */
 	// Assume English only, so unicode code <uc> is only 1 byte.
 
-	glGenTextures(1, &fontTextures[*id]);
+	glGenTextures(1, &fontTextures[id]);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, fontTextures[*id]);
+	glBindTexture(GL_TEXTURE_2D, fontTextures[id]);
 
 	// Don't mipmap for now.
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
@@ -1187,7 +1187,7 @@ bool RLL_LoadPSF2Font(FontId* id, const char* path)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	KN_ASSERT(glIsTexture(fontTextures[*id]), "Unable to reserve texture for "
+	KN_ASSERT(glIsTexture(fontTextures[id]), "Unable to reserve texture for "
 		"font loading from path: %s", path);
 
 	Mem_Free(&imageStorage);
@@ -1198,8 +1198,6 @@ bool RLL_LoadPSF2Font(FontId* id, const char* path)
 
 void RLL_DrawSimpleText(FontId id, float2 position, const char* text)
 {
-	KN_ASSERT(id != NULL, "Cannot draw text from a null font.");
-
 	for (uint32_t i = 0; i < strlen(text); ++i) {
 		// Draw text[i].
 	}

@@ -22,7 +22,7 @@ bool RLL_LoadSprite(SpriteId id, const char* path);
 void RLL_DrawSprite(SpriteId id, float2 position, dimension2f size);
 
 bool RLL_CreateFont(FontId* id);
-bool RLL_LoadPSF2Font(FontId* id, const char* path);
+bool RLL_LoadPSF2Font(FontId id, const char* path);
 void RLL_DrawSimpleText(FontId id, float2 position, const char* text);
 
 void RLL_DrawDebugFullScreenRect(void);
