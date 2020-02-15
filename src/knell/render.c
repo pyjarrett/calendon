@@ -57,12 +57,12 @@ bool R_CreateFont(FontId* id)
 	return RLL_CreateFont(id);
 }
 
-bool R_LoadPSFFont(FontId* id, const char* path)
+bool R_LoadPSF2Font(FontId* id, const char* path)
 {
-	return RLL_LoadPSFFont(id, path);
+	return RLL_LoadPSF2Font(id, path);
 }
 
-void R_DrawSimpleText(FontId* id, float2 position, const char* text)
+void R_DrawSimpleText(FontId id, float2 position, const char* text)
 {
 	RLL_DrawSimpleText(id, position, text);
 }

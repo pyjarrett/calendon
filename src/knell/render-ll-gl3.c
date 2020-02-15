@@ -50,6 +50,11 @@
 	#define KN_ASSERT_NO_GL_ERROR()
 #endif
 
+#define PSF2_SEPARATOR  0xFF
+#define PSF2_SEQEND   0xFE
+#define MAX_UTF8_CHAR_LENGTH 4
+typedef uint8_t utf8char[MAX_UTF8_CHAR_LENGTH + 1];
+
 const char* RLL_GLTypeToString(GLenum type);
 void RLL_PrintProgram(GLuint program);
 void RLL_PrintGLVersion(void);
@@ -1025,23 +1030,19 @@ uint8_t psf2Magic[4] = { 0x72, 0xb5, 0x4a, 0x86 };
 /* max version recognized so far */
 #define PSF2_MAXVERSION 0
 
-/* UTF8 separators */
-#define PSF2_SEPARATOR  0xFF
-#define PSF2_STARTSEQ   0xFE
-
 typedef struct {
 	unsigned char magic[4];
 	uint32_t version;
-	uint32_t headersize;    /* offset of bitmaps in file */
+	uint32_t headerSize;    /* offset of bitmaps in file */
 	uint32_t flags;
-	uint32_t length;        /* number of glyphs */
-	uint32_t charsize;      /* number of bytes for each character */
+	uint32_t numGlyphs;     /* number of glyphs */
+	uint32_t bytesPerGlyph; /* number of bytes for each character */
 	uint32_t height, width; /* max dimensions of glyphs */
 	/* charsize = height * ((width + 7) / 8) */
 } PSF2Header;
 
 
-bool RLL_LoadPSFFont(FontId* id, const char* path)
+bool RLL_LoadPSF2Font(FontId* id, const char* path)
 {
 	KN_ASSERT_NO_GL_ERROR();
 
@@ -1050,7 +1051,7 @@ bool RLL_LoadPSFFont(FontId* id, const char* path)
 		KN_FATAL_ERROR("Unable to load font from %s", path);
 	}
 
-	PSF2Header* header = (PSF2Header*)fileBuffer.contents;
+	const PSF2Header* const header = (PSF2Header*)fileBuffer.contents;
 
 	for (uint32_t i = 0; i < 4; ++i) {
 		if (psf2Magic[i] != header->magic[i]) {
@@ -1061,28 +1062,44 @@ bool RLL_LoadPSFFont(FontId* id, const char* path)
 	KN_TRACE(LogSysRender, "PSF2 Magic is OK");
 
 	KN_TRACE(LogSysRender, "Version is %" PRIu32, header->version);
-	KN_TRACE(LogSysRender, "Header is %" PRIu32 " bytes", header->headersize);
-	KN_TRACE(LogSysRender, "%" PRIu32 " glyphs", header->length);
-	KN_TRACE(LogSysRender, "%" PRIu32 " bytes per glyph", header->charsize);
+	KN_TRACE(LogSysRender, "Header is %" PRIu32 " bytes", header->headerSize);
+	KN_TRACE(LogSysRender, "%" PRIu32 " glyphs", header->numGlyphs);
+	KN_TRACE(LogSysRender, "%" PRIu32 " bytes per glyph", header->numGlyphs);
 	KN_TRACE(LogSysRender, "%" PRIu32 "x%" PRIu32, header->width, header->height);
 
+	KN_ASSERT((header->width & 7) == 0, "Character width is not evenly divisible by 8");
+	KN_ASSERT((header->height & 7) == 0, "Character height is not evenly divisible by 8");
+
 	// The bitmap is recorded after the header.
-	uint8_t* bitmap = (char*)header + header->headersize;
+	uint8_t* const bitmapStart = (uint8_t*)header + header->headerSize;
+	const uint32_t bitmapSize = header->bytesPerGlyph * header->numGlyphs;
+	uint8_t* bitmap = (uint8_t*)header + header->headerSize;
+
+	DynamicBuffer imageStorage;
+	Mem_Allocate(&imageStorage, header->numGlyphs * 4 * header->width * header->height);
+	memset(imageStorage.contents, 0, imageStorage.size);
+
+	// TODO: Document RGBA8 assumption.
+	uint32_t* imageCursor = (uint32_t*)imageStorage.contents;
+	uint32_t* imageEnd = (uint8_t*)imageCursor + imageStorage.size;
 
 	// Parse all characters.
-	for (uint32_t i = 0; i < header->length; ++i) {
+	for (uint32_t i = 0; i < header->numGlyphs; ++i) {
 		// Parse all rows of the next character.
 		for (uint32_t row = 0; row < header->height; ++row) {
 			// Parse the next row.
 			for (uint32_t col = 0; col < (header->width / 8); ++col) {
-				uint8_t nextByte = *bitmap;
+				const uint8_t nextByte = *bitmap;
 				for (int32_t bit = 7; bit >= 0; --bit) {
 					if ((1 << bit) & nextByte) {
 						//printf("X");
+						// Set all the bits to 1.
+						*imageCursor = (uint32_t)~0;
 					}
 					else {
 						//printf(" ");
 					}
+					++imageCursor;
 				}
 				++bitmap;
 				//printf("_");
@@ -1090,6 +1107,7 @@ bool RLL_LoadPSFFont(FontId* id, const char* path)
 			//printf("\n");
 		}
 	}
+	KN_ASSERT(imageCursor == imageEnd, "Didn't count every pixel");
 
 	if (header->flags & PSF2_HAS_UNICODE_TABLE) {
 		KN_TRACE(LogSysRender, "Has a unicode table");
@@ -1099,69 +1117,42 @@ bool RLL_LoadPSFFont(FontId* id, const char* path)
 		return false;
 	}
 
-#if 0
-Example: At the font position for a capital A-ring glyph, we may have (psf1):
-         00C5,212B,FFFE,0041,030A,FFFF
+	uint8_t* const unicodeTableStart = bitmapStart + bitmapSize;
+	uint8_t* unicodeTable = unicodeTableStart;
 
- 00C5 LATIN CAPITAL LETTER A WITH RING ABOVE
- 212B ANGSTROM SIGN
- 0041 LATIN CAPITAL LETTER A
- 030A COMBINING RING ABOVE
+	//#define MAX_UNICODE_SEQ_LENGTH 16
 
-where the Unicode values here are LATIN CAPITAL LETTER A WITH RING ABOVE and
-ANGSTROM SIGN and LATIN CAPITAL LETTER A and COMBINING RING ABOVE. Some font
-positions may be described by sequences only, namely when there is no
-precomposed Unicode value for the glyph.
-#endif
-
-	// TODO: Read the unicode table
-	uint8_t* unicodeTable = (uint8_t*)bitmap + header->headersize; //(header->charsize * header->length);
-	uint8_t unicodeValue[16];
-	uint8_t unicodeValueLength;
-	// TODO: Guard against running off the end of the array.
-
-#define PSF2_SEPARATOR  0xFF
-#define PSF2_SEQEND   0xFE
-#define MAX_UNICODE_SEQ_LENGTH 16
-#define MAX_UTF8_CHAR_LENGTH 4
-
-#if 0
-	for (uint32_t i = 0; i < MAX_UNICODE_SEQ_LENGTH; ++i) {
-		if (*unicodeTable == PSF2_SEPARATOR) {
-			// Move to the next item.
-		}
-
-		if (*unicodeTable == PSF2_SEQEND) {
-
-		}
-	}
-#endif
-	uint8_t utf8char[MAX_UTF8_CHAR_LENGTH];
-
-
-
-	printf("Unicode bytes\n");
+	//printf("Unicode bytes\n");
 	uint8_t* endOfData = (uint8_t*)fileBuffer.contents + fileBuffer.size;
 	uint32_t i = 0;
+	uint32_t charIndex = 0;
+#define KN_CHAR_MAP_SIZE 256
+	utf8char charMap[KN_CHAR_MAP_SIZE];
+	memset(charMap, 0, 256 * sizeof(KN_CHAR_MAP_SIZE));
+	bool newline = true;
 	while (unicodeTable < endOfData) {
+		if (newline) {
+			printf("%3i ", i);
+			newline = false;
+		}
 		if (*unicodeTable == PSF2_SEPARATOR) {
+			++i;
+			charIndex = 0;
+			newline = true;
 			printf("\n");
 		}
 		else if (*unicodeTable == PSF2_SEQEND) {
+			charIndex = 0;
 			printf("    ");
 		}
 		else {
 			printf("%X ", *unicodeTable);
+			charMap[i][charIndex] = *unicodeTable;
+			++charIndex;
 		}
 		++unicodeTable;
 	}
 
-//	for (uint32_t i = 0; i < 16 && *unicodeTable != ; ++i) {
-//		unicodeValue[i] = *unicodeTable;
-//		++unicodeTable;
-//	}
-#if 0
-#endif
 
 	// The bitmap for a glyph is stored as height consecutive pixel rows, where
 	// each pixel row consists of width bits
@@ -1175,15 +1166,9 @@ precomposed Unicode value for the glyph.
 	 */
 	// Assume English only, so unicode code <uc> is only 1 byte.
 
-/*
-	glGenTextures(1, &fontTextures[id]);
+	glGenTextures(1, &fontTextures[*id]);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, fontTextures[id]);
-
-	ImagePixels image;
-	if (!Image_Allocate(&image, path)) {
-		return false;
-	}
+	glBindTexture(GL_TEXTURE_2D, fontTextures[*id]);
 
 	// Don't mipmap for now.
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
@@ -1191,34 +1176,57 @@ precomposed Unicode value for the glyph.
 
 	// TODO: Use proxy textures to test to see if sufficient space exists.
 	// TODO: Should this be GL_RGBA8?
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.width, image.height, 0,
-				 GL_RGBA, GL_UNSIGNED_BYTE, image.pixels.contents);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, header->width, header->height * header->numGlyphs, 0,
+				 GL_RGBA, GL_UNSIGNED_BYTE, imageStorage.contents);
 
 	// Set the texture parameters.
 	// https://stackoverflow.com/questions/3643932/what-is-the-scope-of-gltexparameters-in-opengl
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	KN_ASSERT(glIsTexture(fontTextures[id]), "Unable to reserve texture for "
+	KN_ASSERT(glIsTexture(fontTextures[*id]), "Unable to reserve texture for "
 		"font loading from path: %s", path);
 
-	Image_Free(&image);
- */
+	Mem_Free(&imageStorage);
 
 	KN_ASSERT_NO_GL_ERROR();
 	return true;
 }
 
-void RLL_DrawSimpleText(FontId* id, float2 position, const char* text)
+void RLL_DrawSimpleText(FontId id, float2 position, const char* text)
 {
 	KN_ASSERT(id != NULL, "Cannot draw text from a null font.");
 
 	for (uint32_t i = 0; i < strlen(text); ++i) {
 		// Draw text[i].
 	}
+
+	KN_ASSERT_NO_GL_ERROR();
+
+	RLL_SetFullScreenViewport();
+
+	GLuint texture = fontTextures[id];
+	KN_ASSERT(glIsTexture(texture), "Sprite %" PRIu32 " does not have a valid"
+													  "texture", texture);
+	RLL_ReadyTexture2(0, fontTextures[id]);
+
+	dimension2f size = { .width = 40, .height = 1000 };
+
+	uniformStorage[UniformNameModelView].f44 = float4x4_Multiply(
+		float4x4_NonUniformScale(size.width, size.height, 1.0f),
+		float4x4_Translate(position.x, position.y, 0.0f));;
+
+	glBindBuffer(GL_ARRAY_BUFFER, spriteBuffer);
+	KN_ASSERT_NO_GL_ERROR();
+	RLL_EnableProgram(ProgramIndexSprite, 4 * sizeof(float), 0);
+
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+	RLL_DisableProgram(ProgramIndexSprite);
+
 }
 
 /**

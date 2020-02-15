@@ -80,7 +80,7 @@ KN_GAME_API void Game_Init(void)
 	PathBuffer fontPath;
 	Assets_PathBufferFor("fonts/bizcat.psf", &fontPath);
 	R_CreateFont(&font);
-	if (!R_LoadPSFFont(&font, fontPath.str))	{
+	if (!R_LoadPSF2Font(&font, fontPath.str))	{
 		KN_FATAL_ERROR("Unable to load font: %s", fontPath.str);
 	}
 }
@@ -108,7 +108,7 @@ KN_GAME_API void Game_Draw(void)
 	dimension2f rectSize = { .width = 100.0f, .height = 100.0f };
 	R_DrawDebugRect(rectPosition, rectSize, green);
 
-	R_DrawSimpleText(&font, float2_Make(400, 100), "Hello World");
+	R_DrawSimpleText(font, float2_Make(400, 100), "Hello World");
 	R_EndFrame();
 }
 
