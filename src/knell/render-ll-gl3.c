@@ -15,6 +15,7 @@
 #include <knell/assets-fileio.h>
 #include <knell/color.h>
 #include <knell/compat-sdl.h>
+#include <knell/font-psf2.h>
 #include <knell/image.h>
 #include <knell/log.h>
 #include <knell/math4.h>
@@ -48,11 +49,6 @@
 #else
 	#define KN_ASSERT_NO_GL_ERROR()
 #endif
-
-#define PSF2_SEPARATOR  0xFF
-#define PSF2_SEQEND   0xFE
-#define MAX_UTF8_CHAR_LENGTH 4
-typedef uint8_t utf8char[MAX_UTF8_CHAR_LENGTH + 1];
 
 const char* RLL_GLTypeToString(GLenum type);
 void RLL_PrintProgram(GLuint program);
@@ -1020,150 +1016,21 @@ bool RLL_CreateFont(FontId* id)
 	return false;
 }
 
-//https://www.win.tue.nl/~aeb/linux/kbd/font-formats-1.html
-uint8_t psf2Magic[4] = { 0x72, 0xb5, 0x4a, 0x86 };
-
-/* bits used in flags */
-#define PSF2_HAS_UNICODE_TABLE 0x01
-
-/* max version recognized so far */
-#define PSF2_MAXVERSION 0
-
-typedef struct {
-	unsigned char magic[4];
-	uint32_t version;
-	uint32_t headerSize;    /* offset of bitmaps in file */
-	uint32_t flags;
-	uint32_t numGlyphs;     /* number of glyphs */
-	uint32_t bytesPerGlyph; /* number of bytes for each character */
-	uint32_t height, width; /* max dimensions of glyphs */
-	/* charsize = height * ((width + 7) / 8) */
-} PSF2Header;
-
-
+/**
+ * Loads a PSF2 font from a given font into the specific id.
+ */
 bool RLL_LoadPSF2Font(FontId id, const char* path)
 {
+	// TODO: Check to determine if the font id has already been used.
+
+	KN_ASSERT(path != NULL, "Cannot load a font from a null path");
+	KN_ASSERT(Path_IsFile(path), "PSF2 font does not exist");
+
 	KN_ASSERT_NO_GL_ERROR();
 
-	DynamicBuffer fileBuffer;
-	if (!Assets_ReadFile(path, KN_FILE_TYPE_BINARY, &fileBuffer)) {
-		KN_FATAL_ERROR("Unable to load font from %s", path);
-	}
-
-	const PSF2Header* const header = (PSF2Header*)fileBuffer.contents;
-
-	for (uint32_t i = 0; i < 4; ++i) {
-		if (psf2Magic[i] != header->magic[i]) {
-			KN_FATAL_ERROR("Magic doesn't match [byte %i] Found:%i Expected %i",
-				i, psf2Magic[i], header->magic[i]);
-		}
-	}
-	KN_TRACE(LogSysRender, "PSF2 Magic is OK");
-
-	KN_TRACE(LogSysRender, "Version is %" PRIu32, header->version);
-	KN_TRACE(LogSysRender, "Header is %" PRIu32 " bytes", header->headerSize);
-	KN_TRACE(LogSysRender, "%" PRIu32 " glyphs", header->numGlyphs);
-	KN_TRACE(LogSysRender, "%" PRIu32 " bytes per glyph", header->numGlyphs);
-	KN_TRACE(LogSysRender, "%" PRIu32 "x%" PRIu32, header->width, header->height);
-
-	KN_ASSERT((header->width & 7) == 0, "Character width is not evenly divisible by 8");
-	KN_ASSERT((header->height & 7) == 0, "Character height is not evenly divisible by 8");
-
-	// The bitmap is recorded after the header.
-	uint8_t* const bitmapStart = (uint8_t*)header + header->headerSize;
-	const uint32_t bitmapSize = header->bytesPerGlyph * header->numGlyphs;
-	uint8_t* bitmap = (uint8_t*)header + header->headerSize;
-
-	DynamicBuffer imageStorage;
-	Mem_Allocate(&imageStorage, header->numGlyphs * 4 * header->width * header->height);
-	memset(imageStorage.contents, 0, imageStorage.size);
-
-	// TODO: Document RGBA8 assumption.
-	uint32_t* imageCursor = (uint32_t*)imageStorage.contents;
-	uint32_t* imageEnd = (uint8_t*)imageCursor + imageStorage.size;
-
-	// Parse all characters.
-	for (uint32_t i = 0; i < header->numGlyphs; ++i) {
-		// Parse all rows of the next character.
-		for (uint32_t row = 0; row < header->height; ++row) {
-			// Parse the next row.
-			for (uint32_t col = 0; col < (header->width / 8); ++col) {
-				const uint8_t nextByte = *bitmap;
-				for (int32_t bit = 7; bit >= 0; --bit) {
-					if ((1 << bit) & nextByte) {
-						//printf("X");
-						// Set all the bits to 1.
-						*imageCursor = (uint32_t)~0;
-					}
-					else {
-						//printf(" ");
-					}
-					++imageCursor;
-				}
-				++bitmap;
-				//printf("_");
-			}
-			//printf("\n");
-		}
-	}
-	KN_ASSERT(imageCursor == imageEnd, "Didn't count every pixel");
-
-	if (header->flags & PSF2_HAS_UNICODE_TABLE) {
-		KN_TRACE(LogSysRender, "Has a unicode table");
-	}
-	else {
-		KN_TRACE(LogSysRender, "No unicode table");
-		return false;
-	}
-
-	uint8_t* const unicodeTableStart = bitmapStart + bitmapSize;
-	uint8_t* unicodeTable = unicodeTableStart;
-
-	//#define MAX_UNICODE_SEQ_LENGTH 16
-
-	//printf("Unicode bytes\n");
-	uint8_t* endOfData = (uint8_t*)fileBuffer.contents + fileBuffer.size;
-	uint32_t i = 0;
-	uint32_t charIndex = 0;
-#define KN_CHAR_MAP_SIZE 256
-	utf8char charMap[KN_CHAR_MAP_SIZE];
-	memset(charMap, 0, 256 * sizeof(KN_CHAR_MAP_SIZE));
-	bool newline = true;
-	while (unicodeTable < endOfData) {
-		if (newline) {
-			printf("%3i ", i);
-			newline = false;
-		}
-		if (*unicodeTable == PSF2_SEPARATOR) {
-			++i;
-			charIndex = 0;
-			newline = true;
-			printf("\n");
-		}
-		else if (*unicodeTable == PSF2_SEQEND) {
-			charIndex = 0;
-			printf("    ");
-		}
-		else {
-			printf("%X ", *unicodeTable);
-			charMap[i][charIndex] = *unicodeTable;
-			++charIndex;
-		}
-		++unicodeTable;
-	}
-
-
-	// The bitmap for a glyph is stored as height consecutive pixel rows, where
-	// each pixel row consists of width bits
-	// followed by some filler bits in order to fill an integral number of (8-bit) bytes
-	/*
-	 * <unicodedescription> := <uc>*<seq>*<term>
-	 * <seq> := <ss><uc><uc>*
-	 * <ss> := psf1 ? 0xFFFE : 0xFE
-	 * <term> := psf1 ? 0xFFFF : 0xFF
-	 * <uc :+ psf1 ? 2 byte little endian unicode : UTF-8 value
-	 */
-	// Assume English only, so unicode code <uc> is only 1 byte.
+	ImageRGBA8 imagePixels;
+	FontPSF2 font;
+	Font_PSF2Allocate(&imagePixels, &font, path);
 
 	glGenTextures(1, &fontTextures[id]);
 	glActiveTexture(GL_TEXTURE0);
@@ -1175,8 +1042,8 @@ bool RLL_LoadPSF2Font(FontId id, const char* path)
 
 	// TODO: Use proxy textures to test to see if sufficient space exists.
 	// TODO: Should this be GL_RGBA8?
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, header->width, header->height * header->numGlyphs, 0,
-				 GL_RGBA, GL_UNSIGNED_BYTE, imageStorage.contents);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, header->width, header->height * header->numGlyphs, 0,
+	//			 GL_RGBA, GL_UNSIGNED_BYTE, imageStorage.contents);
 
 	// Set the texture parameters.
 	// https://stackoverflow.com/questions/3643932/what-is-the-scope-of-gltexparameters-in-opengl
@@ -1189,7 +1056,7 @@ bool RLL_LoadPSF2Font(FontId id, const char* path)
 	KN_ASSERT(glIsTexture(fontTextures[id]), "Unable to reserve texture for "
 		"font loading from path: %s", path);
 
-	Mem_Free(&imageStorage);
+	//Mem_Free(&imageStorage);
 
 	KN_ASSERT_NO_GL_ERROR();
 	return true;
