@@ -30,17 +30,32 @@ typedef struct
 	ImageRGBA8 pixels;
 } FontPSF2Description;
 
+typedef struct
+{
+	/**
+	 * The code points represented by this glyph.
+	 */
+	utf8char codePoint;
+	bool matchesAscii;
+} GlyphMapping;
+
 /**
- *
+ * Describes the relationship between glyphs and code points.
  */
 typedef struct {
 	/**
 	 * Map of available characters to glyph indices.
 	 */
 	CharMap charMap;
+
+	/**
+	 * Each index maps to it's appropriate glyph.
+	 */
+	GlyphMapping mapping[KN_CHAR_MAP_SIZE];
 } FontPSF2;
 
 KN_API bool Font_PSF2Allocate(ImageRGBA8* description, FontPSF2* font, const char* path);
-KN_API bool Font_PSF2GlyphsToPrint(FontPSF2* font, const char* str, uint32_t length, uint32_t* glyphs);
+KN_API bool Font_PSF2GlyphsToPrint(FontPSF2* font, const char* str, uint32_t* glyphs, uint32_t* length);
+KN_API uint8_t Font_BytesInUtf8CodePoint(char leadingByte);
 
 #endif // KN_FONT_PSF2_H

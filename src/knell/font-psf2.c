@@ -18,6 +18,29 @@ static uint8_t psf2Magic[4] = { 0x72, 0xb5, 0x4a, 0x86 };
 #define PSF2_SEPARATOR  0xFF
 #define PSF2_SEQEND   0xFE
 
+KN_API uint8_t Font_BytesInUtf8CodePoint(char leadingByte)
+{
+	/*
+	 * The number of bytes in a utf-8 char can be determined by the upper nibble
+	 * of the first byte.
+	 *
+	 * Number of bytes:
+	 * 1: 0xxx xxxx : <7
+	 * 2: 110x xxxx : (C|D)
+	 * 3: 1110 xxxx : E
+	 * 4: 1111 0xxx : F
+	 */
+	const uint8_t b = leadingByte & 0xF0;
+	switch (b) {
+		case 0xF0: return 4;
+		case 0xE0: return 3;
+		case 0xD0: // fallthrough
+		case 0xC0:
+			return 2;
+		default: return 1;
+	}
+}
+
 /**
  * Binary layout of the PSF2 file header.
  */
@@ -61,6 +84,7 @@ static void Font_PSF2ReadUnicodeTable(uint8_t* const unicodeTableStart,
 		if (newline) {
 			printf("%3i ", glyphIndex);
 			newline = false;
+			printf(" CHARS[%i] ", Font_BytesInUtf8CodePoint(*unicodeTableCursor));
 		}
 		if (*unicodeTableCursor == PSF2_SEPARATOR) {
 			++glyphIndex;
@@ -87,6 +111,12 @@ static void Font_PSF2ReadUnicodeTable(uint8_t* const unicodeTableStart,
  * Creates the suitable elements needed to display a font.  This includes maps
  * for determining which glyphs to use, and the appropriate texture with which
  * to draw the font.
+ *
+ * Font loading resolves many questions related to the font:
+ * - Which characters are supported by the font?
+ * - Which glyphs should be drawn by a given string?
+ * - How many glyphs are in a string?
+ * - What is the width and height of a given string?
  */
 KN_API bool Font_PSF2Allocate(ImageRGBA8* image, FontPSF2* font, const char* path)
 {
@@ -173,9 +203,17 @@ KN_API bool Font_PSF2Allocate(ImageRGBA8* image, FontPSF2* font, const char* pat
 /**
  * Given a font mapping characters to glyph indices, find the glyphs which
  * should be printed.
+ *
+ * @param length location to write out the number of glyphs being printed.
  */
 KN_API bool Font_PSF2GlyphsToPrint(FontPSF2* font, const char* str,
-	uint32_t length, uint32_t* glyphs)
+	uint32_t* glyphs, uint32_t* length)
 {
+	KN_ASSERT(font != NULL, "Cannot determine glyphs to print for a null font.");
+	KN_ASSERT(str != NULL, "Cannot print a null string.");
+	KN_ASSERT(glyphs != NULL, "Cannot writes glyphs to a null location.");
+	KN_ASSERT(length != NULL, "No location to which to write glyphs.");
+
+
 
 }

@@ -1062,14 +1062,47 @@ bool RLL_LoadPSF2Font(FontId id, const char* path)
 	return true;
 }
 
-void RLL_DrawSimpleText(FontId id, float2 position, const char* text)
+void RLL_DrawGlyph(FontId id, float2 glyphPosition, const char* codePoint,
+	uint8_t codePointLength)
 {
-	for (uint32_t i = 0; i < strlen(text); ++i) {
-		// Draw text[i].
+	// TODO: Provide a color for the glyph.
+}
+
+/**
+ * @param id
+ * @param textPosition
+ * @param text a null-terminated, utf-8 string
+ */
+void RLL_DrawSimpleText(FontId id, float2 textPosition, const char* text)
+{
+	// TODO: Check to see if the font id is valid.
+	// TODO: Provide colors of the text to print.
+	// TODO: Define what is meant by "position", is it top left, bottom left? or left center?
+	// Is it "baseline" or a similar term?
+	// Provide a visual depiction of the various font terminology.
+
+	const char* cursor = text;
+
+	// TODO: Describe the font's glyph aspect ratio.
+	float2 glyphPosition = textPosition;
+	dimension2f glyphSize = { .width = 50.0f, .height = 25.0f };
+	float2 glyphMovement = float2_Make(glyphSize.width, 0.0f);
+
+	// Text is a utf-8 string, so its byte length is not necessarily its glyph length.
+	const uint32_t textLengthInBytes = strlen(text);
+	const char* textEnd = text + textLengthInBytes;
+
+	while (cursor < textEnd) {
+		uint8_t codePointSize = Font_BytesInUtf8CodePoint(*cursor);
+
+		RLL_DrawGlyph(id, glyphPosition, cursor, codePointSize);
+		glyphPosition = float2_Add(glyphPosition, glyphMovement);
+
+		cursor += codePointSize;
 	}
 
 	KN_ASSERT_NO_GL_ERROR();
-
+#if 0
 	RLL_SetFullScreenViewport();
 
 	GLuint texture = fontTextures[id];
@@ -1090,7 +1123,7 @@ void RLL_DrawSimpleText(FontId id, float2 position, const char* text)
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 	RLL_DisableProgram(ProgramIndexSprite);
-
+#endif
 }
 
 /**
