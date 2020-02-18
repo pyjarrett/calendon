@@ -1062,6 +1062,10 @@ bool RLL_LoadPSF2Font(FontId id, const char* path)
 	return true;
 }
 
+typedef struct {
+	int x;
+} GlyphDrawParams;
+
 void RLL_DrawGlyph(FontId id, float2 glyphPosition, const char* codePoint,
 	uint8_t codePointLength)
 {
@@ -1073,9 +1077,12 @@ void RLL_DrawGlyph(FontId id, float2 glyphPosition, const char* codePoint,
  * @param textPosition
  * @param text a null-terminated, utf-8 string
  */
-void RLL_DrawSimpleText(FontId id, float2 textPosition, const char* text)
+void RLL_DrawSimpleText(FontId id, TextDrawParams* params, const char* text)
 {
 	// TODO: Check to see if the font id is valid.
+	KN_ASSERT(params != NULL, "Cannot draw with null parameters.");
+	KN_ASSERT(text != NULL, "Cannot draw a null text");
+
 	// TODO: Provide colors of the text to print.
 	// TODO: Define what is meant by "position", is it top left, bottom left? or left center?
 	// Is it "baseline" or a similar term?
@@ -1084,7 +1091,7 @@ void RLL_DrawSimpleText(FontId id, float2 textPosition, const char* text)
 	const char* cursor = text;
 
 	// TODO: Describe the font's glyph aspect ratio.
-	float2 glyphPosition = textPosition;
+	float2 glyphPosition = params->position;
 	dimension2f glyphSize = { .width = 50.0f, .height = 25.0f };
 	float2 glyphMovement = float2_Make(glyphSize.width, 0.0f);
 

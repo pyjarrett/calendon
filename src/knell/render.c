@@ -64,7 +64,10 @@ bool R_LoadPSF2Font(FontId id, const char* path)
 
 void R_DrawSimpleText(FontId id, float2 position, const char* text)
 {
-	RLL_DrawSimpleText(id, position, text);
+	TextDrawParams params;
+	params.position = position;
+	params.color = (rgba8i) { .red = 255, .green = 255, .blue = 255, .alpha = 255 };
+	RLL_DrawSimpleText(id, &params, text);
 }
 
 KN_API void R_DrawDebugFullScreenRect(void)

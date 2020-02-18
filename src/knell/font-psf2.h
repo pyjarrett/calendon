@@ -13,14 +13,14 @@
 
 #define MAX_UTF8_CHAR_LENGTH 4
 
+#define KN_MAX_CODE_POINTS_IN_GLYPH 3
+
 /**
  * Makes utf8char printable by adding another byte which can be set to \0.
  */
 typedef uint8_t utf8char[MAX_UTF8_CHAR_LENGTH + 1];
 
-// TODO: Rename this.
-#define KN_CHAR_MAP_SIZE 256
-typedef utf8char CharMap[KN_CHAR_MAP_SIZE];
+#define KN_MAX_FONT_PSF2_GLYPHS 256
 
 /**
  *
@@ -30,32 +30,32 @@ typedef struct
 	ImageRGBA8 pixels;
 } FontPSF2Description;
 
+/**
+ * Each glyph represents possibly one or more code points.
+ */
 typedef struct
 {
 	/**
 	 * The code points represented by this glyph.
 	 */
-	utf8char codePoint;
-	bool matchesAscii;
+	utf8char codePoint[KN_MAX_CODE_POINTS_IN_GLYPH];
+	uint8_t codePointsInGlyph;
 } GlyphMapping;
 
 /**
  * Describes the relationship between glyphs and code points.
  */
 typedef struct {
-	/**
-	 * Map of available characters to glyph indices.
-	 */
-	CharMap charMap;
 
 	/**
 	 * Each index maps to it's appropriate glyph.
 	 */
-	GlyphMapping mapping[KN_CHAR_MAP_SIZE];
+	GlyphMapping mapping[KN_MAX_FONT_PSF2_GLYPHS];
 } FontPSF2;
 
 KN_API bool Font_PSF2Allocate(ImageRGBA8* description, FontPSF2* font, const char* path);
 KN_API bool Font_PSF2GlyphsToPrint(FontPSF2* font, const char* str, uint32_t* glyphs, uint32_t* length);
 KN_API uint8_t Font_BytesInUtf8CodePoint(char leadingByte);
+KN_API uint32_t Font_CodePointToGlyphIndex(FontPSF2* font, char* codePoint);
 
 #endif // KN_FONT_PSF2_H

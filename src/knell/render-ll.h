@@ -21,9 +21,14 @@ bool RLL_CreateSprite(SpriteId* id);
 bool RLL_LoadSprite(SpriteId id, const char* path);
 void RLL_DrawSprite(SpriteId id, float2 position, dimension2f size);
 
+typedef struct {
+	float2 position;
+	rgba8i color;
+} TextDrawParams;
+
 bool RLL_CreateFont(FontId* id);
 bool RLL_LoadPSF2Font(FontId id, const char* path);
-void RLL_DrawSimpleText(FontId id, float2 position, const char* text);
+void RLL_DrawSimpleText(FontId id, TextDrawParams* params, const char* text);
 
 void RLL_DrawDebugFullScreenRect(void);
 void RLL_DrawDebugRect(float4 center, dimension2f dimensions, float4 color);
