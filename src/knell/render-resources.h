@@ -17,4 +17,12 @@ KN_API typedef uint32_t SpriteId;
  */
 KN_API typedef uint32_t FontId;
 
+/**
+ * Various ways that text drawing can be manipulated.
+ */
+KN_API typedef struct {
+	float2 position;
+	rgba8i color;
+} TextDrawParams;
+
 #endif /* KN_RENDER_RESOURCES_H */
