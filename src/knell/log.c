@@ -11,6 +11,10 @@ KN_API LogHandle LogSysMain;
 
 KN_API void Log_Init(void)
 {
+#if _WIN32
+	// Enable UTF-8 output on Windows.
+	SetConsoleOutputCP(CP_UTF8);
+#endif
 	if (initialized) {
 		KN_FATAL_ERROR("Double initialization of logging system.");
 	}
