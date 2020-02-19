@@ -108,7 +108,7 @@ KN_GAME_API void Game_Draw(void)
 	dimension2f rectSize = { .width = 100.0f, .height = 100.0f };
 	R_DrawDebugRect(rectPosition, rectSize, green);
 
-	R_DrawSimpleText(font, float2_Make(400, 100), "Hello World");
+	R_DrawSimpleText(font, float2_Make(400, 100), "\xe2\x86\x93Hello World→\xe2\x86\x92");
 	R_EndFrame();
 }
 

@@ -10,6 +10,7 @@
 #define KN_FONT_PSF2_H
 
 #include <knell/image.h>
+#include <knell/math2.h>
 
 #define MAX_UTF8_CHAR_LENGTH 4
 
@@ -51,6 +52,7 @@ typedef struct {
 	 * Each index maps to it's appropriate glyph.
 	 */
 	GlyphMapping mapping[KN_MAX_FONT_PSF2_GLYPHS];
+	dimension2u32 glyphSize;
 } FontPSF2;
 
 KN_API bool Font_PSF2Allocate(ImageRGBA8* description, FontPSF2* font, const char* path);

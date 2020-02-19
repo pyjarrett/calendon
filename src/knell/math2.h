@@ -12,6 +12,10 @@ typedef struct {
 } dimension2f;
 
 typedef struct {
+	uint32_t width, height;
+} dimension2u32;
+
+typedef struct {
 	union {
 		struct {
 			float x, y;

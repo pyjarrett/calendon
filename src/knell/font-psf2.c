@@ -173,6 +173,9 @@ KN_API bool Font_PSF2Allocate(ImageRGBA8* image, FontPSF2* font, const char* pat
 	KN_ASSERT((header->glyphWidth & 7) == 0, "Character width is not evenly divisible by 8");
 	KN_ASSERT((header->glyphHeight & 7) == 0, "Character height is not evenly divisible by 8");
 
+	font->glyphSize.width = header->glyphWidth;
+	font->glyphSize.height = header->glyphHeight;
+
 	// TODO: Split this out into a function.
 	// The bitmap is recorded after the header.
 	uint8_t* const bitmapStart = (uint8_t*)header + header->bitmapOffset;

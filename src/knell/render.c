@@ -67,6 +67,8 @@ void R_DrawSimpleText(FontId id, float2 position, const char* text)
 	TextDrawParams params;
 	params.position = position;
 	params.color = (rgba8i) { .red = 255, .green = 255, .blue = 255, .alpha = 255 };
+	params.layout = LayoutHorizontal;
+	params.printDirection = PrintDirectionLeftToRight;
 	RLL_DrawSimpleText(id, &params, text);
 }
 

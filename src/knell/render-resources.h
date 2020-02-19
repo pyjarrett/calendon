@@ -17,12 +17,21 @@ KN_API typedef uint32_t SpriteId;
  */
 KN_API typedef uint32_t FontId;
 
+enum {
+	PrintDirectionLeftToRight,
+	PrintDirectionRightToLeft,
+	LayoutHorizontal,
+	LayoutVertical
+};
+
 /**
  * Various ways that text drawing can be manipulated.
  */
 KN_API typedef struct {
 	float2 position;
 	rgba8i color;
+	uint32_t layout;
+	uint32_t printDirection;
 } TextDrawParams;
 
 #endif /* KN_RENDER_RESOURCES_H */

@@ -100,6 +100,8 @@ static GLuint spriteTextures[RLL_MAX_SPRITE_TYPES];
 static GLuint fontTextures[RLL_MAX_FONT_TYPES];
 static FontId nextFontId;
 
+static FontPSF2 fonts[RLL_MAX_FONT_TYPES];
+
 /**
  * The maximum length of shader information logs which can be read.
  */
@@ -1066,10 +1068,24 @@ typedef struct {
 	int x;
 } GlyphDrawParams;
 
+/**
+ * Draws a glyph with the given configuration.
+ */
 void RLL_DrawGlyph(FontId id, float2 glyphPosition, const char* codePoint,
 	uint8_t codePointLength)
 {
+	KN_ASSERT(codePoint != NULL, "Cannot draw a null code point");
+	KN_ASSERT(codePointLength <= 4, "Code point length is %" PRIu32
+		" exceeds UTF-8 limit (4)", codePointLength);
+
 	// TODO: Provide a color for the glyph.
+	// TODO: Just draw to debug to ensure the decoding part works.
+	char codePointAsString[5];
+	memset(codePointAsString, 0, 5);
+	for (uint32_t i=0; i < codePointLength; ++i) {
+		codePointAsString[i] = codePoint[i];
+	}
+	KN_TRACE(LogSysMain, "Would have drawn: \"%s\"", codePointAsString);
 }
 
 /**
@@ -1079,34 +1095,39 @@ void RLL_DrawGlyph(FontId id, float2 glyphPosition, const char* codePoint,
  */
 void RLL_DrawSimpleText(FontId id, TextDrawParams* params, const char* text)
 {
-	// TODO: Check to see if the font id is valid.
-	KN_ASSERT(params != NULL, "Cannot draw with null parameters.");
+	FontPSF2* font = &fonts[id];
+	// TODO: Check to ensure the id is valid.
 	KN_ASSERT(text != NULL, "Cannot draw a null text");
+	KN_ASSERT(params != NULL, "Cannot draw with null parameters.");
+	KN_ASSERT(params->layout == LayoutHorizontal,
+		"Only horizontal layouts are currently supported.");
+	KN_ASSERT(params->printDirection == PrintDirectionLeftToRight,
+		"Only left-to-right print direction is currently supported.");
 
-	// TODO: Provide colors of the text to print.
-	// TODO: Define what is meant by "position", is it top left, bottom left? or left center?
-	// Is it "baseline" or a similar term?
-	// Provide a visual depiction of the various font terminology.
-
+	// When printing characters, we need to know:
+	// 1. where we are in the string.
+	// 2. where to draw the next glyph.
+	// 3. the distance between glyphs.
 	const char* cursor = text;
-
-	// TODO: Describe the font's glyph aspect ratio.
 	float2 glyphPosition = params->position;
-	dimension2f glyphSize = { .width = 50.0f, .height = 25.0f };
-	float2 glyphMovement = float2_Make(glyphSize.width, 0.0f);
+	float2 glyphAdvance = float2_Make(font->glyphSize.width, 0.0f);
 
 	// Text is a utf-8 string, so its byte length is not necessarily its glyph length.
 	const uint32_t textLengthInBytes = strlen(text);
-	const char* textEnd = text + textLengthInBytes;
+	const char* textAfterLastByte = text + textLengthInBytes;
 
-	while (cursor < textEnd) {
-		uint8_t codePointSize = Font_BytesInUtf8CodePoint(*cursor);
+	while (cursor < textAfterLastByte) {
+		// utf-8 uses variable encoding, so determine where the next code point
+		// starts.  Save this value to move the cursor and not recalculate twice.
+		const uint8_t codePointSize = Font_BytesInUtf8CodePoint(*cursor);
 
 		RLL_DrawGlyph(id, glyphPosition, cursor, codePointSize);
-		glyphPosition = float2_Add(glyphPosition, glyphMovement);
+		glyphPosition = float2_Add(glyphPosition, glyphAdvance);
 
+		// Move to the next code point.
 		cursor += codePointSize;
 	}
+	KN_TRACE(LogSysMain, "Done drawing string.");
 
 	KN_ASSERT_NO_GL_ERROR();
 #if 0
