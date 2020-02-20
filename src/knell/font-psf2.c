@@ -44,11 +44,12 @@ KN_API uint8_t Font_BytesInUtf8CodePoint(char leadingByte)
 /**
  * To draw a glyph, we need to know which glyph we're trying to draw.
  */
-KN_API uint32_t Font_CodePointToGlyphIndex(FontPSF2* font, char* codePoint)
+KN_API uint32_t Font_CodePointToGlyphIndex(FontPSF2* font, const char* codePoint)
 {
 	KN_ASSERT(font != NULL, "Cannot find a glyph index for a null font");
 	KN_ASSERT(codePoint != NULL, "Cannot get the glyph index for a code point.");
 
+	// One of these glyphs should
 	for (uint32_t i=0; i < KN_MAX_FONT_PSF2_GLYPHS; ++i) {
 		font->mapping[i].codePointsInGlyph;
 		font->mapping[i].codePoint[0];
@@ -251,5 +252,34 @@ KN_API bool Font_PSF2GlyphsToPrint(FontPSF2* font, const char* str,
 	KN_ASSERT(glyphs != NULL, "Cannot writes glyphs to a null location.");
 	KN_ASSERT(length != NULL, "No location to which to write glyphs.");
 
+	uint32_t currentGlyph = 0;
+	char* currentCodePoint = str;
+	char* afterLastCodePoint = str + strlen(str);
+	while (currentCodePoint < afterLastCodePoint) {
+		// Is the code point in the glyph map?
+		for (uint32_t i=0; i < font->mapping[i].codePointsInGlyph; ++i) {
+			if (Font_Utf8CodePointsMatch(str, font->mapping[i].codePoint[i]));
+		}
+		++currentGlyph;
+	}
+	length = currentGlyph;
 	return false;
+}
+
+// https://fasterthanli.me/blog/2020/working-with-strings-in-rust/
+KN_API bool Font_Utf8CodePointsMatch(const char* left, const char* right)
+{
+	uint8_t leftLength = Font_BytesInUtf8CodePoint(*left);
+	uint8_t rightLength = Font_BytesInUtf8CodePoint(*right);
+
+	if (leftLength != rightLength) {
+		return false;
+	}
+
+	for (uint8_t i=0; i < leftLength; ++i) {
+		if (left[i] != right[i]) {
+			return false;
+		}
+	}
+	return true;
 }

@@ -1085,7 +1085,30 @@ void RLL_DrawGlyph(FontId id, float2 glyphPosition, const char* codePoint,
 	for (uint32_t i=0; i < codePointLength; ++i) {
 		codePointAsString[i] = codePoint[i];
 	}
-	KN_TRACE(LogSysMain, "Would have drawn: \"%s\"", codePointAsString);
+	//KN_TRACE(LogSysMain, "Would have drawn: \"%s\"", codePointAsString);
+
+#if 0
+	RLL_SetFullScreenViewport();
+
+	GLuint texture = fontTextures[id];
+	KN_ASSERT(glIsTexture(texture), "Sprite %" PRIu32 " does not have a valid"
+													  "texture", texture);
+	RLL_ReadyTexture2(0, fontTextures[id]);
+
+	dimension2f size = { .width = 40, .height = 1000 };
+
+	uniformStorage[UniformNameModelView].f44 = float4x4_Multiply(
+		float4x4_NonUniformScale(size.width, size.height, 1.0f),
+		float4x4_Translate(position.x, position.y, 0.0f));;
+
+	glBindBuffer(GL_ARRAY_BUFFER, spriteBuffer);
+	KN_ASSERT_NO_GL_ERROR();
+	RLL_EnableProgram(ProgramIndexSprite, 4 * sizeof(float), 0);
+
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+	RLL_DisableProgram(ProgramIndexSprite);
+#endif
 }
 
 /**
@@ -1127,31 +1150,7 @@ void RLL_DrawSimpleText(FontId id, TextDrawParams* params, const char* text)
 		// Move to the next code point.
 		cursor += codePointSize;
 	}
-	KN_TRACE(LogSysMain, "Done drawing string.");
-
 	KN_ASSERT_NO_GL_ERROR();
-#if 0
-	RLL_SetFullScreenViewport();
-
-	GLuint texture = fontTextures[id];
-	KN_ASSERT(glIsTexture(texture), "Sprite %" PRIu32 " does not have a valid"
-													  "texture", texture);
-	RLL_ReadyTexture2(0, fontTextures[id]);
-
-	dimension2f size = { .width = 40, .height = 1000 };
-
-	uniformStorage[UniformNameModelView].f44 = float4x4_Multiply(
-		float4x4_NonUniformScale(size.width, size.height, 1.0f),
-		float4x4_Translate(position.x, position.y, 0.0f));;
-
-	glBindBuffer(GL_ARRAY_BUFFER, spriteBuffer);
-	KN_ASSERT_NO_GL_ERROR();
-	RLL_EnableProgram(ProgramIndexSprite, 4 * sizeof(float), 0);
-
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-	RLL_DisableProgram(ProgramIndexSprite);
-#endif
 }
 
 /**
