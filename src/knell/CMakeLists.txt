@@ -30,8 +30,7 @@ if (UNIX)
 		)
 endif ()
 
-remove_definitions(-DKN_LIBRARY)
-add_definitions(-DKN_LIBRARY=1)
+add_compile_definitions(KN_LIBRARY=1)
 add_library(knell-lib SHARED ${KNELL_SRCS} ${KNELL_HEADERS})
 target_link_libraries(knell-lib ${KNELL_LIBS})
 
