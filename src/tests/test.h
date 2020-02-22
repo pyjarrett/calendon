@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define KN_TEST_API static
 
@@ -124,6 +125,17 @@ KN_TEST_API void knTest_CleanUpPreviousTest(knTestSuiteReport* r, knTestUnitRepo
 		knTest_UnitAssertFailed(&unitReport); \
 		printf("%s:%i  \"" #a " != " #b "\" (%" formatter " != %" formatter ")\n", \
 			__FILE__, __LINE__, (a), (b)); \
+		break; \
+	}
+
+/**
+ * Assertion macro for testing null-terminated string equality.
+ */
+#define KN_TEST_ASSERT_EQ_STR(expected, actual) \
+	if (strcmp(expected, actual) != 0) { \
+		knTest_UnitAssertFailed(&unitReport); \
+		printf("%s:%i  " #expected " != " #actual " (\"%s\" != \"%s\")\n", \
+			__FILE__, __LINE__, (expected), (actual)); \
 		break; \
 	}
 
