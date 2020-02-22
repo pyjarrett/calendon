@@ -222,7 +222,6 @@ target_link_libraries(knell knell-lib)
 add_dependencies(knell knell-lib ${KN_ALL_DEMOS})
 message("Demos are ${KN_ALL_DEMOS}")
 
-
 #
 # Creates a unit test and add it to our registered list.
 # Format:
@@ -245,9 +244,7 @@ function(add_unit_test)
 	endif()
 	target_link_libraries(${UTEST_NAME} ${UTEST_LIBS})
 	add_test(NAME "${UTEST_NAME}" COMMAND "${UTEST_NAME}")
-	list(APPEND UNIT_TEST_REGISTER ${UTEST_NAME})
 	add_dependencies(check ${UTEST_NAME})
-	message("Adding ${UTEST_NAME} to unit tests.")
 endfunction()
 
 #
@@ -255,6 +252,7 @@ endfunction()
 # https://stackoverflow.com/questions/733475/cmake-ctest-make-test-doesnt-build-tests#736838
 #
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} -V)
+enable_testing()
 add_subdirectory(src/tests)
     
 if (WIN32)
