@@ -139,24 +139,22 @@ KN_TEST_API void knTest_CleanUpPreviousTest(knTestSuiteReport* r, knTestUnitRepo
 		break; \
 	}
 
-#define KN_TEST_ASSERT_TRUE(expr) \
-	do { \
-	bool a = expr; \
-	if (!(a)) { \
-		knTest_UnitAssertFailed(&unitReport); \
-		printf("%s:%i  \"" #expr " is false\n", \
-			__FILE__, __LINE__); \
-		break; \
-	} \
-	} while (0);
+#define KN_TEST_ASSERT_TRUE(expr) { \
+		const bool a = expr; \
+		if (!(a)) { \
+			knTest_UnitAssertFailed(&unitReport); \
+			printf("%s:%i  \"" #expr " is false\n", \
+				__FILE__, __LINE__); \
+			break; \
+		} \
+	}
 
-#define KN_TEST_ASSERT_FALSE(expr) \
-	do { \
-	bool a = expr; \
-	if (!!(a)) { \
-		knTest_UnitAssertFailed(&unitReport); \
-		printf("%s:%i  \"" #expr " is true\n", \
-			__FILE__, __LINE__); \
-		break; \
-	} \
-	} while (0);
+#define KN_TEST_ASSERT_FALSE(expr) { \
+		const bool a = !!(expr); \
+		if (a) { \
+			knTest_UnitAssertFailed(&unitReport); \
+			printf("%s:%i  \"" #expr " is true\n", \
+				__FILE__, __LINE__); \
+			break; \
+		} \
+	}
