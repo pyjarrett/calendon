@@ -6,7 +6,7 @@
 /**
  * Maximum path length varies by system, but assume a reasonable case.
  */
-#define KN_PATH_MAX 256
+#define KN_PATH_MAX 254
 
 /*
  * Verify the path length assumption against the OS.
@@ -30,7 +30,8 @@
  * for quick buffer creation on the stack.
  */
 typedef struct {
-	char str[KN_PATH_MAX];
+	// Adds 1 byte for null terminator to maximum path length.
+	char str[KN_PATH_MAX + 1];
 } PathBuffer;
 
 KN_STATIC_ASSERT(KN_PATH_MAX <= sizeof(PathBuffer),
