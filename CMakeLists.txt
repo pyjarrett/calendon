@@ -207,6 +207,7 @@ include_directories(SYSTEM src/)
 add_subdirectory(src/knell)
 add_subdirectory(src/demos)
 add_subdirectory(src/build_tools)
+add_subdirectory(src/tests)
 
 add_compile_definitions(KN_LIBRARY=0)
 add_executable(knell src/main.c)

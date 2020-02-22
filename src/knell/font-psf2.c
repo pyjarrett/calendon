@@ -269,6 +269,9 @@ KN_API bool Font_PSF2GlyphsToPrint(FontPSF2* font, const char* str,
 // https://fasterthanli.me/blog/2020/working-with-strings-in-rust/
 KN_API bool Font_Utf8CodePointsMatch(const char* left, const char* right)
 {
+	KN_ASSERT(left != NULL, "Cannot check a null code point (left-side)");
+	KN_ASSERT(right != NULL, "Cannot check a null code point (right-side)");
+
 	uint8_t leftLength = Font_BytesInUtf8CodePoint(*left);
 	uint8_t rightLength = Font_BytesInUtf8CodePoint(*right);
 
