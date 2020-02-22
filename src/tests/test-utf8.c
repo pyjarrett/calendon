@@ -4,7 +4,7 @@
 #include "test.h"
 #include <knell/font-psf2.h>
 
-KN_TEST_SUITE_BEGIN("Frame allocator tests")
+KN_TEST_SUITE_BEGIN("UTF-8")
 
 	KN_TEST_UNIT("Bytes in UTF-8 code point") {
 		KN_TEST_ASSERT_EQ_U8(Font_BytesInUtf8CodePoint('a'), 1);
