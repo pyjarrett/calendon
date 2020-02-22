@@ -1,12 +1,12 @@
 #pragma once
 
-#include <assert.h>
-#include <inttypes.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "../../../../../../usr/include/assert.h"
+#include "../../../../../../usr/include/inttypes.h"
+#include "../../../../../../usr/lib64/gcc/x86_64-suse-linux/7/include/stdbool.h"
+#include "../../../../../../usr/lib64/gcc/x86_64-suse-linux/7/include/stdint.h"
+#include "../../../../../../usr/include/stdio.h"
+#include "../../../../../../usr/include/stdlib.h"
+#include "../../../../../../usr/include/string.h"
 
 #define KN_TEST_API static
 

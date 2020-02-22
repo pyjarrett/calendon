@@ -1,8 +1,9 @@
+#include <knell/test.h>
+
+#include <knell/font-psf2.h>
+
 #include <stdlib.h>
 #include <stdio.h>
-
-#include "test.h"
-#include <knell/font-psf2.h>
 
 KN_TEST_SUITE_BEGIN("UTF-8")
 
