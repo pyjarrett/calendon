@@ -59,6 +59,18 @@ KN_API bool Path_Append(const char* toAdd, char* current, uint32_t length)
 	return true;
 }
 
+KN_API bool PathBuffer_Create(PathBuffer* path, const char* initialPath)
+{
+	KN_ASSERT(path != NULL, "Cannot assign to a null PathBuffer");
+	KN_ASSERT(initialPath != NULL, "Cannot assign a null initial path to a PathBuffer");
+	const size_t initialPathLength = strlen(initialPath);
+	if (initialPathLength < KN_PATH_MAX + 1) {
+		strcpy(path->str, initialPath);
+		return true;
+	}
+	return false;
+}
+
 KN_API bool PathBuffer_Join(PathBuffer* root, const char* suffix)
 {
 	KN_ASSERT(root != NULL, "Cannot append to a null root path");
