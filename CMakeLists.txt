@@ -207,7 +207,6 @@ include_directories(SYSTEM src/)
 add_subdirectory(src/knell)
 add_subdirectory(src/demos)
 add_subdirectory(src/build_tools)
-add_subdirectory(src/tests)
 
 add_compile_definitions(KN_LIBRARY=0)
 add_executable(knell src/main.c)
@@ -215,8 +214,42 @@ set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT k
 
 target_link_libraries(knell knell-lib)
 add_dependencies(knell knell-lib ${KN_ALL_DEMOS})
-
 message("Demos are ${KN_ALL_DEMOS}")
+
+
+#
+# Creates a unit test and add it to our registered list.
+# Format:
+#   unit_test(NAME test_name SOURCES a.cpp b.cpp)
+#   unit_test(NAME test_name SOURCES a.cpp b.cpp LIBS GL)
+# https://stackoverflow.com/questions/733475/cmake-ctest-make-test-doesnt-build-tests#736838
+#
+function(add_unit_test)
+	set(options "")
+	set(oneValueArgs NAME)
+	set(multiValueArgs SOURCES LIBS)
+	cmake_parse_arguments(UTEST "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+	add_executable("${UTEST_NAME}" ${UTEST_SOURCES})
+
+	# Generate coverage data only under GCC
+	if(CMAKE_BUILD_TYPE MATCHES Debug AND CMAKE_COMPILER_IS_GNUCC)
+		target_link_libraries(${UTEST_NAME} pthread gcov)
+		set_target_properties(${UTEST_NAME} PROPERTIES COMPILE_FLAGS "-fprofile-arcs -ftest-coverage")
+		set_target_properties(${UTEST_NAME} PROPERTIES LINK_FLAGS "-fprofile-arcs -ftest-coverage")
+	endif()
+	target_link_libraries(${UTEST_NAME} ${UTEST_LIBS})
+	add_test(NAME "${UTEST_NAME}" COMMAND "${UTEST_NAME}")
+	list(APPEND UNIT_TEST_REGISTER ${UTEST_NAME})
+	add_dependencies(check ${UTEST_NAME})
+	message("Adding ${UTEST_NAME} to unit tests.")
+endfunction()
+
+#
+# Provides a command to run all tests, since CLion can't do that on it's own.
+# https://stackoverflow.com/questions/733475/cmake-ctest-make-test-doesnt-build-tests#736838
+#
+add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} -V)
+add_subdirectory(src/tests)
     
 if (WIN32)
 	add_custom_command(TARGET knell POST_BUILD
