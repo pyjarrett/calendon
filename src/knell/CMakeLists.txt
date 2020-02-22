@@ -34,6 +34,15 @@ add_definitions(-DKN_LIBRARY=1)
 add_library(knell-lib SHARED ${KNELL_SRCS} ${KNELL_HEADERS})
 target_link_libraries(knell-lib ${KNELL_LIBS})
 
+# Define a special version of knell-lib to allow unit tests to actually verify
+# that asserts (primarily preconditions) are actually checked.
+remove_definitions(-DKN_LIBRARY)
+add_definitions(-DKN_LIBRARY=1)
+add_definitions(-DKN_ASSERTION_TESTING=1)
+add_library(knell-lib-test SHARED ${KNELL_SRCS} ${KNELL_HEADERS})
+target_link_libraries(knell-lib-test ${KNELL_LIBS})
+remove_definitions(-DKN_ASSERTION_TESTING)
+
 # TODO: Replace this with a file describing where to find assets.
 if (UNIX)
 	add_custom_target(sync_assets

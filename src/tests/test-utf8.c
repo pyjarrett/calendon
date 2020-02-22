@@ -19,6 +19,9 @@ KN_TEST_SUITE_BEGIN("UTF-8")
 	}
 
 	KN_TEST_UNIT("Code points don't match") {
+		KN_TEST_PRECONDITION(Font_Utf8CodePointsMatch(NULL, "b"));
+		KN_TEST_PRECONDITION(Font_Utf8CodePointsMatch("a", NULL));
+
 		KN_TEST_ASSERT_FALSE(Font_Utf8CodePointsMatch("a", "b"));
 		KN_TEST_ASSERT_FALSE(Font_Utf8CodePointsMatch("\xEF\xBF\xBE", "\xEF\xBF"));
 		KN_TEST_ASSERT_FALSE(Font_Utf8CodePointsMatch("\xEF\xBF\xBE", "\xEF\0\xBF"));

@@ -111,6 +111,24 @@ KN_TEST_API void knTest_CleanUpPreviousTest(knTestSuiteReport* r, knTestUnitRepo
 	knTest_UnitStart(&unitReport, name); \
 	for (uint32_t i = 0; i < 1; ++i)
 
+#ifndef KN_ASSERTION_TESTING
+	#error "KN_ASSERTION_TESTING must be defined for assertion checking."
+#endif
+#include <knell/kn-assertion-testing.h>
+extern jmp_buf knTest_AssertJumpBuffer;
+
+#define KN_TEST_PRECONDITION(fn) { \
+		int assertionStatus = setjmp(knTest_AssertJumpBuffer); \
+		if (assertionStatus == 0) { fn; }; \
+		if (assertionStatus != KN_TEST_ASSERTION_OCCURRED) { \
+			knTest_UnitAssertFailed(&unitReport); \
+			printf("%s:%i  Assertion not triggered: " #fn, \
+				__FILE__, __LINE__); \
+			break; \
+		} \
+	}
+
+
 #define KN_TEST_ASSERT_EQ_I8(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, PRIi8)
 #define KN_TEST_ASSERT_EQ_I16(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, PRIi16)
 #define KN_TEST_ASSERT_EQ_I32(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, PRIi32)

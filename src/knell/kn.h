@@ -113,6 +113,18 @@
 	#define KN_WARN_DEPRECATED(msg)
 #endif
 
+#if KN_ASSERTION_TESTING
+#include <knell/kn-assertion-testing.h>
+/**
+ * Specialize the runtime assertion mechanism to perform a longjmp on assertion
+ * failure, allowing assertions to be tested.
+ */
+#define KN_ASSERT(condition, message, ...) do { \
+		if (!(condition)) { \
+			longjmp(knTest_AssertJumpBuffer, KN_TEST_ASSERTION_OCCURRED); \
+		} \
+    } while (0)
+#else
 /**
  * Runtime assert mechanism.  `KN_ASSERT` is the preferred method of declaring
  * pre- and post-conditions within code, and also conditions which must be
@@ -127,6 +139,7 @@
 			KN_FATAL_ERROR(message, ##__VA_ARGS__); \
 		} \
     } while (0)
+#endif
 
 /*
  * The two different glue macros here allow for `__LINE__` to provide an

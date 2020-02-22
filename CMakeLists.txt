@@ -234,6 +234,8 @@ function(add_unit_test)
 	set(oneValueArgs NAME)
 	set(multiValueArgs SOURCES LIBS)
 	cmake_parse_arguments(UTEST "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+	add_definitions(-DKN_ASSERTION_TESTING=1)
 	add_executable("${UTEST_NAME}" ${UTEST_SOURCES})
 
 	# Generate coverage data only under GCC
@@ -245,6 +247,7 @@ function(add_unit_test)
 	target_link_libraries(${UTEST_NAME} ${UTEST_LIBS})
 	add_test(NAME "${UTEST_NAME}" COMMAND "${UTEST_NAME}")
 	add_dependencies(check ${UTEST_NAME})
+	remove_definitions(-DKN_ASSERTION_TESTING)
 endfunction()
 
 #
