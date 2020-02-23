@@ -15,11 +15,6 @@
  */
 #include "knell/kn.h"
 
-#ifdef _WIN32
-// Force a rebuild to cause dll copy.
-#include "post_build_dummy.h"
-#endif
-
 #include "knell/assets.h"
 #include "knell/assets-fileio.h"
 #include "knell/control.h"

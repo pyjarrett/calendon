@@ -211,8 +211,6 @@ remove_definitions(-DKN_LIBRARY)
 add_definitions(-DKN_LIBRARY=0)
 add_subdirectory(src/demos)
 
-add_subdirectory(src/build_tools)
-
 remove_definitions(-DKN_LIBRARY)
 add_definitions(-DKN_LIBRARY=0)
 add_executable(knell src/main.c)
@@ -262,56 +260,50 @@ add_definitions(-DKN_LIBRARY=0)
 add_subdirectory(src/tests)
     
 if (WIN32)
-	add_custom_command(TARGET knell POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_directory
-		${VENDOR_SDL2_ROOT}/lib/x64
-		$<TARGET_FILE_DIR:knell>
+	add_custom_target(windows-dll-copy)
+
+	add_custom_command(TARGET windows-dll-copy POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different
+		${VENDOR_SDL2_ROOT}/lib/x64/SDL2.dll
+		${BINARY_DIR}
 		)
 
-	add_custom_command(TARGET knell POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_directory
-		${VENDOR_GLEW_ROOT}/bin/Release/x64
-		$<TARGET_FILE_DIR:knell>
+	add_custom_command(TARGET windows-dll-copy POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different
+		${VENDOR_GLEW_ROOT}/bin/Release/x64/glew32.dll
+		${BINARY_DIR}
 		)
 
-	add_custom_command(TARGET knell POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_directory
-		${VENDOR_ZLIB_ROOT}/Release/x64
-		$<TARGET_FILE_DIR:knell>
+	add_custom_command(TARGET windows-dll-copy POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different
+		${VENDOR_ZLIB_ROOT}/Release/x64/zlibwapi.dll
+		${BINARY_DIR}
 		)
 
-	# Fix a bug where knell-lib was not being copied into the working
-	# directory where knell.exe lives, leading to usage of stale versions
-	# of knell-lib in the binary.
-	#
-	# None of touch, type, and $null> work properly under CLion or Visual
-	# Studio, so Knell provides a simple executable for writing a 0 byte
-	# file (stamp_file.exe) which the Knell driver (knell) depends upon
-	# which triggers a rebuild, even if no changes have been made to Knell
-	# to ensure the post build step fires.
-	#
-	# https://nickdademo.blogspot.com/2015/03/cmake-always-running-post-build-step.html
-    add_custom_command(TARGET knell POST_BUILD
+    add_custom_command(TARGET windows-dll-copy POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
 		$<TARGET_FILE:knell-lib>
-		$<TARGET_FILE_DIR:knell>
+		${BINARY_DIR}
 		COMMENT "Copying knell-lib shared lib to driver directory")
-	add_custom_target(force-knell-post-build
-		COMMAND $<TARGET_FILE:stamp_file> ${CMAKE_SOURCE_DIR}/src/post_build_dummy.h
-		COMMENT "Updating timestamp to force knell post build."
-		)
-	add_dependencies(force-knell-post-build stamp_file)
-	add_dependencies(knell force-knell-post-build)
+
+	add_custom_command(TARGET windows-dll-copy POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different
+		$<TARGET_FILE:knell-lib-test>
+		${BINARY_DIR}
+		COMMENT "Copying knell-lib-test shared lib to driver directory")
 
 	# Only create dumps in Debug.
 	# Uses a x64 version of the dll.
 	# TODO: Provide an x86 and an ARM version.
 	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-		add_custom_command(TARGET knell POST_BUILD
-			COMMAND ${CMAKE_COMMAND} -E copy_directory
-			${VENDOR_WINDOWS_SDK_ROOT}
-			$<TARGET_FILE_DIR:knell>
+		add_custom_command(TARGET windows-dll-copy POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy_if_different
+			${VENDOR_WINDOWS_SDK_ROOT}/dbghelp.dll
+			${BINARY_DIR}
 			)
 	endif()
+
+	add_dependencies(check windows-dll-copy)
+	add_dependencies(knell windows-dll-copy)
 
 endif (WIN32)
