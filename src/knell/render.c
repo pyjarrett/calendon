@@ -12,6 +12,11 @@ KN_API void R_Init(uint32_t width, uint32_t height)
 	RLL_Init(width, height);
 }
 
+KN_API void R_Shutdown(void)
+{
+	RLL_Shutdown();
+}
+
 /**
  * To be called once per main loop to reset the state required to draw the next
  * frame.  Error conditions should be restored and any pending values should be

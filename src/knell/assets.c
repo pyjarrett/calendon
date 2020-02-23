@@ -9,6 +9,12 @@
 static char assetsRoot[MAX_ASSET_DIR_LENGTH + 1];
 static uint32_t assetsRootLength = 0;
 LogHandle LogSysAssets;
+static bool assetsInitialized = false;
+
+KN_API bool Assets_IsReady(void)
+{
+	return assetsInitialized;
+}
 
 /**
  * Initial the asset system with the top level directory where assets should
@@ -16,6 +22,9 @@ LogHandle LogSysAssets;
  */
 KN_API void Assets_Init(const char* assetDir)
 {
+	if (Assets_IsReady()) {
+		KN_FATAL_ERROR("Double initialization of assets system.");
+	}
 	if (strlen(assetDir) >= MAX_ASSET_DIR_LENGTH) {
 		KN_FATAL_ERROR("Asset path root is too long.  Cannot initialize asset path with %s", assetDir);
 	}
@@ -29,6 +38,13 @@ KN_API void Assets_Init(const char* assetDir)
 	Log_RegisterSystem(&LogSysAssets, "Assets", KN_LOG_TRACE);
 
 	KN_TRACE(LogSysAssets, "Assets initialized with root at: '%s'", assetsRoot);
+}
+
+KN_API void Assets_Shutdown(void)
+{
+	KN_ASSERT(Assets_IsReady(), "Cannot shutdown assets system, is not initialized.");
+	assetsInitialized = false;
+	KN_ASSERT(!Assets_IsReady(), "Shutdown did not work on assets system.");
 }
 
 /**

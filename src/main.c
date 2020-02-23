@@ -193,8 +193,11 @@ void Main_InitAllSystems(void)
 void Main_Shutdown(void)
 {
 	Game_ShutdownFn();
-	Mem_Shutdown();
+	R_Shutdown();
 	UI_Shutdown();
+	Assets_Shutdown();
+	Mem_Shutdown();
+	Log_Shutdown();
 }
 
 /**

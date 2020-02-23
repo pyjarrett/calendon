@@ -13,6 +13,7 @@
 #include <knell/render-resources.h>
 
 void RLL_Init(uint32_t width, uint32_t height);
+void RLL_Shutdown(void);
 void RLL_StartFrame(void);
 void RLL_EndFrame(void);
 void RLL_Clear(rgba8i color);

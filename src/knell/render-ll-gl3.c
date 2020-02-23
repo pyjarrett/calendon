@@ -915,6 +915,11 @@ void RLL_Init(uint32_t width, uint32_t height)
 	uniformStorage[UniformNameProjection].f44 = RLL_OrthoProjection(width, height);
 }
 
+void RLL_Shutdown(void)
+{
+
+}
+
 void RLL_StartFrame(void)
 {
 	SDL_GL_MakeCurrent(window, gl);
