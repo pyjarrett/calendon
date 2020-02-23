@@ -3,7 +3,7 @@
 
 #if KN_ASSERTION_TESTING
 #include <setjmp.h>
-extern jmp_buf knTest_AssertJumpBuffer;
+extern KN_API jmp_buf knTest_AssertJumpBuffer;
 #define KN_TEST_ASSERTION_OCCURRED 1357
 #endif
 

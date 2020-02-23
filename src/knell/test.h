@@ -1,5 +1,7 @@
 #pragma once
 
+#include <knell/kn.h>
+
 #include <assert.h>
 #include <inttypes.h>
 #include <stdbool.h>
@@ -115,7 +117,6 @@ KN_TEST_API void knTest_CleanUpPreviousTest(knTestSuiteReport* r, knTestUnitRepo
 	#error "KN_ASSERTION_TESTING must be defined for assertion checking."
 #endif
 #include <knell/kn-assertion-testing.h>
-extern jmp_buf knTest_AssertJumpBuffer;
 
 #define KN_TEST_PRECONDITION(fn) { \
 		int assertionStatus = setjmp(knTest_AssertJumpBuffer); \

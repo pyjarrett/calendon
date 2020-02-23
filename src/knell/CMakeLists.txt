@@ -43,6 +43,12 @@ add_library(knell-lib-test SHARED ${KNELL_SRCS} ${KNELL_HEADERS})
 target_link_libraries(knell-lib-test ${KNELL_LIBS})
 remove_definitions(-DKN_ASSERTION_TESTING)
 
+add_custom_command(TARGET knell-lib-test POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different
+	$<TARGET_FILE:knell-lib-test>
+	${BINARY_DIR}
+	COMMENT "Copying knell-lib-test to binary directory")
+
 # TODO: Replace this with a file describing where to find assets.
 if (UNIX)
 	add_custom_target(sync_assets
