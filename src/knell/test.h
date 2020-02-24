@@ -59,7 +59,7 @@ KN_TEST_API void knTest_SuiteInit(knTestSuiteReport* r) {
 }
 
 KN_TEST_API void knTest_SuiteStart(knTestSuiteReport* r, const char* name) {
-	printf("Test suite: %s\n", name);
+	printf("Test suite: %s...", name);
 }
 
 KN_TEST_API void knTest_SuitePrint(knTestSuiteReport* r) {
@@ -98,10 +98,18 @@ KN_TEST_API void knTest_CleanUpPreviousTest(knTestSuiteReport* r, knTestUnitRepo
 	}
 }
 
+#if _WIN32
+#define KN_TEST_SUITE_BEGIN(name) int main() { \
+	SetConsoleOutputCP(CP_UTF8); \
+	knTest_SuiteInit(&suiteReport); \
+	knTest_UnitInit(&unitReport, NULL); \
+	knTest_SuiteStart(&suiteReport, name);
+#else
 #define KN_TEST_SUITE_BEGIN(name) int main() { \
 	knTest_SuiteInit(&suiteReport); \
 	knTest_UnitInit(&unitReport, NULL); \
 	knTest_SuiteStart(&suiteReport, name);
+#endif
 
 #define KN_TEST_SUITE_END \
 	knTest_CleanUpPreviousTest(&suiteReport, &unitReport); \

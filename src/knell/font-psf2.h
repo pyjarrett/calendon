@@ -12,14 +12,14 @@
 #include <knell/image.h>
 #include <knell/math2.h>
 
-#define MAX_UTF8_CHAR_LENGTH 4
+#define KN_MAX_UTF8_CODE_POINT_BYTE_LENGTH 4
 
 #define KN_MAX_CODE_POINTS_IN_GLYPH 3
 
 /**
  * Makes utf8char printable by adding another byte which can be set to \0.
  */
-typedef uint8_t utf8char[MAX_UTF8_CHAR_LENGTH + 1];
+typedef uint8_t utf8char[KN_MAX_UTF8_CODE_POINT_BYTE_LENGTH + 1];
 
 #define KN_MAX_FONT_PSF2_GLYPHS 256
 
