@@ -161,8 +161,7 @@ KN_TEST_API void knTest_CleanUpPreviousTest(knTestSuiteReport* r, knTestUnitRepo
 	}
 
 #define KN_TEST_ASSERT_TRUE(expr) { \
-		const bool a = expr; \
-		if (!(a)) { \
+		if (!(expr)) { \
 			knTest_UnitAssertFailed(&unitReport); \
 			printf("%s:%i  \"" #expr " is false\n", \
 				__FILE__, __LINE__); \
@@ -171,8 +170,7 @@ KN_TEST_API void knTest_CleanUpPreviousTest(knTestSuiteReport* r, knTestUnitRepo
 	}
 
 #define KN_TEST_ASSERT_FALSE(expr) { \
-		const bool a = !!(expr); \
-		if (a) { \
+		if (!!(expr)) { \
 			knTest_UnitAssertFailed(&unitReport); \
 			printf("%s:%i  \"" #expr " is true\n", \
 				__FILE__, __LINE__); \
