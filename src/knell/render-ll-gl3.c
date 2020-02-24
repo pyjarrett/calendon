@@ -1147,7 +1147,7 @@ void RLL_DrawSimpleText(FontId id, TextDrawParams* params, const char* text)
 	while (cursor < textAfterLastByte) {
 		// utf-8 uses variable encoding, so determine where the next code point
 		// starts.  Save this value to move the cursor and not recalculate twice.
-		const uint8_t codePointSize = Font_BytesInUtf8CodePoint(*cursor);
+		const uint8_t codePointSize = Utf8_NumBytesInCodePoint(*cursor);
 
 		RLL_DrawGlyph(id, glyphPosition, cursor, codePointSize);
 		glyphPosition = float2_Add(glyphPosition, glyphAdvance);

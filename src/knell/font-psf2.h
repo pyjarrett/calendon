@@ -11,10 +11,8 @@
 
 #include <knell/image.h>
 #include <knell/math2.h>
-
-#define KN_MAX_UTF8_CODE_POINT_BYTE_LENGTH 4
-
-#define KN_MAX_CODE_POINTS_IN_GLYPH 3
+#include <knell/font-utf8.h>
+#include <knell/font-utf8-glyph.h>
 
 /**
  * Makes utf8char printable by adding another byte which can be set to \0.
@@ -47,7 +45,6 @@ typedef struct
  * Describes the relationship between glyphs and code points.
  */
 typedef struct {
-
 	/**
 	 * Each index maps to it's appropriate glyph.
 	 */
@@ -56,10 +53,7 @@ typedef struct {
 } FontPSF2;
 
 KN_API bool Font_PSF2Allocate(ImageRGBA8* description, FontPSF2* font, const char* path);
-KN_API uint8_t Font_BytesInUtf8CodePoint(char leadingByte);
 KN_API uint32_t Font_CodePointToGlyphIndex(FontPSF2* font, const char* codePoint);
 KN_API bool Font_PSF2GlyphsToPrint(FontPSF2* font, const char* str, uint32_t* glyphs, uint32_t* length);
-
-KN_API bool Font_Utf8CodePointsMatch(const char* left, const char* right);
 
 #endif // KN_FONT_PSF2_H

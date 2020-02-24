@@ -18,29 +18,6 @@ static uint8_t psf2Magic[4] = { 0x72, 0xb5, 0x4a, 0x86 };
 #define PSF2_SEPARATOR  0xFF
 #define PSF2_SEQEND   0xFE
 
-KN_API uint8_t Font_BytesInUtf8CodePoint(char leadingByte)
-{
-	/*
-	 * The number of bytes in a utf-8 char can be determined by the upper nibble
-	 * of the first byte.
-	 *
-	 * Number of bytes:
-	 * 1: 0xxx xxxx : <7
-	 * 2: 110x xxxx : (C|D)
-	 * 3: 1110 xxxx : E
-	 * 4: 1111 0xxx : F
-	 */
-	const uint8_t b = leadingByte & 0xF0;
-	switch (b) {
-		case 0xF0: return 4;
-		case 0xE0: return 3;
-		case 0xD0: // fallthrough
-		case 0xC0:
-			return 2;
-		default: return 1;
-	}
-}
-
 /**
  * To draw a glyph, we need to know which glyph we're trying to draw.
  */
@@ -116,7 +93,7 @@ static void Font_PSF2ReadUnicodeTable(FontPSF2* font, uint8_t* const unicodeTabl
 		if (newline) {
 			printf("%3i ", glyphIndex);
 			newline = false;
-			printf(" CHARS[%i] ", Font_BytesInUtf8CodePoint(*unicodeTableCursor));
+			printf(" CHARS[%i] ", Utf8_NumBytesInCodePoint(*unicodeTableCursor));
 		}
 		if (*unicodeTableCursor == PSF2_SEPARATOR) {
 			font->mapping[glyphIndex].codePointsInGlyph = (sequenceIndex + 1);
@@ -258,31 +235,10 @@ KN_API bool Font_PSF2GlyphsToPrint(FontPSF2* font, const char* str,
 	while (currentCodePoint < afterLastCodePoint) {
 		// Is the code point in the glyph map?
 		for (uint32_t i=0; i < font->mapping[i].codePointsInGlyph; ++i) {
-			if (Font_Utf8CodePointsMatch(str, font->mapping[i].codePoint[i]));
+			if (Utf8_CodePointsMatch(str, font->mapping[i].codePoint[i]));
 		}
 		++currentGlyph;
 	}
-	length = currentGlyph;
+	*length = currentGlyph;
 	return false;
-}
-
-// https://fasterthanli.me/blog/2020/working-with-strings-in-rust/
-KN_API bool Font_Utf8CodePointsMatch(const char* left, const char* right)
-{
-	KN_ASSERT(left != NULL, "Cannot check a null code point (left-side)");
-	KN_ASSERT(right != NULL, "Cannot check a null code point (right-side)");
-
-	uint8_t leftLength = Font_BytesInUtf8CodePoint(*left);
-	uint8_t rightLength = Font_BytesInUtf8CodePoint(*right);
-
-	if (leftLength != rightLength) {
-		return false;
-	}
-
-	for (uint8_t i=0; i < leftLength; ++i) {
-		if (left[i] != right[i]) {
-			return false;
-		}
-	}
-	return true;
 }
