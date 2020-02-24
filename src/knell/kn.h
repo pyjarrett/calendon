@@ -9,7 +9,7 @@
  * to prevent introducing excessive elements throughout the engine and bloating
  * compile times.
  */
-
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -19,6 +19,7 @@
  * Symbol export/import markers for engine library functions.
  *
  * - Use `KN_API` for engine library functions (within knell-lib)
+ * - Use `KN_UNIT_API` for exposing functions for (unit) testing.
  * - Use `KN_GAME_API` for game library functions (in demo/game code)
  *
  * Windows:
@@ -32,8 +33,18 @@
 #ifdef _WIN32
 	#if KN_LIBRARY
 		#define KN_API __declspec(dllexport)
+		#if KN_ASSERTION_TESTING
+			#define KN_UNIT_API __declspec(dllexport)
+		#else
+			#define KN_UNIT_API
+		#endif
 	#else
 		#define KN_API __declspec(dllimport)
+		#if KN_ASSERTION_TESTING
+			#define KN_UNIT_API __declspec(dllimport)
+		#else
+			#define KN_UNIT_API
+		#endif
 	#endif
 	#define KN_GAME_API __declspec(dllexport)
 #else
@@ -41,6 +52,11 @@
 		#define KN_API __attribute__((visibility("default")))
 	#else
 		#define KN_API __attribute__((visibility("default")))
+	#endif
+	#if KN_ASSERTION_TESTING
+		#define KN_UNIT_API __attribute__((visibility("default")))
+	#else
+		#define KN_UNIT_API
 	#endif
 	#define KN_GAME_API __attribute((visibility("default")))
 #endif /* WIN32 */
