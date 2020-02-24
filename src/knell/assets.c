@@ -3,6 +3,7 @@
 #include "kn.h"
 #include "log.h"
 #include "path.h"
+#include "env.h"
 #include <string.h>
 
 #define MAX_ASSET_DIR_LENGTH 256
@@ -32,12 +33,15 @@ KN_API void Assets_Init(const char* assetDir)
 	assetsRootLength = (uint32_t)strlen(assetsRoot);
 
 	if (!Path_IsDir(assetsRoot)) {
-		KN_FATAL_ERROR("Assets root directory doesn't exist: %s", assetsRoot);
+		PathBuffer cwd;
+		Env_CurrentWorkingDirectory(cwd.str, KN_PATH_MAX);
+		KN_FATAL_ERROR("Assets root directory doesn't exist: %s.  CWD: %s", assetsRoot, cwd.str);
 	}
 
 	Log_RegisterSystem(&LogSysAssets, "Assets", KN_LOG_TRACE);
 
 	KN_TRACE(LogSysAssets, "Assets initialized with root at: '%s'", assetsRoot);
+	assetsInitialized = true;
 }
 
 KN_API void Assets_Shutdown(void)
