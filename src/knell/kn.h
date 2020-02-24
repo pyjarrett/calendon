@@ -121,7 +121,12 @@
  */
 #define KN_ASSERT(condition, message, ...) do { \
 		if (!(condition)) { \
-			longjmp(knTest_AssertJumpBuffer, KN_TEST_ASSERTION_OCCURRED); \
+			if (knTest_ExpectingAssert) { \
+				longjmp(knTest_AssertJumpBuffer, KN_TEST_ASSERTION_OCCURRED); \
+			} \
+			else { \
+				printf(message "\n", ##__VA_ARGS__); \
+			} \
 		} \
     } while (0)
 #else

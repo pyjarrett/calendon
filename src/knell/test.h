@@ -119,6 +119,7 @@ KN_TEST_API void knTest_CleanUpPreviousTest(knTestSuiteReport* r, knTestUnitRepo
 #include <knell/kn-assertion-testing.h>
 
 #define KN_TEST_PRECONDITION(fn) { \
+		knTest_ExpectingAssert = true; \
 		int assertionStatus = setjmp(knTest_AssertJumpBuffer); \
 		if (assertionStatus == 0) { fn; }; \
 		if (assertionStatus != KN_TEST_ASSERTION_OCCURRED) { \
@@ -127,6 +128,7 @@ KN_TEST_API void knTest_CleanUpPreviousTest(knTestSuiteReport* r, knTestUnitRepo
 				__FILE__, __LINE__); \
 			break; \
 		} \
+		knTest_ExpectingAssert = false; \
 	}
 
 
