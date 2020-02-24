@@ -33,14 +33,14 @@
 #ifdef _WIN32
 	#if KN_LIBRARY
 		#define KN_API __declspec(dllexport)
-		#if KN_ASSERTION_TESTING
+		#if KN_TESTING
 			#define KN_UNIT_API __declspec(dllexport)
 		#else
 			#define KN_UNIT_API
 		#endif
 	#else
 		#define KN_API __declspec(dllimport)
-		#if KN_ASSERTION_TESTING
+		#if KN_TESTING
 			#define KN_UNIT_API __declspec(dllimport)
 		#else
 			#define KN_UNIT_API
@@ -53,7 +53,7 @@
 	#else
 		#define KN_API __attribute__((visibility("default")))
 	#endif
-	#if KN_ASSERTION_TESTING
+	#if KN_TESTING
 		#define KN_UNIT_API __attribute__((visibility("default")))
 	#else
 		#define KN_UNIT_API
@@ -129,7 +129,7 @@
 	#define KN_WARN_DEPRECATED(msg)
 #endif
 
-#if KN_ASSERTION_TESTING
+#if KN_TESTING
 #include <knell/kn-assertion-testing.h>
 /**
  * Specialize the runtime assertion mechanism to perform a longjmp on assertion

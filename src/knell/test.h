@@ -121,8 +121,8 @@ KN_TEST_API void knTest_CleanUpPreviousTest(knTestSuiteReport* r, knTestUnitRepo
 	knTest_UnitStart(&unitReport, name); \
 	for (uint32_t i = 0; i < 1; ++i)
 
-#ifndef KN_ASSERTION_TESTING
-	#error "KN_ASSERTION_TESTING must be defined for assertion checking."
+#ifndef KN_TESTING
+	#error "KN_TESTING must be defined for assertion checking."
 #endif
 #include <knell/kn-assertion-testing.h>
 

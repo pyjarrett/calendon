@@ -38,10 +38,10 @@ target_link_libraries(knell-lib ${KNELL_LIBS})
 # that asserts (primarily preconditions) are actually checked.
 remove_definitions(-DKN_LIBRARY)
 add_definitions(-DKN_LIBRARY=1)
-add_definitions(-DKN_ASSERTION_TESTING=1)
+add_definitions(-DKN_TESTING=1)
 add_library(knell-lib-test SHARED ${KNELL_SRCS} ${KNELL_HEADERS})
 target_link_libraries(knell-lib-test ${KNELL_LIBS})
-remove_definitions(-DKN_ASSERTION_TESTING)
+remove_definitions(-DKN_TESTING)
 
 add_custom_command(TARGET knell-lib-test POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_if_different
