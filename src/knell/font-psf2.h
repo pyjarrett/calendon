@@ -50,6 +50,8 @@ typedef struct {
 	 */
 	GlyphMapping mapping[KN_MAX_FONT_PSF2_GLYPHS];
 	dimension2u32 glyphSize;
+
+	Utf8GlyphMap map;
 } FontPSF2;
 
 KN_API bool Font_PSF2Allocate(ImageRGBA8* description, FontPSF2* font, const char* path);

@@ -51,4 +51,30 @@ KN_TEST_SUITE_BEGIN("UTF-8")
 		KN_TEST_ASSERT_FALSE(CodePointSequence_Is(&extended, "\xe2\x80\xa2\xe2\x88\x98", 2));
 	}
 
+	KN_TEST_UNIT("CodePointSequence equality") {
+		CodePointSequence a;
+		CodePointSequence_Create(&a, "a", 1);
+		KN_TEST_ASSERT_TRUE(CodePointSequence_Equal(&a, &a));
+
+		CodePointSequence abc;
+		CodePointSequence_Create(&abc, "abc", 3);
+		KN_TEST_ASSERT_TRUE(CodePointSequence_Equal(&abc, &abc));
+
+		KN_TEST_ASSERT_FALSE(CodePointSequence_Equal(&a, &abc));
+
+		KN_TEST_PRECONDITION(CodePointSequence_Equal(NULL, &a));
+		KN_TEST_PRECONDITION(CodePointSequence_Equal(&a, NULL));
+	}
+
+	KN_TEST_UNIT("Building code point sequences") {
+		CodePointSequence a;
+		CodePointSequence_Begin(&a, "a");
+		CodePointSequence_AddCodePoint(&a, "b");
+		CodePointSequence_AddCodePoint(&a, "c");
+
+		CodePointSequence abc;
+		CodePointSequence_Create(&abc, "abc", 3);
+		KN_TEST_ASSERT_TRUE(CodePointSequence_Equal(&a, &abc));
+	}
+
 KN_TEST_SUITE_END

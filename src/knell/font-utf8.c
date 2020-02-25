@@ -1,5 +1,7 @@
 #include "font-utf8.h"
 
+#include <string.h>
+
 KN_UNIT_API uint8_t Utf8_NumBytesInCodePoint(char leadingByte)
 {
 	/*
@@ -44,11 +46,18 @@ KN_UNIT_API bool Utf8_CodePointsMatch(const char* left, const char* right)
 	return true;
 }
 
+KN_UNIT_API void Utf8_CodePointCopy(char* dest, const char* src)
+{
+	KN_ASSERT(dest != NULL, "Cannot copy to null code point.");
+	KN_ASSERT(src != NULL, "Cannot copy a null code point.");
+	memcpy(dest, src, Utf8_NumBytesInCodePoint(*src));
+}
+
 KN_UNIT_API void CodePointSequence_Create(CodePointSequence* seq, const char* codePoint, uint8_t numCodePoints)
 {
 	KN_ASSERT(seq != NULL, "Cannot create a null CodePointSequence.");
 	KN_ASSERT(codePoint != NULL, "Cannot create a CodePointSequence from a null code point.");
-	KN_ASSERT(numCodePoints <= KN_MAX_CODE_POINT_SEQUENCE_LENGTH,
+	KN_ASSERT(numCodePoints <= KN_MAX_CODE_POINTS_IN_SEQUENCE,
 		"Too many code points provided for a CodePointSequence: %" PRIu8,
 		numCodePoints);
 
@@ -56,12 +65,10 @@ KN_UNIT_API void CodePointSequence_Create(CodePointSequence* seq, const char* co
 	uint8_t currentCodePointIndex = 0;
 	uint8_t usedBytes = 0;
 	while (currentCodePointIndex < numCodePoints) {
+		Utf8_CodePointCopy(&seq->codePoints[usedBytes], currentCodePoint);
 		const uint8_t bytesInCodePoint = Utf8_NumBytesInCodePoint(*currentCodePoint);
-		for (uint8_t i = 0; i < bytesInCodePoint; ++i) {
-			seq->codePoints[usedBytes++] = currentCodePoint[i];
-		}
-		// Go the next code point.
-		currentCodePoint = currentCodePoint + bytesInCodePoint;
+		usedBytes += bytesInCodePoint;
+		currentCodePoint += bytesInCodePoint;
 		++currentCodePointIndex;
 	}
 	seq->byteLength = usedBytes;
@@ -70,6 +77,10 @@ KN_UNIT_API void CodePointSequence_Create(CodePointSequence* seq, const char* co
 
 KN_UNIT_API bool CodePointSequence_Is(CodePointSequence* seq, const char* codePoint, uint8_t numCodePoints)
 {
+	KN_ASSERT(seq != NULL, "A null CodePointSequence is not equal to anything.");
+	KN_ASSERT(codePoint != NULL, "Cannot compare a CodePointSequence against a NULL code point.");
+	KN_ASSERT(numCodePoints < KN_MAX_CODE_POINTS_IN_SEQUENCE, "Too many code points in sequence to test for equality against.");
+
 	const char* currentCodePoint = codePoint;
 	uint8_t currentCodePointIndex = 0;
 	uint8_t usedBytes = 0;
@@ -85,4 +96,40 @@ KN_UNIT_API bool CodePointSequence_Is(CodePointSequence* seq, const char* codePo
 		++currentCodePointIndex;
 	}
 	return true;
+}
+
+KN_UNIT_API bool CodePointSequence_Equal(CodePointSequence* left, CodePointSequence* right)
+{
+	KN_ASSERT(left != NULL, "Left CodePointSequence is NULL.");
+	KN_ASSERT(right != NULL, "Right CodePointSequence is NULL.");
+	return CodePointSequence_Is(left, right->codePoints, right->sequenceLength);
+}
+
+KN_UNIT_API void CodePointSequence_Begin(CodePointSequence* seq, const char* codePoint)
+{
+	KN_ASSERT(seq != NULL, "Cannot begin a null CodePointSequence.");
+	KN_ASSERT(codePoint != NULL, "Cannot begin a null CodePointSequence with a null code point");
+
+	seq->sequenceLength = 1;
+	seq->byteLength = Utf8_NumBytesInCodePoint(codePoint);
+	Utf8_CodePointCopy(&seq->codePoints[0], codePoint);
+}
+
+KN_UNIT_API bool CodePointSequence_AddCodePoint(CodePointSequence* seq, const char* codePoint)
+{
+	KN_ASSERT(seq != NULL, "Cannot add to a null CodePointSequence.");
+	KN_ASSERT(codePoint != NULL, "Cannot add a null code point to a CodePointSequence.");
+
+	if (seq->sequenceLength == KN_MAX_CODE_POINTS_IN_SEQUENCE) {
+		return false;
+	}
+
+	KN_ASSERT(seq->byteLength + Utf8_NumBytesInCodePoint(codePoint)
+		< KN_MAX_BYTES_IN_CODE_POINT_SEQUENCE, "Code point sequence will exceed its capacity");
+
+	Utf8_CodePointCopy(&seq->codePoints[seq->byteLength], codePoint);
+	++seq->sequenceLength;
+	seq->byteLength += Utf8_NumBytesInCodePoint(*codePoint);
+
+	return false;
 }

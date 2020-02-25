@@ -11,7 +11,7 @@ KN_UNIT_API uint32_t Utf8GlyphMap_GlyphForCodePoint(Utf8GlyphMap* map, const cha
 {
 	KN_ASSERT(map != NULL, "Cannot map to glyphs with a null glyph map.");
 	KN_ASSERT(codePoint != NULL, "Cannot map a null list of code points to glyphs.");
-	KN_ASSERT(numCodePoints < KN_MAX_CODE_POINT_SEQUENCE_LENGTH,
+	KN_ASSERT(numCodePoints < KN_MAX_CODE_POINTS_IN_SEQUENCE,
 			  "Trying to map a sequence of too many code points.");
 
 	for (uint32_t i = 0; i < map->usedSequences; ++i) {
@@ -28,7 +28,7 @@ KN_UNIT_API uint32_t Utf8GlyphMap_GlyphForCodePoint(Utf8GlyphMap* map, const cha
 KN_UNIT_API bool Utf8GlyphMap_Map(Utf8GlyphMap* map, const char* codePoint, uint8_t numCodePoints, GlyphIndex glyphIndex)
 {
 	KN_ASSERT(map != NULL, "Cannot write a glyph to a null map.");
-	KN_ASSERT(numCodePoints < KN_MAX_CODE_POINT_SEQUENCE_LENGTH,
+	KN_ASSERT(numCodePoints < KN_MAX_CODE_POINTS_IN_SEQUENCE,
 			  "Trying to create a mapping for too many code points: %" PRIu8,
 		numCodePoints);
 
