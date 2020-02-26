@@ -2,18 +2,18 @@
 
 #include <string.h>
 
+/**
+ * The number of bytes in a utf-8 char can be determined by the upper nibble
+ * of the first byte.
+ *
+ * Number of bytes:
+ * 1: 0xxx xxxx : <7
+ * 2: 110x xxxx : (C|D)
+ * 3: 1110 xxxx : E
+ * 4: 1111 0xxx : F
+ */
 KN_UNIT_API uint8_t Utf8_NumBytesInCodePoint(char leadingByte)
 {
-	/*
-	 * The number of bytes in a utf-8 char can be determined by the upper nibble
-	 * of the first byte.
-	 *
-	 * Number of bytes:
-	 * 1: 0xxx xxxx : <7
-	 * 2: 110x xxxx : (C|D)
-	 * 3: 1110 xxxx : E
-	 * 4: 1111 0xxx : F
-	 */
 	const uint8_t b = leadingByte & 0xF0;
 	switch (b) {
 		case 0xF0: return 4;
@@ -25,7 +25,9 @@ KN_UNIT_API uint8_t Utf8_NumBytesInCodePoint(char leadingByte)
 	}
 }
 
-// https://fasterthanli.me/blog/2020/working-with-strings-in-rust/
+/**
+ * Checks to see if two possibly multiple byte code points equal each other.
+ */
 KN_UNIT_API bool Utf8_CodePointsMatch(const char* left, const char* right)
 {
 	KN_ASSERT(left != NULL, "Cannot check a null code point (left-side)");
@@ -46,6 +48,9 @@ KN_UNIT_API bool Utf8_CodePointsMatch(const char* left, const char* right)
 	return true;
 }
 
+/**
+ * Copies a UTf-8 code point, with an interface similar to `memcpy`, or `strcpy`.
+ */
 KN_UNIT_API void Utf8_CodePointCopy(char* dest, const char* src)
 {
 	KN_ASSERT(dest != NULL, "Cannot copy to null code point.");
