@@ -49,7 +49,7 @@ KN_UNIT_API bool Utf8_CodePointsMatch(const char* left, const char* right)
 }
 
 /**
- * Copies a UTf-8 code point, with an interface similar to `memcpy`, or `strcpy`.
+ * Copies a UTF-8 code point, with an interface similar to `memcpy`, or `strcpy`.
  */
 KN_UNIT_API void Utf8_CodePointCopy(char* dest, const char* src)
 {
