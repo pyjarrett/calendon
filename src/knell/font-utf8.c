@@ -58,12 +58,12 @@ KN_UNIT_API void Utf8_CodePointCopy(char* dest, const char* src)
 	memcpy(dest, src, Utf8_NumBytesInCodePoint(*src));
 }
 
-KN_UNIT_API void CodePointSequence_Create(CodePointSequence* seq, const char* codePoint, uint8_t numCodePoints)
+KN_UNIT_API void Grapheme_Create(Grapheme* seq, const char* codePoint, uint8_t numCodePoints)
 {
-	KN_ASSERT(seq != NULL, "Cannot create a null CodePointSequence.");
-	KN_ASSERT(codePoint != NULL, "Cannot create a CodePointSequence from a null code point.");
+	KN_ASSERT(seq != NULL, "Cannot create a null Grapheme.");
+	KN_ASSERT(codePoint != NULL, "Cannot create a Grapheme from a null code point.");
 	KN_ASSERT(numCodePoints <= KN_MAX_CODE_POINTS_IN_SEQUENCE,
-		"Too many code points provided for a CodePointSequence: %" PRIu8,
+		"Too many code points provided for a Grapheme: %" PRIu8,
 		numCodePoints);
 
 	const char* currentCodePoint = codePoint;
@@ -77,14 +77,14 @@ KN_UNIT_API void CodePointSequence_Create(CodePointSequence* seq, const char* co
 		++currentCodePointIndex;
 	}
 	seq->byteLength = usedBytes;
-	seq->sequenceLength = numCodePoints;
+	seq->codePointLength = numCodePoints;
 }
 
-KN_UNIT_API bool CodePointSequence_Is(CodePointSequence* seq, const char* codePoint, uint8_t numCodePoints)
+KN_UNIT_API bool Grapheme_Is(Grapheme* seq, const char* codePoint, uint8_t numCodePoints)
 {
-	KN_ASSERT(seq != NULL, "A null CodePointSequence is not equal to anything.");
-	KN_ASSERT(codePoint != NULL, "Cannot compare a CodePointSequence against a NULL code point.");
-	KN_ASSERT(numCodePoints < KN_MAX_CODE_POINTS_IN_SEQUENCE, "Too many code points in sequence to test for equality against.");
+	KN_ASSERT(seq != NULL, "A null Grapheme is not equal to anything.");
+	KN_ASSERT(codePoint != NULL, "Cannot compare a Grapheme against a NULL code point.");
+	KN_ASSERT(numCodePoints < KN_MAX_CODE_POINTS_IN_SEQUENCE, "Too many code points to test for grapheme equality.");
 
 	const char* currentCodePoint = codePoint;
 	uint8_t currentCodePointIndex = 0;
@@ -103,37 +103,37 @@ KN_UNIT_API bool CodePointSequence_Is(CodePointSequence* seq, const char* codePo
 	return true;
 }
 
-KN_UNIT_API bool CodePointSequence_Equal(CodePointSequence* left, CodePointSequence* right)
+KN_UNIT_API bool Grapheme_Equal(Grapheme* left, Grapheme* right)
 {
-	KN_ASSERT(left != NULL, "Left CodePointSequence is NULL.");
-	KN_ASSERT(right != NULL, "Right CodePointSequence is NULL.");
-	return CodePointSequence_Is(left, right->codePoints, right->sequenceLength);
+	KN_ASSERT(left != NULL, "Left Grapheme is NULL.");
+	KN_ASSERT(right != NULL, "Right Grapheme is NULL.");
+	return Grapheme_Is(left, right->codePoints, right->codePointLength);
 }
 
-KN_UNIT_API void CodePointSequence_Begin(CodePointSequence* seq, const char* codePoint)
+KN_UNIT_API void Grapheme_Begin(Grapheme* seq, const char* codePoint)
 {
-	KN_ASSERT(seq != NULL, "Cannot begin a null CodePointSequence.");
-	KN_ASSERT(codePoint != NULL, "Cannot begin a null CodePointSequence with a null code point");
+	KN_ASSERT(seq != NULL, "Cannot begin a null Grapheme.");
+	KN_ASSERT(codePoint != NULL, "Cannot begin a null Grapheme with a null code point");
 
-	seq->sequenceLength = 1;
+	seq->codePointLength = 1;
 	seq->byteLength = Utf8_NumBytesInCodePoint(codePoint);
 	Utf8_CodePointCopy(&seq->codePoints[0], codePoint);
 }
 
-KN_UNIT_API bool CodePointSequence_AddCodePoint(CodePointSequence* seq, const char* codePoint)
+KN_UNIT_API bool Grapheme_AddCodePoint(Grapheme* seq, const char* codePoint)
 {
-	KN_ASSERT(seq != NULL, "Cannot add to a null CodePointSequence.");
-	KN_ASSERT(codePoint != NULL, "Cannot add a null code point to a CodePointSequence.");
+	KN_ASSERT(seq != NULL, "Cannot add to a null Grapheme.");
+	KN_ASSERT(codePoint != NULL, "Cannot add a null code point to a Grapheme.");
 
-	if (seq->sequenceLength == KN_MAX_CODE_POINTS_IN_SEQUENCE) {
+	if (seq->codePointLength == KN_MAX_CODE_POINTS_IN_SEQUENCE) {
 		return false;
 	}
 
 	KN_ASSERT(seq->byteLength + Utf8_NumBytesInCodePoint(codePoint)
-		< KN_MAX_BYTES_IN_CODE_POINT_SEQUENCE, "Code point sequence will exceed its capacity");
+			  < KN_MAX_BYTES_IN_GRAPHEME, "Grapheme will exceed its capacity");
 
 	Utf8_CodePointCopy(&seq->codePoints[seq->byteLength], codePoint);
-	++seq->sequenceLength;
+	++seq->codePointLength;
 	seq->byteLength += Utf8_NumBytesInCodePoint(*codePoint);
 
 	return false;

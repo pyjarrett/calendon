@@ -13,7 +13,7 @@ typedef uint32_t GlyphIndex;
  * Treated as an opaque pointer by clients.
  */
 typedef struct {
-	CodePointSequence sequences[KN_MAX_GLYPH_MAP_CODE_POINT_SEQUENCES];
+	Grapheme sequences[KN_MAX_GLYPH_MAP_CODE_POINT_SEQUENCES];
 
 	// glyph[i] is the glyph for sequence[i]
 	GlyphIndex glyphs[KN_MAX_GLYPH_MAP_CODE_POINT_SEQUENCES];

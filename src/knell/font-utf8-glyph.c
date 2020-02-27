@@ -15,7 +15,7 @@ KN_UNIT_API uint32_t Utf8GlyphMap_GlyphForCodePoint(Utf8GlyphMap* map, const cha
 			  "Trying to map a sequence of too many code points.");
 
 	for (uint32_t i = 0; i < map->usedSequences; ++i) {
-		if (CodePointSequence_Is(&map->sequences[i], codePoint, numCodePoints)) {
+		if (Grapheme_Is(&map->sequences[i], codePoint, numCodePoints)) {
 			return map->glyphs[i];
 		}
 	}
@@ -23,7 +23,7 @@ KN_UNIT_API uint32_t Utf8GlyphMap_GlyphForCodePoint(Utf8GlyphMap* map, const cha
 }
 
 /**
- * Creates a glyph mapping for a code point sequence.
+ * Creates a glyph mapping for a sequence of code points.
  */
 KN_UNIT_API bool Utf8GlyphMap_Map(Utf8GlyphMap* map, const char* codePoint, uint8_t numCodePoints, GlyphIndex glyphIndex)
 {
@@ -55,7 +55,7 @@ KN_UNIT_API bool Utf8GlyphMap_Map(Utf8GlyphMap* map, const char* codePoint, uint
 		return false;
 	}
 
-	CodePointSequence_Create(&map->sequences[map->usedSequences], codePoint, numCodePoints);
+	Grapheme_Create(&map->sequences[map->usedSequences], codePoint, numCodePoints);
 	map->glyphs[map->usedSequences] = glyphIndex;
 	++map->usedSequences;
 
