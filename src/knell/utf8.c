@@ -62,7 +62,7 @@ KN_UNIT_API void Grapheme_Create(Grapheme* seq, const char* codePoint, uint8_t n
 {
 	KN_ASSERT(seq != NULL, "Cannot create a null Grapheme.");
 	KN_ASSERT(codePoint != NULL, "Cannot create a Grapheme from a null code point.");
-	KN_ASSERT(numCodePoints <= KN_MAX_CODE_POINTS_IN_SEQUENCE,
+	KN_ASSERT(numCodePoints <= KN_MAX_CODE_POINTS_IN_GRAPHEME,
 		"Too many code points provided for a Grapheme: %" PRIu8,
 		numCodePoints);
 
@@ -84,7 +84,7 @@ KN_UNIT_API bool Grapheme_Is(Grapheme* seq, const char* codePoint, uint8_t numCo
 {
 	KN_ASSERT(seq != NULL, "A null Grapheme is not equal to anything.");
 	KN_ASSERT(codePoint != NULL, "Cannot compare a Grapheme against a NULL code point.");
-	KN_ASSERT(numCodePoints < KN_MAX_CODE_POINTS_IN_SEQUENCE, "Too many code points to test for grapheme equality.");
+	KN_ASSERT(numCodePoints < KN_MAX_CODE_POINTS_IN_GRAPHEME, "Too many code points to test for grapheme equality.");
 
 	const char* currentCodePoint = codePoint;
 	uint8_t currentCodePointIndex = 0;
@@ -125,7 +125,7 @@ KN_UNIT_API bool Grapheme_AddCodePoint(Grapheme* seq, const char* codePoint)
 	KN_ASSERT(seq != NULL, "Cannot add to a null Grapheme.");
 	KN_ASSERT(codePoint != NULL, "Cannot add a null code point to a Grapheme.");
 
-	if (seq->codePointLength == KN_MAX_CODE_POINTS_IN_SEQUENCE) {
+	if (seq->codePointLength == KN_MAX_CODE_POINTS_IN_GRAPHEME) {
 		return false;
 	}
 
