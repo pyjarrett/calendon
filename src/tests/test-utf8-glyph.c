@@ -1,6 +1,6 @@
 #include <knell/test.h>
 
-#include <knell/utf8-glyph.h>
+#include <knell/font-glyph.h>
 
 KN_TEST_SUITE_BEGIN("font-utf8-glyph")
 	printf("Size of Utf8GlyphMap: %zu bytes\n", sizeof(Utf8GlyphMap));
