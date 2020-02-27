@@ -1,6 +1,6 @@
 #include <knell/test.h>
 
-#include <knell/font-utf8.h>
+#include <knell/utf8.h>
 
 #include <stdlib.h>
 #include <stdio.h>

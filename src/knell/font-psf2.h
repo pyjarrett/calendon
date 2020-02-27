@@ -11,8 +11,8 @@
 
 #include <knell/image.h>
 #include <knell/math2.h>
-#include <knell/font-utf8.h>
-#include <knell/font-utf8-glyph.h>
+#include <knell/utf8.h>
+#include <knell/utf8-glyph.h>
 
 /**
  * Makes utf8char printable by adding another byte which can be set to \0.
