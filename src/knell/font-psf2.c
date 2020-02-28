@@ -74,7 +74,7 @@ static size_t Font_PSF2ReadGrapheme(Utf8GlyphMap* map, GlyphIndex glyphIndex,
 }
 
 static void Font_PSF2ReadUnicodeTableIntoGlyphMap(Utf8GlyphMap* map,
-	uint8_t* const unicodeTableStart, uint8_t* const unicodeTableEnd)
+	const uint8_t* const unicodeTableStart, const uint8_t* const unicodeTableEnd)
 {
 	KN_ASSERT(map != NULL, "Cannot read unicode table into a null glyph map.");
 	KN_ASSERT(unicodeTableStart < unicodeTableEnd, "Unicode table ends before it starts");
@@ -94,7 +94,7 @@ static void Font_PSF2ReadUnicodeTableIntoGlyphMap(Utf8GlyphMap* map,
 	 * terminator: <term> := psf1 ? 0xFFFF : 0xFF
 	 * <uc :+ psf1 ? 2 byte little endian unicode : UTF-8 value
 	 */
-	uint8_t* cursor = unicodeTableStart;
+	const uint8_t* cursor = unicodeTableStart;
 	GlyphIndex glyphIndex = 0;
 	while (cursor < unicodeTableEnd) {
 		const size_t initialBytesRead = Font_PSF2ReadGrapheme(map, glyphIndex, cursor, unicodeTableEnd);
@@ -114,7 +114,7 @@ static void Font_PSF2ReadUnicodeTableIntoGlyphMap(Utf8GlyphMap* map,
 		PRIiPTR, (intptr_t)(unicodeTableEnd - cursor));
 }
 
-KN_API void Font_PSF2ReadAndAllocateBitmap(const PSF2Header* header, ImageRGBA8* image)
+static void Font_PSF2ReadAndAllocateBitmap(const PSF2Header* header, ImageRGBA8* image)
 {
 	const uint8_t* bitmapCursor = (uint8_t*)header + header->bitmapOffset;
 	const uint32_t bytesPerPixel = 4;
@@ -166,7 +166,7 @@ KN_API void Font_PSF2ReadAndAllocateBitmap(const PSF2Header* header, ImageRGBA8*
  * - How many glyphs are in a string?
  * - What is the width and height of a given string?
  */
-bool Font_PSF2Allocate(ImageRGBA8* image, FontPSF2* font, const char* path)
+KN_API bool Font_PSF2Allocate(FontPSF2* font, ImageRGBA8* description, const char* path)
 {
 	DynamicBuffer fileBuffer;
 	if (!Assets_ReadFile(path, KN_FILE_TYPE_BINARY, &fileBuffer)) {
@@ -190,13 +190,8 @@ bool Font_PSF2Allocate(ImageRGBA8* image, FontPSF2* font, const char* path)
 	font->glyphSize.width = header->glyphWidth;
 	font->glyphSize.height = header->glyphHeight;
 
-	// TODO: Split this out into a function.
 	// The bitmap is recorded after the header.
-	uint8_t* const bitmapStart = (uint8_t*)header + header->bitmapOffset;
-	const uint32_t bitmapSize = header->bytesPerGlyph * header->numGlyphs;
-	{
-		Font_PSF2ReadAndAllocateBitmap(header, image);
-	}
+	Font_PSF2ReadAndAllocateBitmap(header, description);
 
 	if (header->flags & PSF2_FLAG_HAS_UNICODE_TABLE) {
 		KN_TRACE(LogSysMain, "Has a unicode table");
@@ -207,10 +202,12 @@ bool Font_PSF2Allocate(ImageRGBA8* image, FontPSF2* font, const char* path)
 		KN_TRACE(LogSysMain, "No unicode table");
 		return false;
 	}
-	uint8_t* const unicodeTableStart = bitmapStart + bitmapSize;
-	uint8_t* const unicodeTableEnd = (uint8_t*)fileBuffer.contents + fileBuffer.size;
+	const uint8_t* const bitmapStart = (uint8_t*)header + header->bitmapOffset;
+	const uint32_t bitmapSize = header->bytesPerGlyph * header->numGlyphs;
+	const uint8_t* const unicodeTableStart = bitmapStart + bitmapSize;
+	const uint8_t* const unicodeTableEnd = (uint8_t*)fileBuffer.contents + fileBuffer.size;
 	Font_PSF2ReadUnicodeTableIntoGlyphMap(&font->map, unicodeTableStart, unicodeTableEnd);
-	Mem_Free(&image->pixels);
+	Mem_Free(&description->pixels);
 	Mem_Free(&fileBuffer);
 	return true;
 }
