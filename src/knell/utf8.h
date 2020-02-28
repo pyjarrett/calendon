@@ -27,7 +27,9 @@ KN_UNIT_API void Utf8_CodePointCopy(char* dest, const char* src);
  * An example would be an accent applied to an e.
  */
 typedef struct {
-	char codePoints[KN_MAX_BYTES_IN_GRAPHEME];
+	// Add an additional space for anull byte so graphemes can be written as
+	// null-terminated strings.
+	char codePoints[KN_MAX_BYTES_IN_GRAPHEME + 1];
 	uint8_t codePointLength;
 	uint32_t byteLength;
 } Grapheme;
@@ -36,7 +38,11 @@ KN_UNIT_API void Grapheme_Create(Grapheme* seq, const char* codePoint, uint8_t n
 KN_UNIT_API bool Grapheme_Is(Grapheme* seq, const char* codePoint, uint8_t numCodePoints);
 KN_UNIT_API bool Grapheme_Equal(Grapheme* left, Grapheme* right);
 
-KN_UNIT_API void Grapheme_Begin(Grapheme* seq, const char* codePoint);
+KN_UNIT_API void Grapheme_Begin(Grapheme* seq);
 KN_UNIT_API bool Grapheme_AddCodePoint(Grapheme*, const char* codePoint);
+
+#if KN_DEBUG
+void Grapheme_Print(Grapheme* g, FILE* stream);
+#endif
 
 #endif /* KN_FONT_UTF8_H */

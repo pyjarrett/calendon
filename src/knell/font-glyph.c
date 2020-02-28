@@ -1,9 +1,12 @@
 #include <knell/font-glyph.h>
 #include <knell/log.h>
 
+#include <string.h>
+
 KN_UNIT_API void Utf8GlyphMap_Create(Utf8GlyphMap* map)
 {
 	KN_ASSERT(map != NULL, "Cannot create a null glyph map.");
+	memset(map, 0, sizeof(Utf8GlyphMap));
 	map->usedSequences = 0;
 }
 
@@ -15,7 +18,7 @@ KN_UNIT_API uint32_t Utf8GlyphMap_GlyphForCodePoint(Utf8GlyphMap* map, const cha
 			  "Trying to map a sequence of too many code points.");
 
 	for (uint32_t i = 0; i < map->usedSequences; ++i) {
-		if (Grapheme_Is(&map->sequences[i], codePoint, numCodePoints)) {
+		if (Grapheme_Is(&map->graphemes[i], codePoint, numCodePoints)) {
 			return map->glyphs[i];
 		}
 	}
@@ -36,26 +39,26 @@ KN_UNIT_API bool Utf8GlyphMap_Map(Utf8GlyphMap* map, const char* codePoint, uint
 	// Already exists.
 	const GlyphIndex existingMapping = Utf8GlyphMap_GlyphForCodePoint(map, codePoint, numCodePoints);
 	if (existingMapping == glyphIndex) {
-		char codePointString[KN_MAX_UTF8_CODE_POINT_BYTE_LENGTH * KN_MAX_CODE_POINTS_IN_GLYPH + 1];
-		memset(codePointString, 0, KN_MAX_UTF8_CODE_POINT_BYTE_LENGTH * KN_MAX_CODE_POINTS_IN_GLYPH + 1);
-		memcpy(codePointString, codePoint, numCodePoints);
-		KN_WARN(LogSysMain, "Creating a duplicate glyph mapping for %s", codePointString);
+		char graphemeString[KN_MAX_BYTES_IN_GRAPHEME + 1];
+		memset(graphemeString, 0, KN_MAX_BYTES_IN_GRAPHEME + 1);
+		memcpy(graphemeString, codePoint, numCodePoints);
+		KN_WARN(LogSysMain, "Creating a duplicate glyph mapping for %s", graphemeString);
 		return true;
 	}
 	else if (existingMapping != KN_GLYPH_INDEX_INVALID) {
-		char codePointString[KN_MAX_UTF8_CODE_POINT_BYTE_LENGTH * KN_MAX_CODE_POINTS_IN_GLYPH + 1];
-		memset(codePointString, 0, KN_MAX_UTF8_CODE_POINT_BYTE_LENGTH * KN_MAX_CODE_POINTS_IN_GLYPH + 1);
-		memcpy(codePointString, codePoint, numCodePoints);
-		KN_WARN(LogSysMain, "Overwriting a previous glyph mapping for %s", codePointString);
+		char graphemeString[KN_MAX_BYTES_IN_GRAPHEME + 1];
+		memset(graphemeString, 0, KN_MAX_BYTES_IN_GRAPHEME + 1);
+		memcpy(graphemeString, codePoint, numCodePoints);
+		KN_WARN(LogSysMain, "Overwriting a previous glyph mapping for %s", graphemeString);
 		return true;
 	}
 
-	// All sequences already used.
-	if (map->usedSequences + 1 == KN_MAX_GLYPH_MAP_CODE_POINT_SEQUENCES) {
+	// All graphemes already used.
+	if (map->usedSequences + 1 == KN_MAX_GLYPH_MAP_GRAPHEMES) {
 		return false;
 	}
 
-	Grapheme_Create(&map->sequences[map->usedSequences], codePoint, numCodePoints);
+	Grapheme_Create(&map->graphemes[map->usedSequences], codePoint, numCodePoints);
 	map->glyphs[map->usedSequences] = glyphIndex;
 	++map->usedSequences;
 

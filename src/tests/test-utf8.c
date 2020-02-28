@@ -68,7 +68,8 @@ KN_TEST_SUITE_BEGIN("UTF-8")
 
 	KN_TEST_UNIT("Building code point sequences") {
 		Grapheme a;
-		Grapheme_Begin(&a, "a");
+		Grapheme_Begin(&a);
+		Grapheme_AddCodePoint(&a, "a");
 		Grapheme_AddCodePoint(&a, "b");
 		Grapheme_AddCodePoint(&a, "c");
 

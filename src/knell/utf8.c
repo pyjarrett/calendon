@@ -84,7 +84,8 @@ KN_UNIT_API bool Grapheme_Is(Grapheme* seq, const char* codePoint, uint8_t numCo
 {
 	KN_ASSERT(seq != NULL, "A null Grapheme is not equal to anything.");
 	KN_ASSERT(codePoint != NULL, "Cannot compare a Grapheme against a NULL code point.");
-	KN_ASSERT(numCodePoints < KN_MAX_CODE_POINTS_IN_GRAPHEME, "Too many code points to test for grapheme equality.");
+	KN_ASSERT(numCodePoints <= KN_MAX_CODE_POINTS_IN_GRAPHEME, "Too many code points %" PRIu8
+		"to test for grapheme equality.", numCodePoints);
 
 	const char* currentCodePoint = codePoint;
 	uint8_t currentCodePointIndex = 0;
@@ -110,14 +111,12 @@ KN_UNIT_API bool Grapheme_Equal(Grapheme* left, Grapheme* right)
 	return Grapheme_Is(left, right->codePoints, right->codePointLength);
 }
 
-KN_UNIT_API void Grapheme_Begin(Grapheme* seq, const char* codePoint)
+KN_UNIT_API void Grapheme_Begin(Grapheme* seq)
 {
 	KN_ASSERT(seq != NULL, "Cannot begin a null Grapheme.");
-	KN_ASSERT(codePoint != NULL, "Cannot begin a null Grapheme with a null code point");
-
-	seq->codePointLength = 1;
-	seq->byteLength = Utf8_NumBytesInCodePoint(codePoint);
-	Utf8_CodePointCopy(&seq->codePoints[0], codePoint);
+	seq->codePointLength = 0;
+	seq->byteLength = 0;
+	memset(&seq->codePoints[0], 0, KN_MAX_BYTES_IN_GRAPHEME);
 }
 
 KN_UNIT_API bool Grapheme_AddCodePoint(Grapheme* seq, const char* codePoint)
@@ -138,3 +137,17 @@ KN_UNIT_API bool Grapheme_AddCodePoint(Grapheme* seq, const char* codePoint)
 
 	return false;
 }
+
+#if KN_DEBUG
+void Grapheme_Print(Grapheme* g, FILE* f)
+{
+	KN_ASSERT(g != NULL, "Cannot print a null grapheme.");
+	KN_ASSERT(f != NULL, "Cannot print a grapheme to a null stream.");
+	fprintf(f, "[%8x %8x %8x %8x] %s",
+		g->codePoints[0],
+		g->codePoints[1],
+		g->codePoints[2],
+		g->codePoints[3],
+		&g->codePoints[0]);
+}
+#endif

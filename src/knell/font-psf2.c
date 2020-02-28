@@ -15,8 +15,12 @@ static uint8_t psf2Magic[4] = { 0x72, 0xb5, 0x4a, 0x86 };
 /* max version recognized so far */
 #define PSF2_MAXVERSION 0
 
-#define PSF2_SEPARATOR  0xFF
-#define PSF2_SEQEND   0xFE
+/**
+ * Appears between code point sequences to indicate an identical sequence
+ * mapping to the same glyph.
+ */
+#define PSF2_SEPARATOR   0xFE
+#define PSF2_TERM  0xFF
 
 /**
  * To draw a glyph, we need to know which glyph we're trying to draw.
@@ -59,9 +63,46 @@ void Font_PSF2PrintHeader(const PSF2Header *header)
 	KN_TRACE(LogSysMain, "%" PRIu32 "x%" PRIu32, header->glyphWidth, header->glyphHeight);
 }
 
-static void Font_PSF2ReadUnicodeTable(FontPSF2* font, uint8_t* const unicodeTableStart,
-	uint8_t* const unicodeTableEnd)
+static size_t ReadGrapheme(Utf8GlyphMap* map, GlyphIndex glyphIndex,
+	const uint8_t* const unicodeTableStart, const uint8_t* const unicodeTableEnd)
 {
+	KN_ASSERT(map != NULL, "Cannot read a grapheme into a null glyph map.");
+	KN_ASSERT(unicodeTableStart != NULL, "Cannot read a unicode from a null unicode table.");
+	KN_ASSERT(unicodeTableEnd != NULL, "Unicode table to read from has no end.");
+	KN_ASSERT(unicodeTableStart < unicodeTableEnd, "Unicode table begins after it ends.");
+
+	Grapheme g;
+	Grapheme_Begin(&g);
+
+	size_t totalBytesRead = 0;
+
+	const uint8_t* cursor = unicodeTableStart;
+	while (cursor < unicodeTableEnd && *cursor != PSF2_SEPARATOR && *cursor != PSF2_TERM) {
+		// TODO: Check for invalid code points.
+		Grapheme_AddCodePoint(&g, (char*)cursor);
+		const size_t bytesInCodePoint = Utf8_NumBytesInCodePoint(*cursor);
+		cursor += bytesInCodePoint;
+		totalBytesRead += bytesInCodePoint;
+	}
+	Utf8GlyphMap_Map(map, &g.codePoints[0], g.codePointLength, glyphIndex);
+	Grapheme_Print(&g, stdout);
+	printf("\n");
+	//KN_TRACE(LogSysMain, "Read");
+	return totalBytesRead;
+}
+
+static void Font_PSF2ReadUnicodeTableAsGlyphMap(Utf8GlyphMap* map,
+	uint8_t* const unicodeTableStart, uint8_t* const unicodeTableEnd)
+{
+	KN_ASSERT(unicodeTableStart < unicodeTableEnd, "Unicode table ends before it starts");
+
+	KN_TRACE(LogSysMain, "Size of Glyph Map: %" PRIu64 "\n", sizeof(Utf8GlyphMap));
+	KN_TRACE(LogSysMain, "Size of FontPSF2: %" PRIu64 "\n", sizeof(FontPSF2));
+	KN_TRACE(LogSysMain, "Reading unicode table of %zu bytes", (unicodeTableEnd - unicodeTableStart));
+	Utf8GlyphMap_Create(map);
+	uint8_t* cursor = unicodeTableStart;
+	GlyphIndex glyphIndex = 0;
+
 	/*
 	 * <unicodeimage> := <uc>*<seq>*<term>
 	 * <seq> := <ss><uc><uc>*
@@ -69,54 +110,24 @@ static void Font_PSF2ReadUnicodeTable(FontPSF2* font, uint8_t* const unicodeTabl
 	 * <term> := psf1 ? 0xFFFF : 0xFF
 	 * <uc :+ psf1 ? 2 byte little endian unicode : UTF-8 value
 	 */
-	//
-	// TODO: We're juggling a lot of state here.
-	//
-	uint8_t* unicodeTableCursor = unicodeTableStart;
+	while (cursor < unicodeTableEnd) {
+		// Read the first glyph sequence.
+		const size_t initialBytesRead = ReadGrapheme(map, glyphIndex, cursor, unicodeTableEnd);
+		cursor += initialBytesRead;
 
-	// The index of the glyph within as in the order of its description.
-	uint32_t glyphIndex = 0;
+		// Look for a separator or terminator.
+		while (*cursor == PSF2_SEPARATOR) {
+			const size_t moreBytesRead = ReadGrapheme(map, glyphIndex, cursor, unicodeTableEnd);
+			cursor += moreBytesRead;
+		}
 
-	// Which byte int he code point is being modified.
-	uint32_t codePointByteIndex = 0;
-	bool newline = true;
-
-	KN_TRACE(LogSysMain, "Size of GlyphMapping * KN_MAX_FONT_PSF2_GLYPHS: %" PRIu64 "\n", sizeof(GlyphMapping) * KN_MAX_FONT_PSF2_GLYPHS);
-	KN_TRACE(LogSysMain, "Size of FontPSF2: %" PRIu64 "\n", sizeof(FontPSF2));
-
-	memset(font->mapping, 0, sizeof(GlyphMapping) * KN_MAX_FONT_PSF2_GLYPHS);
-	// There might be multiple code points, this is which code point being referenced.
-	uint8_t sequenceIndex = 0;
-	while (unicodeTableCursor < unicodeTableEnd) {
-		KN_ASSERT(sequenceIndex <= KN_MAX_CODE_POINTS_IN_GLYPH, "Too many code "
-			"points in glyph.");
-		if (newline) {
-			printf("%3i ", glyphIndex);
-			newline = false;
-			printf(" CHARS[%i] ", Utf8_NumBytesInCodePoint(*unicodeTableCursor));
-		}
-		if (*unicodeTableCursor == PSF2_SEPARATOR) {
-			font->mapping[glyphIndex].codePointsInGlyph = (sequenceIndex + 1);
-			codePointByteIndex = 0;
-			sequenceIndex = 0;
-			newline = true;
-			++glyphIndex;
-			printf("\n");
-		}
-		else if (*unicodeTableCursor == PSF2_SEQEND) {
-			// More characters refer to this glyph.
-			codePointByteIndex = 0;
-			++sequenceIndex;
-			printf("    ");
-		}
-		else {
-			printf("%X ", *unicodeTableCursor);
-			font->mapping[glyphIndex].codePoint[sequenceIndex][codePointByteIndex] = *unicodeTableCursor;
-			++codePointByteIndex;
-		}
-		++unicodeTableCursor;
+		KN_ASSERT(*cursor == PSF2_TERM, "Unicode table grapheme doesn't end in terminator.");
+		++glyphIndex;
+		++cursor;
 	}
 
+	KN_ASSERT(cursor == unicodeTableEnd, "Cursor didn't end at correct point: %" PRIiPTR, (intptr_t)(unicodeTableEnd - cursor));
+	// TODO: Check that all glyph indices have been read.
 }
 
 /**
@@ -211,7 +222,9 @@ KN_API bool Font_PSF2Allocate(ImageRGBA8* image, FontPSF2* font, const char* pat
 	}
 	uint8_t* const unicodeTableStart = bitmapStart + bitmapSize;
 	uint8_t* const unicodeTableEnd = (uint8_t*)fileBuffer.contents + fileBuffer.size;
-	Font_PSF2ReadUnicodeTable(font, unicodeTableStart, unicodeTableEnd);
+	Font_PSF2ReadUnicodeTableAsGlyphMap(&font->map, unicodeTableStart, unicodeTableEnd);
+	Mem_Free(&image->pixels);
+	Mem_Free(&fileBuffer);
 	return true;
 }
 

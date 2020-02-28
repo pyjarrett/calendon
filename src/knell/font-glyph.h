@@ -6,17 +6,17 @@
 
 typedef uint32_t GlyphIndex;
 #define KN_GLYPH_INDEX_INVALID ((uint32_t)(~0))
-#define KN_MAX_GLYPH_MAP_CODE_POINT_SEQUENCES 512
+#define KN_MAX_GLYPH_MAP_GRAPHEMES 512
 #define KN_MAX_CODE_POINTS_IN_GLYPH 3
 
 /**
  * Treated as an opaque pointer by clients.
  */
 typedef struct {
-	Grapheme sequences[KN_MAX_GLYPH_MAP_CODE_POINT_SEQUENCES];
+	Grapheme graphemes[KN_MAX_GLYPH_MAP_GRAPHEMES];
 
 	// glyph[i] is the glyph for sequence[i]
-	GlyphIndex glyphs[KN_MAX_GLYPH_MAP_CODE_POINT_SEQUENCES];
+	GlyphIndex glyphs[KN_MAX_GLYPH_MAP_GRAPHEMES];
 	uint32_t usedSequences;
 } Utf8GlyphMap;
 
