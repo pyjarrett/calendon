@@ -1195,7 +1195,7 @@ bool RLL_LoadPSF2Font(FontId id, const char* path)
 
 	ImageRGBA8 imagePixels;
 	FontPSF2 font;
-	Font_PSF2Allocate(&imagePixels, &font, path);
+	Font_PSF2Allocate(&font, &imagePixels, path);
 
 	glGenTextures(1, &fontTextures[id]);
 	glActiveTexture(GL_TEXTURE0);

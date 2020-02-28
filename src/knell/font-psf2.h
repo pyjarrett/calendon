@@ -21,6 +21,6 @@ typedef struct {
 	dimension2u32 glyphSize;
 } FontPSF2;
 
-KN_API bool Font_PSF2Allocate(ImageRGBA8* description, FontPSF2* font, const char* path);
+KN_API bool Font_PSF2Allocate(FontPSF2* font, ImageRGBA8* description, const char* path);
 
 #endif // KN_FONT_PSF2_H
