@@ -1,20 +1,20 @@
-#include <knell/font-glyph.h>
+#include <knell/font-grapheme.h>
 #include <knell/log.h>
 
 #include <string.h>
 
-KN_TEST_API void Utf8GraphemeMap_Create(Utf8GraphemeMap* map)
+KN_TEST_API void GraphemeMap_Create(GraphemeMap* map)
 {
 	KN_ASSERT(map != NULL, "Cannot create a null grapheme map.");
-	memset(map, 0, sizeof(Utf8GraphemeMap));
+	memset(map, 0, sizeof(GraphemeMap));
 	map->usedGraphemes = 0;
 }
 
-KN_TEST_API uint32_t Utf8GraphemeMap_GlyphForCodePoints(Utf8GraphemeMap* map,
+KN_TEST_API uint32_t GraphemeMap_GlyphForCodePoints(GraphemeMap* map,
 	const uint8_t* codePoint, uint8_t numCodePoints)
 {
 	KN_ASSERT(map != NULL, "Cannot map to glyphs with a null grapheme map.");
-	KN_ASSERT(codePoint != NULL, "Cannot map a null list of code points to glyphs.");
+	KN_ASSERT(codePoint != NULL, "Cannot map a null list of graphemes to glyphs.");
 	KN_ASSERT(numCodePoints < KN_MAX_CODE_POINTS_IN_GRAPHEME,
 			  "Trying to map a sequence of too many code points.");
 
@@ -29,7 +29,7 @@ KN_TEST_API uint32_t Utf8GraphemeMap_GlyphForCodePoints(Utf8GraphemeMap* map,
 /**
  * Creates a grapheme mapping for a sequence of code points.
  */
-KN_TEST_API bool Utf8GraphemeMap_Map(Utf8GraphemeMap* map, const uint8_t* codePoint,
+KN_TEST_API bool GraphemeMap_Map(GraphemeMap* map, const uint8_t* codePoint,
 	uint8_t numCodePoints, GlyphIndex glyphIndex)
 {
 	KN_ASSERT(map != NULL, "Cannot write a glyph to a null map.");
@@ -39,7 +39,7 @@ KN_TEST_API bool Utf8GraphemeMap_Map(Utf8GraphemeMap* map, const uint8_t* codePo
 
 	// TODO: Should check for subsequences or larger sequences already existing in the map.
 	// Already exists.
-	const GlyphIndex existingMapping = Utf8GraphemeMap_GlyphForCodePoints(map, codePoint, numCodePoints);
+	const GlyphIndex existingMapping = GraphemeMap_GlyphForCodePoints(map, codePoint, numCodePoints);
 	if (existingMapping == glyphIndex) {
 		char graphemeString[KN_MAX_BYTES_IN_GRAPHEME + 1];
 		memset(graphemeString, 0, KN_MAX_BYTES_IN_GRAPHEME + 1);

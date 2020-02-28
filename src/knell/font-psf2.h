@@ -9,7 +9,7 @@
 #ifndef KN_FONT_PSF2_H
 #define KN_FONT_PSF2_H
 
-#include <knell/font-glyph.h>
+#include <knell/font-grapheme.h>
 #include <knell/image.h>
 #include <knell/math2.h>
 
@@ -17,7 +17,7 @@
  * Describes the relationship between glyphs and code points.
  */
 typedef struct {
-	Utf8GraphemeMap map;
+	GraphemeMap map;
 	dimension2u32 glyphSize;
 } FontPSF2;
 

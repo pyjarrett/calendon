@@ -46,7 +46,7 @@ static void Font_PSF2PrintHeader(const PSF2Header *header)
 	KN_TRACE(LogSysMain, "%" PRIu32 "x%" PRIu32, header->glyphWidth, header->glyphHeight);
 }
 
-static size_t Font_PSF2ReadGrapheme(Utf8GraphemeMap* map, GlyphIndex glyphIndex,
+static size_t Font_PSF2ReadGrapheme(GraphemeMap* map, GlyphIndex glyphIndex,
 	const uint8_t* const unicodeTableStart, const uint8_t* const unicodeTableEnd)
 {
 	KN_ASSERT(map != NULL, "Cannot read a grapheme into a null grapheme map.");
@@ -67,23 +67,23 @@ static size_t Font_PSF2ReadGrapheme(Utf8GraphemeMap* map, GlyphIndex glyphIndex,
 		cursor += bytesInCodePoint;
 		totalBytesRead += bytesInCodePoint;
 	}
-	Utf8GraphemeMap_Map(map, &g.codePoints[0], g.codePointLength, glyphIndex);
+	GraphemeMap_Map(map, &g.codePoints[0], g.codePointLength, glyphIndex);
 	Grapheme_Print(&g, stdout);
 	printf("\n");
 	return totalBytesRead;
 }
 
-static void Font_PSF2ReadUnicodeTableIntoGlyphMap(Utf8GraphemeMap* map,
+static void Font_PSF2ReadUnicodeTableIntoGlyphMap(GraphemeMap* map,
 	const uint8_t* const unicodeTableStart, const uint8_t* const unicodeTableEnd)
 {
 	KN_ASSERT(map != NULL, "Cannot read unicode table into a null grapheme map.");
 	KN_ASSERT(unicodeTableStart < unicodeTableEnd, "Unicode table ends before it starts");
 
-	KN_TRACE(LogSysMain, "Size of Glyph Map: %" PRIu64 "\n", sizeof(Utf8GraphemeMap));
+	KN_TRACE(LogSysMain, "Size of Glyph Map: %" PRIu64 "\n", sizeof(GraphemeMap));
 	KN_TRACE(LogSysMain, "Size of FontPSF2: %" PRIu64 "\n", sizeof(FontPSF2));
 	KN_TRACE(LogSysMain, "Reading unicode table of %zu bytes", (unicodeTableEnd - unicodeTableStart));
 
-	Utf8GraphemeMap_Create(map);
+	GraphemeMap_Create(map);
 
 	/*
 	 * PSF2 Unicode Table Grammar
