@@ -114,6 +114,47 @@ static void Font_PSF2ReadUnicodeTableIntoGlyphMap(Utf8GlyphMap* map,
 		PRIiPTR, (intptr_t)(unicodeTableEnd - cursor));
 }
 
+KN_API void Font_PSF2ReadAndAllocateBitmap(const PSF2Header* header, ImageRGBA8* image)
+{
+	const uint8_t* bitmapCursor = (uint8_t*)header + header->bitmapOffset;
+	const uint32_t bytesPerPixel = 4;
+	Mem_Allocate(&image->pixels, header->numGlyphs * bytesPerPixel * header->glyphWidth * header->glyphHeight);
+	memset(image->pixels.contents, 0, image->pixels.size);
+
+	uint32_t* imageCursor = (uint32_t*)image->pixels.contents;
+	const uint32_t* const imageEnd = (uint32_t*)((uint8_t*)imageCursor + image->pixels.size);
+
+	// The bitmap for a glyph is stored as height consecutive pixel rows,
+	// where each pixel row consists of width bits followed by some filler
+	// bits in order to fill an integral number of (8-bit) bytes.
+	//
+	// Parse all characters.
+	for (uint32_t i = 0; i < header->numGlyphs; ++i) {
+		// Parse all rows of the next character.
+		for (uint32_t row = 0; row < header->glyphHeight; ++row) {
+			// Parse the next row.
+			for (uint32_t col = 0; col < (header->glyphWidth / 8); ++col) {
+				const uint8_t nextByte = *bitmapCursor;
+				for (int32_t bit = 7; bit >= 0; --bit) {
+					if ((1 << bit) & nextByte) {
+						//printf("X");
+						// Set all the bits to 1.
+						*imageCursor = (uint32_t)~0;
+					}
+					else {
+						//printf(" ");
+					}
+					++imageCursor;
+				}
+				++bitmapCursor;
+				//printf("_");
+			}
+			//printf("\n");
+		}
+	}
+	KN_ASSERT(imageCursor == imageEnd, "Didn't count every pixel");
+}
+
 /**
  * Creates the suitable elements needed to display a font.  This includes maps
  * for determining which glyphs to use, and the appropriate texture with which
@@ -125,7 +166,7 @@ static void Font_PSF2ReadUnicodeTableIntoGlyphMap(Utf8GlyphMap* map,
  * - How many glyphs are in a string?
  * - What is the width and height of a given string?
  */
-KN_API bool Font_PSF2Allocate(ImageRGBA8* image, FontPSF2* font, const char* path)
+bool Font_PSF2Allocate(ImageRGBA8* image, FontPSF2* font, const char* path)
 {
 	DynamicBuffer fileBuffer;
 	if (!Assets_ReadFile(path, KN_FILE_TYPE_BINARY, &fileBuffer)) {
@@ -154,45 +195,7 @@ KN_API bool Font_PSF2Allocate(ImageRGBA8* image, FontPSF2* font, const char* pat
 	uint8_t* const bitmapStart = (uint8_t*)header + header->bitmapOffset;
 	const uint32_t bitmapSize = header->bytesPerGlyph * header->numGlyphs;
 	{
-		uint8_t* bitmapCursor = (uint8_t*)header + header->bitmapOffset;
-
-		const uint32_t bytesPerPixel = 4;
-		Mem_Allocate(&image->pixels, header->numGlyphs * bytesPerPixel * header->glyphWidth * header->glyphHeight);
-		memset(image->pixels.contents, 0, image->pixels.size);
-
-		// TODO: Document RGBA8 assumption.
-		uint32_t* imageCursor = (uint32_t*)image->pixels.contents;
-		uint32_t* imageEnd = (uint32_t*)((uint8_t*)imageCursor + image->pixels.size);
-
-		// The bitmap for a glyph is stored as height consecutive pixel rows,
-		// where each pixel row consists of width bits followed by some filler
-		// bits in order to fill an integral number of (8-bit) bytes.
-		//
-		// Parse all characters.
-		for (uint32_t i = 0; i < header->numGlyphs; ++i) {
-			// Parse all rows of the next character.
-			for (uint32_t row = 0; row < header->glyphHeight; ++row) {
-				// Parse the next row.
-				for (uint32_t col = 0; col < (header->glyphWidth / 8); ++col) {
-					const uint8_t nextByte = *bitmapCursor;
-					for (int32_t bit = 7; bit >= 0; --bit) {
-						if ((1 << bit) & nextByte) {
-							//printf("X");
-							// Set all the bits to 1.
-							*imageCursor = (uint32_t)~0;
-						}
-						else {
-							//printf(" ");
-						}
-						++imageCursor;
-					}
-					++bitmapCursor;
-					//printf("_");
-				}
-				//printf("\n");
-			}
-		}
-		KN_ASSERT(imageCursor == imageEnd, "Didn't count every pixel");
+		Font_PSF2ReadAndAllocateBitmap(header, image);
 	}
 
 	if (header->flags & PSF2_FLAG_HAS_UNICODE_TABLE) {
