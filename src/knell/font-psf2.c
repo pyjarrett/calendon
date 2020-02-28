@@ -9,36 +9,19 @@
 //https://www.win.tue.nl/~aeb/linux/kbd/font-formats-1.html
 static uint8_t psf2Magic[4] = { 0x72, 0xb5, 0x4a, 0x86 };
 
-/* bits used in flags */
-#define PSF2_HAS_UNICODE_TABLE 0x01
-
-/* max version recognized so far */
-#define PSF2_MAXVERSION 0
+#define PSF2_FLAG_HAS_UNICODE_TABLE 0x01
 
 /**
  * Appears between code point sequences to indicate an identical sequence
  * mapping to the same glyph.
  */
 #define PSF2_SEPARATOR   0xFE
-#define PSF2_TERM  0xFF
 
 /**
- * To draw a glyph, we need to know which glyph we're trying to draw.
+ * Appears at the end of a series of grapheme clusters which all map to the
+ * same glyph.
  */
-KN_API uint32_t Font_CodePointToGlyphIndex(FontPSF2* font, const char* codePoint)
-{
-	KN_ASSERT(font != NULL, "Cannot find a glyph index for a null font");
-	KN_ASSERT(codePoint != NULL, "Cannot get the glyph index for a code point.");
-
-	// One of these glyphs should
-	for (uint32_t i=0; i < KN_MAX_FONT_PSF2_GLYPHS; ++i) {
-		font->mapping[i].codePointsInGlyph;
-		font->mapping[i].codePoint[0];
-	}
-	font->mapping;
-	return 0;
-}
-
+#define PSF2_TERM  0xFF
 
 /**
  * Binary layout of the PSF2 file header.
@@ -50,11 +33,11 @@ typedef struct {
 	uint32_t flags;
 	uint32_t numGlyphs;
 	uint32_t bytesPerGlyph;
-	uint32_t glyphHeight, glyphWidth; /* max dimensions of glyphs */
-	/* charsize = height * ((width + 7) / 8) */
+	uint32_t glyphHeight;
+	uint32_t glyphWidth;
 } PSF2Header;
 
-void Font_PSF2PrintHeader(const PSF2Header *header)
+static void Font_PSF2PrintHeader(const PSF2Header *header)
 {
 	KN_TRACE(LogSysMain, "Version is %" PRIu32, header->version);
 	KN_TRACE(LogSysMain, "Header is %" PRIu32 " bytes", header->bitmapOffset);
@@ -63,7 +46,7 @@ void Font_PSF2PrintHeader(const PSF2Header *header)
 	KN_TRACE(LogSysMain, "%" PRIu32 "x%" PRIu32, header->glyphWidth, header->glyphHeight);
 }
 
-static size_t ReadGrapheme(Utf8GlyphMap* map, GlyphIndex glyphIndex,
+static size_t Font_PSF2ReadGrapheme(Utf8GlyphMap* map, GlyphIndex glyphIndex,
 	const uint8_t* const unicodeTableStart, const uint8_t* const unicodeTableEnd)
 {
 	KN_ASSERT(map != NULL, "Cannot read a grapheme into a null glyph map.");
@@ -87,37 +70,38 @@ static size_t ReadGrapheme(Utf8GlyphMap* map, GlyphIndex glyphIndex,
 	Utf8GlyphMap_Map(map, &g.codePoints[0], g.codePointLength, glyphIndex);
 	Grapheme_Print(&g, stdout);
 	printf("\n");
-	//KN_TRACE(LogSysMain, "Read");
 	return totalBytesRead;
 }
 
-static void Font_PSF2ReadUnicodeTableAsGlyphMap(Utf8GlyphMap* map,
+static void Font_PSF2ReadUnicodeTableIntoGlyphMap(Utf8GlyphMap* map,
 	uint8_t* const unicodeTableStart, uint8_t* const unicodeTableEnd)
 {
+	KN_ASSERT(map != NULL, "Cannot read unicode table into a null glyph map.");
 	KN_ASSERT(unicodeTableStart < unicodeTableEnd, "Unicode table ends before it starts");
 
 	KN_TRACE(LogSysMain, "Size of Glyph Map: %" PRIu64 "\n", sizeof(Utf8GlyphMap));
 	KN_TRACE(LogSysMain, "Size of FontPSF2: %" PRIu64 "\n", sizeof(FontPSF2));
 	KN_TRACE(LogSysMain, "Reading unicode table of %zu bytes", (unicodeTableEnd - unicodeTableStart));
+
 	Utf8GlyphMap_Create(map);
-	uint8_t* cursor = unicodeTableStart;
-	GlyphIndex glyphIndex = 0;
 
 	/*
-	 * <unicodeimage> := <uc>*<seq>*<term>
-	 * <seq> := <ss><uc><uc>*
-	 * <ss> := psf1 ? 0xFFFE : 0xFE
-	 * <term> := psf1 ? 0xFFFF : 0xFF
+	 * PSF2 Unicode Table Grammar
+	 * unicode char: <uc> := (UTF-8 encoded, up to 4 bytes)
+	 * graphemes:         := <uc>*<seq>*<term>
+	 * sequence: <seq>    := <ss><uc><uc>*
+	 * separator: <ss>    := psf1 ? 0xFFFE : 0xFE
+	 * terminator: <term> := psf1 ? 0xFFFF : 0xFF
 	 * <uc :+ psf1 ? 2 byte little endian unicode : UTF-8 value
 	 */
+	uint8_t* cursor = unicodeTableStart;
+	GlyphIndex glyphIndex = 0;
 	while (cursor < unicodeTableEnd) {
-		// Read the first glyph sequence.
-		const size_t initialBytesRead = ReadGrapheme(map, glyphIndex, cursor, unicodeTableEnd);
+		const size_t initialBytesRead = Font_PSF2ReadGrapheme(map, glyphIndex, cursor, unicodeTableEnd);
 		cursor += initialBytesRead;
 
-		// Look for a separator or terminator.
 		while (*cursor == PSF2_SEPARATOR) {
-			const size_t moreBytesRead = ReadGrapheme(map, glyphIndex, cursor, unicodeTableEnd);
+			const size_t moreBytesRead = Font_PSF2ReadGrapheme(map, glyphIndex, cursor, unicodeTableEnd);
 			cursor += moreBytesRead;
 		}
 
@@ -126,8 +110,8 @@ static void Font_PSF2ReadUnicodeTableAsGlyphMap(Utf8GlyphMap* map,
 		++cursor;
 	}
 
-	KN_ASSERT(cursor == unicodeTableEnd, "Cursor didn't end at correct point: %" PRIiPTR, (intptr_t)(unicodeTableEnd - cursor));
-	// TODO: Check that all glyph indices have been read.
+	KN_ASSERT(cursor == unicodeTableEnd, "Cursor didn't end at correct point: %"
+		PRIiPTR, (intptr_t)(unicodeTableEnd - cursor));
 }
 
 /**
@@ -211,7 +195,7 @@ KN_API bool Font_PSF2Allocate(ImageRGBA8* image, FontPSF2* font, const char* pat
 		KN_ASSERT(imageCursor == imageEnd, "Didn't count every pixel");
 	}
 
-	if (header->flags & PSF2_HAS_UNICODE_TABLE) {
+	if (header->flags & PSF2_FLAG_HAS_UNICODE_TABLE) {
 		KN_TRACE(LogSysMain, "Has a unicode table");
 	}
 	else {
@@ -222,36 +206,8 @@ KN_API bool Font_PSF2Allocate(ImageRGBA8* image, FontPSF2* font, const char* pat
 	}
 	uint8_t* const unicodeTableStart = bitmapStart + bitmapSize;
 	uint8_t* const unicodeTableEnd = (uint8_t*)fileBuffer.contents + fileBuffer.size;
-	Font_PSF2ReadUnicodeTableAsGlyphMap(&font->map, unicodeTableStart, unicodeTableEnd);
+	Font_PSF2ReadUnicodeTableIntoGlyphMap(&font->map, unicodeTableStart, unicodeTableEnd);
 	Mem_Free(&image->pixels);
 	Mem_Free(&fileBuffer);
 	return true;
-}
-
-/**
- * Given a font mapping characters to glyph indices, find the glyphs which
- * should be printed.
- *
- * @param length location to write out the number of glyphs being printed.
- */
-KN_API bool Font_PSF2GlyphsToPrint(FontPSF2* font, const char* str,
-	uint32_t* glyphs, uint32_t* length)
-{
-	KN_ASSERT(font != NULL, "Cannot determine glyphs to print for a null font.");
-	KN_ASSERT(str != NULL, "Cannot print a null string.");
-	KN_ASSERT(glyphs != NULL, "Cannot writes glyphs to a null location.");
-	KN_ASSERT(length != NULL, "No location to which to write glyphs.");
-
-	uint32_t currentGlyph = 0;
-	char* currentCodePoint = str;
-	char* afterLastCodePoint = str + strlen(str);
-	while (currentCodePoint < afterLastCodePoint) {
-		// Is the code point in the glyph map?
-		for (uint32_t i=0; i < font->mapping[i].codePointsInGlyph; ++i) {
-			if (Utf8_CodePointsMatch(str, font->mapping[i].codePoint[i]));
-		}
-		++currentGlyph;
-	}
-	*length = currentGlyph;
-	return false;
 }
