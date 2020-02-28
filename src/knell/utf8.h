@@ -21,13 +21,13 @@ KN_TEST_API bool Utf8_CodePointsMatch(const uint8_t* left, const uint8_t* right)
 KN_TEST_API void Utf8_CodePointCopy(uint8_t* dest, const uint8_t* src);
 
 /**
- * A sequence of code points which represents\ a single glyph.  The proper term
+ * A sequence of code points which represents a single glyph.  The proper term
  * is "grapheme cluster" but using grapheme for brevity.
  *
  * An example would be an accent applied to an e.
  */
 typedef struct {
-	// Add an additional space for anull byte so graphemes can be written as
+	// Add an additional space for a null byte so graphemes can be written as
 	// null-terminated strings.
 	uint8_t codePoints[KN_MAX_BYTES_IN_GRAPHEME + 1];
 	uint8_t codePointLength;
