@@ -5,22 +5,34 @@
 #include <knell/utf8.h>
 
 typedef uint32_t GlyphIndex;
+
+/**
+ * Used to indicate a grapheme mapping does not exist or it not initialized.
+ */
 #define KN_GLYPH_INDEX_INVALID ((uint32_t)(~0))
+
+/**
+ * Indicates maximum compile-time storage requirements for the number of
+ * possible graphemes.  This limit exists more to reduce the total memory usage
+ * rather than provide a true limit on the number of graphemes which should be
+ * supported.
+ */
 #define KN_MAX_GLYPH_MAP_GRAPHEMES 512
 
 /**
- * Treated as an opaque pointer by clients.
+ * Maps graphemes to glyph indices for display by a font with glyphs
+ * corresponding to each index.
  */
 typedef struct {
 	Grapheme graphemes[KN_MAX_GLYPH_MAP_GRAPHEMES];
 
 	// glyph[i] is the glyph for sequence[i]
 	GlyphIndex glyphs[KN_MAX_GLYPH_MAP_GRAPHEMES];
-	uint32_t usedSequences;
-} Utf8GlyphMap;
+	uint32_t usedGraphemes;
+} Utf8GraphemeMap;
 
-KN_TEST_API void Utf8GlyphMap_Create(Utf8GlyphMap* map);
-KN_TEST_API uint32_t Utf8GlyphMap_GlyphForCodePoint(Utf8GlyphMap* map, const uint8_t* codePoint, uint8_t numCodePoints);
-KN_TEST_API bool Utf8GlyphMap_Map(Utf8GlyphMap* map, const uint8_t* codePoint, uint8_t numCodePoints, GlyphIndex glyphIndex);
+KN_TEST_API void Utf8GraphemeMap_Create(Utf8GraphemeMap* map);
+KN_TEST_API uint32_t Utf8GraphemeMap_GlyphForCodePoints(Utf8GraphemeMap* map, const uint8_t* codePoints, uint8_t numCodePoints);
+KN_TEST_API bool Utf8GraphemeMap_Map(Utf8GraphemeMap* map, const uint8_t* codePoints, uint8_t numCodePoints, GlyphIndex glyphIndex);
 
 #endif //KNELL_FONT_UTF8_GLYPH_H

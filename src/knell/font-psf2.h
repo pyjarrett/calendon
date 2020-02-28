@@ -17,7 +17,7 @@
  * Describes the relationship between glyphs and code points.
  */
 typedef struct {
-	Utf8GlyphMap map;
+	Utf8GraphemeMap map;
 	dimension2u32 glyphSize;
 } FontPSF2;
 

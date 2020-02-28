@@ -46,10 +46,10 @@ static void Font_PSF2PrintHeader(const PSF2Header *header)
 	KN_TRACE(LogSysMain, "%" PRIu32 "x%" PRIu32, header->glyphWidth, header->glyphHeight);
 }
 
-static size_t Font_PSF2ReadGrapheme(Utf8GlyphMap* map, GlyphIndex glyphIndex,
+static size_t Font_PSF2ReadGrapheme(Utf8GraphemeMap* map, GlyphIndex glyphIndex,
 	const uint8_t* const unicodeTableStart, const uint8_t* const unicodeTableEnd)
 {
-	KN_ASSERT(map != NULL, "Cannot read a grapheme into a null glyph map.");
+	KN_ASSERT(map != NULL, "Cannot read a grapheme into a null grapheme map.");
 	KN_ASSERT(unicodeTableStart != NULL, "Cannot read a unicode from a null unicode table.");
 	KN_ASSERT(unicodeTableEnd != NULL, "Unicode table to read from has no end.");
 	KN_ASSERT(unicodeTableStart < unicodeTableEnd, "Unicode table begins after it ends.");
@@ -67,23 +67,23 @@ static size_t Font_PSF2ReadGrapheme(Utf8GlyphMap* map, GlyphIndex glyphIndex,
 		cursor += bytesInCodePoint;
 		totalBytesRead += bytesInCodePoint;
 	}
-	Utf8GlyphMap_Map(map, &g.codePoints[0], g.codePointLength, glyphIndex);
+	Utf8GraphemeMap_Map(map, &g.codePoints[0], g.codePointLength, glyphIndex);
 	Grapheme_Print(&g, stdout);
 	printf("\n");
 	return totalBytesRead;
 }
 
-static void Font_PSF2ReadUnicodeTableIntoGlyphMap(Utf8GlyphMap* map,
+static void Font_PSF2ReadUnicodeTableIntoGlyphMap(Utf8GraphemeMap* map,
 	const uint8_t* const unicodeTableStart, const uint8_t* const unicodeTableEnd)
 {
-	KN_ASSERT(map != NULL, "Cannot read unicode table into a null glyph map.");
+	KN_ASSERT(map != NULL, "Cannot read unicode table into a null grapheme map.");
 	KN_ASSERT(unicodeTableStart < unicodeTableEnd, "Unicode table ends before it starts");
 
-	KN_TRACE(LogSysMain, "Size of Glyph Map: %" PRIu64 "\n", sizeof(Utf8GlyphMap));
+	KN_TRACE(LogSysMain, "Size of Glyph Map: %" PRIu64 "\n", sizeof(Utf8GraphemeMap));
 	KN_TRACE(LogSysMain, "Size of FontPSF2: %" PRIu64 "\n", sizeof(FontPSF2));
 	KN_TRACE(LogSysMain, "Reading unicode table of %zu bytes", (unicodeTableEnd - unicodeTableStart));
 
-	Utf8GlyphMap_Create(map);
+	Utf8GraphemeMap_Create(map);
 
 	/*
 	 * PSF2 Unicode Table Grammar
@@ -198,7 +198,7 @@ KN_API bool Font_PSF2Allocate(FontPSF2* font, ImageRGBA8* description, const cha
 	}
 	else {
 		// If there is no unicode table, there is no way to determine which
-		// glyph maps to which character.
+		// glypheme maps to which glyph.
 		KN_TRACE(LogSysMain, "No unicode table");
 		return false;
 	}
