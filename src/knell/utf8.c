@@ -66,6 +66,7 @@ KN_TEST_API void Grapheme_Create(Grapheme* seq, const uint8_t* codePoint, uint8_
 		"Too many code points provided for a Grapheme: %" PRIu8,
 		numCodePoints);
 
+	memset(&seq->codePoints[0], 0, KN_MAX_BYTES_IN_GRAPHEME);
 	const uint8_t* currentCodePoint = codePoint;
 	uint8_t currentCodePointIndex = 0;
 	uint8_t usedBytes = 0;
