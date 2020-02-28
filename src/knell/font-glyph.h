@@ -7,7 +7,6 @@
 typedef uint32_t GlyphIndex;
 #define KN_GLYPH_INDEX_INVALID ((uint32_t)(~0))
 #define KN_MAX_GLYPH_MAP_GRAPHEMES 512
-#define KN_MAX_CODE_POINTS_IN_GLYPH 3
 
 /**
  * Treated as an opaque pointer by clients.
