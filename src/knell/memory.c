@@ -28,6 +28,7 @@ KN_API void Mem_Allocate(DynamicBuffer* buffer, uint32_t size)
 	if (!buffer->contents) {
 		KN_ERROR(LogSysMemory, "Unable to allocate %" PRIu32 " bytes for DynamicBuffer", size);
 	}
+	buffer->size = size;
 	++MemOutstandingAllocations;
 }
 

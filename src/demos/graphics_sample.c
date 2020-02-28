@@ -8,6 +8,7 @@
 #include <knell/math2.h>
 #include <knell/path.h>
 #include <knell/render.h>
+#include <knell/render-resources.h>
 #include <knell/time.h>
 
 #include <math.h>
@@ -23,6 +24,8 @@ SpriteId spriteFrames[SPRITE_ANIMATION_FRAMES];
 #define NUM_CIRCLE_VERTICES 20
 float2 circleOrigin;
 float2 circleVertices[NUM_CIRCLE_VERTICES];
+
+FontId font;
 
 /**
  * Creates a line of points to form circle in a counter clockwise winding.
@@ -73,6 +76,13 @@ KN_GAME_API void Game_Init(void)
 	for (uint32_t i = 0; i < NUM_CIRCLE_VERTICES; ++i) {
 		circleVertices[i] = float2_Add(circleVertices[i], circleOrigin);
 	}
+
+	PathBuffer fontPath;
+	Assets_PathBufferFor("fonts/bizcat.psf", &fontPath);
+	R_CreateFont(&font);
+	if (!R_LoadPSF2Font(font, fontPath.str))	{
+		KN_FATAL_ERROR("Unable to load font: %s", fontPath.str);
+	}
 }
 
 KN_GAME_API void Game_Draw(void)
@@ -98,6 +108,7 @@ KN_GAME_API void Game_Draw(void)
 	dimension2f rectSize = { .width = 100.0f, .height = 100.0f };
 	R_DrawDebugRect(rectPosition, rectSize, green);
 
+	R_DrawSimpleText(font, float2_Make(400, 100), "\xe2\x86\x93Hello World→\xe2\x86\x92");
 	R_EndFrame();
 }
 

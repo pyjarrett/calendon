@@ -1,6 +1,51 @@
 #include "path.h"
 
 #include <string.h>
+#include <sys/stat.h>
+
+bool Path_Exists(const char* path)
+{
+	if (!path) {
+		return false;
+	}
+	struct stat info;
+	return stat(path, &info) == 0;
+}
+
+bool Path_IsDir(const char* path)
+{
+	if (!path) {
+		return false;
+	}
+
+	struct stat info;
+	if (stat(path, &info) != 0) {
+		return false;
+	}
+
+#ifdef _WIN32
+	return (info.st_mode & S_IFDIR) == S_IFDIR;
+#else
+	return S_ISDIR(info.st_mode);
+#endif
+}
+
+bool Path_IsFile(const char* path)
+{
+	if (!path) {
+		return false;
+	}
+
+	struct stat info;
+	if (stat(path, &info) != 0) {
+		return false;
+	}
+#ifdef _WIN32
+	return (info.st_mode & S_IFREG) == S_IFREG;
+#else
+	return !S_ISDIR(info.st_mode);
+#endif
+}
 
 KN_API bool Path_Append(const char* toAdd, char* current, uint32_t length)
 {
@@ -12,6 +57,18 @@ KN_API bool Path_Append(const char* toAdd, char* current, uint32_t length)
 	current[currentLength] = '/';
 	strcpy(current + currentLength + 1, toAdd);
 	return true;
+}
+
+KN_API bool PathBuffer_Create(PathBuffer* path, const char* initialPath)
+{
+	KN_ASSERT(path != NULL, "Cannot assign to a null PathBuffer");
+	KN_ASSERT(initialPath != NULL, "Cannot assign a null initial path to a PathBuffer");
+	const size_t initialPathLength = strlen(initialPath);
+	if (initialPathLength < KN_PATH_MAX + 1) {
+		strcpy(path->str, initialPath);
+		return true;
+	}
+	return false;
 }
 
 KN_API bool PathBuffer_Join(PathBuffer* root, const char* suffix)

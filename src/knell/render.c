@@ -12,6 +12,11 @@ KN_API void R_Init(uint32_t width, uint32_t height)
 	RLL_Init(width, height);
 }
 
+KN_API void R_Shutdown(void)
+{
+	RLL_Shutdown();
+}
+
 /**
  * To be called once per main loop to reset the state required to draw the next
  * frame.  Error conditions should be restored and any pending values should be
@@ -50,6 +55,26 @@ KN_API bool R_LoadSprite(SpriteId id, const char* path)
 KN_API void R_DrawSprite(SpriteId id, float2 position, dimension2f size)
 {
 	RLL_DrawSprite(id, position, size);
+}
+
+bool R_CreateFont(FontId* id)
+{
+	return RLL_CreateFont(id);
+}
+
+bool R_LoadPSF2Font(FontId id, const char* path)
+{
+	return RLL_LoadPSF2Font(id, path);
+}
+
+void R_DrawSimpleText(FontId id, float2 position, const char* text)
+{
+	TextDrawParams params;
+	params.position = position;
+	params.color = (rgba8i) { .red = 255, .green = 255, .blue = 255, .alpha = 255 };
+	params.layout = LayoutHorizontal;
+	params.printDirection = PrintDirectionLeftToRight;
+	RLL_DrawSimpleText(id, &params, text);
 }
 
 KN_API void R_DrawDebugFullScreenRect(void)

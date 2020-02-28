@@ -15,13 +15,13 @@
 #include <knell/assets-fileio.h>
 #include <knell/color.h>
 #include <knell/compat-sdl.h>
+#include <knell/font-psf2.h>
 #include <knell/image.h>
 #include <knell/log.h>
 #include <knell/math4.h>
 #include <knell/memory.h>
-#include <knell/sprite.h>
-
-#include <spa_fu/spa_fu.h>
+#include <knell/path.h>
+#include <knell/render-resources.h>
 
 #if defined(_WIN32)
 	#include <knell/compat-windows.h>
@@ -95,6 +95,12 @@ static SpriteId nextSpriteId;
  * Maps sprite IDs to their OpenGL textures.
  */
 static GLuint spriteTextures[RLL_MAX_SPRITE_TYPES];
+
+#define RLL_MAX_FONT_TYPES 8
+static GLuint fontTextures[RLL_MAX_FONT_TYPES];
+static FontId nextFontId;
+
+static FontPSF2 fonts[RLL_MAX_FONT_TYPES];
 
 /**
  * The maximum length of shader information logs which can be read.
@@ -760,6 +766,7 @@ void RLL_FillBuffers(void)
 void RLL_InitSprites(void)
 {
 	nextSpriteId = 0;
+	nextFontId = 0;
 }
 
 void RLL_LoadSimpleShader(const char* vertexShaderFileName,
@@ -776,7 +783,7 @@ void RLL_LoadSimpleShader(const char* vertexShaderFileName,
 			fragmentShaderFileName);
 	}
 
-	if (!SPA_IsFile(fragmentShaderPath.str)) {
+	if (!Path_IsFile(fragmentShaderPath.str)) {
 		KN_ERROR(LogSysRender, "Fragment shader is not a file: %s",
 			fragmentShaderPath.str);
 	}
@@ -791,7 +798,7 @@ void RLL_LoadSimpleShader(const char* vertexShaderFileName,
 			vertexShaderFileName);
 	}
 
-	if (!SPA_IsFile(vertexShaderPath.str)) {
+	if (!Path_IsFile(vertexShaderPath.str)) {
 		KN_ERROR(LogSysRender, "Vertex shader is not a file: %s",
 			vertexShaderPath.str);
 	}
@@ -908,6 +915,11 @@ void RLL_Init(uint32_t width, uint32_t height)
 	uniformStorage[UniformNameProjection].f44 = RLL_OrthoProjection(width, height);
 }
 
+void RLL_Shutdown(void)
+{
+
+}
+
 void RLL_StartFrame(void)
 {
 	SDL_GL_MakeCurrent(window, gl);
@@ -944,8 +956,8 @@ bool RLL_LoadSprite(SpriteId id, const char* path)
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, spriteTextures[id]);
 
-	ImagePixels image;
-	if (!Image_Allocate(&image, path)) {
+	ImageRGBA8 image;
+	if (!ImageRGBA8_Allocate(&image, path)) {
 		return false;
 	}
 
@@ -968,8 +980,8 @@ bool RLL_LoadSprite(SpriteId id, const char* path)
 
 	KN_ASSERT(glIsTexture(spriteTextures[id]), "Unable to reserve texture for "
 		"sprite loading from path: %s", path);
-    
-	Image_Free(&image);
+
+	ImageRGBA8_Free(&image);
 
     KN_ASSERT_NO_GL_ERROR();
 	return true;
@@ -998,6 +1010,151 @@ void RLL_DrawSprite(SpriteId id, float2 position, dimension2f size)
 
 	RLL_DisableProgram(ProgramIndexSprite);
 
+	KN_ASSERT_NO_GL_ERROR();
+}
+
+bool RLL_CreateFont(FontId* id)
+{
+	if (nextFontId < RLL_MAX_FONT_TYPES)
+	{
+		*id = ++nextFontId;
+		return true;
+	}
+	return false;
+}
+
+/**
+ * Loads a PSF2 font from a given font into the specific id.
+ */
+bool RLL_LoadPSF2Font(FontId id, const char* path)
+{
+	// TODO: Check to determine if the font id has already been used.
+
+	KN_ASSERT(path != NULL, "Cannot load a font from a null path");
+	KN_ASSERT(Path_IsFile(path), "PSF2 font does not exist");
+
+	KN_ASSERT_NO_GL_ERROR();
+
+	ImageRGBA8 imagePixels;
+	FontPSF2 font;
+	Font_PSF2Allocate(&imagePixels, &font, path);
+
+	glGenTextures(1, &fontTextures[id]);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, fontTextures[id]);
+
+	// Don't mipmap for now.
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+
+	// TODO: Use proxy textures to test to see if sufficient space exists.
+	// TODO: Should this be GL_RGBA8?
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, header->width, header->height * header->numGlyphs, 0,
+	//			 GL_RGBA, GL_UNSIGNED_BYTE, imageStorage.contents);
+
+	// Set the texture parameters.
+	// https://stackoverflow.com/questions/3643932/what-is-the-scope-of-gltexparameters-in-opengl
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	KN_ASSERT(glIsTexture(fontTextures[id]), "Unable to reserve texture for "
+		"font loading from path: %s", path);
+
+	//Mem_Free(&imageStorage);
+
+	KN_ASSERT_NO_GL_ERROR();
+	return true;
+}
+
+typedef struct {
+	int x;
+} GlyphDrawParams;
+
+/**
+ * Draws a glyph with the given configuration.
+ */
+void RLL_DrawGlyph(FontId id, float2 glyphPosition, const char* codePoint,
+	uint8_t codePointLength)
+{
+	KN_ASSERT(codePoint != NULL, "Cannot draw a null code point");
+	KN_ASSERT(codePointLength <= 4, "Code point length is %" PRIu32
+		" exceeds UTF-8 limit (4)", codePointLength);
+
+	// TODO: Provide a color for the glyph.
+	// TODO: Just draw to debug to ensure the decoding part works.
+	char codePointAsString[5];
+	memset(codePointAsString, 0, 5);
+	for (uint32_t i=0; i < codePointLength; ++i) {
+		codePointAsString[i] = codePoint[i];
+	}
+	//KN_TRACE(LogSysMain, "Would have drawn: \"%s\"", codePointAsString);
+
+#if 0
+	RLL_SetFullScreenViewport();
+
+	GLuint texture = fontTextures[id];
+	KN_ASSERT(glIsTexture(texture), "Sprite %" PRIu32 " does not have a valid"
+													  "texture", texture);
+	RLL_ReadyTexture2(0, fontTextures[id]);
+
+	dimension2f size = { .width = 40, .height = 1000 };
+
+	uniformStorage[UniformNameModelView].f44 = float4x4_Multiply(
+		float4x4_NonUniformScale(size.width, size.height, 1.0f),
+		float4x4_Translate(position.x, position.y, 0.0f));;
+
+	glBindBuffer(GL_ARRAY_BUFFER, spriteBuffer);
+	KN_ASSERT_NO_GL_ERROR();
+	RLL_EnableProgram(ProgramIndexSprite, 4 * sizeof(float), 0);
+
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+	RLL_DisableProgram(ProgramIndexSprite);
+#endif
+}
+
+/**
+ * @param id
+ * @param textPosition
+ * @param text a null-terminated, utf-8 string
+ */
+void RLL_DrawSimpleText(FontId id, TextDrawParams* params, const char* text)
+{
+	FontPSF2* font = &fonts[id];
+	// TODO: Check to ensure the id is valid.
+	KN_ASSERT(text != NULL, "Cannot draw a null text");
+	KN_ASSERT(params != NULL, "Cannot draw with null parameters.");
+	KN_ASSERT(params->layout == LayoutHorizontal,
+		"Only horizontal layouts are currently supported.");
+	KN_ASSERT(params->printDirection == PrintDirectionLeftToRight,
+		"Only left-to-right print direction is currently supported.");
+
+	// When printing characters, we need to know:
+	// 1. where we are in the string.
+	// 2. where to draw the next glyph.
+	// 3. the distance between glyphs.
+	const char* cursor = text;
+	float2 glyphPosition = params->position;
+	float2 glyphAdvance = float2_Make(font->glyphSize.width, 0.0f);
+
+	// Text is a utf-8 string, so its byte length is not necessarily its glyph length.
+	const uint32_t textLengthInBytes = strlen(text);
+	const char* textAfterLastByte = text + textLengthInBytes;
+
+	while (cursor < textAfterLastByte) {
+		// utf-8 uses variable encoding, so determine where the next code point
+		// starts.  Save this value to move the cursor and not recalculate twice.
+		const uint8_t codePointSize = Utf8_NumBytesInCodePoint(*cursor);
+
+		RLL_DrawGlyph(id, glyphPosition, cursor, codePointSize);
+		glyphPosition = float2_Add(glyphPosition, glyphAdvance);
+
+		// Move to the next code point.
+		cursor += codePointSize;
+	}
 	KN_ASSERT_NO_GL_ERROR();
 }
 

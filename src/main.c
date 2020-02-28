@@ -15,11 +15,6 @@
  */
 #include "knell/kn.h"
 
-#ifdef _WIN32
-// Force a rebuild to cause dll copy.
-#include "post_build_dummy.h"
-#endif
-
 #include "knell/assets.h"
 #include "knell/assets-fileio.h"
 #include "knell/control.h"
@@ -32,11 +27,10 @@
 #ifdef _WIN32
 #include "knell/process.h"
 #endif
+#include "knell/path.h"
 #include "knell/time.h"
 #include "knell/render.h"
 #include "knell/ui.h"
-
-#include <spa_fu/spa_fu.h>
 
 #include <stdio.h>
 #include <time.h>
@@ -87,7 +81,7 @@ void Main_ParseCommandLineArguments(int argc, char* argv[])
 			}
 			else {
 				if (strlen(argv[i+1]) < MAX_GAME_LIB_NAME_LENGTH) {
-					if (!SPA_IsFile(argv[i+1])) {
+					if (!Path_IsFile(argv[i+1])) {
 						char cwd[4096];
 						Env_CurrentWorkingDirectory(cwd, 4096);
 						printf("Current working directory is: %s\n", cwd);
@@ -112,7 +106,7 @@ void Main_ParseCommandLineArguments(int argc, char* argv[])
 			}
 			else {
 				if (strlen(argv[i+1]) < MAX_ASSET_DIR_LENGTH) {
-					if (!SPA_IsDir(argv[i+1])) {
+					if (!Path_IsDir(argv[i+1])) {
 						printf("Asset directory %s does not exist\n", argv[i+1]);
 						exit(EXIT_FAILURE);
 					}
@@ -194,8 +188,11 @@ void Main_InitAllSystems(void)
 void Main_Shutdown(void)
 {
 	Game_ShutdownFn();
-	Mem_Shutdown();
+	R_Shutdown();
 	UI_Shutdown();
+	Assets_Shutdown();
+	Mem_Shutdown();
+	Log_Shutdown();
 }
 
 /**

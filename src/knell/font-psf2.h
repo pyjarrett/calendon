@@ -1,0 +1,26 @@
+/*
+ * Loading of PSF version 2 fonts.  PSF is a simple bitmap-based font format
+ * using fixed width, which is typically suitable for text consoles.
+ *
+ * Fixed width fonts prevent needing to worry about kerning in fonts.  These
+ * only support a limited number of characters and one resolution, but are
+ * quick to use to get off the ground.
+ */
+#ifndef KN_FONT_PSF2_H
+#define KN_FONT_PSF2_H
+
+#include <knell/font-glyph.h>
+#include <knell/image.h>
+#include <knell/math2.h>
+
+/**
+ * Describes the relationship between glyphs and code points.
+ */
+typedef struct {
+	Utf8GlyphMap map;
+	dimension2u32 glyphSize;
+} FontPSF2;
+
+KN_API bool Font_PSF2Allocate(ImageRGBA8* description, FontPSF2* font, const char* path);
+
+#endif // KN_FONT_PSF2_H

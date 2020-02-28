@@ -2,14 +2,20 @@
 
 #include "kn.h"
 #include "log.h"
+#include "path.h"
+#include "env.h"
 #include <string.h>
-
-#include <spa_fu/spa_fu.h>
 
 #define MAX_ASSET_DIR_LENGTH 256
 static char assetsRoot[MAX_ASSET_DIR_LENGTH + 1];
 static uint32_t assetsRootLength = 0;
 LogHandle LogSysAssets;
+static bool assetsInitialized = false;
+
+KN_API bool Assets_IsReady(void)
+{
+	return assetsInitialized;
+}
 
 /**
  * Initial the asset system with the top level directory where assets should
@@ -17,19 +23,32 @@ LogHandle LogSysAssets;
  */
 KN_API void Assets_Init(const char* assetDir)
 {
+	if (Assets_IsReady()) {
+		KN_FATAL_ERROR("Double initialization of assets system.");
+	}
 	if (strlen(assetDir) >= MAX_ASSET_DIR_LENGTH) {
 		KN_FATAL_ERROR("Asset path root is too long.  Cannot initialize asset path with %s", assetDir);
 	}
 	strcpy(assetsRoot, assetDir);
 	assetsRootLength = (uint32_t)strlen(assetsRoot);
 
-	if (!SPA_IsDir(assetsRoot)) {
-		KN_FATAL_ERROR("Assets root directory doesn't exist: %s", assetsRoot);
+	if (!Path_IsDir(assetsRoot)) {
+		PathBuffer cwd;
+		Env_CurrentWorkingDirectory(cwd.str, KN_PATH_MAX);
+		KN_FATAL_ERROR("Assets root directory doesn't exist: %s.  CWD: %s", assetsRoot, cwd.str);
 	}
 
-	Log_RegisterSystem(&LogSysAssets, "Assets", KN_LOG_ERROR);
+	Log_RegisterSystem(&LogSysAssets, "Assets", KN_LOG_TRACE);
 
 	KN_TRACE(LogSysAssets, "Assets initialized with root at: '%s'", assetsRoot);
+	assetsInitialized = true;
+}
+
+KN_API void Assets_Shutdown(void)
+{
+	KN_ASSERT(Assets_IsReady(), "Cannot shutdown assets system, is not initialized.");
+	assetsInitialized = false;
+	KN_ASSERT(!Assets_IsReady(), "Shutdown did not work on assets system.");
 }
 
 /**

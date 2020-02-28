@@ -18,9 +18,9 @@ typedef struct {
 	 * shouldn't be any game levels even of that size.
 	 */
 	uint32_t width, height;
-} ImagePixels;
+} ImageRGBA8;
 
-KN_API bool Image_Allocate(ImagePixels* image, const char* fileName);
-KN_API void Image_Free(ImagePixels* image);
+KN_API bool ImageRGBA8_Allocate(ImageRGBA8* image, const char* fileName);
+KN_API void ImageRGBA8_Free(ImageRGBA8* image);
 
 #endif /* KN_IMAGE_H */

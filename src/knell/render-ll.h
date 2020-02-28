@@ -10,9 +10,10 @@
 #include <knell/color.h>
 #include <knell/math2.h>
 #include <knell/math4.h>
-#include <knell/sprite.h>
+#include <knell/render-resources.h>
 
 void RLL_Init(uint32_t width, uint32_t height);
+void RLL_Shutdown(void);
 void RLL_StartFrame(void);
 void RLL_EndFrame(void);
 void RLL_Clear(rgba8i color);
@@ -20,6 +21,10 @@ void RLL_Clear(rgba8i color);
 bool RLL_CreateSprite(SpriteId* id);
 bool RLL_LoadSprite(SpriteId id, const char* path);
 void RLL_DrawSprite(SpriteId id, float2 position, dimension2f size);
+
+bool RLL_CreateFont(FontId* id);
+bool RLL_LoadPSF2Font(FontId id, const char* path);
+void RLL_DrawSimpleText(FontId id, TextDrawParams* params, const char* text);
 
 void RLL_DrawDebugFullScreenRect(void);
 void RLL_DrawDebugRect(float4 center, dimension2f dimensions, float4 color);

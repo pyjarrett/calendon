@@ -152,12 +152,6 @@ if (WIN32)
 	include_directories(SYSTEM "${VENDOR_SDL2_ROOT}/include")
 	link_directories(SYSTEM "${VENDOR_SDL2_ROOT}/lib/x64")
 
-	# spartan file utils in an in-house library for cross platform quick file
-	# operations such as seeing if a file exists, or if a path is a dir or a file.
-	vendorize(windows spartan_file_utils 0.0.1)
-	include_directories(SYSTEM "${VENDOR_SPARTAN_FILE_UTILS_ROOT}/include")
-	link_directories(SYSTEM "${VENDOR_SPARTAN_FILE_UTILS_ROOT}/lib")
-
 	# glew (GL Extension Wranger) is used to load OpenGL extension functions so we
 	# don't need to manually load function pointers.
 	vendorize(windows glew 2.1.0)
@@ -177,14 +171,6 @@ if (WIN32)
 	# the SDK, so an x64 version is included for creating minidumps.
 	vendorize(windows windows_sdk 10)
 endif (WIN32)
-
-if (UNIX)
-	# spartan file utils in an in-house library for cross platform quick file
-	# operations such as seeing if a file exists, or if a path is a dir or a file.
-	vendorize(linux spartan_file_utils 0.0.1)
-	include_directories(SYSTEM "${VENDOR_SPARTAN_FILE_UTILS_ROOT}/include")
-	link_directories(SYSTEM "${VENDOR_SPARTAN_FILE_UTILS_ROOT}/lib")
-endif (UNIX)
 
 # The knell driver should depend on all demos to ensure that they are built
 # before running the driver to prevent problems where you're trying to
@@ -216,72 +202,108 @@ endfunction()
 # http://man7.org/linux/man-pages/man7/feature_test_macros.7.html
 add_definitions(-D_POSIX_C_SOURCE=199309L)
 
+remove_definitions(-DKN_LIBRARY)
+add_definitions(-DKN_LIBRARY=0)
 include_directories(SYSTEM src/)
-
 add_subdirectory(src/knell)
-add_subdirectory(src/demos)
-add_subdirectory(src/build_tools)
 
-add_compile_definitions(KN_LIBRARY=0)
+remove_definitions(-DKN_LIBRARY)
+add_definitions(-DKN_LIBRARY=0)
+add_subdirectory(src/demos)
+
+remove_definitions(-DKN_LIBRARY)
+add_definitions(-DKN_LIBRARY=0)
 add_executable(knell src/main.c)
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT knell)
 
 target_link_libraries(knell knell-lib)
 add_dependencies(knell knell-lib ${KN_ALL_DEMOS})
-
 message("Demos are ${KN_ALL_DEMOS}")
+
+#
+# Creates a unit test and add it to our registered list.
+# Format:
+#   unit_test(NAME test_name SOURCES a.cpp b.cpp)
+#   unit_test(NAME test_name SOURCES a.cpp b.cpp LIBS GL)
+# https://stackoverflow.com/questions/733475/cmake-ctest-make-test-doesnt-build-tests#736838
+#
+function(add_unit_test)
+	set(options "")
+	set(oneValueArgs NAME)
+	set(multiValueArgs SOURCES LIBS)
+	cmake_parse_arguments(UTEST "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+	add_definitions(-DKN_TESTING=1)
+	add_executable("${UTEST_NAME}" ${UTEST_SOURCES})
+
+	# Generate coverage data only under GCC
+	if(CMAKE_BUILD_TYPE MATCHES Debug AND CMAKE_COMPILER_IS_GNUCC)
+		target_link_libraries(${UTEST_NAME} pthread gcov)
+		set_target_properties(${UTEST_NAME} PROPERTIES COMPILE_FLAGS "-fprofile-arcs -ftest-coverage")
+		set_target_properties(${UTEST_NAME} PROPERTIES LINK_FLAGS "-fprofile-arcs -ftest-coverage")
+	endif()
+	target_link_libraries(${UTEST_NAME} ${UTEST_LIBS})
+	add_test(NAME "${UTEST_NAME}" COMMAND "${UTEST_NAME}" WORKING_DIRECTORY ${BINARY_DIR})
+	add_dependencies(check ${UTEST_NAME})
+	remove_definitions(-DKN_TESTING)
+endfunction()
+
+#
+# Provides a command to run all tests, since CLion can't do that on it's own.
+# https://stackoverflow.com/questions/733475/cmake-ctest-make-test-doesnt-build-tests#736838
+#
+add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} -V -C Debug)
+add_dependencies(check knell-lib-test)
+enable_testing()
+remove_definitions(-DKN_LIBRARY)
+add_definitions(-DKN_LIBRARY=0)
+add_subdirectory(src/tests)
     
 if (WIN32)
-	add_custom_command(TARGET knell POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_directory
-		${VENDOR_SDL2_ROOT}/lib/x64
-		$<TARGET_FILE_DIR:knell>
+	add_custom_target(windows-dll-copy)
+
+	add_custom_command(TARGET windows-dll-copy POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different
+		${VENDOR_SDL2_ROOT}/lib/x64/SDL2.dll
+		${BINARY_DIR}
 		)
 
-	add_custom_command(TARGET knell POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_directory
-		${VENDOR_GLEW_ROOT}/bin/Release/x64
-		$<TARGET_FILE_DIR:knell>
+	add_custom_command(TARGET windows-dll-copy POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different
+		${VENDOR_GLEW_ROOT}/bin/Release/x64/glew32.dll
+		${BINARY_DIR}
 		)
 
-	add_custom_command(TARGET knell POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_directory
-		${VENDOR_ZLIB_ROOT}/Release/x64
-		$<TARGET_FILE_DIR:knell>
+	add_custom_command(TARGET windows-dll-copy POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different
+		${VENDOR_ZLIB_ROOT}/Release/x64/zlibwapi.dll
+		${BINARY_DIR}
 		)
 
-	# Fix a bug where knell-lib was not being copied into the working
-	# directory where knell.exe lives, leading to usage of stale versions
-	# of knell-lib in the binary.
-	#
-	# None of touch, type, and $null> work properly under CLion or Visual
-	# Studio, so Knell provides a simple executable for writing a 0 byte
-	# file (stamp_file.exe) which the Knell driver (knell) depends upon
-	# which triggers a rebuild, even if no changes have been made to Knell
-	# to ensure the post build step fires.
-	#
-	# https://nickdademo.blogspot.com/2015/03/cmake-always-running-post-build-step.html
-    add_custom_command(TARGET knell POST_BUILD
+    add_custom_command(TARGET windows-dll-copy POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
 		$<TARGET_FILE:knell-lib>
-		$<TARGET_FILE_DIR:knell>
+		${BINARY_DIR}
 		COMMENT "Copying knell-lib shared lib to driver directory")
-	add_custom_target(force-knell-post-build
-		COMMAND $<TARGET_FILE:stamp_file> ${CMAKE_SOURCE_DIR}/src/post_build_dummy.h
-		COMMENT "Updating timestamp to force knell post build."
-		)
-	add_dependencies(force-knell-post-build stamp_file)
-	add_dependencies(knell force-knell-post-build)
+
+	add_custom_command(TARGET windows-dll-copy POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different
+		$<TARGET_FILE:knell-lib-test>
+		${BINARY_DIR}
+		COMMENT "Copying knell-lib-test shared lib to driver directory")
 
 	# Only create dumps in Debug.
 	# Uses a x64 version of the dll.
 	# TODO: Provide an x86 and an ARM version.
 	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-		add_custom_command(TARGET knell POST_BUILD
-			COMMAND ${CMAKE_COMMAND} -E copy_directory
-			${VENDOR_WINDOWS_SDK_ROOT}
-			$<TARGET_FILE_DIR:knell>
+		add_custom_command(TARGET windows-dll-copy POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy_if_different
+			${VENDOR_WINDOWS_SDK_ROOT}/dbghelp.dll
+			${BINARY_DIR}
 			)
 	endif()
+
+	add_dependencies(check windows-dll-copy)
+	add_dependencies(knell windows-dll-copy)
 
 endif (WIN32)

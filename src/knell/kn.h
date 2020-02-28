@@ -9,7 +9,7 @@
  * to prevent introducing excessive elements throughout the engine and bloating
  * compile times.
  */
-
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -19,6 +19,7 @@
  * Symbol export/import markers for engine library functions.
  *
  * - Use `KN_API` for engine library functions (within knell-lib)
+ * - Use `KN_UNIT_API` for exposing functions for (unit) testing.
  * - Use `KN_GAME_API` for game library functions (in demo/game code)
  *
  * Windows:
@@ -32,8 +33,18 @@
 #ifdef _WIN32
 	#if KN_LIBRARY
 		#define KN_API __declspec(dllexport)
+		#if KN_TESTING
+			#define KN_UNIT_API __declspec(dllexport)
+		#else
+			#define KN_UNIT_API
+		#endif
 	#else
 		#define KN_API __declspec(dllimport)
+		#if KN_TESTING
+			#define KN_UNIT_API __declspec(dllimport)
+		#else
+			#define KN_UNIT_API
+		#endif
 	#endif
 	#define KN_GAME_API __declspec(dllexport)
 #else
@@ -41,6 +52,11 @@
 		#define KN_API __attribute__((visibility("default")))
 	#else
 		#define KN_API __attribute__((visibility("default")))
+	#endif
+	#if KN_TESTING
+		#define KN_UNIT_API __attribute__((visibility("default")))
+	#else
+		#define KN_UNIT_API
 	#endif
 	#define KN_GAME_API __attribute((visibility("default")))
 #endif /* WIN32 */
@@ -113,6 +129,23 @@
 	#define KN_WARN_DEPRECATED(msg)
 #endif
 
+#if KN_TESTING
+#include <knell/kn-assertion-testing.h>
+/**
+ * Specialize the runtime assertion mechanism to perform a longjmp on assertion
+ * failure, allowing assertions to be tested.
+ */
+#define KN_ASSERT(condition, message, ...) do { \
+		if (!(condition)) { \
+			if (knTest_ExpectingAssert) { \
+				longjmp(knTest_AssertJumpBuffer, KN_TEST_ASSERTION_OCCURRED); \
+			} \
+			else { \
+				printf(message "\n", ##__VA_ARGS__); \
+			} \
+		} \
+    } while (0)
+#else
 /**
  * Runtime assert mechanism.  `KN_ASSERT` is the preferred method of declaring
  * pre- and post-conditions within code, and also conditions which must be
@@ -127,6 +160,7 @@
 			KN_FATAL_ERROR(message, ##__VA_ARGS__); \
 		} \
     } while (0)
+#endif
 
 /*
  * The two different glue macros here allow for `__LINE__` to provide an

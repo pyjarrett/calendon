@@ -8,7 +8,6 @@ set(KNELL_SRCS
 
 set(KNELL_LIBS
 	SDL2
-	spa-fu
 	${KNELL_LIBS}
 	)
 
@@ -30,9 +29,25 @@ if (UNIX)
 		)
 endif ()
 
-add_compile_definitions(KN_LIBRARY=1)
+remove_definitions(-DKN_LIBRARY)
+add_definitions(-DKN_LIBRARY=1)
 add_library(knell-lib SHARED ${KNELL_SRCS} ${KNELL_HEADERS})
 target_link_libraries(knell-lib ${KNELL_LIBS})
+
+# Define a special version of knell-lib to allow unit tests to actually verify
+# that asserts (primarily preconditions) are actually checked.
+remove_definitions(-DKN_LIBRARY)
+add_definitions(-DKN_LIBRARY=1)
+add_definitions(-DKN_TESTING=1)
+add_library(knell-lib-test SHARED ${KNELL_SRCS} ${KNELL_HEADERS})
+target_link_libraries(knell-lib-test ${KNELL_LIBS})
+remove_definitions(-DKN_TESTING)
+
+add_custom_command(TARGET knell-lib-test POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different
+	$<TARGET_FILE:knell-lib-test>
+	${BINARY_DIR}
+	COMMENT "Copying knell-lib-test to binary directory")
 
 # TODO: Replace this with a file describing where to find assets.
 if (UNIX)

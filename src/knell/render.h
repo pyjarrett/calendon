@@ -26,15 +26,20 @@
 #include "kn.h"
 #include "color.h"
 #include "math2.h"
-#include "sprite.h"
+#include "render-resources.h"
 
 KN_API void R_Init(uint32_t width, uint32_t height);
+KN_API void R_Shutdown(void);
 KN_API void R_StartFrame(void);
 KN_API void R_EndFrame(void);
 
 KN_API bool R_CreateSprite(SpriteId* id);
 KN_API bool R_LoadSprite(SpriteId id, const char* path);
 KN_API void R_DrawSprite(SpriteId id, float2 position, dimension2f size);
+
+KN_API bool R_CreateFont(FontId* id);
+KN_API bool R_LoadPSF2Font(FontId id, const char* path);
+KN_API void R_DrawSimpleText(FontId id, float2 position, const char* text);
 
 KN_API void R_DrawDebugFullScreenRect(void);
 KN_API void R_DrawDebugRect(float2 position, dimension2f dimensions, rgb8 color);
