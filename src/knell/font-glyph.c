@@ -19,7 +19,7 @@ KN_TEST_API uint32_t Utf8GraphemeMap_GlyphForCodePoints(Utf8GraphemeMap* map,
 			  "Trying to map a sequence of too many code points.");
 
 	for (uint32_t i = 0; i < map->usedGraphemes; ++i) {
-		if (Grapheme_Is(&map->graphemes[i], codePoint, numCodePoints)) {
+		if (Grapheme_EqualsCodePoints(&map->graphemes[i], codePoint, numCodePoints)) {
 			return map->glyphs[i];
 		}
 	}

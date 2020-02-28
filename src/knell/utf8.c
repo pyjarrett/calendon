@@ -81,7 +81,7 @@ KN_TEST_API void Grapheme_Create(Grapheme* seq, const uint8_t* codePoint, uint8_
 	seq->codePointLength = numCodePoints;
 }
 
-KN_TEST_API bool Grapheme_Is(Grapheme* seq, const uint8_t* codePoint, uint8_t numCodePoints)
+KN_TEST_API bool Grapheme_EqualsCodePoints(Grapheme* seq, const uint8_t* codePoint, uint8_t numCodePoints)
 {
 	KN_ASSERT(seq != NULL, "A null Grapheme is not equal to anything.");
 	KN_ASSERT(codePoint != NULL, "Cannot compare a Grapheme against a NULL code point.");
@@ -105,11 +105,11 @@ KN_TEST_API bool Grapheme_Is(Grapheme* seq, const uint8_t* codePoint, uint8_t nu
 	return true;
 }
 
-KN_TEST_API bool Grapheme_Equal(Grapheme* left, Grapheme* right)
+KN_TEST_API bool Grapheme_EqualsGrapheme(Grapheme* left, Grapheme* right)
 {
 	KN_ASSERT(left != NULL, "Left Grapheme is NULL.");
 	KN_ASSERT(right != NULL, "Right Grapheme is NULL.");
-	return Grapheme_Is(left, right->codePoints, right->codePointLength);
+	return Grapheme_EqualsCodePoints(left, right->codePoints, right->codePointLength);
 }
 
 KN_TEST_API void Grapheme_Begin(Grapheme* seq)

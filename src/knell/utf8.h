@@ -35,8 +35,8 @@ typedef struct {
 } Grapheme;
 
 KN_TEST_API void Grapheme_Create(Grapheme* seq, const uint8_t* codePoint, uint8_t numCodePoints);
-KN_TEST_API bool Grapheme_Is(Grapheme* seq, const uint8_t* codePoint, uint8_t numCodePoints);
-KN_TEST_API bool Grapheme_Equal(Grapheme* left, Grapheme* right);
+KN_TEST_API bool Grapheme_EqualsCodePoints(Grapheme* seq, const uint8_t* codePoint, uint8_t numCodePoints);
+KN_TEST_API bool Grapheme_EqualsGrapheme(Grapheme* left, Grapheme* right);
 
 KN_TEST_API void Grapheme_Begin(Grapheme* seq);
 KN_TEST_API bool Grapheme_AddCodePoint(Grapheme*, const uint8_t* codePoint);
