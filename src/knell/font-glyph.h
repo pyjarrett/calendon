@@ -21,7 +21,7 @@ typedef struct {
 } Utf8GlyphMap;
 
 KN_UNIT_API void Utf8GlyphMap_Create(Utf8GlyphMap* map);
-KN_UNIT_API uint32_t Utf8GlyphMap_GlyphForCodePoint(Utf8GlyphMap* map, const char* codePoint, uint8_t numCodePoints);
-KN_UNIT_API bool Utf8GlyphMap_Map(Utf8GlyphMap* map, const char* codePoint, uint8_t numCodePoints, GlyphIndex glyphIndex);
+KN_UNIT_API uint32_t Utf8GlyphMap_GlyphForCodePoint(Utf8GlyphMap* map, const uint8_t* codePoint, uint8_t numCodePoints);
+KN_UNIT_API bool Utf8GlyphMap_Map(Utf8GlyphMap* map, const uint8_t* codePoint, uint8_t numCodePoints, GlyphIndex glyphIndex);
 
 #endif //KNELL_FONT_UTF8_GLYPH_H
