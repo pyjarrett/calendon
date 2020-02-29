@@ -194,7 +194,7 @@ KN_TEST_HARNESS_API void knTest_CleanUpPreviousUnit(knTestSuiteReport* r, knTest
 #define KN_TEST_ASSERT_TRUE(expr) { \
 		if (!(expr)) { \
 			knTest_UnitAssertFailed(&unitReport); \
-			printf("%s:%i  \"" #expr " is false\n", \
+			printf("%s:%i  \"" #expr "\" should be true\n", \
 				__FILE__, __LINE__); \
 			break; \
 		} \
@@ -203,7 +203,7 @@ KN_TEST_HARNESS_API void knTest_CleanUpPreviousUnit(knTestSuiteReport* r, knTest
 #define KN_TEST_ASSERT_FALSE(expr) { \
 		if (!!(expr)) { \
 			knTest_UnitAssertFailed(&unitReport); \
-			printf("%s:%i  \"" #expr " is true\n", \
+			printf("%s:%i  \"" #expr "\" should be false\n", \
 				__FILE__, __LINE__); \
 			break; \
 		} \
