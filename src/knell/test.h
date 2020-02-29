@@ -2,7 +2,6 @@
 
 #include <knell/kn.h>
 
-#include <assert.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -44,7 +43,7 @@ KN_TEST_HARNESS_API void knTest_UnitStart(knTestUnitReport* u, const char* name)
 }
 
 KN_TEST_HARNESS_API void knTest_UnitAssertFailed(knTestUnitReport* u) {
-	assert(u);
+	if (!u) abort();
 	++u->assertsFailed;
 }
 
@@ -81,7 +80,7 @@ KN_TEST_HARNESS_API void knTest_SuiteShutdown(knTestSuiteReport* r) {
 KN_TEST_HARNESS_API void knTest_SuiteAddUnit(knTestSuiteReport* r, knTestUnitReport* u) {
 	if (!r) abort();
 	if (!u) abort();
-	assert(u->currentTestName);
+	if (!u->currentTestName) abort();
 	r->assertsPassed += u->assertsPassed;
 	r->assertsFailed += u->assertsFailed;
 
