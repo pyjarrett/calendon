@@ -119,7 +119,7 @@ KN_TEST_API void knTest_CleanUpPreviousTest(knTestSuiteReport* r, knTestUnitRepo
 #define KN_TEST_UNIT(name) \
 	knTest_CleanUpPreviousTest(&suiteReport, &unitReport); \
 	knTest_UnitStart(&unitReport, name); \
-	for (uint32_t i = 0; i < 1; ++i)
+	for (uint32_t knUnitTestLoop = 0; knUnitTestLoop < 1; ++knUnitTestLoop)
 
 #ifndef KN_TESTING
 	#error "KN_TESTING must be defined for assertion checking."
