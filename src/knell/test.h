@@ -15,13 +15,16 @@
 #define KN_TEST_HARNESS_API static
 
 typedef struct {
+	const char* name;
 	uint32_t testsPassed, testsFailed;
 	uint32_t assertsPassed, assertsFailed;
 } knTestSuiteReport;
 
 typedef struct {
-	const char* currentTestName;
+	const char* name;
+	uint32_t runsLeft;
 	uint32_t assertsPassed, assertsFailed;
+	bool failureForced;
 } knTestUnitReport;
 
 KN_TEST_HARNESS_API knTestSuiteReport suiteReport;
@@ -29,17 +32,19 @@ KN_TEST_HARNESS_API knTestUnitReport unitReport;
 
 KN_TEST_HARNESS_API void knTest_UnitInit(knTestUnitReport* u, const char* name) {
 	if (!u) abort();
-	u->currentTestName = name;
+	u->name = name;
 	u->assertsPassed = 0;
 	u->assertsFailed = 0;
 }
 
 KN_TEST_HARNESS_API void knTest_UnitStart(knTestUnitReport* u, const char* name) {
 	if (!u) abort();
-	u->currentTestName = name;
+	u->name = name;
+	u->runsLeft = 1;
 	u->assertsPassed = 0;
 	u->assertsFailed = 0;
-	printf("...%s\n", name);
+	u->failureForced = false;
+	printf("\t[ %-6s ] %s\n", "RUN", name);
 }
 
 KN_TEST_HARNESS_API void knTest_UnitAssertFailed(knTestUnitReport* u) {
@@ -49,7 +54,7 @@ KN_TEST_HARNESS_API void knTest_UnitAssertFailed(knTestUnitReport* u) {
 
 KN_TEST_HARNESS_API bool knTest_UnitSucceeded(knTestUnitReport* u) {
 	if (!u) abort();
-	return u->assertsFailed == 0;
+	return u->assertsFailed == 0 && !u->failureForced;
 }
 
 KN_TEST_HARNESS_API void knTest_SuiteInit(knTestSuiteReport* r) {
@@ -61,42 +66,45 @@ KN_TEST_HARNESS_API void knTest_SuiteInit(knTestSuiteReport* r) {
 }
 
 KN_TEST_HARNESS_API void knTest_SuiteStart(knTestSuiteReport* r, const char* name) {
-	printf("Test suite: %s...", name);
+	r->name = name;
+	printf("Test suite: %s\n", name);
 }
 
-KN_TEST_HARNESS_API void knTest_SuitePrint(knTestSuiteReport* r) {
+KN_TEST_HARNESS_API void knTest_SuitePrintResults(knTestSuiteReport* r) {
 	if (!r) abort();
-	printf("Tests:\n\tPassed: %5" PRIu32 " Failed: %5" PRIu32 "\n",
+	printf("Tests:\n\tPassed: %" PRIu32 " Failed: %" PRIu32 "\n",
 		r->testsPassed, r->testsFailed);
-	printf("Asserts:\n\tPassed: %5" PRIu32 " Failed: %5" PRIu32 "\n",
+	printf("Asserts:\n\tPassed: %" PRIu32 " Failed: %" PRIu32 "\n",
 		r->assertsPassed, r->assertsFailed);
 }
 
 KN_TEST_HARNESS_API void knTest_SuiteShutdown(knTestSuiteReport* r) {
 	if (!r) abort();
-	knTest_SuitePrint(&suiteReport);
+	knTest_SuitePrintResults(&suiteReport);
 }
 
-KN_TEST_HARNESS_API void knTest_SuiteAddUnit(knTestSuiteReport* r, knTestUnitReport* u) {
+KN_TEST_HARNESS_API void knTest_SuiteAddCompletedUnit(knTestSuiteReport* r, knTestUnitReport* u) {
 	if (!r) abort();
 	if (!u) abort();
-	if (!u->currentTestName) abort();
+	if (!u->name) abort();
 	r->assertsPassed += u->assertsPassed;
 	r->assertsFailed += u->assertsFailed;
 
 	if (knTest_UnitSucceeded(u)) {
 		++r->testsPassed;
+		printf("\t[ %+6s ] %s\n", "OK", u->name);
 	}
 	else {
 		++r->testsFailed;
+		printf("\t[ %+6s ] %s\n", "FAIL", u->name);
 	}
 }
 
-KN_TEST_HARNESS_API void knTest_CleanUpPreviousTest(knTestSuiteReport* r, knTestUnitReport* u) {
+KN_TEST_HARNESS_API void knTest_CleanUpPreviousUnit(knTestSuiteReport* r, knTestUnitReport* u) {
 	if (!r) abort();
 	if (!u) abort();
-	if (u->currentTestName) {
-		knTest_SuiteAddUnit(r, u);
+	if (u->name) {
+		knTest_SuiteAddCompletedUnit(r, u);
 	}
 }
 
@@ -114,14 +122,21 @@ KN_TEST_HARNESS_API void knTest_CleanUpPreviousTest(knTestSuiteReport* r, knTest
 #endif
 
 #define KN_TEST_SUITE_END \
-	knTest_CleanUpPreviousTest(&suiteReport, &unitReport); \
+	knTest_CleanUpPreviousUnit(&suiteReport, &unitReport); \
 	knTest_SuiteShutdown(&suiteReport); \
 	return suiteReport.testsFailed > 0 ? EXIT_FAILURE : EXIT_SUCCESS; }
 
 #define KN_TEST_UNIT(name) \
-	knTest_CleanUpPreviousTest(&suiteReport, &unitReport); \
+	knTest_CleanUpPreviousUnit(&suiteReport, &unitReport); \
 	knTest_UnitStart(&unitReport, name); \
-	for (uint32_t knUnitTestLoop = 0; knUnitTestLoop < 1; ++knUnitTestLoop)
+    { \
+		int assertionStatus = setjmp(knTest_AssertUnexpectedJumpBuffer); \
+		if (assertionStatus == KN_TEST_ASSERTION_UNEXPECTED) { \
+			unitReport.runsLeft = 0; \
+			unitReport.failureForced = true; \
+		} \
+    } \
+	for (uint32_t knUnitTestLoop = 0; knUnitTestLoop < unitReport.runsLeft; ++knUnitTestLoop)
 
 #ifndef KN_TESTING
 	#error "KN_TESTING must be defined for assertion checking."

@@ -253,7 +253,7 @@ endfunction()
 # Provides a command to run all tests, since CLion can't do that on it's own.
 # https://stackoverflow.com/questions/733475/cmake-ctest-make-test-doesnt-build-tests#736838
 #
-add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} -V -C Debug)
+add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} -V -C Debug) #--output-on-failure -C Debug)
 add_dependencies(check knell-lib-test)
 enable_testing()
 remove_definitions(-DKN_LIBRARY)

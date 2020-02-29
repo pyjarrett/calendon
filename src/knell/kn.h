@@ -141,7 +141,9 @@
 				longjmp(knTest_AssertJumpBuffer, KN_TEST_ASSERTION_OCCURRED); \
 			} \
 			else { \
-				printf(message "\n", ##__VA_ARGS__); \
+				printf("%s:%i Assertion failure: " message "\n", __FILE__, \
+					__LINE__, ##__VA_ARGS__); \
+				longjmp(knTest_AssertUnexpectedJumpBuffer, KN_TEST_ASSERTION_UNEXPECTED); \
 			} \
 		} \
     } while (0)
