@@ -10,7 +10,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define KN_TEST_API static
+/**
+ * Prevent pollution of the symbol space with local testing functions.
+ */
+#define KN_TEST_HARNESS_API static
 
 typedef struct {
 	uint32_t testsPassed, testsFailed;
@@ -22,17 +25,17 @@ typedef struct {
 	uint32_t assertsPassed, assertsFailed;
 } knTestUnitReport;
 
-KN_TEST_API knTestSuiteReport suiteReport;
-KN_TEST_API knTestUnitReport unitReport;
+KN_TEST_HARNESS_API knTestSuiteReport suiteReport;
+KN_TEST_HARNESS_API knTestUnitReport unitReport;
 
-KN_TEST_API void knTest_UnitInit(knTestUnitReport* u, const char* name) {
+KN_TEST_HARNESS_API void knTest_UnitInit(knTestUnitReport* u, const char* name) {
 	if (!u) abort();
 	u->currentTestName = name;
 	u->assertsPassed = 0;
 	u->assertsFailed = 0;
 }
 
-KN_TEST_API void knTest_UnitStart(knTestUnitReport* u, const char* name) {
+KN_TEST_HARNESS_API void knTest_UnitStart(knTestUnitReport* u, const char* name) {
 	if (!u) abort();
 	u->currentTestName = name;
 	u->assertsPassed = 0;
@@ -40,17 +43,17 @@ KN_TEST_API void knTest_UnitStart(knTestUnitReport* u, const char* name) {
 	printf("...%s\n", name);
 }
 
-KN_TEST_API void knTest_UnitAssertFailed(knTestUnitReport* u) {
+KN_TEST_HARNESS_API void knTest_UnitAssertFailed(knTestUnitReport* u) {
 	assert(u);
 	++u->assertsFailed;
 }
 
-KN_TEST_API bool knTest_UnitSucceeded(knTestUnitReport* u) {
+KN_TEST_HARNESS_API bool knTest_UnitSucceeded(knTestUnitReport* u) {
 	if (!u) abort();
 	return u->assertsFailed == 0;
 }
 
-KN_TEST_API void knTest_SuiteInit(knTestSuiteReport* r) {
+KN_TEST_HARNESS_API void knTest_SuiteInit(knTestSuiteReport* r) {
 	if (!r) abort();
 	r->testsPassed = 0;
 	r->testsFailed = 0;
@@ -58,11 +61,11 @@ KN_TEST_API void knTest_SuiteInit(knTestSuiteReport* r) {
 	r->assertsFailed = 0;
 }
 
-KN_TEST_API void knTest_SuiteStart(knTestSuiteReport* r, const char* name) {
+KN_TEST_HARNESS_API void knTest_SuiteStart(knTestSuiteReport* r, const char* name) {
 	printf("Test suite: %s...", name);
 }
 
-KN_TEST_API void knTest_SuitePrint(knTestSuiteReport* r) {
+KN_TEST_HARNESS_API void knTest_SuitePrint(knTestSuiteReport* r) {
 	if (!r) abort();
 	printf("Tests:\n\tPassed: %5" PRIu32 " Failed: %5" PRIu32 "\n",
 		r->testsPassed, r->testsFailed);
@@ -70,12 +73,12 @@ KN_TEST_API void knTest_SuitePrint(knTestSuiteReport* r) {
 		r->assertsPassed, r->assertsFailed);
 }
 
-KN_TEST_API void knTest_SuiteShutdown(knTestSuiteReport* r) {
+KN_TEST_HARNESS_API void knTest_SuiteShutdown(knTestSuiteReport* r) {
 	if (!r) abort();
 	knTest_SuitePrint(&suiteReport);
 }
 
-KN_TEST_API void knTest_SuiteAddUnit(knTestSuiteReport* r, knTestUnitReport* u) {
+KN_TEST_HARNESS_API void knTest_SuiteAddUnit(knTestSuiteReport* r, knTestUnitReport* u) {
 	if (!r) abort();
 	if (!u) abort();
 	assert(u->currentTestName);
@@ -90,7 +93,7 @@ KN_TEST_API void knTest_SuiteAddUnit(knTestSuiteReport* r, knTestUnitReport* u) 
 	}
 }
 
-KN_TEST_API void knTest_CleanUpPreviousTest(knTestSuiteReport* r, knTestUnitReport* u) {
+KN_TEST_HARNESS_API void knTest_CleanUpPreviousTest(knTestSuiteReport* r, knTestUnitReport* u) {
 	if (!r) abort();
 	if (!u) abort();
 	if (u->currentTestName) {
