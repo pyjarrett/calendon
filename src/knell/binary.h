@@ -7,6 +7,6 @@
 
 #include <knell/kn.h>
 
-KN_UNIT_API bool isPowerOfTwo(uint32_t n);
+KN_TEST_API bool isPowerOfTwo(uint32_t n);
 
 #endif /* KN_BINARY_H */
