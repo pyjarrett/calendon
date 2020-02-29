@@ -29,6 +29,12 @@ typedef struct {
 KN_TEST_HARNESS_API knTestSuiteReport suiteReport;
 KN_TEST_HARNESS_API knTestUnitReport unitReport;
 
+/**
+ * A visibly noticable marker to use for when things fail.
+ */
+static const char* knTestFailMarker =
+	"<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n";
+
 KN_TEST_HARNESS_API void knTest_UnitInit(knTestUnitReport* u, const char* name) {
 	if (!u) abort();
 	u->name = name;
@@ -40,7 +46,7 @@ KN_TEST_HARNESS_API void knTest_UnitStart(knTestUnitReport* u, const char* name)
 	u->runsLeft = 1;
 	u->assertsFailed = 0;
 	u->failureForced = false;
-	printf("  [ %-6s ] %s\n", "RUN", name);
+	printf("  [ %-6s ] %s\n", "", name);
 }
 
 KN_TEST_HARNESS_API void knTest_UnitAssertFailed(knTestUnitReport* u) {
@@ -68,7 +74,8 @@ KN_TEST_HARNESS_API void knTest_SuitePrintResults(knTestSuiteReport* r) {
 	if (!r) abort();
 	printf("  [________]\n");
 	if (r->testsFailed > 0) {
-		printf(">>[%8s]" "%s ( %5" PRIu32 " failed )\n",
+		printf(knTestFailMarker);
+		printf(">>[%8s]" " %s ( %" PRIu32 " failed )\n",
 			"FAILED ", r->name, r->testsFailed);
 	}
 	else {
@@ -89,11 +96,13 @@ KN_TEST_HARNESS_API void knTest_SuiteAddCompletedUnit(knTestSuiteReport* r, knTe
 
 	if (knTest_UnitSucceeded(u)) {
 		++r->testsPassed;
-		printf("  [ %+6s ] %s\n", "OK", u->name);
+		printf("  [ %+6s ] %s\n", "PASS", u->name);
 	}
 	else {
 		++r->testsFailed;
-		printf("  [ %+6s ] %s\n", "FAIL", u->name);
+		printf(knTestFailMarker);
+		printf(">>[ %-6s ] %s\n",
+			"FAILED", u->name);
 	}
 }
 
