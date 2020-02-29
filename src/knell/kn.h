@@ -19,7 +19,7 @@
  * Symbol export/import markers for engine library functions.
  *
  * - Use `KN_API` for engine library functions (within knell-lib)
- * - Use `KN_UNIT_API` for exposing functions for (unit) testing.
+ * - Use `KN_TEST_API` for exposing functions for (primarily unit) testing.
  * - Use `KN_GAME_API` for game library functions (in demo/game code)
  *
  * Windows:
@@ -34,16 +34,16 @@
 	#if KN_LIBRARY
 		#define KN_API __declspec(dllexport)
 		#if KN_TESTING
-			#define KN_UNIT_API __declspec(dllexport)
+			#define KN_TEST_API __declspec(dllexport)
 		#else
-			#define KN_UNIT_API
+			#define KN_TEST_API
 		#endif
 	#else
 		#define KN_API __declspec(dllimport)
 		#if KN_TESTING
-			#define KN_UNIT_API __declspec(dllimport)
+			#define KN_TEST_API __declspec(dllimport)
 		#else
-			#define KN_UNIT_API
+			#define KN_TEST_API
 		#endif
 	#endif
 	#define KN_GAME_API __declspec(dllexport)
@@ -54,9 +54,9 @@
 		#define KN_API __attribute__((visibility("default")))
 	#endif
 	#if KN_TESTING
-		#define KN_UNIT_API __attribute__((visibility("default")))
+		#define KN_TEST_API __attribute__((visibility("default")))
 	#else
-		#define KN_UNIT_API
+		#define KN_TEST_API
 	#endif
 	#define KN_GAME_API __attribute((visibility("default")))
 #endif /* WIN32 */
@@ -130,7 +130,7 @@
 #endif
 
 #if KN_TESTING
-#include <knell/kn-assertion-testing.h>
+#include <knell/test-asserts.h>
 /**
  * Specialize the runtime assertion mechanism to perform a longjmp on assertion
  * failure, allowing assertions to be tested.
@@ -141,7 +141,9 @@
 				longjmp(knTest_AssertJumpBuffer, KN_TEST_ASSERTION_OCCURRED); \
 			} \
 			else { \
-				printf(message "\n", ##__VA_ARGS__); \
+				printf("%s:%i Assertion failure: " message "\n", __FILE__, \
+					__LINE__, ##__VA_ARGS__); \
+				longjmp(knTest_AssertUnexpectedJumpBuffer, KN_TEST_ASSERTION_UNEXPECTED); \
 			} \
 		} \
     } while (0)

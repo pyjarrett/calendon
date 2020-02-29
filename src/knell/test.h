@@ -2,7 +2,6 @@
 
 #include <knell/kn.h>
 
-#include <assert.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -10,91 +9,108 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define KN_TEST_API static
+/**
+ * Prevent pollution of the symbol space with local testing functions.
+ */
+#define KN_TEST_HARNESS_API static
 
 typedef struct {
+	const char* name;
 	uint32_t testsPassed, testsFailed;
-	uint32_t assertsPassed, assertsFailed;
 } knTestSuiteReport;
 
 typedef struct {
-	const char* currentTestName;
-	uint32_t assertsPassed, assertsFailed;
+	const char* name;
+	uint32_t runsLeft;
+	uint32_t assertsFailed;
+	bool failureForced;
 } knTestUnitReport;
 
-KN_TEST_API knTestSuiteReport suiteReport;
-KN_TEST_API knTestUnitReport unitReport;
+KN_TEST_HARNESS_API knTestSuiteReport suiteReport;
+KN_TEST_HARNESS_API knTestUnitReport unitReport;
 
-KN_TEST_API void knTest_UnitInit(knTestUnitReport* u, const char* name) {
+/**
+ * A visibly noticable marker to use for when things fail.
+ */
+static const char* knTestFailMarker =
+	"<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n";
+
+KN_TEST_HARNESS_API void knTest_UnitInit(knTestUnitReport* u, const char* name) {
 	if (!u) abort();
-	u->currentTestName = name;
-	u->assertsPassed = 0;
-	u->assertsFailed = 0;
+	u->name = name;
 }
 
-KN_TEST_API void knTest_UnitStart(knTestUnitReport* u, const char* name) {
+KN_TEST_HARNESS_API void knTest_UnitStart(knTestUnitReport* u, const char* name) {
 	if (!u) abort();
-	u->currentTestName = name;
-	u->assertsPassed = 0;
+	u->name = name;
+	u->runsLeft = 1;
 	u->assertsFailed = 0;
-	printf("...%s\n", name);
+	u->failureForced = false;
+	printf("  [ %-6s ] %s\n", "", name);
 }
 
-KN_TEST_API void knTest_UnitAssertFailed(knTestUnitReport* u) {
-	assert(u);
+KN_TEST_HARNESS_API void knTest_UnitAssertFailed(knTestUnitReport* u) {
+	if (!u) abort();
 	++u->assertsFailed;
 }
 
-KN_TEST_API bool knTest_UnitSucceeded(knTestUnitReport* u) {
+KN_TEST_HARNESS_API bool knTest_UnitSucceeded(knTestUnitReport* u) {
 	if (!u) abort();
-	return u->assertsFailed == 0;
+	return u->assertsFailed == 0 && !u->failureForced;
 }
 
-KN_TEST_API void knTest_SuiteInit(knTestSuiteReport* r) {
+KN_TEST_HARNESS_API void knTest_SuiteInit(knTestSuiteReport* r) {
 	if (!r) abort();
 	r->testsPassed = 0;
 	r->testsFailed = 0;
-	r->assertsPassed = 0;
-	r->assertsFailed = 0;
 }
 
-KN_TEST_API void knTest_SuiteStart(knTestSuiteReport* r, const char* name) {
-	printf("Test suite: %s...", name);
+KN_TEST_HARNESS_API void knTest_SuiteStart(knTestSuiteReport* r, const char* name) {
+	r->name = name;
+	printf("Test suite: %s\n", name);
 }
 
-KN_TEST_API void knTest_SuitePrint(knTestSuiteReport* r) {
+KN_TEST_HARNESS_API void knTest_SuitePrintResults(knTestSuiteReport* r) {
 	if (!r) abort();
-	printf("Tests:\n\tPassed: %5" PRIu32 " Failed: %5" PRIu32 "\n",
-		r->testsPassed, r->testsFailed);
-	printf("Asserts:\n\tPassed: %5" PRIu32 " Failed: %5" PRIu32 "\n",
-		r->assertsPassed, r->assertsFailed);
+	printf("  [________]\n");
+	if (r->testsFailed > 0) {
+		printf(knTestFailMarker);
+		printf(">>[%8s]" " %s ( %" PRIu32 " failed )\n",
+			"FAILED ", r->name, r->testsFailed);
+	}
+	else {
+		printf("  [%8s]" " %s ( %" PRIu32 " ) \n",
+			"PASSED ", r->name, r->testsPassed);
+	}
 }
 
-KN_TEST_API void knTest_SuiteShutdown(knTestSuiteReport* r) {
+KN_TEST_HARNESS_API void knTest_SuiteShutdown(knTestSuiteReport* r) {
 	if (!r) abort();
-	knTest_SuitePrint(&suiteReport);
+	knTest_SuitePrintResults(&suiteReport);
 }
 
-KN_TEST_API void knTest_SuiteAddUnit(knTestSuiteReport* r, knTestUnitReport* u) {
+KN_TEST_HARNESS_API void knTest_SuiteAddCompletedUnit(knTestSuiteReport* r, knTestUnitReport* u) {
 	if (!r) abort();
 	if (!u) abort();
-	assert(u->currentTestName);
-	r->assertsPassed += u->assertsPassed;
-	r->assertsFailed += u->assertsFailed;
+	if (!u->name) abort();
 
 	if (knTest_UnitSucceeded(u)) {
 		++r->testsPassed;
+		printf("  [ %+6s ] %s\n", "PASS", u->name);
 	}
 	else {
 		++r->testsFailed;
+		printf(knTestFailMarker);
+		printf(">>[ %-6s ] %s\n",
+			"FAILED", u->name);
 	}
 }
 
-KN_TEST_API void knTest_CleanUpPreviousTest(knTestSuiteReport* r, knTestUnitReport* u) {
+KN_TEST_HARNESS_API void knTest_CleanUpPreviousUnit(knTestSuiteReport* r, knTestUnitReport* u) {
 	if (!r) abort();
 	if (!u) abort();
-	if (u->currentTestName) {
-		knTest_SuiteAddUnit(r, u);
+	if (u->name) {
+		knTest_SuiteAddCompletedUnit(r, u);
 	}
 }
 
@@ -112,19 +128,26 @@ KN_TEST_API void knTest_CleanUpPreviousTest(knTestSuiteReport* r, knTestUnitRepo
 #endif
 
 #define KN_TEST_SUITE_END \
-	knTest_CleanUpPreviousTest(&suiteReport, &unitReport); \
+	knTest_CleanUpPreviousUnit(&suiteReport, &unitReport); \
 	knTest_SuiteShutdown(&suiteReport); \
 	return suiteReport.testsFailed > 0 ? EXIT_FAILURE : EXIT_SUCCESS; }
 
 #define KN_TEST_UNIT(name) \
-	knTest_CleanUpPreviousTest(&suiteReport, &unitReport); \
+	knTest_CleanUpPreviousUnit(&suiteReport, &unitReport); \
 	knTest_UnitStart(&unitReport, name); \
-	for (uint32_t i = 0; i < 1; ++i)
+    { \
+		int assertionStatus = setjmp(knTest_AssertUnexpectedJumpBuffer); \
+		if (assertionStatus == KN_TEST_ASSERTION_UNEXPECTED) { \
+			unitReport.runsLeft = 0; \
+			unitReport.failureForced = true; \
+		} \
+    } \
+	for (uint32_t knUnitTestLoop = 0; knUnitTestLoop < unitReport.runsLeft; ++knUnitTestLoop)
 
 #ifndef KN_TESTING
 	#error "KN_TESTING must be defined for assertion checking."
 #endif
-#include <knell/kn-assertion-testing.h>
+#include <knell/test-asserts.h>
 
 #define KN_TEST_PRECONDITION(fn) { \
 		knTest_ExpectingAssert = true; \
@@ -171,7 +194,7 @@ KN_TEST_API void knTest_CleanUpPreviousTest(knTestSuiteReport* r, knTestUnitRepo
 #define KN_TEST_ASSERT_TRUE(expr) { \
 		if (!(expr)) { \
 			knTest_UnitAssertFailed(&unitReport); \
-			printf("%s:%i  \"" #expr " is false\n", \
+			printf("%s:%i  \"" #expr "\" should be true\n", \
 				__FILE__, __LINE__); \
 			break; \
 		} \
@@ -180,7 +203,7 @@ KN_TEST_API void knTest_CleanUpPreviousTest(knTestSuiteReport* r, knTestUnitRepo
 #define KN_TEST_ASSERT_FALSE(expr) { \
 		if (!!(expr)) { \
 			knTest_UnitAssertFailed(&unitReport); \
-			printf("%s:%i  \"" #expr " is true\n", \
+			printf("%s:%i  \"" #expr "\" should be false\n", \
 				__FILE__, __LINE__); \
 			break; \
 		} \

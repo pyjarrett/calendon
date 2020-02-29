@@ -221,7 +221,8 @@ add_dependencies(knell knell-lib ${KN_ALL_DEMOS})
 message("Demos are ${KN_ALL_DEMOS}")
 
 #
-# Creates a unit test and add it to our registered list.
+# Creates a unit test and adds it to the "check" target.
+#
 # Format:
 #   unit_test(NAME test_name SOURCES a.cpp b.cpp)
 #   unit_test(NAME test_name SOURCES a.cpp b.cpp LIBS GL)
@@ -252,7 +253,7 @@ endfunction()
 # Provides a command to run all tests, since CLion can't do that on it's own.
 # https://stackoverflow.com/questions/733475/cmake-ctest-make-test-doesnt-build-tests#736838
 #
-add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} -V -C Debug)
+add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} -V -C Debug) #--output-on-failure -C Debug)
 add_dependencies(check knell-lib-test)
 enable_testing()
 remove_definitions(-DKN_LIBRARY)
