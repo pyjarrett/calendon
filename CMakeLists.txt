@@ -221,7 +221,8 @@ add_dependencies(knell knell-lib ${KN_ALL_DEMOS})
 message("Demos are ${KN_ALL_DEMOS}")
 
 #
-# Creates a unit test and add it to our registered list.
+# Creates a unit test and adds it to the "check" target.
+#
 # Format:
 #   unit_test(NAME test_name SOURCES a.cpp b.cpp)
 #   unit_test(NAME test_name SOURCES a.cpp b.cpp LIBS GL)
