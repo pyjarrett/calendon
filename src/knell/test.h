@@ -127,7 +127,7 @@ KN_TEST_HARNESS_API void knTest_CleanUpPreviousTest(knTestSuiteReport* r, knTest
 #ifndef KN_TESTING
 	#error "KN_TESTING must be defined for assertion checking."
 #endif
-#include <knell/kn-assertion-testing.h>
+#include <knell/test-asserts.h>
 
 #define KN_TEST_PRECONDITION(fn) { \
 		knTest_ExpectingAssert = true; \

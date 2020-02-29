@@ -1,5 +1,5 @@
-#ifndef KN_TESTING_H
-#define KN_TESTING_H
+#ifndef KN_TEST_ASSERTS_H
+#define KN_TEST_ASSERTS_H
 
 /*
  * Knell uses its own assertion mechanism throughout its code to verify
@@ -14,6 +14,10 @@
 #if KN_TESTING
 #include <setjmp.h>
 extern KN_API jmp_buf knTest_AssertJumpBuffer;
+
+/**
+ * Value set when code is expected to trigger an assertion.
+ */
 extern KN_API bool knTest_ExpectingAssert;
 
 /**
@@ -22,4 +26,4 @@ extern KN_API bool knTest_ExpectingAssert;
 #define KN_TEST_ASSERTION_OCCURRED 1357
 #endif
 
-#endif /* KN_TESTING_H */
+#endif /* KN_TEST_ASSERTS_H */

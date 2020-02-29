@@ -130,7 +130,7 @@
 #endif
 
 #if KN_TESTING
-#include <knell/kn-assertion-testing.h>
+#include <knell/test-asserts.h>
 /**
  * Specialize the runtime assertion mechanism to perform a longjmp on assertion
  * failure, allowing assertions to be tested.
