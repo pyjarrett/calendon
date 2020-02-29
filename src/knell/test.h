@@ -17,13 +17,12 @@
 typedef struct {
 	const char* name;
 	uint32_t testsPassed, testsFailed;
-	uint32_t assertsPassed, assertsFailed;
 } knTestSuiteReport;
 
 typedef struct {
 	const char* name;
 	uint32_t runsLeft;
-	uint32_t assertsPassed, assertsFailed;
+	uint32_t assertsFailed;
 	bool failureForced;
 } knTestUnitReport;
 
@@ -33,18 +32,15 @@ KN_TEST_HARNESS_API knTestUnitReport unitReport;
 KN_TEST_HARNESS_API void knTest_UnitInit(knTestUnitReport* u, const char* name) {
 	if (!u) abort();
 	u->name = name;
-	u->assertsPassed = 0;
-	u->assertsFailed = 0;
 }
 
 KN_TEST_HARNESS_API void knTest_UnitStart(knTestUnitReport* u, const char* name) {
 	if (!u) abort();
 	u->name = name;
 	u->runsLeft = 1;
-	u->assertsPassed = 0;
 	u->assertsFailed = 0;
 	u->failureForced = false;
-	printf("\t[ %-6s ] %s\n", "RUN", name);
+	printf("  [ %-6s ] %s\n", "RUN", name);
 }
 
 KN_TEST_HARNESS_API void knTest_UnitAssertFailed(knTestUnitReport* u) {
@@ -61,8 +57,6 @@ KN_TEST_HARNESS_API void knTest_SuiteInit(knTestSuiteReport* r) {
 	if (!r) abort();
 	r->testsPassed = 0;
 	r->testsFailed = 0;
-	r->assertsPassed = 0;
-	r->assertsFailed = 0;
 }
 
 KN_TEST_HARNESS_API void knTest_SuiteStart(knTestSuiteReport* r, const char* name) {
@@ -72,10 +66,15 @@ KN_TEST_HARNESS_API void knTest_SuiteStart(knTestSuiteReport* r, const char* nam
 
 KN_TEST_HARNESS_API void knTest_SuitePrintResults(knTestSuiteReport* r) {
 	if (!r) abort();
-	printf("Tests:\n\tPassed: %" PRIu32 " Failed: %" PRIu32 "\n",
-		r->testsPassed, r->testsFailed);
-	printf("Asserts:\n\tPassed: %" PRIu32 " Failed: %" PRIu32 "\n",
-		r->assertsPassed, r->assertsFailed);
+	printf("  [________]\n");
+	if (r->testsFailed > 0) {
+		printf(">>[%8s]" "%s ( %5" PRIu32 " failed )\n",
+			"FAILED ", r->name, r->testsFailed);
+	}
+	else {
+		printf("  [%8s]" " %s ( %" PRIu32 " ) \n",
+			"PASSED ", r->name, r->testsPassed);
+	}
 }
 
 KN_TEST_HARNESS_API void knTest_SuiteShutdown(knTestSuiteReport* r) {
@@ -87,16 +86,14 @@ KN_TEST_HARNESS_API void knTest_SuiteAddCompletedUnit(knTestSuiteReport* r, knTe
 	if (!r) abort();
 	if (!u) abort();
 	if (!u->name) abort();
-	r->assertsPassed += u->assertsPassed;
-	r->assertsFailed += u->assertsFailed;
 
 	if (knTest_UnitSucceeded(u)) {
 		++r->testsPassed;
-		printf("\t[ %+6s ] %s\n", "OK", u->name);
+		printf("  [ %+6s ] %s\n", "OK", u->name);
 	}
 	else {
 		++r->testsFailed;
-		printf("\t[ %+6s ] %s\n", "FAIL", u->name);
+		printf("  [ %+6s ] %s\n", "FAIL", u->name);
 	}
 }
 
