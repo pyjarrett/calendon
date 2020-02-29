@@ -12,7 +12,7 @@
  * 3: 1110 xxxx : E
  * 4: 1111 0xxx : F
  */
-KN_UNIT_API uint8_t Utf8_NumBytesInCodePoint(uint8_t leadingByte)
+KN_TEST_API uint8_t Utf8_NumBytesInCodePoint(uint8_t leadingByte)
 {
 	const uint8_t b = leadingByte & 0xF0;
 	switch (b) {
@@ -28,7 +28,7 @@ KN_UNIT_API uint8_t Utf8_NumBytesInCodePoint(uint8_t leadingByte)
 /**
  * Checks to see if two possibly multiple byte code points equal each other.
  */
-KN_UNIT_API bool Utf8_CodePointsMatch(const uint8_t* left, const uint8_t* right)
+KN_TEST_API bool Utf8_CodePointsMatch(const uint8_t* left, const uint8_t* right)
 {
 	KN_ASSERT(left != NULL, "Cannot check a null code point (left-side)");
 	KN_ASSERT(right != NULL, "Cannot check a null code point (right-side)");
@@ -51,14 +51,14 @@ KN_UNIT_API bool Utf8_CodePointsMatch(const uint8_t* left, const uint8_t* right)
 /**
  * Copies a UTF-8 code point, with an interface similar to `memcpy`, or `strcpy`.
  */
-KN_UNIT_API void Utf8_CodePointCopy(uint8_t* dest, const uint8_t* src)
+KN_TEST_API void Utf8_CodePointCopy(uint8_t* dest, const uint8_t* src)
 {
 	KN_ASSERT(dest != NULL, "Cannot copy to null code point.");
 	KN_ASSERT(src != NULL, "Cannot copy a null code point.");
 	memcpy(dest, src, Utf8_NumBytesInCodePoint(*src));
 }
 
-KN_UNIT_API void Grapheme_Create(Grapheme* seq, const uint8_t* codePoint, uint8_t numCodePoints)
+KN_TEST_API void Grapheme_Create(Grapheme* seq, const uint8_t* codePoint, uint8_t numCodePoints)
 {
 	KN_ASSERT(seq != NULL, "Cannot create a null Grapheme.");
 	KN_ASSERT(codePoint != NULL, "Cannot create a Grapheme from a null code point.");
@@ -80,7 +80,7 @@ KN_UNIT_API void Grapheme_Create(Grapheme* seq, const uint8_t* codePoint, uint8_
 	seq->codePointLength = numCodePoints;
 }
 
-KN_UNIT_API bool Grapheme_Is(Grapheme* seq, const uint8_t* codePoint, uint8_t numCodePoints)
+KN_TEST_API bool Grapheme_Is(Grapheme* seq, const uint8_t* codePoint, uint8_t numCodePoints)
 {
 	KN_ASSERT(seq != NULL, "A null Grapheme is not equal to anything.");
 	KN_ASSERT(codePoint != NULL, "Cannot compare a Grapheme against a NULL code point.");
@@ -104,14 +104,14 @@ KN_UNIT_API bool Grapheme_Is(Grapheme* seq, const uint8_t* codePoint, uint8_t nu
 	return true;
 }
 
-KN_UNIT_API bool Grapheme_Equal(Grapheme* left, Grapheme* right)
+KN_TEST_API bool Grapheme_Equal(Grapheme* left, Grapheme* right)
 {
 	KN_ASSERT(left != NULL, "Left Grapheme is NULL.");
 	KN_ASSERT(right != NULL, "Right Grapheme is NULL.");
 	return Grapheme_Is(left, right->codePoints, right->codePointLength);
 }
 
-KN_UNIT_API void Grapheme_Begin(Grapheme* seq)
+KN_TEST_API void Grapheme_Begin(Grapheme* seq)
 {
 	KN_ASSERT(seq != NULL, "Cannot begin a null Grapheme.");
 	seq->codePointLength = 0;
@@ -119,7 +119,7 @@ KN_UNIT_API void Grapheme_Begin(Grapheme* seq)
 	memset(&seq->codePoints[0], 0, KN_MAX_BYTES_IN_GRAPHEME);
 }
 
-KN_UNIT_API bool Grapheme_AddCodePoint(Grapheme* seq, const uint8_t* codePoint)
+KN_TEST_API bool Grapheme_AddCodePoint(Grapheme* seq, const uint8_t* codePoint)
 {
 	KN_ASSERT(seq != NULL, "Cannot add to a null Grapheme.");
 	KN_ASSERT(codePoint != NULL, "Cannot add a null code point to a Grapheme.");

@@ -3,14 +3,14 @@
 
 #include <string.h>
 
-KN_UNIT_API void Utf8GlyphMap_Create(Utf8GlyphMap* map)
+KN_TEST_API void Utf8GlyphMap_Create(Utf8GlyphMap* map)
 {
 	KN_ASSERT(map != NULL, "Cannot create a null glyph map.");
 	memset(map, 0, sizeof(Utf8GlyphMap));
 	map->usedSequences = 0;
 }
 
-KN_UNIT_API uint32_t Utf8GlyphMap_GlyphForCodePoint(Utf8GlyphMap* map,
+KN_TEST_API uint32_t Utf8GlyphMap_GlyphForCodePoint(Utf8GlyphMap* map,
 	const uint8_t* codePoint, uint8_t numCodePoints)
 {
 	KN_ASSERT(map != NULL, "Cannot map to glyphs with a null glyph map.");
@@ -29,7 +29,7 @@ KN_UNIT_API uint32_t Utf8GlyphMap_GlyphForCodePoint(Utf8GlyphMap* map,
 /**
  * Creates a glyph mapping for a sequence of code points.
  */
-KN_UNIT_API bool Utf8GlyphMap_Map(Utf8GlyphMap* map, const uint8_t* codePoint,
+KN_TEST_API bool Utf8GlyphMap_Map(Utf8GlyphMap* map, const uint8_t* codePoint,
 	uint8_t numCodePoints, GlyphIndex glyphIndex)
 {
 	KN_ASSERT(map != NULL, "Cannot write a glyph to a null map.");
