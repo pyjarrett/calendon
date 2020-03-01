@@ -113,6 +113,99 @@ static FontPSF2 fonts[RLL_MAX_FONT_TYPES];
 uint32_t LogSysRender;
 
 /**
+ * Limit the number of vertex format attributes to something reasonable for a 2D
+ * game engine.
+ */
+#define RLL_MAX_VERTEX_FORMAT_ATTRIBUTES 16
+
+/**
+ * Define the format, amount, location, layout and transformation needed to
+ * understand the format of one attribute of a vertex.
+ */
+typedef struct {
+// "What is this thing is supposed to represent?"
+
+	/**
+	 * Abstract name of the type of this data.  It is positional data, texture
+	 * coordinates, or something else?
+	 *
+	 * If no appropriate semantic name is assigned, then that means this is
+	 * invalid data.
+	 */
+	uint32_t semanticName;
+
+// Element format.
+
+	/**
+	 * The format type of each component.
+	 *
+	 * e.g. GL_BYTE, GL_FLOAT, GL_INT
+	 */
+	GLenum componentType;
+
+	/**
+	 * A vertex attribute might have multiple components.
+	 *
+	 * e.g. a 2D position would be 2 (x,y), a 3D position would be 3 (x,y,z),
+	 * 2D texture coordinates would be 2 (u, v).
+	 */
+	uint8_t numComponents;
+
+// Structure, layout and location of the array of data.
+
+	/**
+	 * The distance from the start of one attribute to the the start of the
+	 * next same attribute.  0 is a special value here, meaning "I'm too lazy to count
+	 * the size of each vertex, the values immediately follow each other."
+	 */
+	uint32_t stride;
+
+	/**
+	 * Is this value stored in an integer format and need to be transformed to
+	 * an appropriate floating point range [-1, 1] for signed, [0, 1] for
+	 * unsigned?
+	 */
+	bool normalized;
+
+	/**
+	 * The byte offset from the start of overall vertex data to the start of the
+	 * first value of the attribute.
+	 */
+	size_t offset;
+} VertexFormatAttribute;
+
+/**
+ * Vertex data is just a blob of binary data unless you know the format of it
+ * and how to interpret it.
+ *
+ * Vertices might have any of a number of sorts of data assigned to each vertex,
+ * such as a position, normal vector, or 2D texture coordinates.  A shader
+ * program might or might not use each attribute in a set of vertex data, but it
+ * needs to know how to use the attributes which are available.
+ */
+typedef struct {
+	/**
+	 * To speed lookup and application of vertex formats, attributes are indexed
+	 * according to semantic name.
+	 */
+	VertexFormatAttribute attributes[RLL_MAX_VERTEX_FORMAT_ATTRIBUTES];
+} VertexFormat;
+
+/**
+ * The general notion of "I have vertex data in a specific format."  This
+ * does not deal with allocation concerns, as long as the data lives through
+ * the entire frame.
+ */
+typedef struct {
+	void* vertices;
+	size_t numBytes;
+	VertexFormat* format;
+} Geometry;
+
+#define RLL_MAX_VERTEX_FORMATS 1
+static VertexFormat vertexFormats[RLL_MAX_VERTEX_FORMATS];
+
+/**
  * Support a limited number of vertex attributes to maintain the best
  * compatibility.
  */
@@ -156,8 +249,7 @@ typedef struct {
 	char name[RLL_MAX_ATTRIBUTE_NAME_LENGTH];
 
 	/** Corresponding semantic type to use at this index. */
-	// TODO: Implement and use this when adding vertex formats.
-	//uint32_t semanticName;
+	uint32_t semanticName;
 
 	/**
 	 * The layout location of where the attribute will go.  This is in
@@ -384,11 +476,11 @@ void RLL_RegisterProgram(uint32_t index, GLuint program)
 		KN_TRACE(LogSysRender, "[%d]: %s '%s'   %d", i, RLL_GLTypeToString(type),
 			p->attributes[i].name, size);
 		
-		uint32_t semanticName = RLL_LookupAttributeSemanticName(p->attributes[i].name);
+		const uint32_t semanticName = RLL_LookupAttributeSemanticName(p->attributes[i].name);
 		KN_ASSERT(semanticName < AttributeSemanticNameTypes, "Couldn't find attribute "
 			"semantic name for %s", p->attributes[i].name);
 		p->attributes[i].location = i;
-		//p->attributes[i].semanticName = semanticName;
+		p->attributes[i].semanticName = semanticName;
 		p->attributes[i].type = type;
 		p->attributes[i].size = size;
 
@@ -456,6 +548,44 @@ void RLL_EnableProgram(uint32_t id, GLsizei vertexStride, void* vertexPointer)
 			vertexPointer
 		);
 		KN_ASSERT_NO_GL_ERROR();
+	}
+
+	for (uint32_t i = 0; i < p->numUniforms; ++i) {
+		RLL_ApplyUniform(&p->uniforms[i], uniformStorage);
+	}
+}
+
+void RLL_ApplyVertexAttribute(VertexFormat* f, uint32_t semanticName, uint32_t location)
+{
+	KN_ASSERT(f != NULL, "Cannot apply a vertex attribute from a null format");
+
+	VertexFormatAttribute* attribute = &f->attributes[semanticName];
+	glVertexAttribPointer(location,
+		attribute->numComponents,
+		attribute->componentType,
+		attribute->normalized,
+		attribute->stride,
+		(void*)attribute->offset
+		);
+
+	KN_ASSERT_NO_GL_ERROR();
+}
+
+/**
+ * Set uniforms according to global uniform storage, and enable attribute
+ * pointers.
+ */
+void RLL_EnableProgramForVertexFormat(uint32_t id, VertexFormat* format)
+{
+	Program* p = &programs[id];
+	KN_ASSERT(glIsProgram(p->id), "%" PRIu32 " is not a valid program.", id);
+	KN_ASSERT(format != NULL, "Cannot enable program %" PRIu32 " for a null vertex format.");
+
+	glUseProgram(p->id);
+	KN_ASSERT_NO_GL_ERROR();
+
+	for (uint32_t i = 0; i < p->numAttributes; ++i) {
+		RLL_ApplyVertexAttribute(format, p->attributes[i].semanticName, p->attributes[i].location);
 	}
 
 	for (uint32_t i = 0; i < p->numUniforms; ++i) {
@@ -706,6 +836,18 @@ void RLL_InitDummyVAO(void)
     KN_ASSERT_NO_GL_ERROR();
 }
 
+void RLL_InitVertexFormats(void)
+{
+	// Invalid all attributes on all vertex formats.
+	for (uint32_t i=0; i < RLL_MAX_VERTEX_FORMATS; ++i) {
+		for (uint32_t j = 0; j < RLL_MAX_VERTEX_FORMAT_ATTRIBUTES; ++j) {
+			vertexFormats[i].attributes[j].semanticName = AttributeSemanticNameUnknown;
+		}
+	}
+
+	vertexFormats[RLL_VERTEX_FORMAT_V4].attributes[AttributeSemanticNamePosition4].
+}
+
 void RLL_FillFullScreenQuadBuffer(void)
 {
 	// OpenGL ndc is a cube from -1 to 1
@@ -906,6 +1048,7 @@ void RLL_Init(uint32_t width, uint32_t height)
 	RLL_InitGL();
 	RLL_ConfigureVSync();
 	RLL_InitDummyVAO();
+	RLL_InitVertexFormats();
 	RLL_FillBuffers();
 	RLL_InitSprites();
 	RLL_LoadShaders();
