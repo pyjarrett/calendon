@@ -89,6 +89,8 @@ KN_GAME_API void Game_Draw(void)
 {
 	R_StartFrame();
 
+	R_DrawDebugFullScreenRect();
+
 	float2 position = float2_Make(100, 100);
 	dimension2f size = { .width = 100.0f, .height = 100.0f };
 	R_DrawSprite(spriteFrames[sampleCursor.current], position, size);

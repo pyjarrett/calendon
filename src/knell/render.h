@@ -42,7 +42,7 @@ KN_API bool R_LoadPSF2Font(FontId id, const char* path);
 KN_API void R_DrawSimpleText(FontId id, float2 position, const char* text);
 
 KN_API void R_DrawDebugFullScreenRect(void);
-KN_API void R_DrawDebugRect(float2 position, dimension2f dimensions, rgb8 color);
+KN_API void R_DrawDebugRect(float2 center, dimension2f dimensions, rgb8 color);
 KN_API void R_DrawDebugLine(float x1, float y1, float x2, float y2, rgb8 color);
 KN_API void R_DrawDebugLineStrip(float2* points, uint32_t numPoints, rgb8 color);
 
