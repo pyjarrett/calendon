@@ -202,14 +202,15 @@ typedef struct {
 	VertexFormat* format;
 } Geometry;
 
-#define RLL_MAX_VERTEX_FORMATS 2
-
 /**
  * Packed 4D vertices.
  */
-#define RLL_VERTEX_FORMAT_P4 0
-#define RLL_VERTEX_FORMAT_P2 1
-static VertexFormat vertexFormats[RLL_MAX_VERTEX_FORMATS];
+enum {
+	VertexFormatP4 = 0,
+	VertexFormatP2 = 1,
+	VertexFormatMax = 2
+};
+static VertexFormat vertexFormats[VertexFormatMax];
 
 /**
  * Support a limited number of vertex attributes to maintain the best
@@ -851,7 +852,7 @@ void RLL_InitDummyVAO(void)
 void RLL_InitVertexFormats(void)
 {
 	// Invalid all attributes on all vertex formats.
-	for (uint32_t i=0; i < RLL_MAX_VERTEX_FORMATS; ++i) {
+	for (uint32_t i=0; i < VertexFormatMax; ++i) {
 		for (uint32_t j = 0; j < RLL_MAX_VERTEX_FORMAT_ATTRIBUTES; ++j) {
 			vertexFormats[i].attributes[j].semanticName = AttributeSemanticNameUnknown;
 		}
@@ -859,7 +860,7 @@ void RLL_InitVertexFormats(void)
 
 	// TODO: Load these from file.
 	{
-		VertexFormat* v = &vertexFormats[RLL_VERTEX_FORMAT_P4];
+		VertexFormat* v = &vertexFormats[VertexFormatP4];
 		VertexFormatAttribute* a = &v->attributes[AttributeSemanticNamePosition4];
 		a->semanticName = AttributeSemanticNamePosition4;
 		a->componentType = GL_FLOAT;
@@ -870,7 +871,7 @@ void RLL_InitVertexFormats(void)
 	}
 
 	{
-		VertexFormat* v = &vertexFormats[RLL_VERTEX_FORMAT_P2];
+		VertexFormat* v = &vertexFormats[VertexFormatP2];
 		VertexFormatAttribute* a = &v->attributes[AttributeSemanticNamePosition2];
 		a->semanticName = AttributeSemanticNamePosition2;
 		a->componentType = GL_FLOAT;
@@ -1180,7 +1181,7 @@ void RLL_DrawSprite(SpriteId id, float2 position, dimension2f size)
 
 	glBindBuffer(GL_ARRAY_BUFFER, spriteBuffer);
 	KN_ASSERT_NO_GL_ERROR();
-	RLL_EnableProgramForVertexFormat(ProgramIndexSprite, &vertexFormats[RLL_VERTEX_FORMAT_P2]);
+	RLL_EnableProgramForVertexFormat(ProgramIndexSprite, &vertexFormats[VertexFormatP2]);
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
@@ -1345,7 +1346,7 @@ void RLL_DrawDebugFullScreenRect(void)
 
 	glBindBuffer(GL_ARRAY_BUFFER, fullScreenQuadBuffer);
 
-	RLL_EnableProgramForVertexFormat(ProgramIndexFullScreen, &vertexFormats[RLL_VERTEX_FORMAT_P2]);
+	RLL_EnableProgramForVertexFormat(ProgramIndexFullScreen, &vertexFormats[VertexFormatP2]);
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
@@ -1366,7 +1367,7 @@ void RLL_DrawDebugRect(float2 center, dimension2f dimensions, float4 color)
 	uniformStorage[UniformNameViewModel].f44 = float4x4_Identity();
 	uniformStorage[UniformNamePolygonColor].f4 = color;
 
-	RLL_EnableProgramForVertexFormat(ProgramIndexSolidPolygon, &vertexFormats[RLL_VERTEX_FORMAT_P2]);
+	RLL_EnableProgramForVertexFormat(ProgramIndexSolidPolygon, &vertexFormats[VertexFormatP2]);
 
 	float2 vertices[4];
 	vertices[0] = float2_Make(-dimensions.width / 2.0f, -dimensions.height / 2.0f);
@@ -1398,7 +1399,7 @@ void RLL_DrawDebugLine(float x1, float y1, float x2, float y2, rgb8 color)
 	uniformStorage[UniformNamePolygonColor].f4 = float4_Make(
 		(float)color.r / 255.0f, (float)color.g / 255.0f, (float)color.b / 255.0f, 1.0f);
 
-	RLL_EnableProgramForVertexFormat(ProgramIndexSolidPolygon, &vertexFormats[RLL_VERTEX_FORMAT_P2]);
+	RLL_EnableProgramForVertexFormat(ProgramIndexSolidPolygon, &vertexFormats[VertexFormatP2]);
 
 	float2 vertices[2];
 	vertices[0] = float2_Make(x1, y1);
@@ -1425,7 +1426,7 @@ void RLL_DrawDebugLineStrip(float2* points, uint32_t numPoints, rgb8 color)
 	uniformStorage[UniformNamePolygonColor].f4 = float4_Make(
 		(float)color.r / 255.0f, (float)color.g / 255.0f, (float)color.b / 255.0f, 1.0f);
 
-	RLL_EnableProgramForVertexFormat(ProgramIndexSolidPolygon, &vertexFormats[RLL_VERTEX_FORMAT_P2]);
+	RLL_EnableProgramForVertexFormat(ProgramIndexSolidPolygon, &vertexFormats[VertexFormatP2]);
 
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float2) * numPoints, points);
 	glDrawArrays(GL_LINE_STRIP, 0, (GLsizei)numPoints);
