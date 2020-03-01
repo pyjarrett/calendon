@@ -202,12 +202,13 @@ typedef struct {
 	VertexFormat* format;
 } Geometry;
 
-#define RLL_MAX_VERTEX_FORMATS 1
+#define RLL_MAX_VERTEX_FORMATS 2
 
 /**
  * Packed 4D vertices.
  */
 #define RLL_VERTEX_FORMAT_P4 0
+#define RLL_VERTEX_FORMAT_P2 1
 static VertexFormat vertexFormats[RLL_MAX_VERTEX_FORMATS];
 
 /**
@@ -391,7 +392,7 @@ uint32_t RLL_LookupAttributeSemanticName(const char* name)
 	KN_ASSERT(name != NULL, "Cannot lookup a null attribute name.");
 	for (uint32_t i=0; i < AttributeSemanticNameTypes; ++i) {
 		if (strcmp(attributeSemanticNames[i].str, name) == 0) {
-			return i;
+			return attributeSemanticNames[i].id;
 		}
 	}
 	return AttributeSemanticNameUnknown;
@@ -560,7 +561,7 @@ void RLL_EnableProgram(uint32_t id, GLsizei vertexStride, void* vertexPointer)
 	}
 }
 
-void RLL_ApplyVertexAttribute(VertexFormat* f, uint32_t semanticName, uint32_t location)
+static void RLL_ApplyVertexAttribute(VertexFormat* f, uint32_t semanticName, uint32_t location)
 {
 	KN_ASSERT(f != NULL, "Cannot apply a vertex attribute from a null format");
 	KN_ASSERT(semanticName < AttributeSemanticNameUnknown, "Unknown semantic name ID: %"
@@ -586,7 +587,7 @@ void RLL_ApplyVertexAttribute(VertexFormat* f, uint32_t semanticName, uint32_t l
  * Set uniforms according to global uniform storage, and enable attribute
  * pointers.
  */
-void RLL_EnableProgramForVertexFormat(uint32_t id, VertexFormat* format)
+static void RLL_EnableProgramForVertexFormat(uint32_t id, VertexFormat* format)
 {
 	Program* p = &programs[id];
 	KN_ASSERT(glIsProgram(p->id), "%" PRIu32 " is not a valid program.", id);
@@ -856,12 +857,24 @@ void RLL_InitVertexFormats(void)
 		}
 	}
 
+	// TODO: Load these from file.
 	{
 		VertexFormat* v = &vertexFormats[RLL_VERTEX_FORMAT_P4];
 		VertexFormatAttribute* a = &v->attributes[AttributeSemanticNamePosition4];
 		a->semanticName = AttributeSemanticNamePosition4;
 		a->componentType = GL_FLOAT;
 		a->numComponents = 4;
+		a->normalized = GL_FALSE;
+		a->stride = 0;
+		a->offset = 0;
+	}
+
+	{
+		VertexFormat* v = &vertexFormats[RLL_VERTEX_FORMAT_P2];
+		VertexFormatAttribute* a = &v->attributes[AttributeSemanticNamePosition2];
+		a->semanticName = AttributeSemanticNamePosition2;
+		a->componentType = GL_FLOAT;
+		a->numComponents = 2;
 		a->normalized = GL_FALSE;
 		a->stride = 0;
 		a->offset = 0;
@@ -1344,7 +1357,7 @@ void RLL_DrawDebugFullScreenRect(void)
 /**
  * Draws a rectangle at a given center point with known dimensions.
  */
-void RLL_DrawDebugRect(float4 center, dimension2f dimensions, float4 color)
+void RLL_DrawDebugRect(float2 center, dimension2f dimensions, float4 color)
 {
 	RLL_SetFullScreenViewport();
 
@@ -1353,19 +1366,17 @@ void RLL_DrawDebugRect(float4 center, dimension2f dimensions, float4 color)
 	uniformStorage[UniformNameViewModel].f44 = float4x4_Identity();
 	uniformStorage[UniformNamePolygonColor].f4 = color;
 
-	RLL_EnableProgramForVertexFormat(ProgramIndexSolidPolygon, &vertexFormats[RLL_VERTEX_FORMAT_P4]);
-	//RLL_EnableProgram(ProgramIndexSolidPolygon, 4 * sizeof(float), 0);
+	RLL_EnableProgramForVertexFormat(ProgramIndexSolidPolygon, &vertexFormats[RLL_VERTEX_FORMAT_P2]);
 
-	float4 vertices[4];
-	vertices[0] = float4_Make(-dimensions.width / 2.0f, -dimensions.height / 2.0f, 0.0f, 1.0f);
-	vertices[1] = float4_Make(dimensions.width / 2.0f, -dimensions.height / 2.0f, 0.0f, 1.0f);
-	vertices[2] = float4_Make(-dimensions.width / 2.0f, dimensions.height / 2.0f, 0.0f, 1.0f);
-	vertices[3] = float4_Make(dimensions.width / 2.0f, dimensions.height / 2.0f, 0.0f, 1.0f);
+	float2 vertices[4];
+	vertices[0] = float2_Make(-dimensions.width / 2.0f, -dimensions.height / 2.0f);
+	vertices[1] = float2_Make(dimensions.width / 2.0f, -dimensions.height / 2.0f);
+	vertices[2] = float2_Make(-dimensions.width / 2.0f, dimensions.height / 2.0f);
+	vertices[3] = float2_Make(dimensions.width / 2.0f, dimensions.height / 2.0f);
 
 	for (uint32_t i = 0; i < 4; ++i) {
 		vertices[i].x += center.x;
 		vertices[i].y += center.y;
-		vertices[i].z += center.z;
 	}
 
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
@@ -1387,11 +1398,11 @@ void RLL_DrawDebugLine(float x1, float y1, float x2, float y2, rgb8 color)
 	uniformStorage[UniformNamePolygonColor].f4 = float4_Make(
 		(float)color.r / 255.0f, (float)color.g / 255.0f, (float)color.b / 255.0f, 1.0f);
 
-	RLL_EnableProgram(ProgramIndexSolidPolygon, 4 * sizeof(float), 0);
+	RLL_EnableProgramForVertexFormat(ProgramIndexSolidPolygon, &vertexFormats[RLL_VERTEX_FORMAT_P2]);
 
-	float4 vertices[2];
-	vertices[0] = float4_Make(x1, y1, 0.0f, 1.0f);
-	vertices[1] = float4_Make(x2, y2, 0.0f, 1.0f);
+	float2 vertices[2];
+	vertices[0] = float2_Make(x1, y1);
+	vertices[1] = float2_Make(x2, y2);
 
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
 	glDrawArrays(GL_LINES, 0, 2);
@@ -1414,13 +1425,9 @@ void RLL_DrawDebugLineStrip(float2* points, uint32_t numPoints, rgb8 color)
 	uniformStorage[UniformNamePolygonColor].f4 = float4_Make(
 		(float)color.r / 255.0f, (float)color.g / 255.0f, (float)color.b / 255.0f, 1.0f);
 
-	RLL_EnableProgram(ProgramIndexSolidPolygon, 4 * sizeof(float), 0);
+	RLL_EnableProgramForVertexFormat(ProgramIndexSolidPolygon, &vertexFormats[RLL_VERTEX_FORMAT_P2]);
 
-	float4 vertices[RLL_MAX_DEBUG_POINTS];
-	for (uint32_t i = 0; i < numPoints; ++i) {
-		vertices[i] = float4_Make(points[i].x, points[i].y, 0.0f, 1.0f);
-	}
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float4) * numPoints, vertices);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float2) * numPoints, points);
 	glDrawArrays(GL_LINE_STRIP, 0, (GLsizei)numPoints);
 
 	RLL_DisableProgram(ProgramIndexSolidPolygon);
