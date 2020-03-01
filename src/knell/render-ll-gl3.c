@@ -884,11 +884,11 @@ void RLL_InitVertexFormats(void)
 void RLL_FillFullScreenQuadBuffer(void)
 {
 	// OpenGL ndc is a cube from -1 to 1
-	float4 vertices[] = {
-		float4_Make(-1.0f, -1.0f, 0.0f, 0.0f),
-		float4_Make(-1.0f, 1.0f, 0.0f, 0.0f),
-		float4_Make(1.0f, -1.0f, 0.0f, 0.0f),
-		float4_Make(1.0f, 1.0f, 0.0f, 0.0f)
+	float2 vertices[] = {
+		float2_Make(-1.0f, -1.0f),
+		float2_Make(-1.0f, 1.0f),
+		float2_Make(1.0f, -1.0f),
+		float2_Make(1.0f, 1.0f)
 	};
 	glGenBuffers(1, &fullScreenQuadBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, fullScreenQuadBuffer);
@@ -900,11 +900,11 @@ void RLL_FillFullScreenQuadBuffer(void)
 
 void RLL_FillSpriteBuffer(void)
 {
-	float4 vertices[4];
-	vertices[0] = float4_Make(0.0f, 0.0f, 0.0f, 0.0f);
-	vertices[1] = float4_Make(0.0f, 1.0f, 0.0f, 0.0f);
-	vertices[2] = float4_Make(1.0f, 0.0f, 0.0f, 0.0f);
-	vertices[3] = float4_Make(1.0f, 1.0f, 0.0f, 0.0f);
+	float2 vertices[4];
+	vertices[0] = float2_Make(0.0f, 0.0f);
+	vertices[1] = float2_Make(0.0f, 1.0f);
+	vertices[2] = float2_Make(1.0f, 0.0f);
+	vertices[3] = float2_Make(1.0f, 1.0f);
 
 	glGenBuffers(1, &spriteBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, spriteBuffer);
@@ -1180,7 +1180,7 @@ void RLL_DrawSprite(SpriteId id, float2 position, dimension2f size)
 
 	glBindBuffer(GL_ARRAY_BUFFER, spriteBuffer);
 	KN_ASSERT_NO_GL_ERROR();
-	RLL_EnableProgram(ProgramIndexSprite, 4 * sizeof(float), 0);
+	RLL_EnableProgramForVertexFormat(ProgramIndexSprite, &vertexFormats[RLL_VERTEX_FORMAT_P2]);
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
@@ -1345,7 +1345,7 @@ void RLL_DrawDebugFullScreenRect(void)
 
 	glBindBuffer(GL_ARRAY_BUFFER, fullScreenQuadBuffer);
 
-	RLL_EnableProgram(ProgramIndexFullScreen, 4 * sizeof(float), 0);
+	RLL_EnableProgramForVertexFormat(ProgramIndexFullScreen, &vertexFormats[RLL_VERTEX_FORMAT_P2]);
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
