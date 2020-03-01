@@ -203,6 +203,11 @@ typedef struct {
 } Geometry;
 
 #define RLL_MAX_VERTEX_FORMATS 1
+
+/**
+ * Packed 4D vertices.
+ */
+#define RLL_VERTEX_FORMAT_P4 0
 static VertexFormat vertexFormats[RLL_MAX_VERTEX_FORMATS];
 
 /**
@@ -558,8 +563,14 @@ void RLL_EnableProgram(uint32_t id, GLsizei vertexStride, void* vertexPointer)
 void RLL_ApplyVertexAttribute(VertexFormat* f, uint32_t semanticName, uint32_t location)
 {
 	KN_ASSERT(f != NULL, "Cannot apply a vertex attribute from a null format");
+	KN_ASSERT(semanticName < AttributeSemanticNameUnknown, "Unknown semantic name ID: %"
+		PRIu32, semanticName);
+	KN_ASSERT(f->attributes[semanticName].semanticName == semanticName,
+		"Attribute semantic name (%" PRIu32 ") does not match expected (%" PRIu32 ")",
+		f->attributes[semanticName].semanticName, semanticName);
 
-	VertexFormatAttribute* attribute = &f->attributes[semanticName];
+	const VertexFormatAttribute* attribute = &f->attributes[semanticName];
+	glEnableVertexAttribArray(location);
 	glVertexAttribPointer(location,
 		attribute->numComponents,
 		attribute->componentType,
@@ -845,7 +856,16 @@ void RLL_InitVertexFormats(void)
 		}
 	}
 
-	vertexFormats[RLL_VERTEX_FORMAT_V4].attributes[AttributeSemanticNamePosition4].
+	{
+		VertexFormat* v = &vertexFormats[RLL_VERTEX_FORMAT_P4];
+		VertexFormatAttribute* a = &v->attributes[AttributeSemanticNamePosition4];
+		a->semanticName = AttributeSemanticNamePosition4;
+		a->componentType = GL_FLOAT;
+		a->numComponents = 4;
+		a->normalized = GL_FALSE;
+		a->stride = 0;
+		a->offset = 0;
+	}
 }
 
 void RLL_FillFullScreenQuadBuffer(void)
@@ -1333,7 +1353,8 @@ void RLL_DrawDebugRect(float4 center, dimension2f dimensions, float4 color)
 	uniformStorage[UniformNameViewModel].f44 = float4x4_Identity();
 	uniformStorage[UniformNamePolygonColor].f4 = color;
 
-	RLL_EnableProgram(ProgramIndexSolidPolygon, 4 * sizeof(float), 0);
+	RLL_EnableProgramForVertexFormat(ProgramIndexSolidPolygon, &vertexFormats[RLL_VERTEX_FORMAT_P4]);
+	//RLL_EnableProgram(ProgramIndexSolidPolygon, 4 * sizeof(float), 0);
 
 	float4 vertices[4];
 	vertices[0] = float4_Make(-dimensions.width / 2.0f, -dimensions.height / 2.0f, 0.0f, 1.0f);
