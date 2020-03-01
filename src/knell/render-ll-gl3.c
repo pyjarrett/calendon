@@ -208,7 +208,8 @@ typedef struct {
 enum {
 	VertexFormatP4 = 0,
 	VertexFormatP2 = 1,
-	VertexFormatMax = 2
+	VertexFormatP2T2Interleaved = 2,
+	VertexFormatMax = 3
 };
 static VertexFormat vertexFormats[VertexFormatMax];
 
@@ -880,6 +881,25 @@ void RLL_InitVertexFormats(void)
 		a->stride = 0;
 		a->offset = 0;
 	}
+
+	{
+		VertexFormat* v = &vertexFormats[VertexFormatP2T2Interleaved];
+		VertexFormatAttribute* p2 = &v->attributes[AttributeSemanticNamePosition2];
+		p2->semanticName = AttributeSemanticNamePosition2;
+		p2->componentType = GL_FLOAT;
+		p2->numComponents = 2;
+		p2->normalized = GL_FALSE;
+		p2->stride = 4 * sizeof(float);
+		p2->offset = 0;
+
+		VertexFormatAttribute* t2 = &v->attributes[AttributeSemanticNameTexCoord2];
+		t2->semanticName = AttributeSemanticNameTexCoord2;
+		t2->componentType = GL_FLOAT;
+		t2->numComponents = 2;
+		t2->normalized = GL_FALSE;
+		t2->stride = 4 * sizeof(float);
+		t2->offset = 2 * sizeof(float);
+	}
 }
 
 void RLL_FillFullScreenQuadBuffer(void)
@@ -901,11 +921,15 @@ void RLL_FillFullScreenQuadBuffer(void)
 
 void RLL_FillSpriteBuffer(void)
 {
-	float2 vertices[4];
+	float2 vertices[8];
 	vertices[0] = float2_Make(0.0f, 0.0f);
-	vertices[1] = float2_Make(0.0f, 1.0f);
-	vertices[2] = float2_Make(1.0f, 0.0f);
-	vertices[3] = float2_Make(1.0f, 1.0f);
+	vertices[1] = float2_Make(0.0f, 0.0f);
+	vertices[2] = float2_Make(0.0f, 1.0f);
+	vertices[3] = float2_Make(0.0f, 1.0f);
+	vertices[4] = float2_Make(1.0f, 0.0f);
+	vertices[5] = float2_Make(1.0f, 0.0f);
+	vertices[6] = float2_Make(1.0f, 1.0f);
+	vertices[7] = float2_Make(1.0f, 1.0f);
 
 	glGenBuffers(1, &spriteBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, spriteBuffer);
@@ -1013,8 +1037,8 @@ void RLL_LoadShaders(void)
 		"shaders/uv_as_red_green.frag", ProgramIndexFullScreen);
 	RLL_LoadSimpleShader("shaders/solid_polygon.vert",
 		"shaders/solid_polygon.frag", ProgramIndexSolidPolygon);
-	RLL_LoadSimpleShader("shaders/sprite.vert",
-		"shaders/sprite.frag", ProgramIndexSprite);
+	RLL_LoadSimpleShader("shaders/atlas_sprite.vert",
+		"shaders/atlas_sprite.frag", ProgramIndexSprite);
 }
 
 bool RLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* program,
@@ -1181,7 +1205,7 @@ void RLL_DrawSprite(SpriteId id, float2 position, dimension2f size)
 
 	glBindBuffer(GL_ARRAY_BUFFER, spriteBuffer);
 	KN_ASSERT_NO_GL_ERROR();
-	RLL_EnableProgramForVertexFormat(ProgramIndexSprite, &vertexFormats[VertexFormatP2]);
+	RLL_EnableProgramForVertexFormat(ProgramIndexSprite, &vertexFormats[VertexFormatP2T2Interleaved]);
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
