@@ -520,49 +520,6 @@ void RLL_RegisterProgram(uint32_t index, GLuint program)
 	KN_ASSERT_NO_GL_ERROR();
 }
 
-/**
- * Set uniforms according to global uniform storage, and enable attribute
- * pointers.
- */
-void RLL_EnableProgram(uint32_t id, GLsizei vertexStride, void* vertexPointer)
-{
-	Program* p = &programs[id];
-	KN_ASSERT(glIsProgram(p->id), "%" PRIu32 " is not a valid program.", id);
-
-	glUseProgram(p->id);
-	KN_ASSERT_NO_GL_ERROR();
-
-	for (uint32_t i = 0; i < p->numAttributes; ++i) {
-		GLint size = 0;
-		GLenum type;
-
-		switch (p->attributes[i].type) {
-			case GL_FLOAT_VEC4:
-				size = 4;
-				type = GL_FLOAT;
-				break;
-			default:
-				KN_FATAL_ERROR("Unknown attribute type: %s", RLL_GLTypeToString(p->attributes[i].type));
-		}
-
-		glEnableVertexAttribArray(p->attributes[i].location);
-		KN_ASSERT_NO_GL_ERROR();
-		glVertexAttribPointer(
-			p->attributes[i].location,
-			size,
-			type,
-			GL_FALSE,
-			vertexStride,
-			vertexPointer
-		);
-		KN_ASSERT_NO_GL_ERROR();
-	}
-
-	for (uint32_t i = 0; i < p->numUniforms; ++i) {
-		RLL_ApplyUniform(&p->uniforms[i], uniformStorage);
-	}
-}
-
 static void RLL_ApplyVertexAttribute(VertexFormat* f, uint32_t semanticName, uint32_t location)
 {
 	KN_ASSERT(f != NULL, "Cannot apply a vertex attribute from a null format");
