@@ -1218,24 +1218,10 @@ bool RLL_LoadPSF2Font(FontId id, const char* path)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 
+	ImageRGBA8_Flip(&font.atlas.image);
 	KN_ASSERT(font.atlas.image.pixels.size == font.atlas.backingSizePixels.width * font.atlas.backingSizePixels.height * 4,
 		"Backing size doesn't match pixel size.");
 
-#if 1
-	ImageRGBA8 sample;
-	ImageRGBA8_AllocateSized(&sample, (dimension2u32){ 4, 4});
-	memset(sample.pixels.contents, 0, 4 * 4 * 4);
-
-	glTexImage2D(GL_TEXTURE_2D,
-		0, // mipmap level
-		GL_RGB,
-		4,
-		4,
-		0, // border
-		GL_RGBA,
-		GL_UNSIGNED_BYTE,
-		sample.pixels.contents);
-#else
 	// TODO: Use proxy textures to test to see if sufficient space exists.
 	glTexImage2D(GL_TEXTURE_2D,
 		0, // mipmap level
@@ -1246,7 +1232,6 @@ bool RLL_LoadPSF2Font(FontId id, const char* path)
 		GL_RGBA,
 		GL_UNSIGNED_BYTE,
 		font.atlas.image.pixels.contents);
-#endif
 
 	KN_ASSERT_NO_GL_ERROR();
 

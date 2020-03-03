@@ -7,7 +7,7 @@
 
 extern LogHandle LogSysAssets;
 
-void ImageRGBA8_Flip(ImageRGBA8* image)
+KN_API void ImageRGBA8_Flip(ImageRGBA8* image)
 {
 	KN_ASSERT(image != NULL, "Cannot load flip a null image.");
 	KN_ASSERT(image->pixels.size > 0, "No pixels to flip.");
