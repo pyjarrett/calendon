@@ -878,15 +878,28 @@ void RLL_FillFullScreenQuadBuffer(void)
 
 void RLL_FillSpriteBuffer(void)
 {
-	float2 vertices[8];
-	vertices[0] = float2_Make(0.0f, 0.0f);
-	vertices[1] = float2_Make(0.0f, 0.0f);
-	vertices[2] = float2_Make(0.0f, 1.0f);
-	vertices[3] = float2_Make(0.0f, 1.0f);
-	vertices[4] = float2_Make(1.0f, 0.0f);
-	vertices[5] = float2_Make(1.0f, 0.0f);
-	vertices[6] = float2_Make(1.0f, 1.0f);
-	vertices[7] = float2_Make(1.0f, 1.0f);
+	typedef struct {
+		float2 position;
+		float2 texCoord2;
+	} VertexP2T2;
+
+	VertexP2T2 vertices[8];
+	vertices[0] = (VertexP2T2) {
+		float2_Make(0.0f, 0.0f),
+		float2_Make(0.0f, 0.0f)
+	};
+	vertices[1] = (VertexP2T2) {
+		float2_Make(0.0f, 1.0f),
+		float2_Make(0.0f, 1.0f)
+	};
+	vertices[2] = (VertexP2T2) {
+		float2_Make(1.0f, 0.0f),
+		float2_Make(1.0f, 0.0f)
+	};
+	vertices[3] = (VertexP2T2) {
+		float2_Make(1.0f, 1.0f),
+		float2_Make(1.0f, 1.0f)
+	};
 
 	glGenBuffers(1, &spriteBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, spriteBuffer);
