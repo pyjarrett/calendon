@@ -2,13 +2,17 @@
 #define KN_IMAGE_H
 
 #include <knell/kn.h>
+#include <knell/math2.h>
 #include <knell/memory.h>
 
 /**
  * Images are bulk groups of pixel data stored in memory and must be fed into
  * the renderer to create a texture to use for actual drawing.
  *
- * Images are assumed to be < 4GiB
+ * Images are assumed to be < 4GiB.
+ *
+ * Note that most images are read with Y=0 being the top row and the Y-axis
+ * going downwards.
  */
 typedef struct {
 	DynamicBuffer pixels;
@@ -21,6 +25,7 @@ typedef struct {
 } ImageRGBA8;
 
 KN_API bool ImageRGBA8_Allocate(ImageRGBA8* image, const char* fileName);
+KN_API bool ImageRGBA8_AllocateSized(ImageRGBA8* image, dimension2u32 size);
 KN_API void ImageRGBA8_Free(ImageRGBA8* image);
 
 #endif /* KN_IMAGE_H */

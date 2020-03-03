@@ -94,6 +94,18 @@ KN_API bool ImageRGBA8_Allocate(ImageRGBA8* image, const char* fileName)
 	return true;
 }
 
+KN_API bool ImageRGBA8_AllocateSized(ImageRGBA8* image, dimension2u32 size)
+{
+	KN_ASSERT(image != NULL, "Cannot allocate a null ImageRGBA8.");
+	KN_ASSERT(size.width > 0 && size.height > 0, "ImageRGBA8 must have non-zero size %"
+		PRIu32 "x%" PRIu32, size.width, size.height);
+
+	Mem_Allocate(&image->pixels, size.width * size.height * 4 /* bytes per pixel*/);
+	image->width = size.width;
+	image->height = size.height;
+	return true;
+}
+
 KN_API void ImageRGBA8_Free(ImageRGBA8* image)
 {
 	KN_ASSERT(image != NULL, "Cannot load data into a null image.");
