@@ -97,3 +97,8 @@ KN_API void R_DrawDebugLineStrip(float2* points, uint32_t numPoints, rgb8 color)
 {
 	RLL_DrawDebugLineStrip(points, numPoints, color);
 }
+
+KN_API void R_DrawDebugFont(FontId id, float2 center, dimension2f size)
+{
+	RLL_DrawDebugFont(id, center, size);
+}

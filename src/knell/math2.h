@@ -16,6 +16,10 @@ typedef struct {
 } dimension2u32;
 
 typedef struct {
+	uint32_t row, col;
+} RowColu32;
+
+typedef struct {
 	union {
 		struct {
 			float x, y;

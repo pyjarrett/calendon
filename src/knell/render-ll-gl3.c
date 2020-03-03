@@ -87,7 +87,7 @@ static GLuint spriteBuffer;
 
 /**
  * The next sprite ID to be allocated.  Sprite IDs cannot be deallocated, though
- * this is lieoly to change in the future.
+ * this is likely to change in the future.
  */
 static SpriteId nextSpriteId;
 
@@ -550,7 +550,7 @@ static void RLL_EnableProgramForVertexFormat(uint32_t id, VertexFormat* format)
 {
 	Program* p = &programs[id];
 	KN_ASSERT(glIsProgram(p->id), "%" PRIu32 " is not a valid program.", id);
-	KN_ASSERT(format != NULL, "Cannot enable program %" PRIu32 " for a null vertex format.");
+	KN_ASSERT(format != NULL, "Cannot enable program %" PRIu32 " for a null vertex format.", id);
 
 	glUseProgram(p->id);
 	KN_ASSERT_NO_GL_ERROR();
@@ -1166,7 +1166,7 @@ void RLL_DrawSprite(SpriteId id, float2 position, dimension2f size)
 
 	GLuint texture = spriteTextures[id];
 	KN_ASSERT(glIsTexture(texture), "Sprite %" PRIu32 " does not have a valid"
-		"texture", texture);
+		"texture", id);
 	RLL_ReadyTexture2(0, spriteTextures[id]);
 
 	uniformStorage[UniformNameModelView].f44 = float4x4_Multiply(
@@ -1188,7 +1188,7 @@ bool RLL_CreateFont(FontId* id)
 {
 	if (nextFontId < RLL_MAX_FONT_TYPES)
 	{
-		*id = ++nextFontId;
+		*id = nextFontId++;
 		return true;
 	}
 	return false;
@@ -1206,22 +1206,49 @@ bool RLL_LoadPSF2Font(FontId id, const char* path)
 
 	KN_ASSERT_NO_GL_ERROR();
 
-	ImageRGBA8 imagePixels;
 	FontPSF2 font;
-	Font_PSF2Allocate(&font, &imagePixels, path);
+	Font_PSF2Allocate(&font, path);
 
 	glGenTextures(1, &fontTextures[id]);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, fontTextures[id]);
+	KN_ASSERT(glIsTexture(fontTextures[id]), "Do not have a valid texture to work with.");
 
 	// Don't mipmap for now.
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 
+	KN_ASSERT(font.atlas.image.pixels.size == font.atlas.backingSizePixels.width * font.atlas.backingSizePixels.height * 4,
+		"Backing size doesn't match pixel size.");
+
+#if 1
+	ImageRGBA8 sample;
+	ImageRGBA8_AllocateSized(&sample, (dimension2u32){ 4, 4});
+	memset(sample.pixels.contents, 0, 4 * 4 * 4);
+
+	glTexImage2D(GL_TEXTURE_2D,
+		0, // mipmap level
+		GL_RGB,
+		4,
+		4,
+		0, // border
+		GL_RGBA,
+		GL_UNSIGNED_BYTE,
+		sample.pixels.contents);
+#else
 	// TODO: Use proxy textures to test to see if sufficient space exists.
-	// TODO: Should this be GL_RGBA8?
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, header->width, header->height * header->numGlyphs, 0,
-	//			 GL_RGBA, GL_UNSIGNED_BYTE, imageStorage.contents);
+	glTexImage2D(GL_TEXTURE_2D,
+		0, // mipmap level
+		GL_RGB,
+		font.atlas.backingSizePixels.width,
+		font.atlas.backingSizePixels.height,
+		0, // border
+		GL_RGBA,
+		GL_UNSIGNED_BYTE,
+		font.atlas.image.pixels.contents);
+#endif
+
+	KN_ASSERT_NO_GL_ERROR();
 
 	// Set the texture parameters.
 	// https://stackoverflow.com/questions/3643932/what-is-the-scope-of-gltexparameters-in-opengl
@@ -1233,8 +1260,6 @@ bool RLL_LoadPSF2Font(FontId id, const char* path)
 
 	KN_ASSERT(glIsTexture(fontTextures[id]), "Unable to reserve texture for "
 		"font loading from path: %s", path);
-
-	//Mem_Free(&imageStorage);
 
 	KN_ASSERT_NO_GL_ERROR();
 	return true;
@@ -1426,6 +1451,32 @@ void RLL_DrawDebugLineStrip(float2* points, uint32_t numPoints, rgb8 color)
 	glDrawArrays(GL_LINE_STRIP, 0, (GLsizei)numPoints);
 
 	RLL_DisableProgram(ProgramIndexSolidPolygon);
+
+	KN_ASSERT_NO_GL_ERROR();
+}
+
+void RLL_DrawDebugFont(FontId id, float2 center, dimension2f size)
+{
+	KN_ASSERT_NO_GL_ERROR();
+
+	RLL_SetFullScreenViewport();
+
+	const GLuint texture = fontTextures[id];
+	KN_ASSERT(glIsTexture(texture), "Font %" PRIu32 " does not have a valid"
+		"texture", id);
+	RLL_ReadyTexture2(0, texture);
+
+	uniformStorage[UniformNameModelView].f44 = float4x4_Multiply(
+		float4x4_NonUniformScale(size.width, size.height, 1.0f),
+		float4x4_Translate(center.x, center.y, 0.0f));;
+
+	glBindBuffer(GL_ARRAY_BUFFER, spriteBuffer);
+	KN_ASSERT_NO_GL_ERROR();
+	RLL_EnableProgramForVertexFormat(ProgramIndexSprite, &vertexFormats[VertexFormatP2T2Interleaved]);
+
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+	RLL_DisableProgram(ProgramIndexSprite);
 
 	KN_ASSERT_NO_GL_ERROR();
 }

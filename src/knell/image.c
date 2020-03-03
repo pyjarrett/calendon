@@ -111,3 +111,32 @@ KN_API void ImageRGBA8_Free(ImageRGBA8* image)
 	KN_ASSERT(image != NULL, "Cannot load data into a null image.");
 	Mem_Free(&image->pixels);
 }
+
+KN_API void ImageRGBA8_ClearRGBA(ImageRGBA8* image, uint8_t r, uint8_t b, uint8_t g, uint8_t a)
+{
+	KN_ASSERT(image != NULL, "Cannot clear a null image.");
+
+	uint32_t* pixel = (uint32_t*)image->pixels.contents;
+	const uint32_t numPixels = image->pixels.size / 4;
+	for (uint32_t i = 0; i < numPixels; ++i) {
+		*pixel = (r << 3 | b << 2 | g << 1 | a);
+	}
+}
+
+KN_API uint32_t ImageRGBA8_GetPixelRowCol(ImageRGBA8* image, RowColu32 rowCol)
+{
+	KN_ASSERT(image != NULL, "Cannot get pixels from a null image.");
+	uint32_t* pixels = (uint32_t*)image->pixels.contents;
+
+	// TODO: broken?
+	return pixels[rowCol.col + rowCol.row * image->width];
+}
+
+KN_API void ImageRGBA8_SetPixelRowCol(ImageRGBA8* image, RowColu32 rowCol, uint32_t rgba)
+{
+	KN_ASSERT(image != NULL, "Cannot set pixels in a null image.");
+	uint32_t* pixels = (uint32_t*)image->pixels.contents;
+
+	// TODO: broken?
+	pixels[rowCol.col + rowCol.row * image->width] = rgba;
+}

@@ -9,9 +9,9 @@ typedef struct {
 	ImageRGBA8 image;
 	uint32_t usedImages;
 	uint32_t totalImages;
-	dimension2u32 subImageSize;
-	dimension2u32 backingSize;
-	dimension2u32 gridSize;
+	dimension2u32 subImageSizePixels;
+	dimension2u32 backingSizePixels;
+	dimension2u32 gridSizePixels;
 } TextureAtlas;
 
 KN_TEST_API void TextureAtlas_Allocate(TextureAtlas* ta, dimension2u32 subImageSize, uint32_t numImages);

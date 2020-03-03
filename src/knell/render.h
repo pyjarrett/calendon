@@ -45,5 +45,6 @@ KN_API void R_DrawDebugFullScreenRect(void);
 KN_API void R_DrawDebugRect(float2 center, dimension2f dimensions, rgb8 color);
 KN_API void R_DrawDebugLine(float x1, float y1, float x2, float y2, rgb8 color);
 KN_API void R_DrawDebugLineStrip(float2* points, uint32_t numPoints, rgb8 color);
+KN_API void R_DrawDebugFont(FontId id, float2 center, dimension2f size);
 
 #endif /* KN_RENDER_HL_H */

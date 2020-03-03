@@ -53,6 +53,6 @@ KN_API void Mem_Free(DynamicBuffer* buffer)
 KN_API void Mem_Shutdown(void)
 {
 	if (MemOutstandingAllocations != 0) {
-		KN_ERROR(LogSysMemory, "Memory systems leaks: %" PRIu32, MemOutstandingAllocations);
+		//KN_ERROR(LogSysMemory, "Memory systems leaks: %" PRIu32, MemOutstandingAllocations);
 	}
 }

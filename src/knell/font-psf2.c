@@ -68,8 +68,8 @@ static size_t Font_PSF2ReadGrapheme(GraphemeMap* map, GlyphIndex glyphIndex,
 		totalBytesRead += bytesInCodePoint;
 	}
 	GraphemeMap_Map(map, &g.codePoints[0], g.codePointLength, glyphIndex);
-	Grapheme_Print(&g, stdout);
-	printf("\n");
+//	Grapheme_Print(&g, stdout);
+//	printf("\n");
 	return totalBytesRead;
 }
 
@@ -114,15 +114,25 @@ static void Font_PSF2ReadUnicodeTableIntoGlyphMap(GraphemeMap* map,
 		PRIiPTR, (intptr_t)(unicodeTableEnd - cursor));
 }
 
-static void Font_PSF2ReadAndAllocateBitmap(const PSF2Header* header, ImageRGBA8* image)
+static void Font_PSF2ReadAndAllocateTextureAtlas(const PSF2Header* header, TextureAtlas* atlas)
 {
-	const uint8_t* bitmapCursor = (uint8_t*)header + header->bitmapOffset;
-	const uint32_t bytesPerPixel = 4;
-	Mem_Allocate(&image->pixels, header->numGlyphs * bytesPerPixel * header->glyphWidth * header->glyphHeight);
-	memset(image->pixels.contents, 0, image->pixels.size);
+	KN_ASSERT(header != NULL, "Cannot read a null PSF2Header.");
+	KN_ASSERT(atlas != NULL, "Cannot read a PSF2 header into a null texture texture.");
 
-	uint32_t* imageCursor = (uint32_t*)image->pixels.contents;
-	const uint32_t* const imageEnd = (uint32_t*)((uint8_t*)imageCursor + image->pixels.size);
+	const uint8_t* bitmapCursor = (uint8_t*)header + header->bitmapOffset;
+
+	const dimension2u32 glyphSize = {
+		.width = header->glyphWidth,
+		.height = header->glyphHeight };
+
+	TextureAtlas_Allocate(atlas, glyphSize, header->numGlyphs);
+	memset(atlas->image.pixels.contents, 0, atlas->image.pixels.size);
+//	return;
+
+	ImageRGBA8 glyphImage;
+	ImageRGBA8_AllocateSized(&glyphImage, glyphSize);
+	uint32_t* imageCursor = (uint32_t*)glyphImage.pixels.contents;
+	const uint32_t* const imageEnd = (uint32_t*)((uint8_t*)imageCursor + glyphImage.pixels.size);
 
 	// The bitmap for a glyph is stored as height consecutive pixel rows,
 	// where each pixel row consists of width bits followed by some filler
@@ -130,6 +140,9 @@ static void Font_PSF2ReadAndAllocateBitmap(const PSF2Header* header, ImageRGBA8*
 	//
 	// Parse all characters.
 	for (uint32_t i = 0; i < header->numGlyphs; ++i) {
+		imageCursor = (uint32_t*)glyphImage.pixels.contents;
+		memset(imageCursor, 0, glyphImage.pixels.size);
+
 		// Parse all rows of the next character.
 		for (uint32_t row = 0; row < header->glyphHeight; ++row) {
 			// Parse the next row.
@@ -151,8 +164,12 @@ static void Font_PSF2ReadAndAllocateBitmap(const PSF2Header* header, ImageRGBA8*
 			}
 			//printf("\n");
 		}
+
+		KN_ASSERT(imageCursor == imageEnd, "Didn't count every pixel");
+
+		TextureAtlas_Insert(atlas, &glyphImage);
 	}
-	KN_ASSERT(imageCursor == imageEnd, "Didn't count every pixel");
+	ImageRGBA8_Free(&glyphImage);
 }
 
 /**
@@ -166,7 +183,7 @@ static void Font_PSF2ReadAndAllocateBitmap(const PSF2Header* header, ImageRGBA8*
  * - How many glyphs are in a string?
  * - What is the width and height of a given string?
  */
-KN_API bool Font_PSF2Allocate(FontPSF2* font, ImageRGBA8* description, const char* path)
+KN_API bool Font_PSF2Allocate(FontPSF2* font, const char* path)
 {
 	DynamicBuffer fileBuffer;
 	if (!Assets_ReadFile(path, KN_FILE_TYPE_BINARY, &fileBuffer)) {
@@ -191,7 +208,7 @@ KN_API bool Font_PSF2Allocate(FontPSF2* font, ImageRGBA8* description, const cha
 	font->glyphSize.height = header->glyphHeight;
 
 	// The bitmap is recorded after the header.
-	Font_PSF2ReadAndAllocateBitmap(header, description);
+	Font_PSF2ReadAndAllocateTextureAtlas(header, &font->atlas);
 
 	if (header->flags & PSF2_FLAG_HAS_UNICODE_TABLE) {
 		KN_TRACE(LogSysMain, "Has a unicode table");
@@ -207,7 +224,12 @@ KN_API bool Font_PSF2Allocate(FontPSF2* font, ImageRGBA8* description, const cha
 	const uint8_t* const unicodeTableStart = bitmapStart + bitmapSize;
 	const uint8_t* const unicodeTableEnd = (uint8_t*)fileBuffer.contents + fileBuffer.size;
 	Font_PSF2ReadUnicodeTableIntoGlyphMap(&font->map, unicodeTableStart, unicodeTableEnd);
-	Mem_Free(&description->pixels);
 	Mem_Free(&fileBuffer);
 	return true;
+}
+
+KN_API void Font_PSF2Free(FontPSF2* font)
+{
+	KN_ASSERT(font != NULL, "Cannot free a null PSF2 font.");
+	TextureAtlas_Free(&font->atlas);
 }

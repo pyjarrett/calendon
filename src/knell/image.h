@@ -27,5 +27,7 @@ typedef struct {
 KN_API bool ImageRGBA8_Allocate(ImageRGBA8* image, const char* fileName);
 KN_API bool ImageRGBA8_AllocateSized(ImageRGBA8* image, dimension2u32 size);
 KN_API void ImageRGBA8_Free(ImageRGBA8* image);
+KN_API void ImageRGBA8_ClearRGBA(ImageRGBA8* image, uint8_t r, uint8_t b, uint8_t g, uint8_t a);
+KN_API uint32_t ImageRGBA8_GetPixelRowCol(ImageRGBA8* image, RowColu32 rowCol);
 
 #endif /* KN_IMAGE_H */

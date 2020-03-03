@@ -11,13 +11,13 @@ KN_TEST_API void TextureAtlas_Allocate(TextureAtlas* ta, dimension2u32 subImageS
 	KN_ASSERT(numImages > 0, "Cannot create a texture atlas for zero images.");
 	ta->usedImages = 0;
 	ta->totalImages = numImages;
-	ta->subImageSize = subImageSize;
-	ta->gridSize = (dimension2u32) { ceil(sqrt(numImages)), ceil(sqrt(numImages)) };
-	ta->backingSize = (dimension2u32) { ta->gridSize.width * subImageSize.width,
-		ta->gridSize.height * subImageSize.height };
+	ta->subImageSizePixels = subImageSize;
+	ta->gridSizePixels = (dimension2u32) { ceil(sqrt(numImages)), ceil(sqrt(numImages)) };
+	ta->backingSizePixels = (dimension2u32) { ta->gridSizePixels.width * subImageSize.width,
+		ta->gridSizePixels.height * subImageSize.height };
 
-	KN_TRACE(LogSysMain, "TextureAtlas size (%" PRIu32 ", %" PRIu32 ")", ta->backingSize.width, ta->backingSize.height);
-	ImageRGBA8_AllocateSized(&ta->image, ta->backingSize);
+	KN_TRACE(LogSysMain, "TextureAtlas size (%" PRIu32 ", %" PRIu32 ")", ta->backingSizePixels.width, ta->backingSizePixels.height);
+	ImageRGBA8_AllocateSized(&ta->image, ta->backingSizePixels);
 }
 
 KN_TEST_API void TextureAtlas_Free(TextureAtlas* ta)
@@ -28,8 +28,8 @@ KN_TEST_API void TextureAtlas_Free(TextureAtlas* ta)
 
 KN_TEST_API RowColu32 TextureAtlas_SubImageGrid(TextureAtlas* ta, uint32_t subImageId)
 {
-	const uint32_t row = (uint32_t)(subImageId / ta->gridSize.width);
-	const uint32_t col = subImageId % ta->gridSize.width;
+	const uint32_t row = (uint32_t)(subImageId / ta->gridSizePixels.width);
+	const uint32_t col = subImageId % ta->gridSizePixels.width;
 	return (RowColu32) { row, col };
 }
 
@@ -52,33 +52,44 @@ KN_TEST_API uint32_t TextureAtlas_Insert(TextureAtlas* ta, ImageRGBA8* subImage)
 	// Find the (row, col) of the image within the texture atlas.
 	const RowColu32 cell = TextureAtlas_SubImageGrid(ta, ta->usedImages);
 
-	KN_TRACE(LogSysMain, "Loading subimage: row %" PRIu32 " col %" PRIu32,
-		cell.row, cell.col);
+	KN_TRACE(LogSysMain, "Loading subimage: row %" PRIu32 " col %" PRIu32, cell.row, cell.col);
 
 	// The "real" offset within the image is the number of completed rows to get
 	// to the row, and the number of columns left to get there.
-	const uint32_t destStart = cell.row * ta->backingSize.width * subImage->height
-							   + cell.col * subImage->width;
+	const uint32_t destStart = cell.row * ta->backingSizePixels.width * subImage->height + cell.col * subImage->width;
 
 	const uint32_t bytesPerPixel = 4; // RGBA
 	for (uint32_t y = 0; y < subImage->height; ++y) {
 		for (uint32_t x = 0; x < subImage->width; ++x) {
-			KN_TRACE(LogSysMain, "Writing pixel (%" PRIu32 " , %" PRIu32 ")", x, y);
-			const uint32_t srcOffset = y * subImage->width + x;
+//			KN_TRACE(LogSysMain, "Writing pixel (%" PRIu32 " , %" PRIu32 ")", x, y);
+			const uint32_t srcOffset = x + y * subImage->width;
 
 			// Destination rows cause offset shifts of the whole of the backing width.
-			const uint32_t destOffset = destStart + x + y * ta->backingSize.width;
+			const uint32_t destOffset = destStart + x + y * ta->backingSizePixels.width;
 
-			// Copy the pixel.
-			memcpy(&ta->image.pixels.contents[bytesPerPixel*destOffset],
-				   &subImage->pixels.contents[bytesPerPixel*srcOffset],
-				   bytesPerPixel);
+			KN_ASSERT(bytesPerPixel * destOffset < ta->image.pixels.size, "Writing off the edge of the image.");
+			KN_ASSERT(bytesPerPixel * srcOffset < subImage->pixels.size, "Reading off the edge of the image.");
+
+			uint32_t* dest = (uint32_t*)&ta->image.pixels.contents[bytesPerPixel*destOffset];
+			uint32_t* src = (uint32_t*)&subImage->pixels.contents[bytesPerPixel*srcOffset];
+			*dest = *src;
+
+			if (*src == 0 || *src == 0xFFFFFFFF) {
+			}
+			else {
+				KN_TRACE(LogSysMain, "Unexpected subtexture value: %X", *src);
+			}
+
+//			// Copy the pixel.
+//			memcpy(&ta->image.pixels.contents[bytesPerPixel*destOffset],
+//				   &subImage->pixels.contents[bytesPerPixel*srcOffset],
+//				   bytesPerPixel);
 		}
 	}
 
-	for (uint32_t i = 0; i < ta->image.pixels.size; i += 4) {
-		if (i % (4 * ta->image.width) == 0) printf("\n");
-		if (ta->image.pixels.contents[i] > 0) printf("X");
-	}
+//	for (uint32_t i = 0; i < ta->image.pixels.size; i += 4) {
+//		if (i % (4 * ta->image.width) == 0) printf("\n");
+//		if (ta->image.pixels.contents[i] > 0) printf("X");
+//	}
 	return ta->usedImages++;
 }
