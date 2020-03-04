@@ -57,10 +57,6 @@ message(STATUS "ASSET_DIR:    ${ASSET_DIR}")
 message(STATUS "CONFIG_DIR:   ${CONFIG_DIR}")
 message(STATUS "RESOURCE_DIR: ${RESOURCE_DIR}")
 
-#set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${BINARY_DIR})
-#set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BINARY_DIR})
-#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BINARY_DIR})
-
 # KNELL_LIBS is the list of all libraries to link with the Knell lib itself.
 # Client should be required to do minimum linking themselves.
 set(KNELL_LIBS "")
@@ -206,7 +202,6 @@ endfunction()
 # http://man7.org/linux/man-pages/man7/feature_test_macros.7.html
 add_definitions(-D_POSIX_C_SOURCE=199309L)
 
-add_definitions(-DKN_TESTING=0)
 remove_definitions(-DKN_LIBRARY)
 add_definitions(-DKN_LIBRARY=0)
 include_directories(SYSTEM src/)
@@ -238,8 +233,7 @@ function(add_unit_test)
 	set(oneValueArgs NAME)
 	set(multiValueArgs SOURCES LIBS)
 	cmake_parse_arguments(UTEST "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-    
-	remove_definitions(-DKN_TESTING)
+
 	add_definitions(-DKN_TESTING=1)
 	add_executable("${UTEST_NAME}" ${UTEST_SOURCES})
 
@@ -253,7 +247,6 @@ function(add_unit_test)
 	add_test(NAME "${UTEST_NAME}" COMMAND "${UTEST_NAME}" WORKING_DIRECTORY ${BINARY_DIR})
 	add_dependencies(check ${UTEST_NAME})
 	remove_definitions(-DKN_TESTING)
-	add_definitions(-DKN_TESTING=0)
 endfunction()
 
 #

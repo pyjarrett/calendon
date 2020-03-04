@@ -127,7 +127,6 @@ static void Font_PSF2ReadAndAllocateTextureAtlas(const PSF2Header* header, Textu
 
 	TextureAtlas_Allocate(atlas, glyphSize, header->numGlyphs);
 	memset(atlas->image.pixels.contents, 0, atlas->image.pixels.size);
-//	return;
 
 	ImageRGBA8 glyphImage;
 	ImageRGBA8_AllocateSized(&glyphImage, glyphSize);
