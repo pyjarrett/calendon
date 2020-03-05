@@ -12,9 +12,9 @@ KN_TEST_API void TextureAtlas_Allocate(TextureAtlas* ta, dimension2u32 subImageS
 	ta->usedImages = 0;
 	ta->totalImages = numImages;
 	ta->subImageSizePixels = subImageSize;
-	ta->gridSizePixels = (dimension2u32) { ceil(sqrt(numImages)), ceil(sqrt(numImages)) };
-	ta->backingSizePixels = (dimension2u32) { ta->gridSizePixels.width * subImageSize.width,
-		ta->gridSizePixels.height * subImageSize.height };
+	ta->gridSize = (dimension2u32) { ceil(sqrt(numImages)), ceil(sqrt(numImages)) };
+	ta->backingSizePixels = (dimension2u32) { ta->gridSize.width * subImageSize.width,
+		ta->gridSize.height * subImageSize.height };
 
 	KN_TRACE(LogSysMain, "TextureAtlas size (%" PRIu32 ", %" PRIu32 ")", ta->backingSizePixels.width, ta->backingSizePixels.height);
 	ImageRGBA8_AllocateSized(&ta->image, ta->backingSizePixels);
@@ -28,8 +28,8 @@ KN_TEST_API void TextureAtlas_Free(TextureAtlas* ta)
 
 KN_TEST_API RowColu32 TextureAtlas_SubImageGrid(TextureAtlas* ta, uint32_t subImageId)
 {
-	const uint32_t row = (uint32_t)(subImageId / ta->gridSizePixels.width);
-	const uint32_t col = subImageId % ta->gridSizePixels.width;
+	const uint32_t row = (uint32_t)(subImageId / ta->gridSize.width);
+	const uint32_t col = subImageId % ta->gridSize.width;
 	return (RowColu32) { row, col };
 }
 
@@ -92,4 +92,24 @@ KN_TEST_API uint32_t TextureAtlas_Insert(TextureAtlas* ta, ImageRGBA8* subImage)
 //		if (ta->image.pixels.contents[i] > 0) printf("X");
 //	}
 	return ta->usedImages++;
+}
+
+KN_TEST_API void TextureAtlas_TexCoordForSubImage(TextureAtlas* ta, float2* output, uint32_t subImageId)
+{
+	KN_ASSERT(ta != NULL, "Cannot get subtexture coordiantes for a null texture atlas.");
+	KN_ASSERT(output != NULL, "Cannot write subtexture coordinates to a null location.");
+
+	// TODO: Should this be used images or total images?
+	KN_ASSERT(subImageId < ta->totalImages, "SubImage %" PRIu32 " is outside of "
+		"range of texture atlas: %" PRIu32, subImageId, ta->totalImages);
+
+	// TODO: Look into using normalized vertex attributes and integers here instead.
+	const float dx = 1.0f / ta->gridSize.height;
+	const float dy = 1.0f / ta->gridSize.height;
+
+	const RowColu32 rowCol = TextureAtlas_SubImageGrid(ta, subImageId);
+	output[0] = float2_Make(rowCol.col * dx, rowCol.row * dy);
+	output[1] = float2_Make((rowCol.col + 1.0f) * dx, rowCol.row * dy);
+	output[2] = float2_Make(rowCol.col * dx, (rowCol.row + 1.0f) * dy);
+	output[3] = float2_Make((rowCol.col + 1.0f) * dx, (rowCol.row + 1.0f) * dy);
 }

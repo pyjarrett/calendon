@@ -71,9 +71,19 @@ KN_API float float2_Length(float2 v)
 	return sqrtf(v.x * v.x + v.y * v.y);
 }
 
+KN_API float float2_LengthSquared(float2 v)
+{
+	return v.x * v.x + v.y * v.y;
+}
+
 KN_API float2 float2_Midpoint(float2 left, float2 right)
 {
 	return float2_Divide(float2_Add(left, right), 2.0f);
+}
+
+KN_API float float2_DistanceSquared(float2 left, float2 right)
+{
+	return float2_LengthSquared(float2_Make(left.x - right.x, left.y - right.y));
 }
 
 KN_API float2 float2_Lerp(float2 from, float2 to, float alpha)
