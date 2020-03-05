@@ -5,11 +5,18 @@
 #include <knell/image.h>
 #include <knell/math2.h>
 
+/**
+ * A texture atlas which assumes that all images are the same size.
+ */
 typedef struct {
 	ImageRGBA8 image;
 	uint32_t usedImages;
 	uint32_t totalImages;
+
+	/** The dimensions of each subimage making up the texture atlas. */
 	dimension2u32 subImageSizePixels;
+
+	/** The total size of the underlying image. */
 	dimension2u32 backingSizePixels;
 
 	/** The number of subimages which fit across the width and height. */

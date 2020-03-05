@@ -74,23 +74,9 @@ KN_TEST_API uint32_t TextureAtlas_Insert(TextureAtlas* ta, ImageRGBA8* subImage)
 			uint32_t* src = (uint32_t*)&subImage->pixels.contents[bytesPerPixel*srcOffset];
 			*dest = *src;
 
-			if (*src == 0 || *src == 0xFFFFFFFF) {
-			}
-			else {
-				KN_TRACE(LogSysMain, "Unexpected subtexture value: %X", *src);
-			}
-
-//			// Copy the pixel.
-//			memcpy(&ta->image.pixels.contents[bytesPerPixel*destOffset],
-//				   &subImage->pixels.contents[bytesPerPixel*srcOffset],
-//				   bytesPerPixel);
+			KN_ASSERT(*src == 0 || *src == 0xFFFFFFFF, "Unexpected subtexture value: %X", *src);
 		}
 	}
-
-//	for (uint32_t i = 0; i < ta->image.pixels.size; i += 4) {
-//		if (i % (4 * ta->image.width) == 0) printf("\n");
-//		if (ta->image.pixels.contents[i] > 0) printf("X");
-//	}
 	return ta->usedImages++;
 }
 
