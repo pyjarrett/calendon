@@ -209,7 +209,7 @@ enum {
 	VertexFormatP4 = 0,
 	VertexFormatP2 = 1,
 	VertexFormatP2T2Interleaved = 2,
-	VertexFormatMax = 3
+	VertexFormatMax
 };
 static VertexFormat vertexFormats[VertexFormatMax];
 
@@ -346,6 +346,19 @@ enum {
 	UniformNameTypes = 6,
 	UniformNameUnknown
 };
+
+/**
+ * The total number of glyphs which can be drawn at once.
+ */
+#define RLL_MAX_GLYPHS_PER_DRAW 180
+#define RLL_VERTICES_PER_GLYPH 6
+#define RLL_MAX_GLYPH_VERTICES_PER_DRAW (RLL_VERTICES_PER_GLYPH * RLL_MAX_GLYPHS_PER_DRAW)
+#define RLL_GLYPH_BUFFER_SIZE (2 * 2 * sizeof(float) * RLL_MAX_GLYPH_VERTICES_PER_DRAW)
+static float2 glyphVertices[RLL_MAX_GLYPH_VERTICES_PER_DRAW];
+static float2 glyphTexCoords[RLL_MAX_GLYPH_VERTICES_PER_DRAW];
+static uint32_t usedGlyphs = 0;
+static VertexFormat glyphFormat;
+static GLuint glyphBuffer;
 
 typedef AnyGLValue UniformStorage[UniformNameTypes];
 static UniformStorage uniformStorage;
@@ -857,6 +870,25 @@ void RLL_InitVertexFormats(void)
 		t2->stride = 4 * sizeof(float);
 		t2->offset = 2 * sizeof(float);
 	}
+
+	{
+		VertexFormat*v = &glyphFormat;
+		VertexFormatAttribute* p2 = &v->attributes[AttributeSemanticNamePosition2];
+		p2->semanticName = AttributeSemanticNamePosition2;
+		p2->componentType = GL_FLOAT;
+		p2->numComponents = 2;
+		p2->normalized = GL_FALSE;
+		p2->stride = 0;
+		p2->offset = 0;
+
+		VertexFormatAttribute* t2 = &v->attributes[AttributeSemanticNameTexCoord2];
+		t2->semanticName = AttributeSemanticNameTexCoord2;
+		t2->componentType = GL_FLOAT;
+		t2->numComponents = 2;
+		t2->normalized = GL_FALSE;
+		t2->stride = 0;
+		t2->offset = sizeof(float) * 2 * RLL_MAX_GLYPHS_PER_DRAW * RLL_VERTICES_PER_GLYPH;
+	}
 }
 
 void RLL_FillFullScreenQuadBuffer(void)
@@ -926,11 +958,18 @@ void RLL_FillDebugQuadBuffer(void)
 	KN_ASSERT_NO_GL_ERROR();
 }
 
+void RLL_FillGlyphBuffer(void)
+{
+	glGenBuffers(1, &glyphBuffer);
+	glBufferData(GL_ARRAY_BUFFER, RLL_GLYPH_BUFFER_SIZE, NULL, GL_DYNAMIC_DRAW);
+}
+
 void RLL_FillBuffers(void)
 {
 	RLL_FillSpriteBuffer();
 	RLL_FillFullScreenQuadBuffer();
 	RLL_FillDebugQuadBuffer();
+	RLL_FillGlyphBuffer();
 }
 
 void RLL_InitSprites(void)
@@ -1254,6 +1293,27 @@ typedef struct {
 	int x;
 } GlyphDrawParams;
 
+void AddToGlyphBatch(float2 position, dimension2f size, float2* texCoords)
+{
+	const uint32_t glyphOffset = usedGlyphs * RLL_VERTICES_PER_GLYPH;
+	glyphTexCoords[glyphOffset] = texCoords[0];
+	glyphTexCoords[glyphOffset + 1] = texCoords[1];
+	glyphTexCoords[glyphOffset + 2] = texCoords[2];
+
+	glyphTexCoords[glyphOffset + 3] = texCoords[1];
+	glyphTexCoords[glyphOffset + 4] = texCoords[3];
+	glyphTexCoords[glyphOffset + 5] = texCoords[2];
+
+	glyphVertices[glyphOffset + 0] = position;
+	glyphVertices[glyphOffset + 1] = float2_Add(position, float2_Make(size.width, 0.0f));
+	glyphVertices[glyphOffset + 2] = float2_Add(position, float2_Make(0.0f, size.height));
+
+	glyphVertices[glyphOffset + 3] = float2_Add(position, float2_Make(size.width, 0.0f));
+	glyphVertices[glyphOffset + 4] = float2_Add(position, float2_Make(size.width, size.height));
+	glyphVertices[glyphOffset + 5] = float2_Add(position, float2_Make(0.0f, size.height));
+	++usedGlyphs;
+}
+
 /**
  * Draws a glyph with the given configuration.
  */
@@ -1266,35 +1326,57 @@ void RLL_DrawGlyph(FontId id, float2 glyphPosition, const char* codePoint,
 
 	// TODO: Provide a color for the glyph.
 	// TODO: Just draw to debug to ensure the decoding part works.
-	char codePointAsString[5];
-	memset(codePointAsString, 0, 5);
-	for (uint32_t i=0; i < codePointLength; ++i) {
-		codePointAsString[i] = codePoint[i];
-	}
-	//KN_TRACE(LogSysMain, "Would have drawn: \"%s\"", codePointAsString);
+	//GraphemeMap_GlyphForCodePoints(font->map, graphemes, numGraphemes);
+}
 
-#if 0
+void AppendGlyph(FontId id, float2 position, GlyphIndex glyphIndex)
+{
+	FontPSF2* font = &fonts[id];
+	KN_ASSERT(glyphIndex != KN_GLYPH_INDEX_INVALID, "Cannot draw an invalid glyph");
+
+	// Get the glyph size, should go in printing parameters.
+	// TODO: Use aspect ratio of the glyph.
+	const dimension2f glyphSize = (dimension2f) { .width = 30.0f, .height = 50.0f };
+
+	float2 texCoords[4];
+	TextureAtlas_TexCoordForSubImage(&font->atlas, &texCoords[0], glyphIndex);
+	AddToGlyphBatch(position, glyphSize, texCoords);
+}
+
+/**
+ * The final draw call to write text once all the glyphs have been assembled.
+ */
+static void DrawGlyphs(FontId id)
+{
 	RLL_SetFullScreenViewport();
-
-	GLuint texture = fontTextures[id];
+	const GLuint texture = fontTextures[id];
 	KN_ASSERT(glIsTexture(texture), "Sprite %" PRIu32 " does not have a valid"
-													  "texture", texture);
+		"texture", texture);
 	RLL_ReadyTexture2(0, fontTextures[id]);
-
-	dimension2f size = { .width = 40, .height = 1000 };
-
-	uniformStorage[UniformNameModelView].f44 = float4x4_Multiply(
-		float4x4_NonUniformScale(size.width, size.height, 1.0f),
-		float4x4_Translate(position.x, position.y, 0.0f));;
-
-	glBindBuffer(GL_ARRAY_BUFFER, spriteBuffer);
 	KN_ASSERT_NO_GL_ERROR();
-	RLL_EnableProgram(ProgramIndexSprite, 4 * sizeof(float), 0);
 
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	RLL_EnableProgramForVertexFormat(ProgramIndexSprite, &glyphFormat);
+	KN_ASSERT_NO_GL_ERROR();
+
+	glBindBuffer(GL_ARRAY_BUFFER, glyphBuffer);
+	const uint32_t verticesSize = sizeof(float) * 2 * RLL_MAX_GLYPH_VERTICES_PER_DRAW;
+	const uint32_t texCoordsSize = sizeof(float) * 2 * RLL_MAX_GLYPH_VERTICES_PER_DRAW;
+	KN_ASSERT(verticesSize + texCoordsSize == RLL_GLYPH_BUFFER_SIZE, "Insufficient size"
+																  " for vertices and texture coordinates: %" PRIu32
+																  " and %" PRIu32 " -> %" PRIu32, verticesSize, texCoordsSize,
+																  RLL_GLYPH_BUFFER_SIZE);
+
+	glBufferSubData(GL_ARRAY_BUFFER, 0, verticesSize, glyphVertices);
+	KN_ASSERT_NO_GL_ERROR();
+	glBufferSubData(GL_ARRAY_BUFFER, verticesSize, texCoordsSize, glyphTexCoords);
+	usedGlyphs = 0;
+	KN_ASSERT_NO_GL_ERROR();
+
+	glDrawArrays(GL_TRIANGLES, 0, 6 * usedGlyphs);
+	KN_ASSERT_NO_GL_ERROR();
 
 	RLL_DisableProgram(ProgramIndexSprite);
-#endif
+	KN_ASSERT_NO_GL_ERROR();
 }
 
 /**
@@ -1306,12 +1388,12 @@ void RLL_DrawSimpleText(FontId id, TextDrawParams* params, const char* text)
 {
 	FontPSF2* font = &fonts[id];
 	// TODO: Check to ensure the id is valid.
-	KN_ASSERT(text != NULL, "Cannot draw a null text");
 	KN_ASSERT(params != NULL, "Cannot draw with null parameters.");
 	KN_ASSERT(params->layout == LayoutHorizontal,
 		"Only horizontal layouts are currently supported.");
 	KN_ASSERT(params->printDirection == PrintDirectionLeftToRight,
 		"Only left-to-right print direction is currently supported.");
+	KN_ASSERT(text != NULL, "Cannot draw a null text");
 
 	// When printing characters, we need to know:
 	// 1. where we are in the string.
@@ -1326,6 +1408,17 @@ void RLL_DrawSimpleText(FontId id, TextDrawParams* params, const char* text)
 	const char* textAfterLastByte = text + textLengthInBytes;
 
 	while (cursor < textAfterLastByte) {
+		// The next grapheme might be longer than a single code point.  We don't
+		// know how long the grapheme is until we match it.
+		for (uint32_t graphemeLength = 1; graphemeLength < KN_MAX_CODE_POINTS_IN_GRAPHEME; ++graphemeLength) {
+			const GlyphIndex glyphIndex = GraphemeMap_GlyphForCodePoints(&font->map, (uint8_t*)cursor, graphemeLength);
+			if (glyphIndex != KN_GLYPH_INDEX_INVALID) {
+				KN_TRACE(LogSysMain, "Appended glyph: %" PRIu32, glyphIndex);
+				AppendGlyph(id, glyphPosition, glyphIndex);
+				break;
+			}
+		}
+
 		// utf-8 uses variable encoding, so determine where the next code point
 		// starts.  Save this value to move the cursor and not recalculate twice.
 		const uint8_t codePointSize = Utf8_NumBytesInCodePoint(*cursor);
@@ -1336,6 +1429,7 @@ void RLL_DrawSimpleText(FontId id, TextDrawParams* params, const char* text)
 		// Move to the next code point.
 		cursor += codePointSize;
 	}
+	DrawGlyphs(id);
 	KN_ASSERT_NO_GL_ERROR();
 }
 
