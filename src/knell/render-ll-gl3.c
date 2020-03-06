@@ -960,8 +960,11 @@ void RLL_FillDebugQuadBuffer(void)
 
 void RLL_FillGlyphBuffer(void)
 {
+	KN_ASSERT_NO_GL_ERROR();
 	glGenBuffers(1, &glyphBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, glyphBuffer);
 	glBufferData(GL_ARRAY_BUFFER, RLL_GLYPH_BUFFER_SIZE, NULL, GL_DYNAMIC_DRAW);
+	KN_ASSERT_NO_GL_ERROR();
 }
 
 void RLL_FillBuffers(void)
@@ -1355,20 +1358,20 @@ static void DrawGlyphs(FontId id)
 	RLL_ReadyTexture2(0, fontTextures[id]);
 	KN_ASSERT_NO_GL_ERROR();
 
+	glBindBuffer(GL_ARRAY_BUFFER, glyphBuffer);
 	RLL_EnableProgramForVertexFormat(ProgramIndexSprite, &glyphFormat);
 	KN_ASSERT_NO_GL_ERROR();
-
-	glBindBuffer(GL_ARRAY_BUFFER, glyphBuffer);
 	const uint32_t verticesSize = sizeof(float) * 2 * RLL_MAX_GLYPH_VERTICES_PER_DRAW;
 	const uint32_t texCoordsSize = sizeof(float) * 2 * RLL_MAX_GLYPH_VERTICES_PER_DRAW;
 	KN_ASSERT(verticesSize + texCoordsSize == RLL_GLYPH_BUFFER_SIZE, "Insufficient size"
-																  " for vertices and texture coordinates: %" PRIu32
-																  " and %" PRIu32 " -> %" PRIu32, verticesSize, texCoordsSize,
-																  RLL_GLYPH_BUFFER_SIZE);
+		" for vertices and texture coordinates: %" PRIu32
+		" and %" PRIu32 " -> %" PRIu32, verticesSize, texCoordsSize,
+			  RLL_GLYPH_BUFFER_SIZE);
 
 	glBufferSubData(GL_ARRAY_BUFFER, 0, verticesSize, glyphVertices);
 	KN_ASSERT_NO_GL_ERROR();
 	glBufferSubData(GL_ARRAY_BUFFER, verticesSize, texCoordsSize, glyphTexCoords);
+
 	usedGlyphs = 0;
 	KN_ASSERT_NO_GL_ERROR();
 
