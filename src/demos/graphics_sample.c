@@ -26,6 +26,7 @@ float2 circleOrigin;
 float2 circleVertices[NUM_CIRCLE_VERTICES];
 
 FontId font;
+static uint64_t lastDt;
 
 /**
  * Creates a line of points to form circle in a counter clockwise winding.
@@ -115,12 +116,23 @@ KN_GAME_API void Game_Draw(void)
 	//R_DrawSimpleText(font, float2_Make(400, 100), "Hello, world");
 	R_DrawSimpleText(font, float2_Make(300, 100), "Hello, Paul!\xe2\x86\x93→\xe2\x86\x92");
 	R_DrawSimpleText(font, float2_Make(100, 500), "«café, caffè» ™ © Â ←");
+
+	static char frameTime[100] = "";
+	lastDt = lastDt == 0 ? 1 : lastDt;
+	static int fpsTick = 0;
+	if (++fpsTick % 10 == 0) {
+		fpsTick = 0;
+		sprintf(frameTime, "FPS: %.1f", 1000000000.0f / lastDt);
+	}
+
+	R_DrawSimpleText(font, float2_Make(0, 600), frameTime);
 	R_EndFrame();
 }
 
 KN_GAME_API void Game_Tick(uint64_t dt)
 {
 	AnimLoop_Tick(&sampleLoop, &sampleCursor, dt);
+	lastDt = dt;
 }
 
 KN_GAME_API void Game_Shutdown()
