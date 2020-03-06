@@ -1248,8 +1248,8 @@ bool RLL_LoadPSF2Font(FontId id, const char* path)
 
 	KN_ASSERT_NO_GL_ERROR();
 
-	FontPSF2 font;
-	Font_PSF2Allocate(&font, path);
+	FontPSF2* font = &fonts[id];
+	Font_PSF2Allocate(&fonts[id], path);
 
 	glGenTextures(1, &fontTextures[id]);
 	glActiveTexture(GL_TEXTURE0);
@@ -1260,20 +1260,20 @@ bool RLL_LoadPSF2Font(FontId id, const char* path)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 
-	ImageRGBA8_Flip(&font.atlas.image);
-	KN_ASSERT(font.atlas.image.pixels.size == font.atlas.backingSizePixels.width * font.atlas.backingSizePixels.height * 4,
+	ImageRGBA8_Flip(&font->atlas.image);
+	KN_ASSERT(font->atlas.image.pixels.size == font->atlas.backingSizePixels.width * font->atlas.backingSizePixels.height * 4,
 		"Backing size doesn't match pixel size.");
 
 	// TODO: Use proxy textures to test to see if sufficient space exists.
 	glTexImage2D(GL_TEXTURE_2D,
 		0, // mipmap level
 		GL_RGB,
-		font.atlas.backingSizePixels.width,
-		font.atlas.backingSizePixels.height,
+		font->atlas.backingSizePixels.width,
+		font->atlas.backingSizePixels.height,
 		0, // border
 		GL_RGBA,
 		GL_UNSIGNED_BYTE,
-		font.atlas.image.pixels.contents);
+		font->atlas.image.pixels.contents);
 
 	KN_ASSERT_NO_GL_ERROR();
 
@@ -1372,6 +1372,7 @@ static void DrawGlyphs(FontId id)
 	KN_ASSERT_NO_GL_ERROR();
 	glBufferSubData(GL_ARRAY_BUFFER, verticesSize, texCoordsSize, glyphTexCoords);
 
+	printf("Drawing %" PRIu32 "\n", usedGlyphs);
 	usedGlyphs = 0;
 	KN_ASSERT_NO_GL_ERROR();
 
@@ -1380,6 +1381,7 @@ static void DrawGlyphs(FontId id)
 
 	RLL_DisableProgram(ProgramIndexSprite);
 	KN_ASSERT_NO_GL_ERROR();
+
 }
 
 /**
@@ -1413,24 +1415,29 @@ void RLL_DrawSimpleText(FontId id, TextDrawParams* params, const char* text)
 	while (cursor < textAfterLastByte) {
 		// The next grapheme might be longer than a single code point.  We don't
 		// know how long the grapheme is until we match it.
+		uint32_t graphemeByteSize = Utf8_NumBytesInCodePoint(*cursor);
 		for (uint32_t graphemeLength = 1; graphemeLength < KN_MAX_CODE_POINTS_IN_GRAPHEME; ++graphemeLength) {
 			const GlyphIndex glyphIndex = GraphemeMap_GlyphForCodePoints(&font->map, (uint8_t*)cursor, graphemeLength);
 			if (glyphIndex != KN_GLYPH_INDEX_INVALID) {
-				KN_TRACE(LogSysMain, "Appended glyph: %" PRIu32, glyphIndex);
+//				KN_TRACE(LogSysMain, "Appended glyph: %" PRIu32, glyphIndex);
 				AppendGlyph(id, glyphPosition, glyphIndex);
+				graphemeByteSize = font->map.graphemes[glyphIndex].byteLength;
 				break;
 			}
+//			KN_TRACE(LogSysMain, "grapheme lengths %" PRIu32, graphemeLength);
 		}
+//		printf("%" PRIu32, font->map.usedGraphemes);
+//		printf("%c\n", *cursor);
+//		KN_TRACE(LogSysMain, "Unable to draw %c", *cursor);
 
 		// utf-8 uses variable encoding, so determine where the next code point
 		// starts.  Save this value to move the cursor and not recalculate twice.
-		const uint8_t codePointSize = Utf8_NumBytesInCodePoint(*cursor);
 
-		RLL_DrawGlyph(id, glyphPosition, cursor, codePointSize);
+		//RLL_DrawGlyph(id, glyphPosition, cursor, codePointSize);
 		glyphPosition = float2_Add(glyphPosition, glyphAdvance);
 
 		// Move to the next code point.
-		cursor += codePointSize;
+		cursor += graphemeByteSize;
 	}
 	DrawGlyphs(id);
 	KN_ASSERT_NO_GL_ERROR();

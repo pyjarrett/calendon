@@ -52,7 +52,7 @@ KN_TEST_API uint32_t TextureAtlas_Insert(TextureAtlas* ta, ImageRGBA8* subImage)
 	// Find the (row, col) of the image within the texture atlas.
 	const RowColu32 cell = TextureAtlas_SubImageGrid(ta, ta->usedImages);
 
-	KN_TRACE(LogSysMain, "Loading subimage: row %" PRIu32 " col %" PRIu32, cell.row, cell.col);
+//	KN_TRACE(LogSysMain, "Loading subimage: row %" PRIu32 " col %" PRIu32, cell.row, cell.col);
 
 	// The "real" offset within the image is the number of completed rows to get
 	// to the row, and the number of columns left to get there.

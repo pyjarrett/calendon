@@ -85,7 +85,7 @@ KN_API void R_DrawDebugFullScreenRect(void)
 KN_API void R_DrawDebugRect(float2 center, dimension2f dimensions, rgb8 color)
 {
 	RLL_DrawDebugRect(center, dimensions, float4_Make((float)color.r / 255.0f,
-			(float)color.g / 255.0f, (float)color.b / 255.0f, 1.0f));
+		(float)color.g / 255.0f, (float)color.b / 255.0f, 1.0f));
 }
 
 KN_API void R_DrawDebugLine(float x1, float y1, float x2, float y2, rgb8 color)
