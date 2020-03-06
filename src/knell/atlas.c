@@ -50,7 +50,10 @@ KN_TEST_API uint32_t TextureAtlas_Insert(TextureAtlas* ta, ImageRGBA8* subImage)
 	KN_ASSERT(ta->usedImages < ta->totalImages, "TextureAtlas is full.");
 
 	// Find the (row, col) of the image within the texture atlas.
-	const RowColu32 cell = TextureAtlas_SubImageGrid(ta, ta->usedImages);
+	RowColu32 cell = TextureAtlas_SubImageGrid(ta, ta->usedImages);
+
+	// TODO: COMPLETE HACK TO GET IT TO WORK.
+	cell.row = ta->gridSize.height - cell.row - 1;
 
 //	KN_TRACE(LogSysMain, "Loading subimage: row %" PRIu32 " col %" PRIu32, cell.row, cell.col);
 

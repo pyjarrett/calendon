@@ -111,7 +111,10 @@ KN_GAME_API void Game_Draw(void)
 	R_DrawDebugRect(rectPosition, rectSize, green);
 
 	//R_DrawDebugFont(font, (float2) { 400, 400 }, (dimension2f) { 300, 300 });
-	R_DrawSimpleText(font, float2_Make(400, 100), "\xe2\x86\x93Hello World→\xe2\x86\x92");
+	//R_DrawSimpleText(font, float2_Make(400, 100), "\xe2\x86\x93Hello World→\xe2\x86\x92");
+	//R_DrawSimpleText(font, float2_Make(400, 100), "Hello, world");
+	R_DrawSimpleText(font, float2_Make(300, 100), "Hello, Paul!\xe2\x86\x93→\xe2\x86\x92");
+	R_DrawSimpleText(font, float2_Make(100, 500), "«café, caffè» ™ © Â ←");
 	R_EndFrame();
 }
 

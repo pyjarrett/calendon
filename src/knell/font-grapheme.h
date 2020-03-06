@@ -9,7 +9,7 @@ typedef uint32_t GlyphIndex;
 /**
  * Used to indicate a grapheme mapping does not exist or it not initialized.
  */
-#define KN_GLYPH_INDEX_INVALID ((uint32_t)(~0))
+#define KN_GRAPHEME_INDEX_INVALID ((uint32_t)(~0))
 
 /**
  * Indicates maximum compile-time storage requirements for the number of
@@ -33,6 +33,7 @@ typedef struct {
 
 KN_TEST_API void GraphemeMap_Create(GraphemeMap* map);
 KN_TEST_API uint32_t GraphemeMap_GlyphForCodePoints(GraphemeMap* map, const uint8_t* codePoints, uint8_t numCodePoints);
+KN_TEST_API uint32_t GraphemeMap_GraphemeIndexForCodePoints(GraphemeMap* map, const uint8_t* codePoint, uint8_t numCodePoints);
 KN_TEST_API bool GraphemeMap_Map(GraphemeMap* map, const uint8_t* codePoints, uint8_t numCodePoints, GlyphIndex glyphIndex);
 
 #endif //KNELL_FONT_UTF8_GLYPH_H

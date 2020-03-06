@@ -23,7 +23,23 @@ KN_TEST_API uint32_t GraphemeMap_GlyphForCodePoints(GraphemeMap* map,
 			return map->glyphs[i];
 		}
 	}
-	return KN_GLYPH_INDEX_INVALID;
+	return KN_GRAPHEME_INDEX_INVALID;
+}
+
+KN_TEST_API uint32_t GraphemeMap_GraphemeIndexForCodePoints(GraphemeMap* map,
+	const uint8_t* codePoint, uint8_t numCodePoints)
+{
+	KN_ASSERT(map != NULL, "Cannot map to glyphs with a null grapheme map.");
+	KN_ASSERT(codePoint != NULL, "Cannot map a null list of graphemes to glyphs.");
+	KN_ASSERT(numCodePoints < KN_MAX_CODE_POINTS_IN_GRAPHEME,
+		"Trying to map a sequence of too many code points.");
+
+	for (uint32_t i = 0; i < map->usedGraphemes; ++i) {
+		if (Grapheme_EqualsCodePoints(&map->graphemes[i], codePoint, numCodePoints)) {
+			return i;
+		}
+	}
+	return KN_GRAPHEME_INDEX_INVALID;
 }
 
 /**
@@ -47,7 +63,7 @@ KN_TEST_API bool GraphemeMap_Map(GraphemeMap* map, const uint8_t* codePoint,
 		KN_WARN(LogSysMain, "Creating a duplicate grapheme mapping for %s", graphemeString);
 		return true;
 	}
-	else if (existingMapping != KN_GLYPH_INDEX_INVALID) {
+	else if (existingMapping != KN_GRAPHEME_INDEX_INVALID) {
 		char graphemeString[KN_MAX_BYTES_IN_GRAPHEME + 1];
 		memset(graphemeString, 0, KN_MAX_BYTES_IN_GRAPHEME + 1);
 		memcpy(graphemeString, codePoint, numCodePoints);

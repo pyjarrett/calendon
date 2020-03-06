@@ -1335,7 +1335,7 @@ void RLL_DrawGlyph(FontId id, float2 glyphPosition, const char* codePoint,
 void AppendGlyph(FontId id, float2 position, GlyphIndex glyphIndex)
 {
 	FontPSF2* font = &fonts[id];
-	KN_ASSERT(glyphIndex != KN_GLYPH_INDEX_INVALID, "Cannot draw an invalid glyph");
+	KN_ASSERT(glyphIndex != KN_GRAPHEME_INDEX_INVALID, "Cannot draw an invalid glyph");
 
 	// Get the glyph size, should go in printing parameters.
 	// TODO: Use aspect ratio of the glyph.
@@ -1358,8 +1358,10 @@ static void DrawGlyphs(FontId id)
 	RLL_ReadyTexture2(0, fontTextures[id]);
 	KN_ASSERT_NO_GL_ERROR();
 
+	uniformStorage[UniformNameModelView].f44 = float4x4_Identity();
+
 	glBindBuffer(GL_ARRAY_BUFFER, glyphBuffer);
-	RLL_EnableProgramForVertexFormat(ProgramIndexSprite, &glyphFormat);
+
 	KN_ASSERT_NO_GL_ERROR();
 	const uint32_t verticesSize = sizeof(float) * 2 * RLL_MAX_GLYPH_VERTICES_PER_DRAW;
 	const uint32_t texCoordsSize = sizeof(float) * 2 * RLL_MAX_GLYPH_VERTICES_PER_DRAW;
@@ -1372,11 +1374,13 @@ static void DrawGlyphs(FontId id)
 	KN_ASSERT_NO_GL_ERROR();
 	glBufferSubData(GL_ARRAY_BUFFER, verticesSize, texCoordsSize, glyphTexCoords);
 
-	printf("Drawing %" PRIu32 "\n", usedGlyphs);
-	usedGlyphs = 0;
-	KN_ASSERT_NO_GL_ERROR();
+	RLL_EnableProgramForVertexFormat(ProgramIndexSprite, &glyphFormat);
+//	printf("Drawing %" PRIu32 "\n", usedGlyphs);
 
 	glDrawArrays(GL_TRIANGLES, 0, 6 * usedGlyphs);
+	KN_ASSERT_NO_GL_ERROR();
+
+	usedGlyphs = 0;
 	KN_ASSERT_NO_GL_ERROR();
 
 	RLL_DisableProgram(ProgramIndexSprite);
@@ -1406,7 +1410,8 @@ void RLL_DrawSimpleText(FontId id, TextDrawParams* params, const char* text)
 	// 3. the distance between glyphs.
 	const char* cursor = text;
 	float2 glyphPosition = params->position;
-	float2 glyphAdvance = float2_Make(font->glyphSize.width, 0.0f);
+	float scale = 3.0f;
+	float2 glyphAdvance = float2_Make(font->glyphSize.width * scale, 0.0f);
 
 	// Text is a utf-8 string, so its byte length is not necessarily its glyph length.
 	const uint32_t textLengthInBytes = strlen(text);
@@ -1417,18 +1422,13 @@ void RLL_DrawSimpleText(FontId id, TextDrawParams* params, const char* text)
 		// know how long the grapheme is until we match it.
 		uint32_t graphemeByteSize = Utf8_NumBytesInCodePoint(*cursor);
 		for (uint32_t graphemeLength = 1; graphemeLength < KN_MAX_CODE_POINTS_IN_GRAPHEME; ++graphemeLength) {
-			const GlyphIndex glyphIndex = GraphemeMap_GlyphForCodePoints(&font->map, (uint8_t*)cursor, graphemeLength);
-			if (glyphIndex != KN_GLYPH_INDEX_INVALID) {
-//				KN_TRACE(LogSysMain, "Appended glyph: %" PRIu32, glyphIndex);
-				AppendGlyph(id, glyphPosition, glyphIndex);
-				graphemeByteSize = font->map.graphemes[glyphIndex].byteLength;
+			const GlyphIndex graphemeIndex = GraphemeMap_GraphemeIndexForCodePoints(&font->map, (uint8_t*)cursor, graphemeLength);
+			if (graphemeIndex != KN_GRAPHEME_INDEX_INVALID) {
+				AppendGlyph(id, glyphPosition, font->map.glyphs[graphemeIndex]);
+				graphemeByteSize = font->map.graphemes[graphemeIndex].byteLength;
 				break;
 			}
-//			KN_TRACE(LogSysMain, "grapheme lengths %" PRIu32, graphemeLength);
 		}
-//		printf("%" PRIu32, font->map.usedGraphemes);
-//		printf("%c\n", *cursor);
-//		KN_TRACE(LogSysMain, "Unable to draw %c", *cursor);
 
 		// utf-8 uses variable encoding, so determine where the next code point
 		// starts.  Save this value to move the cursor and not recalculate twice.
