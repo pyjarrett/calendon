@@ -157,21 +157,21 @@ KN_TEST_HARNESS_API void knTest_CleanUpPreviousUnit(knTestSuiteReport* r, knTest
 		knTest_ExpectingAssert = false; \
 	}
 
+#define KN_TEST_ASSERT_EQ_SIZE_T(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, size_t, "zu");
+#define KN_TEST_ASSERT_EQ_I8(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, int8_t, PRIi8)
+#define KN_TEST_ASSERT_EQ_I16(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, int16_t, PRIi16)
+#define KN_TEST_ASSERT_EQ_I32(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, int32_t, PRIi32)
+#define KN_TEST_ASSERT_EQ_I64(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, int64_t, PRIi64)
+#define KN_TEST_ASSERT_EQ_U8(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, uint8_t, PRIu8)
+#define KN_TEST_ASSERT_EQ_U16(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, uint16_t, PRIu16)
+#define KN_TEST_ASSERT_EQ_U32(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, uint32_t, PRIu32)
+#define KN_TEST_ASSERT_EQ_U64(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, uint64_t, PRIu64)
 
-#define KN_TEST_ASSERT_EQ_I8(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, PRIi8)
-#define KN_TEST_ASSERT_EQ_I16(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, PRIi16)
-#define KN_TEST_ASSERT_EQ_I32(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, PRIi32)
-#define KN_TEST_ASSERT_EQ_I64(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, PRIi64)
-#define KN_TEST_ASSERT_EQ_U8(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, PRIu8)
-#define KN_TEST_ASSERT_EQ_U16(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, PRIu16)
-#define KN_TEST_ASSERT_EQ_U32(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, PRIu32)
-#define KN_TEST_ASSERT_EQ_U64(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, PRIu64)
-
-#define KN_TEST_ASSERT_EQ_GENERIC(a, b, formatter) \
-	if ((a) != (b)) { \
+#define KN_TEST_ASSERT_EQ_GENERIC(a, b, type, formatter) \
+	if (((type)(a)) != ((type)(b))) { \
 		knTest_UnitAssertFailed(&unitReport); \
 		printf("%s:%i  \"" #a " != " #b "\" (%" formatter " != %" formatter ")\n", \
-			__FILE__, __LINE__, (a), (b)); \
+			__FILE__, __LINE__, ((type)(a)), ((type)(b))); \
 		break; \
 	}
 
