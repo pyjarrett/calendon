@@ -1,6 +1,10 @@
 #ifndef KN_FONT_UTF8_H
 #define KN_FONT_UTF8_H
 
+/*
+ * Functions and types related to supporting UTF-8.
+ */
+
 #include <knell/kn.h>
 
 /**
@@ -16,13 +20,28 @@
 #define KN_MAX_CODE_POINTS_IN_GRAPHEME 3
 #define KN_MAX_BYTES_IN_GRAPHEME (KN_MAX_CODE_POINTS_IN_GRAPHEME * KN_MAX_UTF8_CODE_POINT_BYTE_LENGTH)
 
+/**
+ * Not all byte sequences are valid in UTF-8.  Always illegal byte sequences
+ * get the symbolic value of false, and possibly good, and good values get
+ * values which will evaluate to true.
+ */
+typedef enum {
+	Utf8ByteValidityIllegal = 0,
+	Utf8ByteValidityValid = 1,
+	Utf8ByteValidityPossible = 2
+} Utf8ByteValidity;
+
+KN_TEST_API Utf8ByteValidity Utf8_IsValidByte(uint8_t codeUnit);
+KN_TEST_API bool Utf8_IsLeadingByte(uint8_t codeUnit);
+KN_TEST_API bool Utf8_IsStringValid(const uint8_t* str);
+
 KN_TEST_API uint8_t Utf8_NumBytesInCodePoint(uint8_t leadingByte);
 KN_TEST_API bool Utf8_CodePointsMatch(const uint8_t* left, const uint8_t* right);
 KN_TEST_API void Utf8_CodePointCopy(uint8_t* dest, const uint8_t* src);
 
 KN_TEST_API size_t Utf8_StringLength(const uint8_t* str);
 KN_TEST_API const uint8_t* Utf8_StringNext(const uint8_t* str);
-KN_TEST_API bool Utf_StringEqual(const uint8_t* left, const uint8_t* right);
+KN_TEST_API bool Utf8_StringEqual(const uint8_t* left, const uint8_t* right);
 
 /**
  * A sequence of code points which represents a single glyph.  The proper term
