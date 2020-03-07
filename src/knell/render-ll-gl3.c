@@ -1408,7 +1408,7 @@ void RLL_DrawSimpleText(FontId id, TextDrawParams* params, const char* text)
 	// 1. where we are in the string.
 	// 2. where to draw the next glyph.
 	// 3. the distance between glyphs.
-	const char* cursor = text;
+	const uint8_t* cursor = (const uint8_t*)text;
 	float2 glyphPosition = params->position;
 	float scale = 3.0f;
 	float2 glyphAdvance = float2_Make(font->glyphSize.width * scale, 0.0f);
@@ -1429,15 +1429,9 @@ void RLL_DrawSimpleText(FontId id, TextDrawParams* params, const char* text)
 				break;
 			}
 		}
-
-		// utf-8 uses variable encoding, so determine where the next code point
-		// starts.  Save this value to move the cursor and not recalculate twice.
-
-		//RLL_DrawGlyph(id, glyphPosition, cursor, codePointSize);
 		glyphPosition = float2_Add(glyphPosition, glyphAdvance);
 
-		// Move to the next code point.
-		cursor += graphemeByteSize;
+		cursor = Utf8_StringNext(cursor);
 	}
 	DrawGlyphs(id);
 	KN_ASSERT_NO_GL_ERROR();

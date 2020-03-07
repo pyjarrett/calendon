@@ -20,6 +20,10 @@ KN_TEST_API uint8_t Utf8_NumBytesInCodePoint(uint8_t leadingByte);
 KN_TEST_API bool Utf8_CodePointsMatch(const uint8_t* left, const uint8_t* right);
 KN_TEST_API void Utf8_CodePointCopy(uint8_t* dest, const uint8_t* src);
 
+KN_TEST_API size_t Utf8_StringLength(const uint8_t* str);
+KN_TEST_API const uint8_t* Utf8_StringNext(const uint8_t* str);
+KN_TEST_API bool Utf_StringEqual(const uint8_t* left, const uint8_t* right);
+
 /**
  * A sequence of code points which represents a single glyph.  The proper term
  * is "grapheme cluster" but using grapheme for brevity.
