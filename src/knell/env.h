@@ -4,7 +4,7 @@
 #ifndef KN_ENV_H
 #define KN_ENV_H
 
-#include "kn.h"
+#include <knell/kn.h>
 
 /**
  * Places the current working directory into the buffer, returning false if the

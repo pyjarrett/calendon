@@ -1,16 +1,16 @@
 #include "crash.h"
 
-#include "log.h"
+#include <knell/log.h>
 
 #include <string.h>
 
 #ifdef _WIN32
 
 #if KN_ENABLE_CORE_DUMPS
-#include "env.h"
-#include "path.h"
-#include "compat-windows.h"
-#include "DbgHelp.h"
+#include <knell/env.h>
+#include <knell/path.h>
+#include <knell/compat-windows.h>
+#include <DbgHelp.h>
 
 /**
  * Opens a unique file for writing a minidump in the same directory as the

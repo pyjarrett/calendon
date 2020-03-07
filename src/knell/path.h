@@ -1,7 +1,7 @@
 #ifndef KN_PATH_H
 #define KN_PATH_H
 
-#include "kn.h"
+#include <knell/kn.h>
 
 /**
  * Maximum path length varies by system, but assume a reasonable case.

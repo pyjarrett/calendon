@@ -6,6 +6,8 @@
 #ifndef KN_RENDER_RESOURCES_H
 #define KN_RENDER_RESOURCES_H
 
+#include <knell/kn.h>
+
 /**
  * Opaque handle used to coordinate with the renderer to uniquely identify
  * sprites.

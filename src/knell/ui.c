@@ -1,7 +1,7 @@
 #include "ui.h"
 
-#include "control.h"
-#include "input.h"
+#include <knell/control.h>
+#include <knell/input.h>
 
 SDL_Window* window;
 static uint32_t width, height;

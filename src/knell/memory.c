@@ -1,7 +1,8 @@
 #include "memory.h"
 
-#include "kn.h"
-#include "log.h"
+#include <knell/kn.h>
+
+#include <knell/log.h>
 
 static uint32_t MemOutstandingAllocations;
 static uint32_t LogSysMemory;

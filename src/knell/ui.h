@@ -5,9 +5,8 @@
 #ifndef KN_UI_H
 #define KN_UI_H
 
-#include "kn.h"
-#include "input.h"
-
+#include <knell/kn.h>
+#include <knell/input.h>
 
 KN_API void UI_Init(uint32_t width, uint32_t height);
 KN_API void UI_Shutdown(void);

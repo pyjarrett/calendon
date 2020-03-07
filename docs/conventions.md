@@ -10,3 +10,12 @@
 ## Return value conventions
 
 Returning `true` indicates success, returning `false` indicates failure.
+
+## Include conventions
+
+- For source files, `#include "myfile.h"` should come first if a companion
+  header exists.
+- `#include <knell/kn.h>` should come next before any other headers.
+- All Knell headers, except a companion header, should be referenced using
+  angled brackets: e.g. `<knell/log.h>`.
+ 

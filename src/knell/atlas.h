@@ -2,6 +2,7 @@
 #define KN_ATLAS_H
 
 #include <knell/kn.h>
+
 #include <knell/image.h>
 #include <knell/math2.h>
 

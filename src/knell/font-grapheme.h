@@ -2,6 +2,7 @@
 #define KN_FONT_UTF8_GLYPH_H
 
 #include <knell/kn.h>
+
 #include <knell/utf8.h>
 
 typedef uint32_t GlyphIndex;

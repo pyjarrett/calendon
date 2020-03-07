@@ -23,10 +23,11 @@
 #ifndef KN_RENDER_HL_H
 #define KN_RENDER_HL_H
 
-#include "kn.h"
-#include "color.h"
-#include "math2.h"
-#include "render-resources.h"
+#include <knell/kn.h>
+
+#include <knell/color.h>
+#include <knell/math2.h>
+#include <knell/render-resources.h>
 
 KN_API void R_Init(uint32_t width, uint32_t height);
 KN_API void R_Shutdown(void);

@@ -1,7 +1,5 @@
 #include "anim-loop.h"
 
-#include "inttypes.h"
-
 KN_API AnimationStateIndex AnimLoop_NextState(AnimationLoop* loop, uint64_t current)
 {
 	KN_ASSERT(loop != NULL, "Cannot update a null animation loop");

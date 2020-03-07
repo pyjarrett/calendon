@@ -1,10 +1,10 @@
 #include "process.h"
 
-#include "log.h"
+#include <knell/log.h>
 
 #ifdef _WIN32
 
-#include "compat-windows.h"
+#include <knell/compat-windows.h>
 #include <tchar.h>
 #include <psapi.h>
 

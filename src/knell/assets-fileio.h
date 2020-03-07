@@ -1,10 +1,9 @@
 #ifndef KN_FILEIO_H
 #define KN_FILEIO_H
 
-#include <stdbool.h>
-#include <stdint.h>
+#include <knell/kn.h>
 
-#include "memory.h"
+#include <knell/memory.h>
 
 enum {
 	KN_FILE_TYPE_BINARY,

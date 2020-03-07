@@ -2,6 +2,7 @@
 #define KN_IMAGE_H
 
 #include <knell/kn.h>
+
 #include <knell/math2.h>
 #include <knell/memory.h>
 

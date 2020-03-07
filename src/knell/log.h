@@ -43,9 +43,6 @@
 
 #include "kn.h"
 
-#include <inttypes.h>
-#include <stdint.h>
-
 /**
  * Maximum number of systems supported by the logging system.
  */

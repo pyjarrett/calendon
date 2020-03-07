@@ -8,6 +8,9 @@
  * The size of this prelude-style header should be reduced to minimum practical
  * to prevent introducing excessive elements throughout the engine and bloating
  * compile times.
+ *
+ * This header should always be included first since it is likely to be
+ * converted into a precompiled header.
  */
 #include <inttypes.h>
 #include <stdbool.h>
@@ -195,7 +198,7 @@ extern KN_API char fatalErrorBuffer[fatalErrorBufferLength];
  * didn't, or an unrecoverable error occurred.
  */
 #ifdef _WIN32
-	#include "compat-windows.h"
+	#include <knell/compat-windows.h>
 	#include <debugapi.h>
 	#define KN_FATAL_ERROR(error_message, ...) \
 		if (IsDebuggerPresent()) { \

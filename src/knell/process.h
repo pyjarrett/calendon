@@ -1,7 +1,7 @@
 #ifndef KN_PROCESS_H
 #define KN_PROCESS_H
 
-#include "kn.h"
+#include <knell/kn.h>
 
 #ifdef _WIN32
 

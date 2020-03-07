@@ -1,7 +1,7 @@
 #ifndef KN_GAME_H
 #define KN_GAME_H
 
-#include "kn.h"
+#include <knell/kn.h>
 
 typedef void (*Game_InitPROC)(void);
 typedef void (*Game_DrawPROC)(void);

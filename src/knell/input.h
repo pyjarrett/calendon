@@ -1,8 +1,9 @@
 #ifndef KN_INPUT_H
 #define KN_INPUT_H
 
-#include "kn.h"
-#include "compat-sdl.h"
+#include <knell/kn.h>
+
+#include <knell/compat-sdl.h>
 
 /*
  * Handling of player inputs.

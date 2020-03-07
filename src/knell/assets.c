@@ -1,9 +1,11 @@
 #include "assets.h"
 
-#include "kn.h"
-#include "log.h"
-#include "path.h"
-#include "env.h"
+#include <knell/kn.h>
+
+#include <knell/env.h>
+#include <knell/log.h>
+#include <knell/path.h>
+
 #include <string.h>
 
 #define MAX_ASSET_DIR_LENGTH 256

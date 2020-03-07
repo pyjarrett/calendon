@@ -7,7 +7,7 @@
  * needing to link to anything outside of `knell-lib`.
  */
 
-#include "kn.h"
+#include <knell/kn.h>
 
 KN_API bool Main_IsRunning(void);
 KN_API void Main_QueueGracefulShutdown(void);

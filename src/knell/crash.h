@@ -4,7 +4,7 @@
 #ifndef KN_CRASH_H
 #define KN_CRASH_H
 
-#include "kn.h"
+#include <knell/kn.h>
 
 KN_API void Crash_Init(void);
 

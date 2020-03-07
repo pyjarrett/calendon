@@ -1,7 +1,7 @@
 #ifndef KN_TIME_H
 #define KN_TIME_H
 
-#include "kn.h"
+#include <knell/kn.h>
 
 /*
  * Functions for getting the current time and converting other units to the

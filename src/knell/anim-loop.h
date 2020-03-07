@@ -7,7 +7,7 @@
  * timed states.
  */
 
-#include "kn.h"
+#include <knell/kn.h>
 
 typedef uint32_t AnimationStateIndex;
 

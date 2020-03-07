@@ -13,24 +13,24 @@
  * The game uses `Main_*` functions in `control_*` to ask the driver to
  * shutdown.
  */
-#include "knell/kn.h"
+#include <knell/kn.h>
 
-#include "knell/assets.h"
-#include "knell/assets-fileio.h"
-#include "knell/control.h"
-#include "knell/crash.h"
-#include "knell/env.h"
-#include "knell/game.h"
-#include "knell/input.h"
-#include "knell/log.h"
-#include "knell/memory.h"
+#include <knell/assets.h>
+#include <knell/assets-fileio.h>
+#include <knell/control.h>
+#include <knell/crash.h>
+#include <knell/env.h>
+#include <knell/game.h>
+#include <knell/input.h>
+#include <knell/log.h>
+#include <knell/memory.h>
 #ifdef _WIN32
-#include "knell/process.h"
+#include <knell/process.h>
 #endif
-#include "knell/path.h"
-#include "knell/time.h"
-#include "knell/render.h"
-#include "knell/ui.h"
+#include <knell/path.h>
+#include <knell/time.h>
+#include <knell/render.h>
+#include <knell/ui.h>
 
 #include <stdio.h>
 #include <time.h>

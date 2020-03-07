@@ -1,8 +1,7 @@
-
 #include "env.h"
 
 #ifdef _WIN32
-	#include "compat-windows.h"
+	#include <knell/compat-windows.h>
 #elif __linux__
 	#include <unistd.h>
 #endif

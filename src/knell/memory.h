@@ -1,7 +1,7 @@
 #ifndef KN_MEMORY_H
 #define KN_MEMORY_H
 
-#include "kn.h"
+#include <knell/kn.h>
 
 /**
  * A single contiguous block of dynamically allocated memory.

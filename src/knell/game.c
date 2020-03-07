@@ -1,11 +1,11 @@
 #include "game.h"
 
-#include "kn.h"
+#include <knell/kn.h>
 
 #ifdef _WIN32
 
-#include "compat-windows.h"
-#include "process.h"
+#include <knell/compat-windows.h>
+#include <knell/process.h>
 static HMODULE GameModule;
 
 KN_API void Game_Load(const char* sharedLibraryName)
