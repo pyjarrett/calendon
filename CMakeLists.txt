@@ -229,6 +229,8 @@ target_link_libraries(knell knell-lib)
 add_dependencies(knell knell-lib ${KN_ALL_DEMOS})
 message("Demos are ${KN_ALL_DEMOS}")
 
+add_custom_target(testing)
+
 #
 # Creates a unit test and adds it to the "check" target.
 #
@@ -254,7 +256,7 @@ function(add_unit_test)
 	endif()
 	target_link_libraries(${UTEST_NAME} ${UTEST_LIBS})
 	add_test(NAME "${UTEST_NAME}" COMMAND "${UTEST_NAME}" WORKING_DIRECTORY ${BINARY_DIR})
-	add_dependencies(check ${UTEST_NAME})
+	add_dependencies(testing ${UTEST_NAME})
 	remove_definitions(-DKN_TESTING)
 endfunction()
 
@@ -262,13 +264,21 @@ endfunction()
 # Provides a command to run all tests, since CLion can't do that on it's own.
 # https://stackoverflow.com/questions/733475/cmake-ctest-make-test-doesnt-build-tests#736838
 #
-add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} -V -C Debug) #--output-on-failure -C Debug)
-add_dependencies(check knell-lib-test)
+add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} -V -C Debug)
+
+#
+# check-iterate is the target to use when iterating when using tests,
+# such as TDD's red->green pattern.
+#
+add_custom_target(check-iterate COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failed --rerun-failed)
+add_dependencies(check testing)
+add_dependencies(check-iterate testing)
+add_dependencies(testing knell-lib-test)
 enable_testing()
 remove_definitions(-DKN_LIBRARY)
 add_definitions(-DKN_LIBRARY=0)
 add_subdirectory(src/tests)
-    
+
 if (WIN32)
 	add_custom_target(windows-dll-copy)
 
@@ -313,7 +323,7 @@ if (WIN32)
 			)
 	endif()
 
-	add_dependencies(check windows-dll-copy)
+	add_dependencies(testing windows-dll-copy)
 	add_dependencies(knell windows-dll-copy)
 
 endif (WIN32)
