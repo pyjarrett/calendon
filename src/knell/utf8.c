@@ -58,6 +58,30 @@ KN_TEST_API void Utf8_CodePointCopy(uint8_t* dest, const uint8_t* src)
 	memcpy(dest, src, Utf8_NumBytesInCodePoint(*src));
 }
 
+KN_TEST_API size_t Utf8_StringLength(const uint8_t* str)
+{
+	KN_ASSERT(str != NULL, "Cannot get length of a null string");
+
+	size_t numCodePoints = 0;
+	const uint8_t* cursor = str;
+	while (*cursor) {
+		++numCodePoints;
+		cursor = Utf8_StringNext(cursor);
+	}
+	return numCodePoints;
+}
+
+KN_TEST_API const uint8_t* Utf8_StringNext(const uint8_t* str)
+{
+	KN_ASSERT(str != NULL, "Cannot get next code point in a null string.");
+	return str + Utf8_NumBytesInCodePoint(*str);
+}
+
+KN_TEST_API bool Utf_StringEqual(const uint8_t* left, const uint8_t* right)
+{
+	return strcmp((const char*)left, (const char*)right) == 0;
+}
+
 KN_TEST_API void Grapheme_Create(Grapheme* seq, const uint8_t* codePoint, uint8_t numCodePoints)
 {
 	KN_ASSERT(seq != NULL, "Cannot create a null Grapheme.");
@@ -72,9 +96,8 @@ KN_TEST_API void Grapheme_Create(Grapheme* seq, const uint8_t* codePoint, uint8_
 	uint8_t usedBytes = 0;
 	while (currentCodePointIndex < numCodePoints) {
 		Utf8_CodePointCopy(&seq->codePoints[usedBytes], currentCodePoint);
-		const uint8_t bytesInCodePoint = Utf8_NumBytesInCodePoint(*currentCodePoint);
-		usedBytes += bytesInCodePoint;
-		currentCodePoint += bytesInCodePoint;
+		usedBytes += Utf8_NumBytesInCodePoint(*currentCodePoint);
+		currentCodePoint = Utf8_StringNext(currentCodePoint);
 		++currentCodePointIndex;
 	}
 	seq->byteLength = usedBytes;
@@ -98,8 +121,7 @@ KN_TEST_API bool Grapheme_EqualsCodePoints(Grapheme* seq, const uint8_t* codePoi
 				return false;
 			}
 		}
-		// Go the next code point.
-		currentCodePoint = currentCodePoint + bytesInCodePoint;
+		currentCodePoint = Utf8_StringNext(currentCodePoint);
 		++currentCodePointIndex;
 	}
 	return true;

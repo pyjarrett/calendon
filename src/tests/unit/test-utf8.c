@@ -27,6 +27,21 @@ KN_TEST_SUITE_BEGIN("UTF-8")
 		KN_TEST_ASSERT_FALSE(Utf8_CodePointsMatch("\xEF\xBF\xBE", "\xEF\0\xBF"));
 	}
 
+	KN_TEST_UNIT("UTF-8 string length") {
+		KN_TEST_PRECONDITION(Utf8_StringLength(NULL));
+
+		KN_TEST_ASSERT_EQ_SIZE_T(0, Utf8_StringLength(""));
+		KN_TEST_ASSERT_EQ_SIZE_T(4, Utf8_StringLength("test"));
+		KN_TEST_ASSERT_EQ_SIZE_T(21, Utf8_StringLength("«café, caffè» ™ © Â ←"));
+	}
+
+	KN_TEST_UNIT("UTF-8 string next") {
+		KN_TEST_PRECONDITION(Utf8_StringNext(NULL));
+
+		KN_TEST_ASSERT_TRUE(Utf_StringEqual("«café, caffè» ™ © Â ←", "«café, caffè» ™ © Â ←"));
+		KN_TEST_ASSERT_FALSE(Utf_StringEqual("«café, caffè» ™ © Â ←", "«cafe, caffe» ™ © Â ←"));
+	}
+
 	KN_TEST_UNIT("Grapheme equality") {
 		Grapheme a;
 		Grapheme_Create(&a, "a", 1);

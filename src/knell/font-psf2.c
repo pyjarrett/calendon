@@ -63,10 +63,9 @@ static size_t Font_PSF2ReadGrapheme(GraphemeMap* map, GlyphIndex glyphIndex,
 	const uint8_t* cursor = unicodeTableStart;
 	while (cursor < unicodeTableEnd && *cursor != PSF2_SEPARATOR && *cursor != PSF2_TERM) {
 		// TODO: Check for invalid code points.
-		Grapheme_AddCodePoint(&g, (char*)cursor);
-		const size_t bytesInCodePoint = Utf8_NumBytesInCodePoint(*cursor);
-		cursor += bytesInCodePoint;
-		totalBytesRead += bytesInCodePoint;
+		Grapheme_AddCodePoint(&g, cursor);
+		totalBytesRead += Utf8_NumBytesInCodePoint(*cursor);
+		cursor = Utf8_StringNext(cursor);
 	}
 	GraphemeMap_Map(map, &g.codePoints[0], g.codePointLength, glyphIndex);
 //	Grapheme_Print(&g, stdout);
