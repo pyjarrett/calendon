@@ -32,11 +32,11 @@ if (UNIX)
     set(CMAKE_CONFIGURATION_TYPES Debug;Release;Coverage;Future)
 elseif (WIN32)
     # Coverage is not supported on Windows.
-    set(CMAKE_CONFIGURATION_TYPES Debug;Release;Future)
+    set(CMAKE_CONFIGURATION_TYPES Debug;Release)
 endif()
 if(NOT CMAKE_BUILD_TYPE)
     # Visual studio might not correctly set CMAKEBUILD_TYPE
-	set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build Type: (Debug, Release, Future)." FORCE)
+	set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build Type: (Debug, Release)." FORCE)
 endif()
 
 # Provide standardized output locations.  This particularly
@@ -56,6 +56,15 @@ message(STATUS "ARCHIVE_DIR:  ${ARCHIVE_DIR}")
 message(STATUS "ASSET_DIR:    ${ASSET_DIR}")
 message(STATUS "CONFIG_DIR:   ${CONFIG_DIR}")
 message(STATUS "RESOURCE_DIR: ${RESOURCE_DIR}")
+
+# https://stackoverflow.com/questions/543203/cmake-runtime-output-directory-on-windows
+message("Output directory: ${OUTPUT_DIRECTORY}")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${OUTPUT_DIRECTORY}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG "${OUTPUT_DIRECTORY}")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${OUTPUT_DIRECTORY}")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${OUTPUT_DIRECTORY}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE "${OUTPUT_DIRECTORY}")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${OUTPUT_DIRECTORY}")
 
 # KNELL_LIBS is the list of all libraries to link with the Knell lib itself.
 # Client should be required to do minimum linking themselves.
