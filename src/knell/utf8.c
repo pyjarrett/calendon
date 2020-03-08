@@ -204,6 +204,10 @@ KN_TEST_API bool Utf8_StringEqual(const uint8_t* left, const uint8_t* right)
 	return strcmp((const char*)left, (const char*)right) == 0;
 }
 
+/**
+ * Initialize a grapheme with an initial code point.  All other possible bytes
+ * within the grapheme are zeroed.
+ */
 KN_TEST_API void Grapheme_Create(Grapheme* seq, const uint8_t* codePoint, uint8_t numCodePoints)
 {
 	KN_ASSERT(seq != NULL, "Cannot create a null Grapheme.");
@@ -226,6 +230,10 @@ KN_TEST_API void Grapheme_Create(Grapheme* seq, const uint8_t* codePoint, uint8_
 	seq->codePointLength = numCodePoints;
 }
 
+/**
+ * Compares a grapheme, which is a series of code points, against a series of
+ * code points.
+ */
 KN_TEST_API bool Grapheme_EqualsCodePoints(Grapheme* seq, const uint8_t* codePoint, uint8_t numCodePoints)
 {
 	KN_ASSERT(seq != NULL, "A null Grapheme is not equal to anything.");
@@ -249,6 +257,9 @@ KN_TEST_API bool Grapheme_EqualsCodePoints(Grapheme* seq, const uint8_t* codePoi
 	return true;
 }
 
+/**
+ * Compares one grapheme against another grapheme.
+ */
 KN_TEST_API bool Grapheme_EqualsGrapheme(Grapheme* left, Grapheme* right)
 {
 	KN_ASSERT(left != NULL, "Left Grapheme is NULL.");
@@ -256,6 +267,9 @@ KN_TEST_API bool Grapheme_EqualsGrapheme(Grapheme* left, Grapheme* right)
 	return Grapheme_EqualsCodePoints(left, right->codePoints, right->codePointLength);
 }
 
+/**
+ * Initializes an empty grapheme.
+ */
 KN_TEST_API void Grapheme_Begin(Grapheme* seq)
 {
 	KN_ASSERT(seq != NULL, "Cannot begin a null Grapheme.");
