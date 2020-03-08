@@ -31,10 +31,6 @@
  */
 #define KN_MAX_UTF8_CODE_POINT_BYTE_LENGTH 4
 
-KN_TEST_API uint8_t Utf8_NumBytesInCodePoint(uint8_t leadingByte);
-KN_TEST_API bool Utf8_CodePointsMatch(const uint8_t* left, const uint8_t* right);
-KN_TEST_API void Utf8_CodePointCopy(uint8_t* dest, const uint8_t* src);
-
 /**
  * There is technically no limit on the number of code points which may form a
  * grapheme.  The approach here is to set a reasonable limit to allow for
