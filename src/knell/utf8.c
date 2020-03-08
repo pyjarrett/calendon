@@ -69,6 +69,7 @@ KN_TEST_API bool Utf8_IsLeadingByte(uint8_t codeUnit)
 // TODO: Security risk, should be researched further and reviewed again.
 KN_TEST_API bool Utf8_IsStringValid(const uint8_t* str)
 {
+	// Null strings are not valid.
 	if (!str) return false;
 
 	const size_t length = strlen((const char*)str);
@@ -101,7 +102,7 @@ KN_TEST_API bool Utf8_IsStringValid(const uint8_t* str)
 		 */
 		const uint8_t numBytesInCodePoint = Utf8_NumBytesInCodePoint(*cursor);
 		for (uint8_t i = 1; i < numBytesInCodePoint; ++i) {
-			if (Utf8_IsLeadingByte(*cursor)) {
+			if (Utf8_IsLeadingByte(cursor[i])) {
 				return false;
 			}
 		}

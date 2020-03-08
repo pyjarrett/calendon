@@ -62,9 +62,13 @@ KN_TEST_SUITE_BEGIN("UTF-8")
 	}
 
 	KN_TEST_UNIT("UTF-8 string validity") {
-//		KN_TEST_ASSERT_TRUE(Utf8_IsStringValid("This is a test"));
-//		KN_TEST_ASSERT_TRUE(Utf8_IsStringValid("«café, caffè» ™ © Â ←"));
-//		KN_TEST_ASSERT_FALSE(Utf8_IsStringValid("\xEF\xEF"));
+		KN_TEST_ASSERT_TRUE(Utf8_IsStringValid(""));
+
+		KN_TEST_ASSERT_TRUE(Utf8_IsStringValid("This is a test"));
+		KN_TEST_ASSERT_TRUE(Utf8_IsStringValid("«café, caffè» ™ © Â ←"));
+
+		KN_TEST_ASSERT_FALSE(Utf8_IsStringValid("\xEF\xEF"));
+		KN_TEST_ASSERT_FALSE(Utf8_IsStringValid("\xBF\xBE"));
 	}
 
 	KN_TEST_UNIT("UTF-8 string equality") {
