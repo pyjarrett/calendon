@@ -261,6 +261,8 @@ void RLL_ReadyTexture2(GLuint index, GLuint texture)
  */
 void RLL_ApplyUniform(Uniform* u, UniformStorage storage)
 {
+	KN_ASSERT(u != NULL, "Cannot apply a null uniform");
+
 	switch(u->type) {
 		case GL_FLOAT_VEC2:
 			KN_ASSERT(u->size == 1, "Arrays of float2 are not supported");
