@@ -556,7 +556,6 @@ static float4x4 RLL_OrthoProjection(const uint32_t width, const uint32_t height)
 	const float h = (float)height;
 	const float4x4 scale = float4x4_NonUniformScale(2.0f / w, 2.0f / h, 2.0f / (far - near));
 	const float4x4 trans = float4x4_Translate(-w / 2.0f, -h / 2.0f, -(far + near) / 2.0f);
-	//return float4x4_Multiply(scale, trans);
 	return float4x4_Multiply(trans, scale);
 }
 
