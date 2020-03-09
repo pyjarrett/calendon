@@ -97,6 +97,9 @@ static FontPSF2 fonts[RLL_MAX_FONT_TYPES];
  */
 uint32_t LogSysRender;
 
+/**
+ * Index into `vertexFormats` array, to show which global vertex format to use.
+ */
 enum {
 	VertexFormatP4 = 0,
 	VertexFormatP2 = 1,
@@ -133,11 +136,24 @@ static GLuint glyphBuffer;
  * Associates a name along with an indexed location, and type information.
  */
 typedef struct {
+	/**
+	 * Name to look for in the shader source.
+	 */
 	const char* str;
+
+	/**
+	 * Uniforms: Uniform location.
+	 * Attributes: Attribute index in the vertex format.
+	 */
 	uint32_t id; // TODO: Rename "location"
 	GLenum type;
+
+	/**
+	 * Uniforms: array size, 1 for singular values.
+	 * Attributes: number of components
+	 */
 	GLint size;
-} SemanticName;
+} SemanticMapping;
 
 enum {
 	AttributeSemanticNamePosition = 0,
@@ -153,7 +169,7 @@ enum {
  * Currently unused.  Being set up in preparation for applying vertex formats
  * based on a mapping of shader inputs to semantic names.
  */
-static SemanticName attributeSemanticNames[] = {
+static SemanticMapping attributeSemanticNames[] = {
 	{ "Position", AttributeSemanticNamePosition, GL_FLOAT, 4 },
 	{ "Position2", AttributeSemanticNamePosition2, GL_FLOAT, 2 },
 	{ "Position3", AttributeSemanticNamePosition3, GL_FLOAT, 3 },
@@ -177,7 +193,7 @@ enum {
 
 // TODO: Naming misnomer, uniform->semanticName doesn't map into this array,
 // it maps into the uniform storage.
-static SemanticName UniformNames[] = {
+static SemanticMapping UniformNames[] = {
 	{ "Projection", UniformNameProjection, GL_FLOAT_MAT4, 1 },
 	{ "ModelView", UniformNameModelView, GL_FLOAT_MAT4, 1 },
 	{ "ViewModel", UniformNameViewModel, GL_FLOAT_MAT4, 1 },
