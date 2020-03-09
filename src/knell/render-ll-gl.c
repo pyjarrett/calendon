@@ -1347,12 +1347,11 @@ static void DrawGlyphs(FontId id)
 	glBindBuffer(GL_ARRAY_BUFFER, glyphBuffer);
 
 	KN_ASSERT_NO_GL_ERROR();
-	const uint32_t verticesSize = sizeof(float) * 2 * RLL_MAX_GLYPH_VERTICES_PER_DRAW;
-	const uint32_t texCoordsSize = sizeof(float) * 2 * RLL_MAX_GLYPH_VERTICES_PER_DRAW;
+	const size_t verticesSize = sizeof(float) * 2 * RLL_MAX_GLYPH_VERTICES_PER_DRAW;
+	const size_t texCoordsSize = sizeof(float) * 2 * RLL_MAX_GLYPH_VERTICES_PER_DRAW;
 	KN_ASSERT(verticesSize + texCoordsSize == RLL_GLYPH_BUFFER_SIZE, "Insufficient size"
-		" for vertices and texture coordinates: %" PRIu32
-		" and %" PRIu32 " -> %" PRIu32, verticesSize, texCoordsSize,
-			  RLL_GLYPH_BUFFER_SIZE);
+		" for vertices and texture coordinates: %zu and %zu -> %zu",
+		verticesSize, texCoordsSize,  RLL_GLYPH_BUFFER_SIZE);
 
 	glBufferSubData(GL_ARRAY_BUFFER, 0, verticesSize, glyphVertices);
 	KN_ASSERT_NO_GL_ERROR();
