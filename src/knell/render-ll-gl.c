@@ -116,27 +116,6 @@ enum {
 };
 static Program programs[ProgramIndexMax];
 
-enum {
-	AttributeSemanticNamePosition = 0,
-	AttributeSemanticNamePosition2 = 0,
-	AttributeSemanticNamePosition3 = 0,
-	AttributeSemanticNamePosition4 = 0,
-	AttributeSemanticNameTexCoord2 = 1,
-	AttributeSemanticNameTypes = 5,
-	AttributeSemanticNameUnknown
-};
-
-enum {
-	UniformNameProjection = 0,
-	UniformNameModelView = 1,
-	UniformNameViewModel = 1,
-	UniformNameTexture = 2,
-	UniformNameTexture2D0 = 2,
-	UniformNamePolygonColor = 3,
-	UniformNameTypes = 6,
-	UniformNameUnknown
-};
-
 /**
  * The total number of glyphs which can be drawn at once.
  */
@@ -151,18 +130,6 @@ static VertexFormat glyphFormat;
 static GLuint glyphBuffer;
 
 /**
- * Allocates enough space to store whatever data type is needed for a uniform.
- */
-typedef union {
-	int i;
-	float2 f2;
-	float4 f4;
-	float4x4 f44;
-} AnyGLValue;
-typedef AnyGLValue UniformStorage[UniformNameTypes];
-static UniformStorage uniformStorage;
-
-/**
  * Associates a name along with an indexed location, and type information.
  */
 typedef struct {
@@ -171,6 +138,16 @@ typedef struct {
 	GLenum type;
 	GLint size;
 } SemanticName;
+
+enum {
+	AttributeSemanticNamePosition = 0,
+	AttributeSemanticNamePosition2 = 0,
+	AttributeSemanticNamePosition3 = 0,
+	AttributeSemanticNamePosition4 = 0,
+	AttributeSemanticNameTexCoord2 = 1,
+	AttributeSemanticNameTypes = 5,
+	AttributeSemanticNameUnknown
+};
 
 /**
  * Currently unused.  Being set up in preparation for applying vertex formats
@@ -187,6 +164,17 @@ static SemanticName attributeSemanticNames[] = {
 KN_STATIC_ASSERT(AttributeSemanticNameTypes == KN_ARRAY_SIZE(attributeSemanticNames),
 	"Number of attribute semantic names doesn't match data array");
 
+enum {
+	UniformNameProjection = 0,
+	UniformNameModelView = 1,
+	UniformNameViewModel = 1,
+	UniformNameTexture = 2,
+	UniformNameTexture2D0 = 2,
+	UniformNamePolygonColor = 3,
+	UniformNameTypes = 6,
+	UniformNameUnknown
+};
+
 // TODO: Naming misnomer, uniform->semanticName doesn't map into this array,
 // it maps into the uniform storage.
 static SemanticName UniformNames[] = {
@@ -200,6 +188,18 @@ static SemanticName UniformNames[] = {
 
 KN_STATIC_ASSERT(UniformNameTypes == KN_ARRAY_SIZE(UniformNames),
 	"Number of uniform semantic names doesn't match data array");
+
+/**
+ * Allocates enough space to store whatever data type is needed for a uniform.
+ */
+typedef union {
+	int i;
+	float2 f2;
+	float4 f4;
+	float4x4 f44;
+} AnyGLValue;
+typedef AnyGLValue UniformStorage[UniformNameTypes];
+static UniformStorage uniformStorage;
 
 uint32_t RLL_LookupAttributeSemanticName(const char* name)
 {
