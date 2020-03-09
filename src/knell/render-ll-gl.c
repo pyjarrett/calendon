@@ -1286,21 +1286,6 @@ void AddToGlyphBatch(float2 position, dimension2f size, float2* texCoords)
 	++usedGlyphs;
 }
 
-/**
- * Draws a glyph with the given configuration.
- */
-void RLL_DrawGlyph(FontId id, float2 glyphPosition, const char* codePoint,
-	uint8_t codePointLength)
-{
-	KN_ASSERT(codePoint != NULL, "Cannot draw a null code point");
-	KN_ASSERT(codePointLength <= 4, "Code point length is %" PRIu32
-		" exceeds UTF-8 limit (4)", codePointLength);
-
-	// TODO: Provide a color for the glyph.
-	// TODO: Just draw to debug to ensure the decoding part works.
-	//GraphemeMap_GlyphForCodePoints(font->map, graphemes, numGraphemes);
-}
-
 void AppendGlyph(FontId id, float2 position, GlyphIndex glyphIndex)
 {
 	FontPSF2* font = &fonts[id];
