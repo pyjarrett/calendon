@@ -1,5 +1,43 @@
 #pragma once
 
+/**
+ * A very simple test framework for Knell.
+ *
+ * # Intent
+ *
+ * I didn't originally intend to write an entire test framework for Knell.  I
+ * was looking for something with automatic test discovery and execution,
+ * so simple it would be hard to screw up, and still able to cover many possible
+ * test cases.  Additionally, I wanted that would eventually allow for testing
+ * at runtime within the driver using similar notations.  None of the frameworks
+ * I looked at seemed lightweight enough to necessitate bringing in another
+ * outside dependency.
+ *
+ * # Assertion (Precondition) Testing
+ *
+ * A side benefit of writing my own framework has been the opportunity to
+ * leverage Knell's assertion mechanism, `KN_ASSERT` into testing.  Tests can be
+ * written to verify that preconditions catch bad execution conditions with
+ * `KN_TEST_PRECONDITION(function_name)`.  This allows tests to provide
+ * documentation of function preconditions while also verifying them.
+ *
+ * # Usage
+ *
+ * Uses of this testing framework should only concern themselves with the macros
+ * prefixed by `KN_TEST_`, and call none of the functions contained here
+ * directly.
+ *
+ * Only one test suite may be written per file.  When compiled, each test
+ * source file generates a separate executable, which returns `EXIT_SUCCESS` on
+ * a successful run, and `EXIT_FAILURE` if any test fails.
+ *
+ * The `KN_TESTING` macro causes Knell's library to expose functions annotated
+ * with the `KN_TEST_API` macro to be exported, which is done to create the
+ * `knell-lib-test` target.  This allows normally hidden functions within
+ * Knell to be tested, and also serves to document which functions cannot or are
+ * not tested.  The `KN_API` and `KN_TEST_API` macros to annotate a
+ * function are exclusive, annotating a function with most is an error.
+ */
 #include <knell/kn.h>
 
 #include <string.h>
