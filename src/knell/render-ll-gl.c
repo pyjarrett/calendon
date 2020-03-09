@@ -754,7 +754,6 @@ void RLL_FillSpriteBuffer(void)
 	KN_ASSERT(spriteBuffer, "Cannot allocate a buffer for the sprite buffer");
 	KN_ASSERT(glIsBuffer(spriteBuffer), "Could not create sprite buffer");
 	KN_ASSERT_NO_GL_ERROR();
-	KN_ASSERT_NO_GL_ERROR();
 }
 
 void RLL_FillDebugQuadBuffer(void)
@@ -1146,18 +1145,16 @@ void AppendGlyph(FontId id, float2 position, GlyphIndex glyphIndex)
  */
 static void DrawGlyphs(FontId id)
 {
+	KN_ASSERT_NO_GL_ERROR();
 	RLL_SetFullScreenViewport();
 	const GLuint texture = fontTextures[id];
 	KN_ASSERT(glIsTexture(texture), "Sprite %" PRIu32 " does not have a valid"
 		"texture", texture);
 	RLL_ReadyTexture2(0, fontTextures[id]);
-	KN_ASSERT_NO_GL_ERROR();
 
 	uniformStorage[UniformNameModelView].f44 = float4x4_Identity();
-
 	glBindBuffer(GL_ARRAY_BUFFER, glyphBuffer);
 
-	KN_ASSERT_NO_GL_ERROR();
 	const size_t verticesSize = sizeof(float) * 2 * RLL_MAX_GLYPH_VERTICES_PER_DRAW;
 	const size_t texCoordsSize = sizeof(float) * 2 * RLL_MAX_GLYPH_VERTICES_PER_DRAW;
 	KN_ASSERT(verticesSize + texCoordsSize == RLL_GLYPH_BUFFER_SIZE, "Insufficient size"
@@ -1165,21 +1162,13 @@ static void DrawGlyphs(FontId id)
 		verticesSize, texCoordsSize,  RLL_GLYPH_BUFFER_SIZE);
 
 	glBufferSubData(GL_ARRAY_BUFFER, 0, verticesSize, glyphVertices);
-	KN_ASSERT_NO_GL_ERROR();
 	glBufferSubData(GL_ARRAY_BUFFER, verticesSize, texCoordsSize, glyphTexCoords);
-
 	RLL_EnableProgramForVertexFormat(ProgramIndexSprite, &glyphFormat);
-//	printf("Drawing %" PRIu32 "\n", usedGlyphs);
-
 	glDrawArrays(GL_TRIANGLES, 0, 6 * usedGlyphs);
-	KN_ASSERT_NO_GL_ERROR();
 
 	usedGlyphs = 0;
-	KN_ASSERT_NO_GL_ERROR();
-
 	RLL_DisableProgram(ProgramIndexSprite);
 	KN_ASSERT_NO_GL_ERROR();
-
 }
 
 /**
