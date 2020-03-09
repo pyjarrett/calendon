@@ -369,7 +369,7 @@ static SemanticName attributeSemanticNames[] = {
 	{ "TexCoord2", AttributeSemanticNameTexCoord2, GL_FLOAT, 2 }
 };
 
-KN_STATIC_ASSERT(AttributeSemanticNameTypes == sizeof(attributeSemanticNames) / sizeof(attributeSemanticNames[0]),
+KN_STATIC_ASSERT(AttributeSemanticNameTypes == KN_ARRAY_SIZE(attributeSemanticNames),
 	"Number of attribute semantic names doesn't match data array");
 
 // TODO: Naming misnomer, uniform->semanticName doesn't map into this array,
@@ -383,7 +383,7 @@ static SemanticName UniformNames[] = {
 	{ "PolygonColor", UniformNamePolygonColor, GL_FLOAT_VEC4, 1 }
 };
 
-KN_STATIC_ASSERT(UniformNameTypes == sizeof(UniformNames) / sizeof(UniformNames[0]),
+KN_STATIC_ASSERT(UniformNameTypes == KN_ARRAY_SIZE(UniformNames),
 	"Number of uniform semantic names doesn't match data array");
 
 uint32_t RLL_LookupAttributeSemanticName(const char* name)
