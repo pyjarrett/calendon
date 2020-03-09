@@ -591,10 +591,8 @@ void RLL_InitGL(void)
 {
 	Log_RegisterSystem(&LogSysRender, "Render", KN_LOG_TRACE);
 
-	// Get up and running quickly with OpenGL 3.1 with old-school functions.
-	// TODO: Replace with Core profile once something is working.
+	// TODO: Settle on an appropriate OpenGL version to use.
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
