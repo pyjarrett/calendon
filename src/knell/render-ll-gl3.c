@@ -14,6 +14,7 @@
 #include <knell/assets.h>
 #include <knell/assets-fileio.h>
 #include <knell/color.h>
+#include <knell/compat-gl.h>
 #include <knell/compat-sdl.h>
 #include <knell/font-psf2.h>
 #include <knell/image.h>
@@ -22,23 +23,6 @@
 #include <knell/memory.h>
 #include <knell/path.h>
 #include <knell/render-resources.h>
-
-#if defined(_WIN32)
-	#include <knell/compat-windows.h>
-	#include <GL/glew.h>
-
-	// Bring in additional OpenGL function names.
-	#define GL_GLEXT_PROTOTYPES 1
-	#include <GL/gl.h>
-	#include <SDL_opengl_glext.h>
-#elif defined(__linux__)
-	// Get prototypes without manually loading each one.
-	#define GL_GLEXT_PROTOTYPES 1
-	#include <GL/gl.h>
-	#include <GL/glext.h>
-#else
-	#error "OpenGL rendering is not supported on this platform."
-#endif
 
 /*
  * A macro to provide OpenGL error checking and reporting.
