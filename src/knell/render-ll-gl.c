@@ -110,11 +110,11 @@ static VertexFormat vertexFormats[VertexFormatMax];
  */
 enum {
 	ProgramIndexSprite = 0,
-	ProgramIndexFullScreen = 1,
-	ProgramIndexSolidPolygon = 2
+	ProgramIndexFullScreen,
+	ProgramIndexSolidPolygon,
+	ProgramIndexMax
 };
-#define RLL_MAX_PROGRAMS 16
-static Program programs[RLL_MAX_PROGRAMS];
+static Program programs[ProgramIndexMax];
 
 enum {
 	AttributeSemanticNamePosition = 0,
@@ -278,7 +278,7 @@ void RLL_ApplyUniform(Uniform* u, UniformStorage storage)
 void RLL_RegisterProgram(uint32_t index, GLuint program)
 {
 	KN_ASSERT_NO_GL_ERROR();
-	KN_ASSERT(index <= RLL_MAX_PROGRAMS, "Trying to register a program %" PRIu32
+	KN_ASSERT(index <= ProgramIndexMax, "Trying to register a program %" PRIu32
 		"outside of the valid range of programs %" PRIu32, index, program);
 	KN_TRACE(LogSysRender, " programRegistering: %u to global program index %" PRIu32, program, index);
 	Program* p = &programs[index];
