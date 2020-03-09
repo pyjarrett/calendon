@@ -176,17 +176,6 @@ typedef struct {
 } VertexFormat;
 
 /**
- * The general notion of "I have vertex data in a specific format."  This
- * does not deal with allocation concerns, as long as the data lives through
- * the entire frame.
- */
-typedef struct {
-	void* vertices;
-	size_t numBytes;
-	VertexFormat* format;
-} Geometry;
-
-/**
  * Packed 4D vertices.
  */
 enum {
@@ -1275,10 +1264,6 @@ bool RLL_LoadPSF2Font(FontId id, const char* path)
 	KN_ASSERT_NO_GL_ERROR();
 	return true;
 }
-
-typedef struct {
-	int x;
-} GlyphDrawParams;
 
 void AddToGlyphBatch(float2 position, dimension2f size, float2* texCoords)
 {
