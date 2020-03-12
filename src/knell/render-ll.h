@@ -20,15 +20,15 @@ void RLL_Clear(rgba8i color);
 
 bool RLL_CreateSprite(SpriteId* id);
 bool RLL_LoadSprite(SpriteId id, const char* path);
-void RLL_DrawSprite(SpriteId id, float2 position, dimension2f size);
+void RLL_DrawSprite(SpriteId id, float2 position, Dimension2f size);
 
 bool RLL_CreateFont(FontId* id);
 bool RLL_LoadPSF2Font(FontId id, const char* path);
 void RLL_DrawSimpleText(FontId id, TextDrawParams* params, const char* text);
-void RLL_DrawDebugFont(FontId id, float2 center, dimension2f size);
+void RLL_DrawDebugFont(FontId id, float2 center, Dimension2f size);
 
 void RLL_DrawDebugFullScreenRect(void);
-void RLL_DrawDebugRect(float2 center, dimension2f dimensions, float4 color);
+void RLL_DrawDebugRect(float2 center, Dimension2f dimensions, float4 color);
 void RLL_DrawDebugLine(float x1, float y1, float x2, float y2, rgb8 color);
 void RLL_DrawDebugLineStrip(float2* points, uint32_t numPoints, rgb8 color);
 

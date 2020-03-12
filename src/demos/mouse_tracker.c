@@ -24,7 +24,7 @@ KN_GAME_API void Game_Draw(void)
 {
 	R_StartFrame();
 
-	dimension2f rectSize = { 50, 50 };
+	Dimension2f rectSize = { 50, 50 };
 	rgb8 white = { 255, 255, 255};
 	R_DrawDebugRect(position, rectSize, white);
 

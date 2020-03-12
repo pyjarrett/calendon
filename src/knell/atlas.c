@@ -4,7 +4,7 @@
 
 #include <math.h>
 
-KN_TEST_API void TextureAtlas_Allocate(TextureAtlas* ta, dimension2u32 subImageSize, uint32_t numImages) {
+KN_TEST_API void TextureAtlas_Allocate(TextureAtlas* ta, Dimension2u32 subImageSize, uint32_t numImages) {
 	KN_ASSERT(ta != NULL, "Cannot allocate a NULL texture atlas.");
 	KN_ASSERT(subImageSize.width > 0, "Cannot create a texture atlas with a zero width sub image.");
 	KN_ASSERT(subImageSize.height > 0, "Cannot create a texture atlas with a zero height sub image.");
@@ -12,8 +12,8 @@ KN_TEST_API void TextureAtlas_Allocate(TextureAtlas* ta, dimension2u32 subImageS
 	ta->usedImages = 0;
 	ta->totalImages = numImages;
 	ta->subImageSizePixels = subImageSize;
-	ta->gridSize = (dimension2u32) { ceil(sqrt(numImages)), ceil(sqrt(numImages)) };
-	ta->backingSizePixels = (dimension2u32) { ta->gridSize.width * subImageSize.width,
+	ta->gridSize = (Dimension2u32) { ceil(sqrt(numImages)), ceil(sqrt(numImages)) };
+	ta->backingSizePixels = (Dimension2u32) { ta->gridSize.width * subImageSize.width,
 		ta->gridSize.height * subImageSize.height };
 
 	KN_TRACE(LogSysMain, "TextureAtlas size (%" PRIu32 ", %" PRIu32 ")", ta->backingSizePixels.width, ta->backingSizePixels.height);

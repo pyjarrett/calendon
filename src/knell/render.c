@@ -52,7 +52,7 @@ KN_API bool R_LoadSprite(SpriteId id, const char* path)
 	return RLL_LoadSprite(id, path);
 }
 
-KN_API void R_DrawSprite(SpriteId id, float2 position, dimension2f size)
+KN_API void R_DrawSprite(SpriteId id, float2 position, Dimension2f size)
 {
 	RLL_DrawSprite(id, position, size);
 }
@@ -82,7 +82,7 @@ KN_API void R_DrawDebugFullScreenRect(void)
 	RLL_DrawDebugFullScreenRect();
 }
 
-KN_API void R_DrawDebugRect(float2 center, dimension2f dimensions, rgb8 color)
+KN_API void R_DrawDebugRect(float2 center, Dimension2f dimensions, rgb8 color)
 {
 	RLL_DrawDebugRect(center, dimensions, float4_Make((float)color.r / 255.0f,
 		(float)color.g / 255.0f, (float)color.b / 255.0f, 1.0f));
@@ -98,7 +98,7 @@ KN_API void R_DrawDebugLineStrip(float2* points, uint32_t numPoints, rgb8 color)
 	RLL_DrawDebugLineStrip(points, numPoints, color);
 }
 
-KN_API void R_DrawDebugFont(FontId id, float2 center, dimension2f size)
+KN_API void R_DrawDebugFont(FontId id, float2 center, Dimension2f size)
 {
 	RLL_DrawDebugFont(id, center, size);
 }

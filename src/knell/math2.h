@@ -9,11 +9,11 @@
 
 typedef struct {
 	float width, height;
-} dimension2f;
+} Dimension2f;
 
 typedef struct {
 	uint32_t width, height;
-} dimension2u32;
+} Dimension2u32;
 
 typedef struct {
 	uint32_t row, col;

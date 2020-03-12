@@ -18,7 +18,7 @@
  */
 typedef struct {
 	GraphemeMap map;
-	dimension2u32 glyphSize;
+	Dimension2u32 glyphSize;
 	TextureAtlas atlas;
 } FontPSF2;
 

@@ -1013,7 +1013,7 @@ bool RLL_LoadSprite(SpriteId id, const char* path)
 	return true;
 }
 
-void RLL_DrawSprite(SpriteId id, float2 position, dimension2f size)
+void RLL_DrawSprite(SpriteId id, float2 position, Dimension2f size)
 {
 	KN_ASSERT_NO_GL_ERROR();
 
@@ -1105,7 +1105,7 @@ bool RLL_LoadPSF2Font(FontId id, const char* path)
 	return true;
 }
 
-void AddToGlyphBatch(float2 position, dimension2f size, float2* texCoords)
+void AddToGlyphBatch(float2 position, Dimension2f size, float2* texCoords)
 {
 	const uint32_t glyphOffset = usedGlyphs * RLL_VERTICES_PER_GLYPH;
 	glyphTexCoords[glyphOffset] = texCoords[0];
@@ -1133,7 +1133,7 @@ void AppendGlyph(FontId id, float2 position, GlyphIndex glyphIndex)
 
 	// Get the glyph size, should go in printing parameters.
 	// TODO: Use aspect ratio of the glyph.
-	const dimension2f glyphSize = (dimension2f) { .width = 30.0f, .height = 50.0f };
+	const Dimension2f glyphSize = (Dimension2f) { .width = 30.0f, .height = 50.0f };
 
 	float2 texCoords[4];
 	TextureAtlas_TexCoordForSubImage(&font->atlas, &texCoords[0], glyphIndex);
@@ -1243,7 +1243,7 @@ void RLL_DrawDebugFullScreenRect(void)
 /**
  * Draws a rectangle at a given center point with known dimensions.
  */
-void RLL_DrawDebugRect(float2 center, dimension2f dimensions, float4 color)
+void RLL_DrawDebugRect(float2 center, Dimension2f dimensions, float4 color)
 {
 	RLL_SetFullScreenViewport();
 
@@ -1321,7 +1321,7 @@ void RLL_DrawDebugLineStrip(float2* points, uint32_t numPoints, rgb8 color)
 	KN_ASSERT_NO_GL_ERROR();
 }
 
-void RLL_DrawDebugFont(FontId id, float2 center, dimension2f size)
+void RLL_DrawDebugFont(FontId id, float2 center, Dimension2f size)
 {
 	KN_ASSERT_NO_GL_ERROR();
 
