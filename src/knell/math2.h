@@ -7,13 +7,7 @@
 
 #include "kn.h"
 
-typedef struct {
-	float width, height;
-} Dimension2f;
-
-typedef struct {
-	uint32_t width, height;
-} Dimension2u32;
+#include <knell/dimension.h>
 
 typedef struct {
 	uint32_t row, col;
