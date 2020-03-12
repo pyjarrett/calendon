@@ -5,6 +5,7 @@
 
 #include <knell/math2.h>
 #include <knell/memory.h>
+#include <knell/row_col.h>
 
 /**
  * Images are bulk groups of pixel data stored in memory and must be fed into

@@ -5,6 +5,7 @@
 
 #include <knell/image.h>
 #include <knell/math2.h>
+#include <knell/row_col.h>
 
 /**
  * A texture atlas which assumes that all images are the same size.
