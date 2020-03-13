@@ -17,6 +17,7 @@
 #include <knell/compat-gl.h>
 #include <knell/compat-sdl.h>
 #include <knell/font-psf2.h>
+#include <knell/handle.h>
 #include <knell/image.h>
 #include <knell/log.h>
 #include <knell/math4.h>
@@ -70,11 +71,10 @@ static GLuint spriteBuffer;
  */
 #define RLL_MAX_SPRITE_TYPES 512
 
-/**
- * The next sprite ID to be allocated.  Sprite IDs cannot be deallocated, though
- * this is likely to change in the future.
- */
-static SpriteId nextSpriteId;
+KN_HANDLE_TYPE_DECL(SpriteId, RLL_, Sprite);
+KN_HANDLE_TYPE_DEFN(SpriteId, RLL_, Sprite, 32);
+
+KN_STATIC_ASSERT(sizeof(SpriteId) == sizeof(uint32_t), "SpriteId is not 32 bits");
 
 /**
  * Maps sprite IDs to their OpenGL textures.
@@ -791,6 +791,7 @@ void RLL_FillBuffers(void)
 void RLL_InitSprites(void)
 {
 	nextSpriteId = 0;
+	RLL_SpriteInit();
 	nextFontId = 0;
 }
 
@@ -965,13 +966,6 @@ void RLL_Clear(rgba8i color)
 void RLL_SetFullScreenViewport(void)
 {
 	glViewport(0, 0, windowWidth, windowHeight);
-}
-
-bool RLL_CreateSprite(SpriteId* id)
-{
-	KN_ASSERT(id != NULL, "Cannot assign a sprite to a null id.");
-	*id = ++nextSpriteId;
-	return true;
 }
 
 bool RLL_LoadSprite(SpriteId id, const char* path)
