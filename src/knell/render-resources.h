@@ -12,12 +12,12 @@
  * Opaque handle used to coordinate with the renderer to uniquely identify
  * sprites.
  */
-KN_API typedef uint32_t SpriteId;
+typedef uint32_t SpriteId;
 
 /**
  * Opaque handle for identifying font resources.
  */
-KN_API typedef uint32_t FontId;
+typedef uint32_t FontId;
 
 enum {
 	PrintDirectionLeftToRight,
@@ -29,7 +29,7 @@ enum {
 /**
  * Various ways that text drawing can be manipulated.
  */
-KN_API typedef struct {
+typedef struct {
 	float2 position;
 	rgba8i color;
 	uint32_t layout;

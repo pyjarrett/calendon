@@ -36,16 +36,16 @@ KN_API void R_EndFrame(void);
 
 KN_API bool R_CreateSprite(SpriteId* id);
 KN_API bool R_LoadSprite(SpriteId id, const char* path);
-KN_API void R_DrawSprite(SpriteId id, float2 position, dimension2f size);
+KN_API void R_DrawSprite(SpriteId id, float2 position, Dimension2f size);
 
 KN_API bool R_CreateFont(FontId* id);
 KN_API bool R_LoadPSF2Font(FontId id, const char* path);
 KN_API void R_DrawSimpleText(FontId id, float2 position, const char* text);
 
 KN_API void R_DrawDebugFullScreenRect(void);
-KN_API void R_DrawDebugRect(float2 center, dimension2f dimensions, rgb8 color);
+KN_API void R_DrawDebugRect(float2 center, Dimension2f dimensions, rgb8 color);
 KN_API void R_DrawDebugLine(float x1, float y1, float x2, float y2, rgb8 color);
 KN_API void R_DrawDebugLineStrip(float2* points, uint32_t numPoints, rgb8 color);
-KN_API void R_DrawDebugFont(FontId id, float2 center, dimension2f size);
+KN_API void R_DrawDebugFont(FontId id, float2 center, Dimension2f size);
 
 #endif /* KN_RENDER_HL_H */

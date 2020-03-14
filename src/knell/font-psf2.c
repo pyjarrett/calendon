@@ -121,7 +121,7 @@ static void Font_PSF2ReadAndAllocateTextureAtlas(const PSF2Header* header, Textu
 
 	const uint8_t* bitmapCursor = (uint8_t*)header + header->bitmapOffset;
 
-	const dimension2u32 glyphSize = {
+	const Dimension2u32 glyphSize = {
 		.width = header->glyphWidth,
 		.height = header->glyphHeight };
 

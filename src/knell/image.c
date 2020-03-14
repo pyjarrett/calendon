@@ -95,7 +95,7 @@ KN_API bool ImageRGBA8_Allocate(ImageRGBA8* image, const char* fileName)
 	return true;
 }
 
-KN_API bool ImageRGBA8_AllocateSized(ImageRGBA8* image, dimension2u32 size)
+KN_API bool ImageRGBA8_AllocateSized(ImageRGBA8* image, Dimension2u32 size)
 {
 	KN_ASSERT(image != NULL, "Cannot allocate a null ImageRGBA8.");
 	KN_ASSERT(size.width > 0 && size.height > 0, "ImageRGBA8 must have non-zero size %"

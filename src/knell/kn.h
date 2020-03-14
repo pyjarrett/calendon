@@ -233,4 +233,9 @@ extern KN_API char fatalErrorBuffer[fatalErrorBufferLength];
 	#define KN_DO_NOT_SUBMIT production_code_has_do_not_submit
 #endif
 
+/**
+ * Prevent mistakes of calculating array size by just making it a macro.
+ */
+#define KN_ARRAY_SIZE(arr) (sizeof(arr)  / sizeof(arr[0]))
+
 #endif /* KN_H */

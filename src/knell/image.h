@@ -5,6 +5,7 @@
 
 #include <knell/math2.h>
 #include <knell/memory.h>
+#include <knell/row_col.h>
 
 /**
  * Images are bulk groups of pixel data stored in memory and must be fed into
@@ -26,7 +27,7 @@ typedef struct {
 } ImageRGBA8;
 
 KN_API bool ImageRGBA8_Allocate(ImageRGBA8* image, const char* fileName);
-KN_API bool ImageRGBA8_AllocateSized(ImageRGBA8* image, dimension2u32 size);
+KN_API bool ImageRGBA8_AllocateSized(ImageRGBA8* image, Dimension2u32 size);
 KN_API void ImageRGBA8_Free(ImageRGBA8* image);
 KN_API void ImageRGBA8_Flip(ImageRGBA8* image);
 KN_API void ImageRGBA8_ClearRGBA(ImageRGBA8* image, uint8_t r, uint8_t b, uint8_t g, uint8_t a);

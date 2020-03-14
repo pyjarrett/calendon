@@ -93,7 +93,7 @@ KN_GAME_API void Game_Draw(void)
 	R_DrawDebugFullScreenRect();
 
 	float2 position = float2_Make(100, 100);
-	dimension2f size = { .width = 100.0f, .height = 100.0f };
+	Dimension2f size = { .width = 100.0f, .height = 100.0f };
 	R_DrawSprite(spriteFrames[sampleCursor.current], position, size);
 
 	rgb8 red = { .r = 255, .g = 0, .b = 0 };
@@ -108,7 +108,7 @@ KN_GAME_API void Game_Draw(void)
 		circleVertices[step].y, green);
 
 	float2 rectPosition = float2_Make(200, 100);
-	dimension2f rectSize = { .width = 100.0f, .height = 100.0f };
+	Dimension2f rectSize = { .width = 100.0f, .height = 100.0f };
 	R_DrawDebugRect(rectPosition, rectSize, green);
 
 	R_DrawSimpleText(font, float2_Make(300, 100), "Hello, Paul!\xe2\x86\x93→\xe2\x86\x92");

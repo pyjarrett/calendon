@@ -5,6 +5,7 @@
 
 #include <knell/image.h>
 #include <knell/math2.h>
+#include <knell/row_col.h>
 
 /**
  * A texture atlas which assumes that all images are the same size.
@@ -15,16 +16,16 @@ typedef struct {
 	uint32_t totalImages;
 
 	/** The dimensions of each subimage making up the texture atlas. */
-	dimension2u32 subImageSizePixels;
+	Dimension2u32 subImageSizePixels;
 
 	/** The total size of the underlying image. */
-	dimension2u32 backingSizePixels;
+	Dimension2u32 backingSizePixels;
 
 	/** The number of subimages which fit across the width and height. */
-	dimension2u32 gridSize;
+	Dimension2u32 gridSize;
 } TextureAtlas;
 
-KN_TEST_API void TextureAtlas_Allocate(TextureAtlas* ta, dimension2u32 subImageSize, uint32_t numImages);
+KN_TEST_API void TextureAtlas_Allocate(TextureAtlas* ta, Dimension2u32 subImageSize, uint32_t numImages);
 KN_TEST_API void TextureAtlas_Free(TextureAtlas* ta);
 KN_TEST_API RowColu32 TextureAtlas_SubImageGrid(TextureAtlas* ta, uint32_t subImageId);
 KN_TEST_API uint32_t ImageRGBA8_offsetForRowCol(ImageRGBA8* image, RowColu32 rowCol, bool flip);

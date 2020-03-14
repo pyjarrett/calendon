@@ -7,13 +7,14 @@
  * such as the camera transform can be placed into a common location to be
  * found for all shaders.
 */
-#include <knell/render-ll.h>
+#include <knell/render-ll-gl.h>
 
 #include <knell/kn.h>
 
 #include <knell/assets.h>
 #include <knell/assets-fileio.h>
 #include <knell/color.h>
+#include <knell/compat-gl.h>
 #include <knell/compat-sdl.h>
 #include <knell/font-psf2.h>
 #include <knell/image.h>
@@ -21,24 +22,8 @@
 #include <knell/math4.h>
 #include <knell/memory.h>
 #include <knell/path.h>
+#include <knell/render-ll.h>
 #include <knell/render-resources.h>
-
-#if defined(_WIN32)
-	#include <knell/compat-windows.h>
-	#include <GL/glew.h>
-
-	// Bring in additional OpenGL function names.
-	#define GL_GLEXT_PROTOTYPES 1
-	#include <GL/gl.h>
-	#include <SDL_opengl_glext.h>
-#elif defined(__linux__)
-	// Get prototypes without manually loading each one.
-	#define GL_GLEXT_PROTOTYPES 1
-	#include <GL/gl.h>
-	#include <GL/glext.h>
-#else
-	#error "OpenGL rendering is not supported on this platform."
-#endif
 
 /*
  * A macro to provide OpenGL error checking and reporting.
@@ -80,27 +65,16 @@ static GLuint debugDrawBuffer;
 static GLuint fullScreenQuadBuffer;
 static GLuint spriteBuffer;
 
-/*
- * TODO: Not supporting reusable sprites yet.
- */
-#define RLL_MAX_SPRITE_TYPES 512
-
-/**
- * The next sprite ID to be allocated.  Sprite IDs cannot be deallocated, though
- * this is likely to change in the future.
- */
-static SpriteId nextSpriteId;
+KN_DECLARE_HANDLE_TYPE(SpriteId, RLL_, Sprite, 8);
+KN_DECLARE_HANDLE_TYPE(FontId, RLL_, Font, 8);
 
 /**
  * Maps sprite IDs to their OpenGL textures.
  */
-static GLuint spriteTextures[RLL_MAX_SPRITE_TYPES];
+static GLuint spriteTextures[MaxSpriteId];
 
-#define RLL_MAX_FONT_TYPES 8
-static GLuint fontTextures[RLL_MAX_FONT_TYPES];
-static FontId nextFontId;
-
-static FontPSF2 fonts[RLL_MAX_FONT_TYPES];
+static GLuint fontTextures[MaxFontId];
+static FontPSF2 fonts[MaxFontId];
 
 /**
  * The maximum length of shader information logs which can be read.
@@ -113,97 +87,7 @@ static FontPSF2 fonts[RLL_MAX_FONT_TYPES];
 uint32_t LogSysRender;
 
 /**
- * Limit the number of vertex format attributes to something reasonable for a 2D
- * game engine.
- */
-#define RLL_MAX_VERTEX_FORMAT_ATTRIBUTES 16
-
-/**
- * Define the format, amount, location, layout and transformation needed to
- * understand the format of one attribute of a vertex.
- */
-typedef struct {
-// "What is this thing is supposed to represent?"
-
-	/**
-	 * Abstract name of the type of this data.  It is positional data, texture
-	 * coordinates, or something else?
-	 *
-	 * If no appropriate semantic name is assigned, then that means this is
-	 * invalid data.
-	 */
-	uint32_t semanticName;
-
-// Element format.
-
-	/**
-	 * The format type of each component.
-	 *
-	 * e.g. GL_BYTE, GL_FLOAT, GL_INT
-	 */
-	GLenum componentType;
-
-	/**
-	 * A vertex attribute might have multiple components.
-	 *
-	 * e.g. a 2D position would be 2 (x,y), a 3D position would be 3 (x,y,z),
-	 * 2D texture coordinates would be 2 (u, v).
-	 */
-	uint8_t numComponents;
-
-// Structure, layout and location of the array of data.
-
-	/**
-	 * The distance from the start of one attribute to the the start of the
-	 * next same attribute.  0 is a special value here, meaning "I'm too lazy to count
-	 * the size of each vertex, the values immediately follow each other."
-	 */
-	uint32_t stride;
-
-	/**
-	 * Is this value stored in an integer format and need to be transformed to
-	 * an appropriate floating point range [-1, 1] for signed, [0, 1] for
-	 * unsigned?
-	 */
-	bool normalized;
-
-	/**
-	 * The byte offset from the start of overall vertex data to the start of the
-	 * first value of the attribute.
-	 */
-	size_t offset;
-} VertexFormatAttribute;
-
-/**
- * Vertex data is just a blob of binary data unless you know the format of it
- * and how to interpret it.
- *
- * Vertices might have any of a number of sorts of data assigned to each vertex,
- * such as a position, normal vector, or 2D texture coordinates.  A shader
- * program might or might not use each attribute in a set of vertex data, but it
- * needs to know how to use the attributes which are available.
- */
-typedef struct {
-	/**
-	 * To speed lookup and application of vertex formats, attributes are indexed
-	 * according to semantic name.
-	 */
-	VertexFormatAttribute attributes[RLL_MAX_VERTEX_FORMAT_ATTRIBUTES];
-} VertexFormat;
-
-/**
- * The general notion of "I have vertex data in a specific format."  This
- * does not deal with allocation concerns, as long as the data lives through
- * the entire frame.
- */
-typedef struct {
-	void* vertices;
-	size_t numBytes;
-	VertexFormat* format;
-} Geometry;
-
-/**
- * Packed 4D vertices.
+ * Index into `vertexFormats` array, to show which global vertex format to use.
  */
 enum {
 	VertexFormatP4 = 0,
@@ -214,138 +98,15 @@ enum {
 static VertexFormat vertexFormats[VertexFormatMax];
 
 /**
- * Support a limited number of vertex attributes to maintain the best
- * compatibility.
- */
-#define RLL_MAX_ATTRIBUTES 8
-KN_STATIC_ASSERT(RLL_MAX_ATTRIBUTES <= GL_MAX_VERTEX_ATTRIBS, "RLL supports more"
-	"active attributes than the API allows");
-#define RLL_MAX_UNIFORMS 32
-#define RLL_MAX_PROGRAMS 16
-
-/*
- * Statically define the maximum attribute name length to prevent from having to
- * dynamically allocate memory for attribute or uniform names.  The flexibility
- * lost in name length is more than made up for in simplicity.  The value used
- * is a balance between allowing reasonably sized names and not using excessive
- * amounts of storage.
- */
-#define RLL_MAX_ATTRIBUTE_NAME_LENGTH 64
-#define RLL_MAX_UNIFORM_NAME_LENGTH 64
-
-/**
- * Allocates enough space to store whatever data type is needed for a uniform.
- */
-typedef union {
-	int i;
-	float2 f2;
-	float4 f4;
-	float4x4 f44;
-} AnyGLValue;
-
-/**
- * Attributes determine which data gets sent to the vertex shader.  Caching the
- * attributes used by a program prevent from having to query for it every time
- * that program is used.
- *
- * Normalized attributed are not currently supported.
- */
-typedef struct {
-	/**
-	 * The name of the attribute as it appears in the shader source.
-	 */
-	char name[RLL_MAX_ATTRIBUTE_NAME_LENGTH];
-
-	/** Corresponding semantic type to use at this index. */
-	uint32_t semanticName;
-
-	/**
-	 * The layout location of where the attribute will go.  This is in
-	 * relation to the shader, and unrelated to the vertex format.
-	 */
-	GLint location;
-
-	/**
-	 * The size of the attribute, in terms of the given type.
-	 */
-	GLint size;
-
-	/**
-	 * Not necessarily the actual type to use for the vertex pointer.  Note that
-	 * the type returned by glGetActiveAttrib IS NOT the same type as used by
-	 * glVertexAttribPointer.
-	 *
-	 * e.g. `size` might be 1 and `type` `GL_FLOAT_VEC4` whereas
-	 * `glVertexAttribPointer` is expecting to be given 4 and type `GL_FLOAT`.
-	 */
-	GLenum type;
-} Attribute;
-
-/**
- * Uniforms used during the vertex or fragment shaders.
- */
-typedef struct {
-	/**
-	 * The name of the uniform, as it appears in the shader source.
-	 */
-	char name[RLL_MAX_UNIFORM_NAME_LENGTH];
-
-	/**
-	 * The location to apply the uniform at, as returned by `glGetActiveUniform`.
-	 */
-	GLuint location;
-
-	/**
-	 * Points to the storage used to apply this uniform.
-	 */
-	uint32_t storageLocation;
-	GLint size;
-	GLenum type;
-} Uniform;
-
-/**
- * Cache attribute and uniform locations and types used by a program to make
- * setting these things faster without needing lookups.
- */
-typedef struct {
-	GLuint id;
-	Attribute attributes[RLL_MAX_ATTRIBUTES];
-	Uniform uniforms[RLL_MAX_UNIFORMS];
-	uint32_t numAttributes;
-	uint32_t numUniforms;
-} Program;
-
-static Program programs[RLL_MAX_PROGRAMS];
-
-/**
  * Indexes into `programs` array, of which shader program to use.
  */
 enum {
 	ProgramIndexSprite = 0,
-	ProgramIndexFullScreen = 1,
-	ProgramIndexSolidPolygon = 2
+	ProgramIndexFullScreen,
+	ProgramIndexSolidPolygon,
+	ProgramIndexMax
 };
-
-enum {
-	AttributeSemanticNamePosition = 0,
-	AttributeSemanticNamePosition2 = 0,
-	AttributeSemanticNamePosition3 = 0,
-	AttributeSemanticNamePosition4 = 0,
-	AttributeSemanticNameTexCoord2 = 1,
-	AttributeSemanticNameTypes = 5,
-	AttributeSemanticNameUnknown
-};
-
-enum {
-	UniformNameProjection = 0,
-	UniformNameModelView = 1,
-	UniformNameViewModel = 1,
-	UniformNameTexture = 2,
-	UniformNameTexture2D0 = 2,
-	UniformNamePolygonColor = 3,
-	UniformNameTypes = 6,
-	UniformNameUnknown
-};
+static Program programs[ProgramIndexMax];
 
 /**
  * The total number of glyphs which can be drawn at once.
@@ -360,24 +121,44 @@ static uint32_t usedGlyphs = 0;
 static VertexFormat glyphFormat;
 static GLuint glyphBuffer;
 
-typedef AnyGLValue UniformStorage[UniformNameTypes];
-static UniformStorage uniformStorage;
-
 /**
  * Associates a name along with an indexed location, and type information.
  */
 typedef struct {
+	/**
+	 * Name to look for in the shader source.
+	 */
 	const char* str;
+
+	/**
+	 * Uniforms: Uniform location.
+	 * Attributes: Attribute index in the vertex format.
+	 */
 	uint32_t id; // TODO: Rename "location"
 	GLenum type;
+
+	/**
+	 * Uniforms: array size, 1 for singular values.
+	 * Attributes: number of components
+	 */
 	GLint size;
-} SemanticName;
+} SemanticMapping;
+
+enum {
+	AttributeSemanticNamePosition = 0,
+	AttributeSemanticNamePosition2 = 0,
+	AttributeSemanticNamePosition3 = 0,
+	AttributeSemanticNamePosition4 = 0,
+	AttributeSemanticNameTexCoord2 = 1,
+	AttributeSemanticNameTypes = 5,
+	AttributeSemanticNameUnknown
+};
 
 /**
  * Currently unused.  Being set up in preparation for applying vertex formats
  * based on a mapping of shader inputs to semantic names.
  */
-static SemanticName attributeSemanticNames[] = {
+static SemanticMapping attributeSemanticNames[] = {
 	{ "Position", AttributeSemanticNamePosition, GL_FLOAT, 4 },
 	{ "Position2", AttributeSemanticNamePosition2, GL_FLOAT, 2 },
 	{ "Position3", AttributeSemanticNamePosition3, GL_FLOAT, 3 },
@@ -385,12 +166,23 @@ static SemanticName attributeSemanticNames[] = {
 	{ "TexCoord2", AttributeSemanticNameTexCoord2, GL_FLOAT, 2 }
 };
 
-KN_STATIC_ASSERT(AttributeSemanticNameTypes == sizeof(attributeSemanticNames) / sizeof(attributeSemanticNames[0]),
+KN_STATIC_ASSERT(AttributeSemanticNameTypes == KN_ARRAY_SIZE(attributeSemanticNames),
 	"Number of attribute semantic names doesn't match data array");
+
+enum {
+	UniformNameProjection = 0,
+	UniformNameModelView = 1,
+	UniformNameViewModel = 1,
+	UniformNameTexture = 2,
+	UniformNameTexture2D0 = 2,
+	UniformNamePolygonColor = 3,
+	UniformNameTypes = 6,
+	UniformNameUnknown
+};
 
 // TODO: Naming misnomer, uniform->semanticName doesn't map into this array,
 // it maps into the uniform storage.
-static SemanticName UniformNames[] = {
+static SemanticMapping UniformNames[] = {
 	{ "Projection", UniformNameProjection, GL_FLOAT_MAT4, 1 },
 	{ "ModelView", UniformNameModelView, GL_FLOAT_MAT4, 1 },
 	{ "ViewModel", UniformNameViewModel, GL_FLOAT_MAT4, 1 },
@@ -399,8 +191,20 @@ static SemanticName UniformNames[] = {
 	{ "PolygonColor", UniformNamePolygonColor, GL_FLOAT_VEC4, 1 }
 };
 
-KN_STATIC_ASSERT(UniformNameTypes == sizeof(UniformNames) / sizeof(UniformNames[0]),
+KN_STATIC_ASSERT(UniformNameTypes == KN_ARRAY_SIZE(UniformNames),
 	"Number of uniform semantic names doesn't match data array");
+
+/**
+ * Allocates enough space to store whatever data type is needed for a uniform.
+ */
+typedef union {
+	int i;
+	float2 f2;
+	float4 f4;
+	float4x4 f44;
+} AnyGLValue;
+typedef AnyGLValue UniformStorage[UniformNameTypes];
+static UniformStorage uniformStorage;
 
 uint32_t RLL_LookupAttributeSemanticName(const char* name)
 {
@@ -446,6 +250,8 @@ void RLL_ReadyTexture2(GLuint index, GLuint texture)
  */
 void RLL_ApplyUniform(Uniform* u, UniformStorage storage)
 {
+	KN_ASSERT(u != NULL, "Cannot apply a null uniform");
+
 	switch(u->type) {
 		case GL_FLOAT_VEC2:
 			KN_ASSERT(u->size == 1, "Arrays of float2 are not supported");
@@ -479,7 +285,7 @@ void RLL_ApplyUniform(Uniform* u, UniformStorage storage)
 void RLL_RegisterProgram(uint32_t index, GLuint program)
 {
 	KN_ASSERT_NO_GL_ERROR();
-	KN_ASSERT(index <= RLL_MAX_PROGRAMS, "Trying to register a program %" PRIu32
+	KN_ASSERT(index <= ProgramIndexMax, "Trying to register a program %" PRIu32
 		"outside of the valid range of programs %" PRIu32, index, program);
 	KN_TRACE(LogSysRender, " programRegistering: %u to global program index %" PRIu32, program, index);
 	Program* p = &programs[index];
@@ -739,7 +545,6 @@ static float4x4 RLL_OrthoProjection(const uint32_t width, const uint32_t height)
 	const float h = (float)height;
 	const float4x4 scale = float4x4_NonUniformScale(2.0f / w, 2.0f / h, 2.0f / (far - near));
 	const float4x4 trans = float4x4_Translate(-w / 2.0f, -h / 2.0f, -(far + near) / 2.0f);
-	//return float4x4_Multiply(scale, trans);
 	return float4x4_Multiply(trans, scale);
 }
 
@@ -775,10 +580,8 @@ void RLL_InitGL(void)
 {
 	Log_RegisterSystem(&LogSysRender, "Render", KN_LOG_TRACE);
 
-	// Get up and running quickly with OpenGL 3.1 with old-school functions.
-	// TODO: Replace with Core profile once something is working.
+	// TODO: Settle on an appropriate OpenGL version to use.
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -940,7 +743,6 @@ void RLL_FillSpriteBuffer(void)
 	KN_ASSERT(spriteBuffer, "Cannot allocate a buffer for the sprite buffer");
 	KN_ASSERT(glIsBuffer(spriteBuffer), "Could not create sprite buffer");
 	KN_ASSERT_NO_GL_ERROR();
-	KN_ASSERT_NO_GL_ERROR();
 }
 
 void RLL_FillDebugQuadBuffer(void)
@@ -977,8 +779,8 @@ void RLL_FillBuffers(void)
 
 void RLL_InitSprites(void)
 {
-	nextSpriteId = 0;
-	nextFontId = 0;
+	RLL_SpriteInit();
+	RLL_FontInit();
 }
 
 void RLL_LoadSimpleShader(const char* vertexShaderFileName,
@@ -1154,13 +956,6 @@ void RLL_SetFullScreenViewport(void)
 	glViewport(0, 0, windowWidth, windowHeight);
 }
 
-bool RLL_CreateSprite(SpriteId* id)
-{
-	KN_ASSERT(id != NULL, "Cannot assign a sprite to a null id.");
-	*id = ++nextSpriteId;
-	return true;
-}
-
 bool RLL_LoadSprite(SpriteId id, const char* path)
 {
 	KN_ASSERT_NO_GL_ERROR();
@@ -1200,7 +995,7 @@ bool RLL_LoadSprite(SpriteId id, const char* path)
 	return true;
 }
 
-void RLL_DrawSprite(SpriteId id, float2 position, dimension2f size)
+void RLL_DrawSprite(SpriteId id, float2 position, Dimension2f size)
 {
 	KN_ASSERT_NO_GL_ERROR();
 
@@ -1224,16 +1019,6 @@ void RLL_DrawSprite(SpriteId id, float2 position, dimension2f size)
 	RLL_DisableProgram(ProgramIndexSprite);
 
 	KN_ASSERT_NO_GL_ERROR();
-}
-
-bool RLL_CreateFont(FontId* id)
-{
-	if (nextFontId < RLL_MAX_FONT_TYPES)
-	{
-		*id = nextFontId++;
-		return true;
-	}
-	return false;
 }
 
 /**
@@ -1292,11 +1077,7 @@ bool RLL_LoadPSF2Font(FontId id, const char* path)
 	return true;
 }
 
-typedef struct {
-	int x;
-} GlyphDrawParams;
-
-void AddToGlyphBatch(float2 position, dimension2f size, float2* texCoords)
+void AddToGlyphBatch(float2 position, Dimension2f size, float2* texCoords)
 {
 	const uint32_t glyphOffset = usedGlyphs * RLL_VERTICES_PER_GLYPH;
 	glyphTexCoords[glyphOffset] = texCoords[0];
@@ -1317,21 +1098,6 @@ void AddToGlyphBatch(float2 position, dimension2f size, float2* texCoords)
 	++usedGlyphs;
 }
 
-/**
- * Draws a glyph with the given configuration.
- */
-void RLL_DrawGlyph(FontId id, float2 glyphPosition, const char* codePoint,
-	uint8_t codePointLength)
-{
-	KN_ASSERT(codePoint != NULL, "Cannot draw a null code point");
-	KN_ASSERT(codePointLength <= 4, "Code point length is %" PRIu32
-		" exceeds UTF-8 limit (4)", codePointLength);
-
-	// TODO: Provide a color for the glyph.
-	// TODO: Just draw to debug to ensure the decoding part works.
-	//GraphemeMap_GlyphForCodePoints(font->map, graphemes, numGraphemes);
-}
-
 void AppendGlyph(FontId id, float2 position, GlyphIndex glyphIndex)
 {
 	FontPSF2* font = &fonts[id];
@@ -1339,7 +1105,7 @@ void AppendGlyph(FontId id, float2 position, GlyphIndex glyphIndex)
 
 	// Get the glyph size, should go in printing parameters.
 	// TODO: Use aspect ratio of the glyph.
-	const dimension2f glyphSize = (dimension2f) { .width = 30.0f, .height = 50.0f };
+	const Dimension2f glyphSize = (Dimension2f) { .width = 30.0f, .height = 50.0f };
 
 	float2 texCoords[4];
 	TextureAtlas_TexCoordForSubImage(&font->atlas, &texCoords[0], glyphIndex);
@@ -1351,41 +1117,30 @@ void AppendGlyph(FontId id, float2 position, GlyphIndex glyphIndex)
  */
 static void DrawGlyphs(FontId id)
 {
+	KN_ASSERT_NO_GL_ERROR();
 	RLL_SetFullScreenViewport();
 	const GLuint texture = fontTextures[id];
 	KN_ASSERT(glIsTexture(texture), "Sprite %" PRIu32 " does not have a valid"
 		"texture", texture);
 	RLL_ReadyTexture2(0, fontTextures[id]);
-	KN_ASSERT_NO_GL_ERROR();
 
 	uniformStorage[UniformNameModelView].f44 = float4x4_Identity();
-
 	glBindBuffer(GL_ARRAY_BUFFER, glyphBuffer);
 
-	KN_ASSERT_NO_GL_ERROR();
-	const uint32_t verticesSize = sizeof(float) * 2 * RLL_MAX_GLYPH_VERTICES_PER_DRAW;
-	const uint32_t texCoordsSize = sizeof(float) * 2 * RLL_MAX_GLYPH_VERTICES_PER_DRAW;
+	const size_t verticesSize = sizeof(float) * 2 * RLL_MAX_GLYPH_VERTICES_PER_DRAW;
+	const size_t texCoordsSize = sizeof(float) * 2 * RLL_MAX_GLYPH_VERTICES_PER_DRAW;
 	KN_ASSERT(verticesSize + texCoordsSize == RLL_GLYPH_BUFFER_SIZE, "Insufficient size"
-		" for vertices and texture coordinates: %" PRIu32
-		" and %" PRIu32 " -> %" PRIu32, verticesSize, texCoordsSize,
-			  RLL_GLYPH_BUFFER_SIZE);
+		" for vertices and texture coordinates: %zu and %zu -> %zu",
+		verticesSize, texCoordsSize,  RLL_GLYPH_BUFFER_SIZE);
 
 	glBufferSubData(GL_ARRAY_BUFFER, 0, verticesSize, glyphVertices);
-	KN_ASSERT_NO_GL_ERROR();
 	glBufferSubData(GL_ARRAY_BUFFER, verticesSize, texCoordsSize, glyphTexCoords);
-
 	RLL_EnableProgramForVertexFormat(ProgramIndexSprite, &glyphFormat);
-//	printf("Drawing %" PRIu32 "\n", usedGlyphs);
-
 	glDrawArrays(GL_TRIANGLES, 0, 6 * usedGlyphs);
-	KN_ASSERT_NO_GL_ERROR();
 
 	usedGlyphs = 0;
-	KN_ASSERT_NO_GL_ERROR();
-
 	RLL_DisableProgram(ProgramIndexSprite);
 	KN_ASSERT_NO_GL_ERROR();
-
 }
 
 /**
@@ -1460,7 +1215,7 @@ void RLL_DrawDebugFullScreenRect(void)
 /**
  * Draws a rectangle at a given center point with known dimensions.
  */
-void RLL_DrawDebugRect(float2 center, dimension2f dimensions, float4 color)
+void RLL_DrawDebugRect(float2 center, Dimension2f dimensions, float4 color)
 {
 	RLL_SetFullScreenViewport();
 
@@ -1538,7 +1293,7 @@ void RLL_DrawDebugLineStrip(float2* points, uint32_t numPoints, rgb8 color)
 	KN_ASSERT_NO_GL_ERROR();
 }
 
-void RLL_DrawDebugFont(FontId id, float2 center, dimension2f size)
+void RLL_DrawDebugFont(FontId id, float2 center, Dimension2f size)
 {
 	KN_ASSERT_NO_GL_ERROR();
 
