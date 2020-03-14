@@ -33,7 +33,7 @@
  *
  * The `KN_TESTING` macro causes Knell's library to expose functions annotated
  * with the `KN_TEST_API` macro to be exported, which is done to create the
- * `knell-lib-test` target.  This allows normally hidden functions within
+ * `knell-testable` target.  This allows normally hidden functions within
  * Knell to be tested, and also serves to document which functions cannot or are
  * not tested.  The `KN_API` and `KN_TEST_API` macros to annotate a
  * function are exclusive, annotating a function with most is an error.

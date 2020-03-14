@@ -31,28 +31,30 @@ endif ()
 
 remove_definitions(-DKN_LIBRARY)
 add_definitions(-DKN_LIBRARY=1)
-add_library(knell-lib SHARED ${KNELL_SRCS} ${KNELL_HEADERS})
-target_link_libraries(knell-lib ${KNELL_LIBS})
+add_library(knell SHARED ${KNELL_SRCS} ${KNELL_HEADERS})
+target_link_libraries(knell ${KNELL_LIBS})
 
-# Define a special version of knell-lib to allow unit tests to actually verify
+# Define a special version of knell to allow unit tests to actually verify
 # that asserts (primarily preconditions) are actually checked.
 remove_definitions(-DKN_LIBRARY)
+remove_definitions(-DKN_TESTING)
 add_definitions(-DKN_LIBRARY=1)
 add_definitions(-DKN_TESTING=1)
-add_library(knell-lib-test SHARED ${KNELL_SRCS} ${KNELL_HEADERS})
-target_link_libraries(knell-lib-test ${KNELL_LIBS})
+add_library(knell-testable SHARED ${KNELL_SRCS} ${KNELL_HEADERS})
+target_link_libraries(knell-testable ${KNELL_LIBS})
 remove_definitions(-DKN_TESTING)
 
-add_custom_command(TARGET knell-lib-test POST_BUILD
+add_custom_command(TARGET knell-testable POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_if_different
-	$<TARGET_FILE:knell-lib-test>
+	$<TARGET_FILE:knell-testable>
 	${BINARY_DIR}
-	COMMENT "Copying knell-lib-test to binary directory")
+	COMMENT "Copying knell-testable to binary directory")
 
 # TODO: Replace this with a file describing where to find assets.
 if (UNIX)
 	add_custom_target(sync_assets
 			COMMAND rsync -avz "${CMAKE_SOURCE_DIR}/assets/" "${ASSET_DIR}"
 			COMMENT "Copying assets")
-	add_dependencies(knell-lib sync_assets)
+	add_dependencies(knell sync_assets)
+	add_dependencies(knell-testable sync_assets)
 endif(UNIX)

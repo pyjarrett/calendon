@@ -21,7 +21,7 @@
 /*
  * Symbol export/import markers for engine library functions.
  *
- * - Use `KN_API` for engine library functions (within knell-lib)
+ * - Use `KN_API` for engine library functions (within knell)
  * - Use `KN_TEST_API` for exposing functions for (primarily unit) testing.
  * - Use `KN_GAME_API` for game library functions (in demo/game code)
  *

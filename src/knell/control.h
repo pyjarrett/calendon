@@ -4,7 +4,7 @@
 /*
  * Global program controls to initiate program shutdown.  Responsibility for
  * queueing shutdown is separated from the main driver to prevent games from
- * needing to link to anything outside of `knell-lib`.
+ * needing to link to anything outside of `knell`.
  */
 
 #include <knell/kn.h>
