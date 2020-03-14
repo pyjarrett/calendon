@@ -222,7 +222,7 @@ add_subdirectory(src/demos)
 
 remove_definitions(-DKN_LIBRARY)
 add_definitions(-DKN_LIBRARY=0)
-add_executable(knell src/main.c src/tick_limits.c)
+add_executable(knell src/driver/main.c src/driver/tick_limits.c)
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT knell)
 
 target_link_libraries(knell knell-lib)
