@@ -1,3 +1,6 @@
+# I shouldn't be using GLOB, but until I decide to support a CMake version > 3.10
+# so I can use CONFIGURE_DEPENDS.
+# https://stackoverflow.com/questions/1027247/is-it-better-to-specify-source-files-with-glob-or-each-file-individually-in-cmak/1060061#1060061
 file(GLOB_RECURSE KNELL_SRCS ./*.c)
 file(GLOB_RECURSE KNELL_HEADERS ./*.h)
 
