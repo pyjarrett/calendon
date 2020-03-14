@@ -6,6 +6,14 @@ set(KNELL_SRCS
 	${KNELL_SRCS}
 	${VENDOR_LIBSPNG_ROOT}/spng.c)
 
+# Ignore compiler warnings on spng.
+if (CMAKE_C_COMPILER_ID MATCHES "MSVC")
+	# C4090: 'operation' : different 'modifier' qualifiers
+	# C4267: 'var' : conversion from 'size_t' to 'type', possible loss of data
+	set_property(SOURCE ${VENDOR_LIBSPNG_ROOT}/spng.c PROPERTY COMPILE_FLAGS
+		"${CMAKE_C_FLAGS} /wd4090 /wd4267")
+endif()
+
 set(KNELL_LIBS
 	SDL2
 	${KNELL_LIBS}
