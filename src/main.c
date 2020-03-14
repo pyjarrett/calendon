@@ -35,11 +35,12 @@
 #include <stdio.h>
 #include <time.h>
 
-static uint64_t frames = 0;
+static uint64_t totalTicks = 0;
 static uint64_t lastTick;
 
 #define MAX_GAME_LIB_NAME_LENGTH 1024
 #define MAX_ASSET_DIR_LENGTH 1024
+#define KN_TICK_LIMIT_UNLIMITED 0
 
 #ifdef _WIN32
 	#define KN_DEFAULT_ASSET_PATH "C:/workshop/knell/assets"
@@ -52,6 +53,7 @@ static uint64_t lastTick;
 typedef struct {
 	char gameLib[MAX_GAME_LIB_NAME_LENGTH];
 	char assetDir[MAX_ASSET_DIR_LENGTH];
+	uint64_t tickLimit;
 } MainConfig;
 
 static MainConfig mainConfig;
@@ -59,8 +61,9 @@ static MainConfig mainConfig;
 void Main_PrintUsage(void)
 {
 	printf("\nUsage: knell\n");
-	printf("  -a,--asset-dir=DIR      Change the directory for assets.\n");
-	printf("  -g,--game=SHARED_LIB    Change the game/demo to boot.\n");
+	printf("  -a,--asset-dir DIR         Change the directory for assets.\n");
+	printf("  -g,--game SHARED_LIB       Change the game/demo to boot.\n");
+	printf("  -t,--tick-limit NUM_TICKS  Limit the run to a specific number of ticks.\n");
 	printf("\n");
 }
 
@@ -68,6 +71,7 @@ void Main_ParseCommandLineArguments(int argc, char* argv[])
 {
 	mainConfig.gameLib[0] = '\0';
 	mainConfig.assetDir[0] = '\0';
+	mainConfig.tickLimit =KN_TICK_LIMIT_UNLIMITED;
 
 	// The log system is not initialized at this point, so using printf and
 	// printf for now.
@@ -120,6 +124,25 @@ void Main_ParseCommandLineArguments(int argc, char* argv[])
 					exit(EXIT_FAILURE);
 				}
 			}
+		}
+		else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--tick-limit") == 0) {
+			if (i + 1 >= argc) {
+				printf("-t must provide the number of ticks for which to run the program");
+				exit(EXIT_FAILURE);
+			}
+			char* readCursor;
+			int64_t parsedValue = strtoll(argv[i + 1], &readCursor, 10);
+			if (parsedValue < 0) {
+				printf("Cannot step a negative number of ticks: %s\n", argv[i+1]);
+				exit(EXIT_FAILURE);
+			}
+			mainConfig.tickLimit = parsedValue;
+
+			if (*readCursor != '\0' || errno == ERANGE) {
+				printf("Unable to parse tick limit: %s\n", argv[i+1]);
+				exit(EXIT_FAILURE);
+			}
+			i += 2;
 		}
 		else {
 			printf("Unknown command line option\n");
@@ -242,7 +265,9 @@ bool Main_GenerateTick(uint64_t* outDt)
  */
 void Main_Loop(void)
 {
-	while (Main_IsRunning()) {
+	while (Main_IsRunning()
+		&& (!mainConfig.tickLimit || totalTicks < mainConfig.tickLimit))
+	{
 		// Event checking should be quick.  Always processing events prevents
 		// slowness due to bursts.
 		UI_ProcessWindowEvents();
@@ -250,7 +275,7 @@ void Main_Loop(void)
 		uint64_t dt;
 		if (Main_GenerateTick(&dt)) {
 			Game_TickFn(dt);
-			++frames;
+			++totalTicks;
 		}
 		Game_DrawFn();
 	}
