@@ -27,6 +27,7 @@
 	bool Prefix ## Create ## HandleName (Type* t) { \
 		KN_ASSERT(t != NULL, "Cannot assign a " #HandleName " to a NULL."); \
 		++ next ## HandleName ## Id; \
+		*t = next ## HandleName ## Id; \
 		return true; \
 	}
 
