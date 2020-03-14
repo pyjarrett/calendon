@@ -1,8 +1,17 @@
+# IDE build directories.
 build/
-.rcbuild
-*.swp
 cmake-build-coverage/
 cmake-build-debug/
 cmake-build-release/
+cmake-build-relwithdebinfo/
+cmake-build-future/
+
+# Tag and IDE files
 tags
 .idea
+.vs
+.rcbuild
+
+# Temporary files
+*.swp
+src/post_build_dummy.h
