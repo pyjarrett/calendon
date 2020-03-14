@@ -15,6 +15,8 @@
  */
 #include <knell/kn.h>
 
+#include "tick_limits.h"
+
 #include <knell/assets.h>
 #include <knell/assets-fileio.h>
 #include <knell/control.h>
@@ -35,12 +37,10 @@
 #include <stdio.h>
 #include <time.h>
 
-static uint64_t totalTicks = 0;
 static uint64_t lastTick;
 
 #define MAX_GAME_LIB_NAME_LENGTH 1024
 #define MAX_ASSET_DIR_LENGTH 1024
-#define KN_TICK_LIMIT_UNLIMITED 0
 
 #ifdef _WIN32
 	#define KN_DEFAULT_ASSET_PATH "C:/workshop/knell/assets"
@@ -53,7 +53,6 @@ static uint64_t lastTick;
 typedef struct {
 	char gameLib[MAX_GAME_LIB_NAME_LENGTH];
 	char assetDir[MAX_ASSET_DIR_LENGTH];
-	uint64_t tickLimit;
 } MainConfig;
 
 static MainConfig mainConfig;
@@ -71,7 +70,6 @@ void Main_ParseCommandLineArguments(int argc, char* argv[])
 {
 	mainConfig.gameLib[0] = '\0';
 	mainConfig.assetDir[0] = '\0';
-	mainConfig.tickLimit =KN_TICK_LIMIT_UNLIMITED;
 
 	// The log system is not initialized at this point, so using printf and
 	// printf for now.
@@ -136,7 +134,7 @@ void Main_ParseCommandLineArguments(int argc, char* argv[])
 				printf("Cannot step a negative number of ticks: %s\n", argv[i+1]);
 				exit(EXIT_FAILURE);
 			}
-			mainConfig.tickLimit = parsedValue;
+			Main_SetTickLimit(parsedValue);
 
 			if (*readCursor != '\0' || errno == ERANGE) {
 				printf("Unable to parse tick limit: %s\n", argv[i+1]);
@@ -265,8 +263,7 @@ bool Main_GenerateTick(uint64_t* outDt)
  */
 void Main_Loop(void)
 {
-	while (Main_IsRunning()
-		&& (!mainConfig.tickLimit || totalTicks < mainConfig.tickLimit))
+	while (Main_IsRunning() && !Main_IsTickLimitReached())
 	{
 		// Event checking should be quick.  Always processing events prevents
 		// slowness due to bursts.
@@ -275,7 +272,7 @@ void Main_Loop(void)
 		uint64_t dt;
 		if (Main_GenerateTick(&dt)) {
 			Game_TickFn(dt);
-			++totalTicks;
+			Main_TickCompleted();
 		}
 		Game_DrawFn();
 	}
