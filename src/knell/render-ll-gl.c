@@ -17,7 +17,6 @@
 #include <knell/compat-gl.h>
 #include <knell/compat-sdl.h>
 #include <knell/font-psf2.h>
-#include <knell/handle.h>
 #include <knell/image.h>
 #include <knell/log.h>
 #include <knell/math4.h>
@@ -66,26 +65,16 @@ static GLuint debugDrawBuffer;
 static GLuint fullScreenQuadBuffer;
 static GLuint spriteBuffer;
 
-/*
- * TODO: Not supporting reusable sprites yet.
- */
-#define RLL_MAX_SPRITE_TYPES 512
-
-KN_HANDLE_TYPE_DECL(SpriteId, RLL_, Sprite);
-KN_HANDLE_TYPE_DEFN(SpriteId, RLL_, Sprite, 32);
-
-KN_STATIC_ASSERT(sizeof(SpriteId) == sizeof(uint32_t), "SpriteId is not 32 bits");
+KN_DECLARE_HANDLE_TYPE(SpriteId, RLL_, Sprite, 8);
+KN_DECLARE_HANDLE_TYPE(FontId, RLL_, Font, 8);
 
 /**
  * Maps sprite IDs to their OpenGL textures.
  */
-static GLuint spriteTextures[RLL_MAX_SPRITE_TYPES];
+static GLuint spriteTextures[MaxSpriteId];
 
-#define RLL_MAX_FONT_TYPES 8
-static GLuint fontTextures[RLL_MAX_FONT_TYPES];
-static FontId nextFontId;
-
-static FontPSF2 fonts[RLL_MAX_FONT_TYPES];
+static GLuint fontTextures[MaxFontId];
+static FontPSF2 fonts[MaxFontId];
 
 /**
  * The maximum length of shader information logs which can be read.
@@ -790,9 +779,8 @@ void RLL_FillBuffers(void)
 
 void RLL_InitSprites(void)
 {
-	nextSpriteId = 0;
 	RLL_SpriteInit();
-	nextFontId = 0;
+	RLL_FontInit();
 }
 
 void RLL_LoadSimpleShader(const char* vertexShaderFileName,
@@ -1031,16 +1019,6 @@ void RLL_DrawSprite(SpriteId id, float2 position, Dimension2f size)
 	RLL_DisableProgram(ProgramIndexSprite);
 
 	KN_ASSERT_NO_GL_ERROR();
-}
-
-bool RLL_CreateFont(FontId* id)
-{
-	if (nextFontId < RLL_MAX_FONT_TYPES)
-	{
-		*id = nextFontId++;
-		return true;
-	}
-	return false;
 }
 
 /**

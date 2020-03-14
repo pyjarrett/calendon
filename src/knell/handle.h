@@ -7,18 +7,23 @@
 
 #include <knell/kn.h>
 
-#define KN_HANDLE_TYPE_DECL(Type, Prefix, HandleName) \
+/**
+ * Declares a new handle type with its own initialization and create function.
+ */
+#define KN_DEFINE_HANDLE_TYPE(Type, Prefix, HandleName) \
 	void Prefix ## HandleName ## Init(void); \
 	bool Prefix ## Create ## HandleName(Type* t);
 
-#define KN_HANDLE_TYPE_DEFN(Type, Prefix, HandleName, idBits) \
-	KN_STATIC_ASSERT((idBits >> 3) < sizeof(Type), \
-		"More bits used for handle id than available."); \
+/**
+ * Defines a new type with associated handle counter, maximum value and
+ * increment function.
+ */
+#define KN_DECLARE_HANDLE_TYPE(Type, Prefix, HandleName, maxValue) \
 	static Type next ## HandleName ## Id; \
-	void Prefix ## HandleName ## Init() { \
+	enum { Max ## HandleName ## Id = maxValue }; \
+	void Prefix ## HandleName ## Init(void) { \
 		next ## HandleName ## Id = 0; \
 	} \
- 	\
 	bool Prefix ## Create ## HandleName (Type* t) { \
 		KN_ASSERT(t != NULL, "Cannot assign a " #HandleName " to a NULL."); \
 		++ next ## HandleName ## Id; \
