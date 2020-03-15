@@ -34,6 +34,7 @@
 #include <knell/render.h>
 #include <knell/ui.h>
 
+#include <errno.h>
 #include <stdio.h>
 #include <time.h>
 
