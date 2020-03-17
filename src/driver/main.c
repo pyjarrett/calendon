@@ -40,7 +40,6 @@
 
 static uint64_t lastTick;
 
-#define MAX_GAME_LIB_NAME_LENGTH 1024
 #define MAX_ASSET_DIR_LENGTH 1024
 
 #ifdef _WIN32
@@ -52,7 +51,7 @@ static uint64_t lastTick;
 #endif
 
 typedef struct {
-	char gameLib[MAX_GAME_LIB_NAME_LENGTH];
+	PathBuffer gameLib;
 	char assetDir[MAX_ASSET_DIR_LENGTH];
 } MainConfig;
 
@@ -69,7 +68,7 @@ void Main_PrintUsage(void)
 
 void Main_ParseCommandLineArguments(int argc, char* argv[])
 {
-	mainConfig.gameLib[0] = '\0';
+	PathBuffer_Create(&mainConfig.gameLib, KN_DEFAULT_ASSET_PATH);
 	mainConfig.assetDir[0] = '\0';
 
 	// The log system is not initialized at this point, so using printf and
@@ -83,7 +82,7 @@ void Main_ParseCommandLineArguments(int argc, char* argv[])
 				exit(EXIT_FAILURE);
 			}
 			else {
-				if (strlen(argv[i+1]) < MAX_GAME_LIB_NAME_LENGTH) {
+				if (strlen(argv[i+1]) < KN_PATH_MAX) {
 					if (!Path_IsFile(argv[i+1])) {
 						char cwd[4096];
 						Env_CurrentWorkingDirectory(cwd, 4096);
@@ -91,10 +90,10 @@ void Main_ParseCommandLineArguments(int argc, char* argv[])
 						printf("Game library %s does not exist\n", argv[i+1]);
 						exit(EXIT_FAILURE);
 					}
-					strcpy(mainConfig.gameLib, argv[i+1]);
-					printf("Game library: '%s'\n", mainConfig.gameLib);
+					PathBuffer_Create(&mainConfig.gameLib, argv[i+1]);
+					printf("Game library: '%s'\n", mainConfig.gameLib.str);
 					i += 2;
-			}
+				}
 				else {
 					printf( "Length of name of game library is too long");
 					exit(EXIT_FAILURE);
@@ -181,8 +180,8 @@ void Main_InitAllSystems(void)
 	R_Init(width, height);
 
 	const char* gameLib = KN_DEFAULT_GAME_LIBRARY;
-	if (strlen(mainConfig.gameLib) != 0) {
-		gameLib = mainConfig.gameLib;
+	if (strlen(mainConfig.gameLib.str) != 0) {
+		gameLib = mainConfig.gameLib.str;
 	}
 
 	uint64_t gameLibModified;
