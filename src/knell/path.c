@@ -59,6 +59,12 @@ KN_API bool Path_Append(const char* toAdd, char* current, uint32_t length)
 	return true;
 }
 
+KN_API void PathBuffer_Clear(PathBuffer* path)
+{
+	KN_ASSERT(path != NULL, "Cannot clear a null PathBuffer.");
+	memset(path->str, 0, KN_PATH_MAX + 1);
+}
+
 KN_API bool PathBuffer_Create(PathBuffer* path, const char* initialPath)
 {
 	KN_ASSERT(path != NULL, "Cannot assign to a null PathBuffer");

@@ -40,8 +40,6 @@
 
 static uint64_t lastTick;
 
-#define MAX_ASSET_DIR_LENGTH 1024
-
 #ifdef _WIN32
 	#define KN_DEFAULT_ASSET_PATH "C:/workshop/knell/assets"
 	#define KN_DEFAULT_GAME_LIBRARY "C:/workshop/knell/cmake-build-debug/src/demos/texture-drawing.dll"
@@ -52,7 +50,7 @@ static uint64_t lastTick;
 
 typedef struct {
 	PathBuffer gameLib;
-	char assetDir[MAX_ASSET_DIR_LENGTH];
+	PathBuffer assetDir;
 } MainConfig;
 
 static MainConfig mainConfig;
@@ -68,8 +66,8 @@ void Main_PrintUsage(void)
 
 void Main_ParseCommandLineArguments(int argc, char* argv[])
 {
-	PathBuffer_Create(&mainConfig.gameLib, KN_DEFAULT_ASSET_PATH);
-	mainConfig.assetDir[0] = '\0';
+	PathBuffer_Clear(&mainConfig.gameLib);
+	PathBuffer_Clear(&mainConfig.assetDir);
 
 	// The log system is not initialized at this point, so using printf and
 	// printf for now.
@@ -107,14 +105,14 @@ void Main_ParseCommandLineArguments(int argc, char* argv[])
 				exit(EXIT_FAILURE);
 			}
 			else {
-				if (strlen(argv[i+1]) < MAX_ASSET_DIR_LENGTH) {
+				if (strlen(argv[i+1]) < KN_PATH_MAX) {
 					if (!Path_IsDir(argv[i+1])) {
 						printf("Asset directory %s does not exist\n", argv[i+1]);
 						exit(EXIT_FAILURE);
 					}
 
-					strcpy(mainConfig.assetDir, argv[i + 1]);
-					printf("Asset path: '%s'\n", mainConfig.assetDir);
+					PathBuffer_Create(&mainConfig.assetDir, argv[i+1]);
+					printf("Asset path: '%s'\n", mainConfig.assetDir.str);
 					i += 2;
 				}
 				else {
@@ -167,11 +165,11 @@ void Main_InitAllSystems(void)
 	Mem_Init();
 	Time_Init();
 
-	if (strlen(mainConfig.assetDir) == 0) {
-		Assets_Init(KN_DEFAULT_ASSET_PATH);
+	if (strlen(mainConfig.assetDir.str) != 0) {
+		Assets_Init(mainConfig.assetDir.str);
 	}
 	else {
-		Assets_Init(mainConfig.assetDir);
+		Assets_Init(KN_DEFAULT_ASSET_PATH);
 	}
 
 	const uint32_t width = 1024;
@@ -179,7 +177,7 @@ void Main_InitAllSystems(void)
 	UI_Init(width, height);
 	R_Init(width, height);
 
-	const char* gameLib = KN_DEFAULT_GAME_LIBRARY;
+	const char* gameLib = mainConfig.gameLib.str;
 	if (strlen(mainConfig.gameLib.str) != 0) {
 		gameLib = mainConfig.gameLib.str;
 	}

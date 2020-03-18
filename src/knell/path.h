@@ -42,6 +42,7 @@ KN_API bool Path_IsDir(const char* path);
 KN_API bool Path_IsFile(const char* path);
 
 KN_API_DEPRECATED("alpha", "Use PathBuffer_Join instead", KN_API bool Path_Append(const char* toAdd, char* current, uint32_t length));
+KN_API void PathBuffer_Clear(PathBuffer* path);
 KN_API bool PathBuffer_Create(PathBuffer* path, const char* initialPath);
 KN_API bool PathBuffer_Join(PathBuffer* root, const char* suffix);
 
