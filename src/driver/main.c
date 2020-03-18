@@ -49,8 +49,8 @@ static uint64_t lastTick;
 #endif
 
 typedef struct {
-	PathBuffer gameLib;
-	PathBuffer assetDir;
+	PathBuffer gameLibPath;
+	PathBuffer assetDirPath;
 } MainConfig;
 
 static MainConfig mainConfig;
@@ -66,8 +66,8 @@ void Main_PrintUsage(void)
 
 void Main_ParseCommandLineArguments(int argc, char* argv[])
 {
-	PathBuffer_Clear(&mainConfig.gameLib);
-	PathBuffer_Clear(&mainConfig.assetDir);
+	PathBuffer_Clear(&mainConfig.gameLibPath);
+	PathBuffer_Clear(&mainConfig.assetDirPath);
 
 	// The log system is not initialized at this point, so using printf and
 	// printf for now.
@@ -88,8 +88,8 @@ void Main_ParseCommandLineArguments(int argc, char* argv[])
 						printf("Game library %s does not exist\n", argv[i+1]);
 						exit(EXIT_FAILURE);
 					}
-					PathBuffer_Create(&mainConfig.gameLib, argv[i+1]);
-					printf("Game library: '%s'\n", mainConfig.gameLib.str);
+					PathBuffer_Create(&mainConfig.gameLibPath, argv[i + 1]);
+					printf("Game library: '%s'\n", mainConfig.gameLibPath.str);
 					i += 2;
 				}
 				else {
@@ -111,8 +111,8 @@ void Main_ParseCommandLineArguments(int argc, char* argv[])
 						exit(EXIT_FAILURE);
 					}
 
-					PathBuffer_Create(&mainConfig.assetDir, argv[i+1]);
-					printf("Asset path: '%s'\n", mainConfig.assetDir.str);
+					PathBuffer_Create(&mainConfig.assetDirPath, argv[i + 1]);
+					printf("Asset path: '%s'\n", mainConfig.assetDirPath.str);
 					i += 2;
 				}
 				else {
@@ -165,8 +165,8 @@ void Main_InitAllSystems(void)
 	Mem_Init();
 	Time_Init();
 
-	if (strlen(mainConfig.assetDir.str) != 0) {
-		Assets_Init(mainConfig.assetDir.str);
+	if (strlen(mainConfig.assetDirPath.str) != 0) {
+		Assets_Init(mainConfig.assetDirPath.str);
 	}
 	else {
 		Assets_Init(KN_DEFAULT_ASSET_PATH);
@@ -177,9 +177,9 @@ void Main_InitAllSystems(void)
 	UI_Init(width, height);
 	R_Init(width, height);
 
-	const char* gameLib = mainConfig.gameLib.str;
-	if (strlen(mainConfig.gameLib.str) != 0) {
-		gameLib = mainConfig.gameLib.str;
+	const char* gameLib = mainConfig.gameLibPath.str;
+	if (strlen(mainConfig.gameLibPath.str) != 0) {
+		gameLib = mainConfig.gameLibPath.str;
 	}
 
 	uint64_t gameLibModified;
