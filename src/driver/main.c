@@ -186,12 +186,11 @@ void Main_InitAllSystems(void)
 	if (!Assets_LastModifiedTime(gameLib, &gameLibModified)) {
 		KN_FATAL_ERROR("Unable to determine last modified time of '%s'", gameLib);
 	}
-	//struct tm lt;
 
 	struct tm *lt = localtime((time_t*)&gameLibModified);
-	char timbuf[80];
-	strftime(timbuf, sizeof(timbuf), "%c", lt);
-	KN_TRACE(LogSysMain, "Last modified time: %s", timbuf);
+	char timeBuffer[80];
+	strftime(timeBuffer, sizeof(timeBuffer), "%c", lt);
+	KN_TRACE(LogSysMain, "Last modified time: %s", timeBuffer);
 	Game_Load(gameLib);
 
 	lastTick = Time_NowNs();
