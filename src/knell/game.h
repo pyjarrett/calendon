@@ -1,6 +1,14 @@
 #ifndef KN_GAME_H
 #define KN_GAME_H
 
+/**
+ * Interface to be implemented by games and demos.
+ *
+ * Games start by having their `Game_Init` function called.  Every tick, both
+ * `Game_Tick` and `Game_Draw` are called in that order.  Immediately before the
+ * game is unloaded `Game_Shutdown` is called.
+ */
+
 #include <knell/kn.h>
 
 typedef void (*Game_InitPROC)(void);
@@ -13,6 +21,10 @@ KN_API Game_DrawPROC Game_DrawFn;
 KN_API Game_TickPROC Game_TickFn;
 KN_API Game_ShutdownPROC Game_ShutdownFn;
 
+/**
+ * Loads a shared library's functions appropriately for the current platform.
+ */
 KN_API void Game_Load(const char* sharedLibraryName);
 
 #endif /* KN_GAME_H */
+
