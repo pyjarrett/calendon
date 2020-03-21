@@ -1,7 +1,9 @@
 import cmd
 import os
+import queue
 import shutil
 import subprocess
+import threading
 
 
 def git_branch():
@@ -30,6 +32,43 @@ def build_dir_for_compiler(compiler):
 
 def cmake_compiler_settings(compiler):
     return [f'-DCMAKE_C_COMPILER={compiler}']
+
+
+def read_stream(stream, q):
+    for line in stream:
+        q.put(line.decode().strip())
+
+
+def run_program(command_line_array, **kwargs):
+    process = subprocess.Popen(command_line_array, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
+
+    out_queue = queue.Queue()
+    err_queue = queue.Queue()
+
+    out_thread = threading.Thread(target=read_stream, args=(process.stdout, out_queue))
+    err_thread = threading.Thread(target=read_stream, args=(process.stdout, out_queue))
+
+    out_thread.start()
+    err_thread.start()
+
+    while out_thread.is_alive() or err_thread.is_alive() and not out_queue.empty() or not err_queue.empty():
+        try:
+            line = out_queue.get_nowait()
+            print(f'out:{line}')
+        except queue.Empty:
+            pass
+
+        try:
+            line = err_queue.get_nowait()
+            print(f'err:{line}')
+        except queue.Empty:
+            pass
+
+    out_thread.join()
+    err_thread.join()
+
+    process.wait()
+
 
 
 class Knife(cmd.Cmd):
@@ -116,12 +155,11 @@ class Knife(cmd.Cmd):
                 print(f'Wiping the build directory {build_dir}')
                 shutil.rmtree(build_dir)
 
-
     def do_gen(self, args):
         words = args.split()
         compiler = None
         if len(words) >= 1:
-            compiler = words[0]
+            compiler = words.pop(0)
         elif len(words) == 0:
             compiler = 'default'
         else:
@@ -146,4 +184,23 @@ class Knife(cmd.Cmd):
         if compiler is not None:
             cmake_args.extend(cmake_compiler_settings(compiler))
         print(cmake_args)
-        subprocess.check_call(cmake_args, cwd=build_dir)
+        run_program(cmake_args, cwd=build_dir)
+
+    def do_build(self, args):
+        words = args.split()
+        compiler = None
+        if len(words) >= 1:
+            compiler = words.pop(0)
+        elif len(words) == 0:
+            compiler = 'default'
+        else:
+            print(f'Cannot build with {args}')
+            return
+
+        build_dir = build_dir_for_compiler(compiler)
+        if not os.path.exists(build_dir):
+            print(f'Build for {compiler} does not exist at {build_dir}')
+            return
+
+        cmake_args = ['cmake', '--build', '.']
+        run_program(cmake_args, cwd=build_dir)
