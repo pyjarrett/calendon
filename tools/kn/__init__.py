@@ -243,3 +243,43 @@ class Knife(cmd.Cmd):
 
         cmake_args = ['cmake', '--build', '.', '--parallel', str(multiprocessing.cpu_count())]
         run_program(cmake_args, cwd=build_dir)
+
+    def do_check(self, args):
+        """
+        Runs all tests.
+        """
+        words = args.split()
+        compiler = None
+        if len(words) >= 1:
+            compiler = words.pop(0)
+        elif len(words) == 0:
+            compiler = 'default'
+        else:
+            print(f'Cannot build with {args}')
+            return
+
+        build_dir = build_dir_for_compiler(compiler)
+        if not os.path.exists(build_dir):
+            print(f'Build for {compiler} does not exist at {build_dir}')
+            return
+        run_program(['cmake', '--build', '.', '--target', 'check'], cwd=build_dir)
+
+    def do_check_iterate(self, args):
+        """
+        Runs only failed tests.
+        """
+        words = args.split()
+        compiler = None
+        if len(words) >= 1:
+            compiler = words.pop(0)
+        elif len(words) == 0:
+            compiler = 'default'
+        else:
+            print(f'Cannot build with {args}')
+            return
+
+        build_dir = build_dir_for_compiler(compiler)
+        if not os.path.exists(build_dir):
+            print(f'Build for {compiler} does not exist at {build_dir}')
+            return
+        run_program(['cmake', '--build', '.', '--target', 'check-iterate'], cwd=build_dir)
