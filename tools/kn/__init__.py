@@ -14,7 +14,7 @@ def git_branch():
 
 
 def generate_prompt():
-    return f'(knife {git_branch()}) '
+    return f'\n(knife {git_branch()}) '
 
 
 # TODO: Should support building for clang, gcc and MSVC, wherever each one is available.
@@ -130,11 +130,9 @@ class Knife(cmd.Cmd):
         return True
 
     def do_exit(self, arg):
+        """Alias for quit."""
         self.reload = False
         return True
-
-    def do_echo(self, arg):
-        print(arg)
 
     def do_reload(self, args):
         """[For Development] Reloads knife with updated source."""
@@ -151,6 +149,9 @@ class Knife(cmd.Cmd):
         print(self.config)
 
     def do_set(self, args):
+        """
+        Sets configuration values.
+        """
         words = args.split()
         if len(words) == 0:
             print('No words to set')
@@ -165,6 +166,9 @@ class Knife(cmd.Cmd):
             self.config[key] = value
 
     def do_clean(self, args):
+        """
+        Wipes build directory.
+        """
         words = args.split()
         compiler = None
         if len(words) == 1:
@@ -185,6 +189,9 @@ class Knife(cmd.Cmd):
                 shutil.rmtree(build_dir)
 
     def do_gen(self, args):
+        """
+        Generate project files.
+        """
         words = args.split()
         compiler = None
         if len(words) >= 1:
@@ -216,6 +223,9 @@ class Knife(cmd.Cmd):
         run_program(cmake_args, cwd=build_dir)
 
     def do_build(self, args):
+        """
+        Builds using the current project configuration.
+        """
         words = args.split()
         compiler = None
         if len(words) >= 1:
