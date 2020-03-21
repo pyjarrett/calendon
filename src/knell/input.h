@@ -10,7 +10,7 @@
  */
 #define KN_KEY_LIST_MAX_SIZE 128
 
-KN_API typedef struct {
+typedef struct {
 	SDL_Keycode keys[KN_KEY_LIST_MAX_SIZE];
 	uint32_t size;
 } KeySet;
@@ -18,12 +18,12 @@ KN_API typedef struct {
 /**
  * Lists of which keys are down, and which are up.
  */
-KN_API typedef struct {
+typedef struct {
 	KeySet down;
 	KeySet up;
 } KeyInputs;
 
-KN_API typedef struct {
+typedef struct {
 	int x, y;
 	int dx, dy;
 } Mouse;
