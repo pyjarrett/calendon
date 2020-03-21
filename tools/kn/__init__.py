@@ -3,7 +3,9 @@ import os
 import queue
 import shutil
 import subprocess
+import sys
 import threading
+import time
 
 
 def git_branch():
@@ -30,8 +32,26 @@ def build_dir_for_compiler(compiler):
         return f'build-{compiler}'
 
 
-def cmake_compiler_settings(compiler):
-    return [f'-DCMAKE_C_COMPILER={compiler}']
+def cmake_compiler_generator_settings(compiler):
+    settings = []
+    if compiler != 'default':
+        settings = [f'-DCMAKE_C_COMPILER={compiler}']
+
+    # https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2015%202017.html
+    if sys.platform == 'win32' and (compiler is None or compiler == 'default'):
+        help_output = subprocess.check_output(['cmake', '--help'])
+        for line in help_output.decode().splitlines():
+            if line.startswith('*'):
+                print(line)
+                generator = line[1:line.index('=')]
+                if '[arch]' in generator:
+                    generator = generator.replace('[arch]', '')
+                generator = generator.strip()
+                print(f'"{generator}"')
+                break
+        settings.extend(['-G', generator, '-A', 'x64'])
+
+    return settings
 
 
 def read_stream(stream, q):
@@ -40,6 +60,7 @@ def read_stream(stream, q):
 
 
 def run_program(command_line_array, **kwargs):
+    print(f'Running: {command_line_array} {kwargs}')
     process = subprocess.Popen(command_line_array, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
 
     out_queue = queue.Queue()
@@ -54,7 +75,7 @@ def run_program(command_line_array, **kwargs):
     while out_thread.is_alive() or err_thread.is_alive() and not out_queue.empty() or not err_queue.empty():
         try:
             line = out_queue.get_nowait()
-            print(f'out:{line}')
+            print(line)
         except queue.Empty:
             pass
 
@@ -70,7 +91,6 @@ def run_program(command_line_array, **kwargs):
     process.wait()
 
 
-
 class Knife(cmd.Cmd):
     """
     Interactive command-line tool to simplify development with Knell.  This
@@ -84,12 +104,20 @@ class Knife(cmd.Cmd):
         self.config = {}
         self.reload_fn = reload_fn
         self.reload = False
+        self.cmd_start_time = 0
 
     @staticmethod
     def update_prompt():
         Knife.prompt = generate_prompt()
 
+    def precmd(self, line):
+        self.cmd_start_time = time.monotonic()
+        return line
+
     def postcmd(self, stop, line):
+        now = time.monotonic()
+        print(f'{line} {now - self.cmd_start_time:>8.2f}s')
+
         if not stop:
             Knife.update_prompt()
             return False
@@ -182,7 +210,7 @@ class Knife(cmd.Cmd):
         os.mkdir(build_dir)
         cmake_args = ['cmake', '..']
         if compiler is not None:
-            cmake_args.extend(cmake_compiler_settings(compiler))
+            cmake_args.extend(cmake_compiler_generator_settings(compiler))
         print(cmake_args)
         run_program(cmake_args, cwd=build_dir)
 
