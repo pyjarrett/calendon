@@ -1,5 +1,6 @@
 import cmd
 import os
+import multiprocessing
 import queue
 import shutil
 import subprocess
@@ -230,5 +231,5 @@ class Knife(cmd.Cmd):
             print(f'Build for {compiler} does not exist at {build_dir}')
             return
 
-        cmake_args = ['cmake', '--build', '.']
+        cmake_args = ['cmake', '--build', '.', '--parallel', str(multiprocessing.cpu_count())]
         run_program(cmake_args, cwd=build_dir)
