@@ -5,6 +5,7 @@
 #include <knell/assets-fileio.h>
 #include <knell/compat-spng.h>
 #include <knell/log.h>
+#include <string.h>
 
 extern LogHandle LogSysAssets;
 
