@@ -61,6 +61,9 @@ def read_stream(stream, q):
 
 
 def run_program(command_line_array, **kwargs):
+    """
+    Runs another process while streaming its stdout and stderr.
+    """
     print(f'Running: {command_line_array} {kwargs}')
     process = subprocess.Popen(command_line_array, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
 
@@ -68,7 +71,7 @@ def run_program(command_line_array, **kwargs):
     err_queue = queue.Queue()
 
     out_thread = threading.Thread(target=read_stream, args=(process.stdout, out_queue))
-    err_thread = threading.Thread(target=read_stream, args=(process.stdout, out_queue))
+    err_thread = threading.Thread(target=read_stream, args=(process.stderr, out_queue))
 
     out_thread.start()
     err_thread.start()
