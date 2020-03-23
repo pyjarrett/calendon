@@ -68,7 +68,7 @@ def run_program(command_line_array, **kwargs):
     """
     Runs another process while streaming its stdout and stderr.
     """
-    print(f'Running: {command_line_array} {kwargs}')
+    print(f'Running: {" ".join(command_line_array)} {kwargs}')
     process = subprocess.Popen(command_line_array, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
 
     out_queue = queue.Queue()
@@ -225,11 +225,8 @@ class Knife(cmd.Cmd):
             if not os.path.isdir(build_dir):
                 print(f'Build directory {build_dir} exists as something other than a directory')
                 return
-            elif '--force' in words:
-                print(f'Wiping the build directory {build_dir}')
-                shutil.rmtree(build_dir)
             else:
-                print(f'{build_dir} exists.  Rerun with --force to remove the existing directory')
+                print(f'{build_dir} exists.')
                 return
 
         print(f'Creating build directory {build_dir}')
@@ -239,7 +236,6 @@ class Knife(cmd.Cmd):
         compiler = self.context.compiler()
         if compiler is not None:
             cmake_args.extend(cmake_compiler_generator_settings(compiler))
-        print(cmake_args)
         run_program(cmake_args, cwd=build_dir)
 
     def do_build(self, args):
