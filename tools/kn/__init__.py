@@ -96,7 +96,7 @@ def run_program(command_line_array, **kwargs):
     out_thread.join()
     err_thread.join()
 
-    process.wait()
+    return process.wait()
 
 
 class BuildContext():
@@ -201,6 +201,20 @@ class Knife(cmd.Cmd):
             else:
                 print(f'Wiping the build directory {build_dir}')
                 shutil.rmtree(build_dir)
+
+    def do_sync(self, args):
+        """
+        Fetch, rebase and push to all remotes.
+        """
+        commands = [
+            'git fetch',
+            'git pull --rebase',
+            'git push origin',
+        ]
+        for line in commands:
+            exit_code = run_program(line.split())
+            if exit_code != 0:
+                break
 
     def do_gen(self, args):
         """
