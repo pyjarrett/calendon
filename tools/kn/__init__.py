@@ -39,7 +39,7 @@ KN_CONFIG_KEYS = [KN_CONFIG_COMPILER]
 
 def cmake_compiler_generator_settings(compiler):
     settings = []
-    if compiler != 'default':
+    if compiler != 'default' and compiler is not None:
         settings = [f'-DCMAKE_C_COMPILER={compiler}']
 
     # https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2015%202017.html
@@ -234,8 +234,7 @@ class Knife(cmd.Cmd):
         cmake_args = ['cmake', '..']
 
         compiler = self.context.compiler()
-        if compiler is not None:
-            cmake_args.extend(cmake_compiler_generator_settings(compiler))
+        cmake_args.extend(cmake_compiler_generator_settings(compiler))
         run_program(cmake_args, cwd=build_dir)
 
     def do_build(self, args):
