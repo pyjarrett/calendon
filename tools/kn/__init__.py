@@ -1,3 +1,4 @@
+import argparse
 import cmd
 import os
 import multiprocessing
@@ -14,7 +15,7 @@ def git_branch():
 
 
 def generate_prompt():
-    return f'\n(knife {git_branch()}) '
+    return f'(knife {git_branch()}) '
 
 
 # TODO: Should support building for clang, gcc and MSVC, wherever each one is available.
@@ -32,6 +33,9 @@ def build_dir_for_compiler(compiler):
     else:
         return f'build-{compiler}'
 
+
+KN_CONFIG_COMPILER = 'compiler'
+KN_CONFIG_KEYS = [KN_CONFIG_COMPILER]
 
 def cmake_compiler_generator_settings(compiler):
     settings = []
@@ -95,6 +99,31 @@ def run_program(command_line_array, **kwargs):
     process.wait()
 
 
+class BuildContext():
+    def __init__(self):
+        self.config = {}
+
+    def values(self):
+        return self.config
+
+    def build_dir(self):
+        return build_dir_for_compiler(self.config.get('compiler'))
+
+    def compiler(self):
+        return self.config.get('compiler')
+
+    def parse(self, args):
+        parser = argparse.ArgumentParser(usage='key value\n    Sets a key equal to a value.\n')
+        parser.add_argument('key', choices=['compiler'])
+        parser.add_argument('value')
+
+        try:
+            args = parser.parse_args(args.split())
+            self.config[args.key] = args.value
+        except SystemExit:
+            pass
+
+
 class Knife(cmd.Cmd):
     """
     Interactive command-line tool to simplify development with Knell.  This
@@ -105,7 +134,7 @@ class Knife(cmd.Cmd):
 
     def __init__(self, reload_fn):
         super().__init__()
-        self.config = {}
+        self.context = BuildContext()
         self.reload_fn = reload_fn
         self.reload = False
         self.cmd_start_time = 0
@@ -149,40 +178,22 @@ class Knife(cmd.Cmd):
 
     def do_config(self, arg):
         """Print the current state of configuration variables."""
-        print(self.config)
+        for key in self.context.values():
+            print(f'{key:<15}{self.context.values()[key]:<}')
+        print(f'Build Dir: {self.context.build_dir()}')
+        print(f'Compiler:  {self.context.compiler() if self.context.compiler() else "Default"}')
 
     def do_set(self, args):
         """
         Sets configuration values.
         """
-        words = args.split()
-        if len(words) == 0:
-            print('No words to set')
-            return
-        if len(words) == 2:
-            key = words[0]
-            value = words[1]
-            self.config[key] = value
-        else:
-            key = words.pop(0)
-            value = " ".join(words)
-            self.config[key] = value
+        self.context.parse(args)
 
     def do_clean(self, args):
         """
         Wipes build directory.
         """
-        words = args.split()
-        compiler = None
-        if len(words) == 1:
-            compiler = words[0]
-        elif len(words) == 0:
-            compiler = 'default'
-        else:
-            print(f'Cannot clean with {args}')
-            return
-
-        build_dir = build_dir_for_compiler(compiler)
+        build_dir = self.context.build_dir()
         if os.path.exists(build_dir):
             if not os.path.isdir(build_dir):
                 print(f'Build directory {build_dir} exists as something other than a directory')
@@ -195,17 +206,7 @@ class Knife(cmd.Cmd):
         """
         Generate project files.
         """
-        words = args.split()
-        compiler = None
-        if len(words) >= 1:
-            compiler = words.pop(0)
-        elif len(words) == 0:
-            compiler = 'default'
-        else:
-            print(f'Cannot generate with {args}')
-            return
-
-        build_dir = build_dir_for_compiler(compiler)
+        build_dir = self.context.build_dir()
         if os.path.exists(build_dir):
             if not os.path.isdir(build_dir):
                 print(f'Build directory {build_dir} exists as something other than a directory')
@@ -220,6 +221,8 @@ class Knife(cmd.Cmd):
         print(f'Creating build directory {build_dir}')
         os.mkdir(build_dir)
         cmake_args = ['cmake', '..']
+
+        compiler = self.context.compiler()
         if compiler is not None:
             cmake_args.extend(cmake_compiler_generator_settings(compiler))
         print(cmake_args)
@@ -271,17 +274,7 @@ class Knife(cmd.Cmd):
         """
         Runs only failed tests.
         """
-        words = args.split()
-        compiler = None
-        if len(words) >= 1:
-            compiler = words.pop(0)
-        elif len(words) == 0:
-            compiler = 'default'
-        else:
-            print(f'Cannot build with {args}')
-            return
-
-        build_dir = build_dir_for_compiler(compiler)
+        build_dir = self.context.build_dir()
         if not os.path.exists(build_dir):
             print(f'Build for {compiler} does not exist at {build_dir}')
             return
