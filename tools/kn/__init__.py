@@ -262,7 +262,7 @@ class Knife(cmd.Cmd):
 
         build_dir = build_dir_for_compiler(compiler)
         if not os.path.exists(build_dir):
-            print(f'Build for {compiler} does not exist at {build_dir}')
+            print(f'Build for {self.context.compiler()} does not exist at {build_dir}')
             return
 
         cmake_args = ['cmake', '--build', '.', '--parallel', str(multiprocessing.cpu_count())]
