@@ -99,7 +99,10 @@ def run_program(command_line_array, **kwargs):
     return process.wait()
 
 
-class BuildContext():
+class BuildAndRunContext():
+    """
+    A description of the current build and run environment.
+    """
     def __init__(self):
         self.config = {}
 
@@ -107,9 +110,15 @@ class BuildContext():
         return self.config
 
     def build_dir(self):
+        """
+        The location of the out-of-tree build.
+        """
         return build_dir_for_compiler(self.config.get('compiler'))
 
     def compiler(self):
+        """
+        The type of the compiler, independent of the path.
+        """
         return self.config.get('compiler')
 
     def parse(self, args):
@@ -134,7 +143,7 @@ class Knife(cmd.Cmd):
 
     def __init__(self, reload_fn):
         super().__init__()
-        self.context = BuildContext()
+        self.context = BuildAndRunContext()
         self.reload_fn = reload_fn
         self.reload = False
         self.cmd_start_time = 0
