@@ -99,7 +99,7 @@ def run_program(command_line_array, **kwargs):
     return process.wait()
 
 
-class BuildAndRunContext():
+class BuildAndRunContext:
     """
     A description of the current build and run environment.
     """
@@ -250,19 +250,9 @@ class Knife(cmd.Cmd):
         """
         Builds using the current project configuration.
         """
-        words = args.split()
-        compiler = None
-        if len(words) >= 1:
-            compiler = words.pop(0)
-        elif len(words) == 0:
-            compiler = 'default'
-        else:
-            print(f'Cannot build with {args}')
-            return
-
-        build_dir = build_dir_for_compiler(compiler)
+        build_dir = self.context.build_dir()
         if not os.path.exists(build_dir):
-            print(f'Build for {self.context.compiler()} does not exist at {build_dir}')
+            print(f'Build dir does not exist at {build_dir}')
             return
 
         cmake_args = ['cmake', '--build', '.', '--parallel', str(multiprocessing.cpu_count())]
@@ -272,19 +262,9 @@ class Knife(cmd.Cmd):
         """
         Runs all tests.
         """
-        words = args.split()
-        compiler = None
-        if len(words) >= 1:
-            compiler = words.pop(0)
-        elif len(words) == 0:
-            compiler = 'default'
-        else:
-            print(f'Cannot build with {args}')
-            return
-
-        build_dir = build_dir_for_compiler(compiler)
+        build_dir = self.context.build_dir()
         if not os.path.exists(build_dir):
-            print(f'Build for {compiler} does not exist at {build_dir}')
+            print(f'Build dir does not exist at {build_dir}')
             return
         run_program(['cmake', '--build', '.', '--target', 'check'], cwd=build_dir)
 
