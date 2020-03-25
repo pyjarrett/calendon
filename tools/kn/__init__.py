@@ -14,6 +14,10 @@ def git_branch():
     return subprocess.check_output('git branch --show-current'.split()).decode().strip()
 
 
+def git_cmd_version():
+    return subprocess.check_output(['git', 'log', '-1', '--pretty=%ad',
+                                    '--date=format:%d %b %H:%M', 'tools/kn']).decode().strip()
+
 def generate_prompt():
     return f'(knife {git_branch()}) '
 
@@ -165,6 +169,9 @@ class Knife(cmd.Cmd):
             return False
         else:
             return True
+
+    def do_version(self, arg):
+        print(f'Knife REPL version: {git_cmd_version()}')
 
     def do_quit(self, arg):
         self.reload = False
