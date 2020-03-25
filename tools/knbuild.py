@@ -17,10 +17,6 @@ def supported_compilers():
     return ['default', 'clang', 'gcc']
 
 
-def supported_commands():
-    return ['gen']
-
-
 def build_dir_for_compiler(compiler):
     if compiler == 'default':
         return 'build'
