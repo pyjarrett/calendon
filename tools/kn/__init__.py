@@ -129,7 +129,7 @@ class BuildAndRunContext:
         return self.config
 
     def driver_path(self):
-        return os.path.join(self.build_dir(), 'src', 'driver', os_specific_executable('knell-driver'))
+        return os.path.join('src', 'driver', os_specific_executable('knell-driver'))
 
     def demo_path(self):
         return os.path.join('src', 'demos', os_specific_lib(self.demo()))
