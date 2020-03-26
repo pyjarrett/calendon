@@ -104,6 +104,20 @@ def run_program(command_line_array, **kwargs):
     return process.wait()
 
 
+def os_specific_executable(named):
+    if sys.platform == 'win32':
+        return named + '.exe'
+    else:
+        return named
+
+
+def os_specific_lib(named):
+    if sys.platform == 'win32':
+        return named + '.dll'
+    else:
+        return 'lib' + named + '.so'
+
+
 class BuildAndRunContext:
     """
     A description of the current build and run environment.
@@ -113,6 +127,12 @@ class BuildAndRunContext:
 
     def values(self):
         return self.config
+
+    def driver_path(self):
+        return os.path.join(self.build_dir(), 'src', 'driver', os_specific_executable('knell-driver'))
+
+    def demo_path(self):
+        return os.path.join('src', 'demos', os_specific_lib(self.demo()))
 
     def build_dir(self):
         """
@@ -126,9 +146,12 @@ class BuildAndRunContext:
         """
         return self.config.get('compiler')
 
+    def demo(self):
+        return self.config.get('demo')
+
     def parse(self, args):
         parser = argparse.ArgumentParser(usage='key value\n    Sets a key equal to a value.\n')
-        parser.add_argument('key', choices=['compiler'])
+        parser.add_argument('key', choices=['compiler', 'demo'])
         parser.add_argument('value')
 
         try:
@@ -151,6 +174,14 @@ def list_demos(context: BuildAndRunContext):
     """
     for demo in glob.glob(os.path.join(context.build_dir(), 'src', 'demos', os_specific_demo_glob())):
         print(os.path.basename(demo))
+
+
+def run_demo(context: BuildAndRunContext):
+    print('Running demo')
+    if context.demo() is None:
+        print('No demo selected to run')
+    else:
+        run_program([context.driver_path(), '--game', context.demo_path()], cwd=context.build_dir())
 
 
 class Hammer(cmd.Cmd):
@@ -306,3 +337,6 @@ class Hammer(cmd.Cmd):
             list_demos(self.context)
         else:
             print('Unknown list command')
+
+    def do_run_demo(self, args):
+        run_demo(self.context)
