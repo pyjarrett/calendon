@@ -66,7 +66,10 @@ def cmake_compiler_generator_settings(compiler):
 
 def read_stream(stream, q):
     for line in stream:
-        q.put(line.decode().strip())
+        try:
+            q.put(line.decode().strip())
+        except UnicodeDecodeError:
+            q.put(line.strip())
 
 
 def run_program(command_line_array, **kwargs):
@@ -80,12 +83,12 @@ def run_program(command_line_array, **kwargs):
     err_queue = queue.Queue()
 
     out_thread = threading.Thread(target=read_stream, args=(process.stdout, out_queue))
-    err_thread = threading.Thread(target=read_stream, args=(process.stderr, out_queue))
+    err_thread = threading.Thread(target=read_stream, args=(process.stderr, err_queue))
 
     out_thread.start()
     err_thread.start()
 
-    while out_thread.is_alive() or err_thread.is_alive() and not out_queue.empty() or not err_queue.empty():
+    while out_thread.is_alive() or err_thread.is_alive() or not out_queue.empty() or not err_queue.empty():
         try:
             line = out_queue.get_nowait()
             print(line)
