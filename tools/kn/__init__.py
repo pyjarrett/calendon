@@ -19,7 +19,7 @@ def git_cmd_version():
                                     '--date=format:%d %b %H:%M', 'tools/kn']).decode().strip()
 
 def generate_prompt():
-    return f'(knife {git_branch()}) '
+    return f'(hammer {git_branch()}) '
 
 
 # TODO: Should support building for clang, gcc and MSVC, wherever each one is available.
@@ -137,13 +137,13 @@ class BuildAndRunContext:
             pass
 
 
-class Knife(cmd.Cmd):
+class Hammer(cmd.Cmd):
     """
     Interactive command-line tool to simplify development with Knell.  This
     allows building, testing, and running knell consistently across platforms.
     """
     prompt = generate_prompt()
-    intro = 'Knife: A tool to help with Knell building, running, and debugging\n'
+    intro = 'hammer: A tool to help with Knell building, running, and debugging\n'
 
     def __init__(self, reload_fn):
         super().__init__()
@@ -154,7 +154,7 @@ class Knife(cmd.Cmd):
 
     @staticmethod
     def update_prompt():
-        Knife.prompt = generate_prompt()
+        Hammer.prompt = generate_prompt()
 
     def precmd(self, line):
         self.cmd_start_time = time.monotonic()
@@ -165,13 +165,13 @@ class Knife(cmd.Cmd):
         print(f'{line} {now - self.cmd_start_time:>8.2f}s')
 
         if not stop:
-            Knife.update_prompt()
+            Hammer.update_prompt()
             return False
         else:
             return True
 
     def do_version(self, arg):
-        print(f'Knife REPL version: {git_cmd_version()}')
+        print(f'hammer REPL version: {git_cmd_version()}')
 
     def do_quit(self, arg):
         self.reload = False
@@ -183,7 +183,7 @@ class Knife(cmd.Cmd):
         return True
 
     def do_reload(self, args):
-        """[For Development] Reloads knife with updated source."""
+        """[For Development] Reloads Hammer with updated source."""
         self.reload_fn()
         self.reload = True
         return True

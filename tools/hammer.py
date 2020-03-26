@@ -3,14 +3,14 @@ import importlib
 import kn
 
 
-def reload_knife():
+def reload_hammer():
     importlib.reload(kn)
 
 import sys
 if __name__ == '__main__':
     while True:
-        knife = kn.Knife(reload_knife)
-        knife.cmdloop()
+        toll = kn.Hammer(reload_hammer)
+        toll.cmdloop()
 
-        if not knife.reload:
+        if not toll.reload:
             break
