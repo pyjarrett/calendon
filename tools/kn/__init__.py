@@ -339,4 +339,12 @@ class Hammer(cmd.Cmd):
             print('Unknown list command')
 
     def do_run_demo(self, args):
-        run_demo(self.context)
+        build_dir = self.context.build_dir()
+        if not os.path.exists(build_dir):
+            print(f'Build dir does not exist at {build_dir}')
+            return
+        if self.context.demo() is None:
+            print('No demo to run')
+            return
+        if run_program(['cmake', '--build', '.', '--target', self.context.demo()], cwd=build_dir) == 0:
+            run_demo(self.context)
