@@ -1,5 +1,6 @@
 import argparse
 import cmd
+import glob
 import os
 import multiprocessing
 import queue
@@ -135,6 +136,21 @@ class BuildAndRunContext:
             self.config[args.key] = args.value
         except SystemExit:
             pass
+
+
+def os_specific_demo_glob():
+    if sys.platform == 'win32':
+        return '*.dll'
+    else:
+        return 'lib*.so'
+
+
+def list_demos(context: BuildAndRunContext):
+    """
+    Lists all currently build demos.
+    """
+    for demo in glob.glob(os.path.join(context.build_dir(), 'src', 'demos', os_specific_demo_glob())):
+        print(os.path.basename(demo))
 
 
 class Hammer(cmd.Cmd):
@@ -284,3 +300,9 @@ class Hammer(cmd.Cmd):
             print(f'Build for {compiler} does not exist at {build_dir}')
             return
         run_program(['cmake', '--build', '.', '--target', 'check-iterate'], cwd=build_dir)
+
+    def do_list(self, args):
+        if args == 'demos':
+            list_demos(self.context)
+        else:
+            print('Unknown list command')
