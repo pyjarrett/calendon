@@ -1077,7 +1077,7 @@ bool RLL_LoadPSF2Font(FontId id, const char* path)
 	return true;
 }
 
-void AddToGlyphBatch(float2 position, Dimension2f size, float2* texCoords)
+static void AddToGlyphBatch(float2 position, Dimension2f size, float2* texCoords)
 {
 	const uint32_t glyphOffset = usedGlyphs * RLL_VERTICES_PER_GLYPH;
 	glyphTexCoords[glyphOffset] = texCoords[0];
@@ -1098,7 +1098,7 @@ void AddToGlyphBatch(float2 position, Dimension2f size, float2* texCoords)
 	++usedGlyphs;
 }
 
-void AppendGlyph(FontId id, float2 position, GlyphIndex glyphIndex)
+static void AppendGlyph(FontId id, float2 position, GlyphIndex glyphIndex)
 {
 	FontPSF2* font = &fonts[id];
 	KN_ASSERT(glyphIndex != KN_GRAPHEME_INDEX_INVALID, "Cannot draw an invalid glyph");

@@ -148,6 +148,10 @@ class BuildAndRunContext:
     def driver_path(self):
         return os.path.join('src', 'driver', os_specific_executable('knell-driver'))
 
+    def lib_path(self):
+        """Path to the Knell lib itself, relative to the build dir."""
+        return os.path.join('src', 'knell', os_specific_lib('knell'))
+
     def demo_path(self):
         return os.path.join('src', 'demos', os_specific_lib(self.demo()))
 
@@ -393,3 +397,24 @@ class Hammer(cmd.Cmd):
                 print(f'Invalid history id {index}')
         except ValueError:
             print(f'Can only redo history commands based on index.')
+
+    if sys.platform != 'win32':
+        def do_symbols(self, args):
+            """
+            Lists symbols exported in the Knell shared library.
+            """
+            build_dir = self.context.build_dir()
+            if not os.path.exists(build_dir):
+                print(f'Build dir does not exist at {build_dir}')
+                return
+            lines: List[str] = subprocess.check_output(['nm', '-D', self.context.lib_path()],
+                                                 cwd=self.context.build_dir()).decode().splitlines()
+            categories = set()
+            for line in filter(lambda sym_line: ' T ' in sym_line, lines):
+                # line will be in "ADDRESS T Symbol" format
+                symbol = line.split()[2]
+                categories.add(symbol.split('_')[0])
+                print(symbol)
+            print()
+            print(f'Exporting {len(lines)} symbols from systems')
+            print(f'{" ".join(sorted(categories))}')
