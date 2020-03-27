@@ -9,6 +9,7 @@ import subprocess
 import sys
 import threading
 import time
+from typing import List
 
 
 def git_branch():
@@ -121,6 +122,16 @@ def os_specific_lib(named):
         return 'lib' + named + '.so'
 
 
+def demo_name_from_os_specific_shared_lib(shared_lib: str):
+    if sys.platform == 'win32':
+        assert shared_lib.endswith('.dll')
+        return os.path.splitext(shared_lib)[0]
+    else:
+        assert shared_lib.startswith('lib')
+        assert shared_lib.endswith('.so')
+        return shared_lib[3:-3]
+
+
 class BuildAndRunContext:
     """
     A description of the current build and run environment.
@@ -171,12 +182,13 @@ def os_specific_demo_glob():
         return 'lib*.so'
 
 
-def list_demos(context: BuildAndRunContext):
+def demos(context: BuildAndRunContext) -> List[str]:
     """
-    Lists all currently build demos.
+    Returns a list of all currently available demos.
     """
-    for demo in glob.glob(os.path.join(context.build_dir(), 'src', 'demos', os_specific_demo_glob())):
-        print(os.path.basename(demo))
+    demo_glob = os.path.join(context.build_dir(), 'src', 'demos', os_specific_demo_glob())
+    demos = [os.path.basename(demo) for demo in glob.glob(demo_glob)]
+    return sorted([demo_name_from_os_specific_shared_lib(d) for d in demos])
 
 
 def run_demo(context: BuildAndRunContext):
@@ -335,19 +347,24 @@ class Hammer(cmd.Cmd):
             return
         run_program(['cmake', '--build', '.', '--target', 'check-iterate'], cwd=build_dir)
 
-    def do_list(self, args):
-        if args == 'demos':
-            list_demos(self.context)
-        else:
-            print('Unknown list command')
+    def do_demo(self, args):
+        """
+        Lists all available demos.
+        """
+        for demo in demos(self.context):
+            print(demo)
 
-    def do_run_demo(self, args):
+    def do_run(self, args):
+        """
+        Use 'run demo' to run your currently selected demo.
+        """
         build_dir = self.context.build_dir()
         if not os.path.exists(build_dir):
             print(f'Build dir does not exist at {build_dir}')
             return
-        if self.context.demo() is None:
-            print('No demo to run')
-            return
-        if run_program(['cmake', '--build', '.', '--target', self.context.demo()], cwd=build_dir) == 0:
-            run_demo(self.context)
+        if args == 'demo':
+            if self.context.demo() is None:
+                print('No demo to run')
+                return
+            if run_program(['cmake', '--build', '.', '--target', self.context.demo()], cwd=build_dir) == 0:
+                run_demo(self.context)
