@@ -20,6 +20,7 @@ def git_cmd_version():
     return subprocess.check_output(['git', 'log', '-1', '--pretty=%ad',
                                     '--date=format:%d %b %H:%M', 'tools/kn']).decode().strip()
 
+
 def generate_prompt():
     return f'(hammer {git_branch()}) '
 
@@ -42,6 +43,7 @@ def build_dir_for_compiler(compiler):
 
 KN_CONFIG_COMPILER = 'compiler'
 KN_CONFIG_KEYS = [KN_CONFIG_COMPILER]
+
 
 def cmake_compiler_generator_settings(compiler):
     settings = []
@@ -136,6 +138,7 @@ class BuildAndRunContext:
     """
     A description of the current build and run environment.
     """
+
     def __init__(self):
         self.config = {}
 
@@ -212,6 +215,7 @@ class Hammer(cmd.Cmd):
         self.context = BuildAndRunContext()
         self.reload_fn = reload_fn
         self.reload = False
+        self.history = []
         self.cmd_start_time = 0
 
     @staticmethod
@@ -220,6 +224,7 @@ class Hammer(cmd.Cmd):
 
     def precmd(self, line):
         self.cmd_start_time = time.monotonic()
+        self.history.append(line)
         return line
 
     def postcmd(self, stop, line):
@@ -368,3 +373,23 @@ class Hammer(cmd.Cmd):
                 return
             if run_program(['cmake', '--build', '.', '--target', self.context.demo()], cwd=build_dir) == 0:
                 run_demo(self.context)
+
+    def do_history(self, args):
+        """
+        Prints command history.
+        """
+        for index, line in enumerate(self.history):
+            print(f'{index:<5} {line}')
+
+    def do_redo(self, args):
+        """
+        "redo i" re-runs command 'i' from history.
+        """
+        try:
+            index = int(args)
+            if index >= 0 and index < len(self.history):
+                self.onecmd(self.history[index])
+            else:
+                print(f'Invalid history id {index}')
+        except ValueError:
+            print(f'Can only redo history commands based on index.')
