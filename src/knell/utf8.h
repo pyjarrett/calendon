@@ -76,7 +76,7 @@ typedef struct {
 	uint32_t byteLength;
 } Grapheme;
 
-KN_TEST_API void Grapheme_Create(Grapheme* seq, const uint8_t* codePoint, uint8_t numCodePoints);
+KN_TEST_API void Grapheme_Set(Grapheme* seq, const uint8_t* codePoint, uint8_t numCodePoints);
 KN_TEST_API bool Grapheme_EqualsCodePoints(Grapheme* seq, const uint8_t* codePoint, uint8_t numCodePoints);
 KN_TEST_API bool Grapheme_EqualsGrapheme(Grapheme* left, Grapheme* right);
 
