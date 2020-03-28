@@ -30,4 +30,4 @@ add_demo(NAME animation-loop SOURCES animation_loop.c)
 add_demo(NAME texture-drawing SOURCES texture_drawing.c)
 add_demo(NAME image-animation-loop SOURCES image_animation_loop.c)
 add_demo(NAME graphics-sample SOURCES graphics_sample.c)
-
+add_demo(NAME planets SOURCES planets.c)
