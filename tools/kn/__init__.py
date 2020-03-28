@@ -111,20 +111,41 @@ def run_program(command_line_array, **kwargs):
 
 
 def os_specific_executable(named):
+    """
+    Produces an executable file name with an optional extension from the generic
+    basename.
+    """
     if sys.platform == 'win32':
         return named + '.exe'
     else:
         return named
 
 
-def os_specific_lib(named):
+def os_specific_shared_lib(named):
+    """
+    Produces a shared library with appropriate prefix and suffix from a generic
+    basename.
+    """
     if sys.platform == 'win32':
         return named + '.dll'
     else:
         return 'lib' + named + '.so'
 
 
+def os_specific_demo_glob():
+    """
+    Produces a glob suitable for identifying demo shared libraries.
+    """
+    if sys.platform == 'win32':
+        return '*.dll'
+    else:
+        return 'lib*.so'
+
+
 def demo_name_from_os_specific_shared_lib(shared_lib: str):
+    """
+    Converts a name from an OS-specific shared library name to the generic name.
+    """
     if sys.platform == 'win32':
         assert shared_lib.endswith('.dll')
         return os.path.splitext(shared_lib)[0]
@@ -138,7 +159,6 @@ class BuildAndRunContext:
     """
     A description of the current build and run environment.
     """
-
     def __init__(self):
         self.config = {}
 
@@ -146,14 +166,16 @@ class BuildAndRunContext:
         return self.config
 
     def driver_path(self):
+        """Path to the Knell driver, relative to the build directory."""
         return os.path.join('src', 'driver', os_specific_executable('knell-driver'))
 
     def lib_path(self):
-        """Path to the Knell lib itself, relative to the build dir."""
-        return os.path.join('src', 'knell', os_specific_lib('knell'))
+        """Path to the Knell lib itself, relative to the build directory."""
+        return os.path.join('src', 'knell', os_specific_shared_lib('knell'))
 
     def demo_path(self):
-        return os.path.join('src', 'demos', os_specific_lib(self.demo()))
+        """Path to a demo, relative to the build directory."""
+        return os.path.join('src', 'demos', os_specific_shared_lib(self.demo()))
 
     def build_dir(self):
         """
@@ -168,6 +190,10 @@ class BuildAndRunContext:
         return self.config.get('compiler')
 
     def demo(self):
+        """
+        The generic name of the current demo (without a prefix or suffix).
+        :return:
+        """
         return self.config.get('demo')
 
     def parse(self, args):
@@ -182,13 +208,6 @@ class BuildAndRunContext:
             pass
 
 
-def os_specific_demo_glob():
-    if sys.platform == 'win32':
-        return '*.dll'
-    else:
-        return 'lib*.so'
-
-
 def demos(context: BuildAndRunContext) -> List[str]:
     """
     Returns a list of all currently available demos.
@@ -199,6 +218,9 @@ def demos(context: BuildAndRunContext) -> List[str]:
 
 
 def run_demo(context: BuildAndRunContext):
+    """
+    Runs the current demo using a given context.
+    """
     print('Running demo')
     if context.demo() is None:
         print('No demo selected to run')
