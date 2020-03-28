@@ -83,7 +83,7 @@ static void Font_PSF2ReadUnicodeTableIntoGlyphMap(GraphemeMap* map,
 	KN_TRACE(LogSysMain, "Size of FontPSF2: %" PRIu64 "\n", sizeof(FontPSF2));
 	KN_TRACE(LogSysMain, "Reading unicode table of %zu bytes", (unicodeTableEnd - unicodeTableStart));
 
-	GraphemeMap_Create(map);
+	GraphemeMap_Clear(map);
 
 	/*
 	 * PSF2 Unicode Table Grammar

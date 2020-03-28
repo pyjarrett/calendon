@@ -209,7 +209,7 @@ KN_TEST_API bool Utf8_StringEqual(const uint8_t* left, const uint8_t* right)
  * Initialize a grapheme with an initial code point.  All other possible bytes
  * within the grapheme are zeroed.
  */
-KN_TEST_API void Grapheme_Create(Grapheme* seq, const uint8_t* codePoint, uint8_t numCodePoints)
+KN_TEST_API void Grapheme_Set(Grapheme* seq, const uint8_t* codePoint, uint8_t numCodePoints)
 {
 	KN_ASSERT(seq != NULL, "Cannot create a null Grapheme.");
 	KN_ASSERT(codePoint != NULL, "Cannot create a Grapheme from a null code point.");

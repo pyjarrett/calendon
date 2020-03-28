@@ -3,7 +3,8 @@
 ## Function Naming
 
 - Type constructor by value: `<type> <type>_Make(args...)`
-- Type constructor to pointer: `bool <type>_Create(<type>*, args...)`
+- Creating one of a limited number of resource: `bool <type>_Create(<type>*, args...)`
+- Setting values on a non-copyable type: `_Set(<type>*, args...)`
 - System initialization: `bool <SystemName>_Init(args...)`
 - System shutdown: `void <System>_Shutdown()`
 

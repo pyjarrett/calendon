@@ -88,7 +88,7 @@ void Main_ParseCommandLineArguments(int argc, char* argv[])
 						printf("Game library %s does not exist\n", argv[i+1]);
 						exit(EXIT_FAILURE);
 					}
-					PathBuffer_Create(&mainConfig.gameLibPath, argv[i + 1]);
+					PathBuffer_Set(&mainConfig.gameLibPath, argv[i + 1]);
 					printf("Game library: '%s'\n", mainConfig.gameLibPath.str);
 					i += 2;
 				}
@@ -111,7 +111,7 @@ void Main_ParseCommandLineArguments(int argc, char* argv[])
 						exit(EXIT_FAILURE);
 					}
 
-					PathBuffer_Create(&mainConfig.assetDirPath, argv[i + 1]);
+					PathBuffer_Set(&mainConfig.assetDirPath, argv[i + 1]);
 					printf("Asset path: '%s'\n", mainConfig.assetDirPath.str);
 					i += 2;
 				}

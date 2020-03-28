@@ -7,12 +7,12 @@ KN_TEST_SUITE_BEGIN("font-utf8-graheme")
 
 	KN_TEST_UNIT("Unicode table creation") {
 		GraphemeMap map;
-		GraphemeMap_Create(&map);
+		GraphemeMap_Clear(&map);
 	}
 
 	KN_TEST_UNIT("Grapheme mapping of ASCII to ASCII valued glyphs") {
 		GraphemeMap map;
-		GraphemeMap_Create(&map);
+		GraphemeMap_Clear(&map);
 
 		for (uint8_t i = 0; i < 128; ++i ) {
 			const char asciiChar = (char)i;

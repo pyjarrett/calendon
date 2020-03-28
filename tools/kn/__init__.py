@@ -1,5 +1,6 @@
 import argparse
 import cmd
+import glob
 import os
 import multiprocessing
 import queue
@@ -8,6 +9,7 @@ import subprocess
 import sys
 import threading
 import time
+from typing import List
 
 
 def git_branch():
@@ -17,6 +19,7 @@ def git_branch():
 def git_cmd_version():
     return subprocess.check_output(['git', 'log', '-1', '--pretty=%ad',
                                     '--date=format:%d %b %H:%M', 'tools/kn']).decode().strip()
+
 
 def generate_prompt():
     return f'(hammer {git_branch()}) '
@@ -40,6 +43,7 @@ def build_dir_for_compiler(compiler):
 
 KN_CONFIG_COMPILER = 'compiler'
 KN_CONFIG_KEYS = [KN_CONFIG_COMPILER]
+
 
 def cmake_compiler_generator_settings(compiler):
     settings = []
@@ -65,7 +69,10 @@ def cmake_compiler_generator_settings(compiler):
 
 def read_stream(stream, q):
     for line in stream:
-        q.put(line.decode().strip())
+        try:
+            q.put(line.decode().strip())
+        except UnicodeDecodeError:
+            q.put(line.strip())
 
 
 def run_program(command_line_array, **kwargs):
@@ -79,12 +86,12 @@ def run_program(command_line_array, **kwargs):
     err_queue = queue.Queue()
 
     out_thread = threading.Thread(target=read_stream, args=(process.stdout, out_queue))
-    err_thread = threading.Thread(target=read_stream, args=(process.stderr, out_queue))
+    err_thread = threading.Thread(target=read_stream, args=(process.stderr, err_queue))
 
     out_thread.start()
     err_thread.start()
 
-    while out_thread.is_alive() or err_thread.is_alive() and not out_queue.empty() or not err_queue.empty():
+    while out_thread.is_alive() or err_thread.is_alive() or not out_queue.empty() or not err_queue.empty():
         try:
             line = out_queue.get_nowait()
             print(line)
@@ -103,6 +110,51 @@ def run_program(command_line_array, **kwargs):
     return process.wait()
 
 
+def os_specific_executable(named):
+    """
+    Produces an executable file name with an optional extension from the generic
+    basename.
+    """
+    if sys.platform == 'win32':
+        return named + '.exe'
+    else:
+        return named
+
+
+def os_specific_shared_lib(named):
+    """
+    Produces a shared library with appropriate prefix and suffix from a generic
+    basename.
+    """
+    if sys.platform == 'win32':
+        return named + '.dll'
+    else:
+        return 'lib' + named + '.so'
+
+
+def os_specific_demo_glob():
+    """
+    Produces a glob suitable for identifying demo shared libraries.
+    """
+    if sys.platform == 'win32':
+        return '*.dll'
+    else:
+        return 'lib*.so'
+
+
+def demo_name_from_os_specific_shared_lib(shared_lib: str):
+    """
+    Converts a name from an OS-specific shared library name to the generic name.
+    """
+    if sys.platform == 'win32':
+        assert shared_lib.endswith('.dll')
+        return os.path.splitext(shared_lib)[0]
+    else:
+        assert shared_lib.startswith('lib')
+        assert shared_lib.endswith('.so')
+        return shared_lib[3:-3]
+
+
 class BuildAndRunContext:
     """
     A description of the current build and run environment.
@@ -112,6 +164,18 @@ class BuildAndRunContext:
 
     def values(self):
         return self.config
+
+    def driver_path(self):
+        """Path to the Knell driver, relative to the build directory."""
+        return os.path.join('src', 'driver', os_specific_executable('knell-driver'))
+
+    def lib_path(self):
+        """Path to the Knell lib itself, relative to the build directory."""
+        return os.path.join('src', 'knell', os_specific_shared_lib('knell'))
+
+    def demo_path(self):
+        """Path to a demo, relative to the build directory."""
+        return os.path.join('src', 'demos', os_specific_shared_lib(self.demo()))
 
     def build_dir(self):
         """
@@ -125,9 +189,16 @@ class BuildAndRunContext:
         """
         return self.config.get('compiler')
 
+    def demo(self):
+        """
+        The generic name of the current demo (without a prefix or suffix).
+        :return:
+        """
+        return self.config.get('demo')
+
     def parse(self, args):
         parser = argparse.ArgumentParser(usage='key value\n    Sets a key equal to a value.\n')
-        parser.add_argument('key', choices=['compiler'])
+        parser.add_argument('key', choices=['compiler', 'demo'])
         parser.add_argument('value')
 
         try:
@@ -135,6 +206,26 @@ class BuildAndRunContext:
             self.config[args.key] = args.value
         except SystemExit:
             pass
+
+
+def demos(context: BuildAndRunContext) -> List[str]:
+    """
+    Returns a list of all currently available demos.
+    """
+    demo_glob = os.path.join(context.build_dir(), 'src', 'demos', os_specific_demo_glob())
+    demos = [os.path.basename(demo) for demo in glob.glob(demo_glob)]
+    return sorted([demo_name_from_os_specific_shared_lib(d) for d in demos])
+
+
+def run_demo(context: BuildAndRunContext):
+    """
+    Runs the current demo using a given context.
+    """
+    print('Running demo')
+    if context.demo() is None:
+        print('No demo selected to run')
+    else:
+        run_program([context.driver_path(), '--game', context.demo_path()], cwd=context.build_dir())
 
 
 class Hammer(cmd.Cmd):
@@ -150,6 +241,7 @@ class Hammer(cmd.Cmd):
         self.context = BuildAndRunContext()
         self.reload_fn = reload_fn
         self.reload = False
+        self.history = []
         self.cmd_start_time = 0
 
     @staticmethod
@@ -158,6 +250,7 @@ class Hammer(cmd.Cmd):
 
     def precmd(self, line):
         self.cmd_start_time = time.monotonic()
+        self.history.append(line)
         return line
 
     def postcmd(self, stop, line):
@@ -284,3 +377,66 @@ class Hammer(cmd.Cmd):
             print(f'Build for {compiler} does not exist at {build_dir}')
             return
         run_program(['cmake', '--build', '.', '--target', 'check-iterate'], cwd=build_dir)
+
+    def do_demo(self, args):
+        """
+        Lists all available demos.
+        """
+        for demo in demos(self.context):
+            print(demo)
+
+    def do_run(self, args):
+        """
+        Use 'run demo' to run your currently selected demo.
+        """
+        build_dir = self.context.build_dir()
+        if not os.path.exists(build_dir):
+            print(f'Build dir does not exist at {build_dir}')
+            return
+        if args == 'demo':
+            if self.context.demo() is None:
+                print('No demo to run')
+                return
+            if run_program(['cmake', '--build', '.', '--target', self.context.demo()], cwd=build_dir) == 0:
+                run_demo(self.context)
+
+    def do_history(self, args):
+        """
+        Prints command history.
+        """
+        for index, line in enumerate(self.history):
+            print(f'{index:<5} {line}')
+
+    def do_redo(self, args):
+        """
+        "redo i" re-runs command 'i' from history.
+        """
+        try:
+            index = int(args)
+            if index >= 0 and index < len(self.history):
+                self.onecmd(self.history[index])
+            else:
+                print(f'Invalid history id {index}')
+        except ValueError:
+            print(f'Can only redo history commands based on index.')
+
+    if sys.platform != 'win32':
+        def do_symbols(self, args):
+            """
+            Lists symbols exported in the Knell shared library.
+            """
+            build_dir = self.context.build_dir()
+            if not os.path.exists(build_dir):
+                print(f'Build dir does not exist at {build_dir}')
+                return
+            lines: List[str] = subprocess.check_output(['nm', '-D', self.context.lib_path()],
+                                                 cwd=self.context.build_dir()).decode().splitlines()
+            categories = set()
+            for line in filter(lambda sym_line: ' T ' in sym_line, lines):
+                # line will be in "ADDRESS T Symbol" format
+                symbol = line.split()[2]
+                categories.add(symbol.split('_')[0])
+                print(symbol)
+            print()
+            print(f'Exporting {len(lines)} symbols from systems')
+            print(f'{" ".join(sorted(categories))}')

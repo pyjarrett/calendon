@@ -11,6 +11,6 @@ out vec4 Color;
 // coordinates for drawing to a quad with the axis in the lower left
 // corner.
 void main() {
-    gl_Position = Projection * vec4(Position2.x, Position2.y, 0.0, 1.0);
+    gl_Position = Projection * ViewModel * vec4(Position2.x, Position2.y, 0.0, 1.0);
     Color = PolygonColor;
 }

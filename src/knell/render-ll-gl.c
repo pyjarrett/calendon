@@ -1077,7 +1077,7 @@ bool RLL_LoadPSF2Font(FontId id, const char* path)
 	return true;
 }
 
-void AddToGlyphBatch(float2 position, Dimension2f size, float2* texCoords)
+static void AddToGlyphBatch(float2 position, Dimension2f size, float2* texCoords)
 {
 	const uint32_t glyphOffset = usedGlyphs * RLL_VERTICES_PER_GLYPH;
 	glyphTexCoords[glyphOffset] = texCoords[0];
@@ -1098,7 +1098,7 @@ void AddToGlyphBatch(float2 position, Dimension2f size, float2* texCoords)
 	++usedGlyphs;
 }
 
-void AppendGlyph(FontId id, float2 position, GlyphIndex glyphIndex)
+static void AppendGlyph(FontId id, float2 position, GlyphIndex glyphIndex)
 {
 	FontPSF2* font = &fonts[id];
 	KN_ASSERT(glyphIndex != KN_GRAPHEME_INDEX_INVALID, "Cannot draw an invalid glyph");
@@ -1315,6 +1315,48 @@ void RLL_DrawDebugFont(FontId id, float2 center, Dimension2f size)
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 	RLL_DisableProgram(ProgramIndexSprite);
+
+	KN_ASSERT_NO_GL_ERROR();
+}
+
+/**
+ * Creates a line of points to form circle in a counter clockwise winding.
+ */
+static void createCircle(float2* vertices, uint32_t numVertices, float radius)
+{
+	KN_ASSERT(vertices != NULL, "Cannot write vertices into a null pointer");
+	KN_ASSERT(radius > 0.0f, "Radius must positive: %f provided", radius);
+	const float arcAngle = 2 * 3.14159f / (float)(numVertices);
+	for (uint32_t i = 0; i < numVertices; ++i) {
+		vertices[i] = float2_Make(radius * cosf(i * arcAngle),
+			radius * sinf(i * arcAngle));
+	}
+}
+
+#define RLL_MAX_CIRCLE_POINTS 30
+
+void RLL_OutlineCircle(float2 center, float radius, rgb8 color, uint32_t numSegments)
+{
+	const uint32_t numPoints = numSegments + 1;
+	KN_ASSERT(numSegments < RLL_MAX_CIRCLE_POINTS, "Exceeded maximum number of circle"
+		"draw points: %" PRIu32 " of %" PRIu32, numSegments - 1, numPoints);
+
+	static float2 points[RLL_MAX_CIRCLE_POINTS];
+	RLL_SetFullScreenViewport();
+
+	glBindBuffer(GL_ARRAY_BUFFER, debugDrawBuffer);
+
+	uniformStorage[UniformNameViewModel].f44 = float4x4_Translate(center.x, center.y, 0.0f);
+	uniformStorage[UniformNamePolygonColor].f4 = float4_Make(
+		(float)color.r / 255.0f, (float)color.g / 255.0f, (float)color.b / 255.0f, 1.0f);
+
+	RLL_EnableProgramForVertexFormat(ProgramIndexSolidPolygon, &vertexFormats[VertexFormatP2]);
+
+	createCircle(&points[0], numPoints, radius);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float2) * numPoints, points);
+	glDrawArrays(GL_LINE_LOOP, 0, (GLsizei)numPoints);
+
+	RLL_DisableProgram(ProgramIndexSolidPolygon);
 
 	KN_ASSERT_NO_GL_ERROR();
 }

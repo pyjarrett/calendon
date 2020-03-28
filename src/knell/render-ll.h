@@ -34,5 +34,7 @@ void RLL_DrawDebugRect(float2 center, Dimension2f dimensions, float4 color);
 void RLL_DrawDebugLine(float x1, float y1, float x2, float y2, rgb8 color);
 void RLL_DrawDebugLineStrip(float2* points, uint32_t numPoints, rgb8 color);
 
+void RLL_OutlineCircle(float2 center, float radius, rgb8 color, uint32_t numSegments);
+
 #endif /* KN_RENDER_LL_H */
 

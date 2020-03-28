@@ -15,3 +15,5 @@ tags
 # Temporary files
 *.swp
 src/post_build_dummy.h
+
+__pycache__/

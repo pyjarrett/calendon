@@ -4,7 +4,7 @@
 
 #include <string.h>
 
-KN_TEST_API void GraphemeMap_Create(GraphemeMap* map)
+KN_TEST_API void GraphemeMap_Clear(GraphemeMap* map)
 {
 	KN_ASSERT(map != NULL, "Cannot create a null grapheme map.");
 	memset(map, 0, sizeof(GraphemeMap));
@@ -77,7 +77,7 @@ KN_TEST_API bool GraphemeMap_Map(GraphemeMap* map, const uint8_t* codePoint,
 		return false;
 	}
 
-	Grapheme_Create(&map->graphemes[map->usedGraphemes], codePoint, numCodePoints);
+	Grapheme_Set(&map->graphemes[map->usedGraphemes], codePoint, numCodePoints);
 	map->glyphs[map->usedGraphemes] = glyphIndex;
 	++map->usedGraphemes;
 

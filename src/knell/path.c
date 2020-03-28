@@ -65,7 +65,7 @@ KN_API void PathBuffer_Clear(PathBuffer* path)
 	memset(path->str, 0, KN_PATH_MAX + 1);
 }
 
-KN_API bool PathBuffer_Create(PathBuffer* path, const char* initialPath)
+KN_API bool PathBuffer_Set(PathBuffer* path, const char* initialPath)
 {
 	KN_ASSERT(path != NULL, "Cannot assign to a null PathBuffer");
 	KN_ASSERT(initialPath != NULL, "Cannot assign a null initial path to a PathBuffer");
