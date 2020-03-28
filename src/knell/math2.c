@@ -76,6 +76,13 @@ KN_API float float2_LengthSquared(float2 v)
 	return v.x * v.x + v.y * v.y;
 }
 
+KN_API float2 float2_Normalize(float2 v)
+{
+	const float length = float2_Length(v);
+	KN_ASSERT(length > 0.0f, "Cannot normalize a vector of 0 length.");
+	return float2_Divide(v, length);
+}
+
 KN_API float2 float2_Midpoint(float2 left, float2 right)
 {
 	return float2_Divide(float2_Add(left, right), 2.0f);

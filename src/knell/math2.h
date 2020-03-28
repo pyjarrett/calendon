@@ -43,6 +43,7 @@ KN_API float2 float2_Multiply(float2 v, float s);
 KN_API float2 float2_Divide(float2 v, float s);
 KN_API float float2_Length(float2 v);
 KN_API float float2_LengthSquared(float2 v);
+KN_API float2 float2_Normalize(float2 v);
 KN_API float2 float2_Midpoint(float2 left, float2 right);
 KN_API float float2_DistanceSquared(float2 left, float2 right);
 

@@ -52,6 +52,11 @@ KN_API uint64_t Time_MsToNs(uint64_t ms)
 	return ms * 1000 * 1000;
 }
 
+KN_API uint64_t Time_NsToMs(uint64_t ns)
+{
+	return ns / (1000 * 1000);
+}
+
 KN_API uint64_t Time_SecToNs(uint64_t sec)
 {
 	return Time_MsToNs(sec * 1000);

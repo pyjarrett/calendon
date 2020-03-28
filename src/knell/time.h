@@ -10,6 +10,7 @@
 KN_API void Time_Init(void);
 KN_API uint64_t Time_NowNs(void);
 KN_API uint64_t Time_MsToNs(uint64_t ms);
+KN_API uint64_t Time_NsToMs(uint64_t ns);
 KN_API uint64_t Time_SecToNs(uint64_t sec);
 
 #endif /* KN_TIME_H */

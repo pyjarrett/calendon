@@ -102,3 +102,8 @@ KN_API void R_DrawDebugFont(FontId id, float2 center, Dimension2f size)
 {
 	RLL_DrawDebugFont(id, center, size);
 }
+
+KN_API void R_OutlineCircle(float2 center, float radius, rgb8 color, uint32_t numSegments)
+{
+	RLL_OutlineCircle(center, radius, color, numSegments);
+}

@@ -48,4 +48,6 @@ KN_API void R_DrawDebugLine(float x1, float y1, float x2, float y2, rgb8 color);
 KN_API void R_DrawDebugLineStrip(float2* points, uint32_t numPoints, rgb8 color);
 KN_API void R_DrawDebugFont(FontId id, float2 center, Dimension2f size);
 
+KN_API void R_OutlineCircle(float2 center, float radius, rgb8 color, uint32_t numSegments);
+
 #endif /* KN_RENDER_HL_H */
