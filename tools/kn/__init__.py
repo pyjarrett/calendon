@@ -159,6 +159,7 @@ class BuildAndRunContext:
     """
     A description of the current build and run environment.
     """
+
     def __init__(self):
         self.config = {}
 
@@ -183,6 +184,12 @@ class BuildAndRunContext:
         """
         return build_dir_for_compiler(self.config.get('compiler'))
 
+    def build_config(self):
+        """
+        A particular version of the build, such as Debug, or Release.
+        """
+        return self.config.get('config', 'Debug')
+
     def compiler(self):
         """
         The type of the compiler, independent of the path.
@@ -198,7 +205,7 @@ class BuildAndRunContext:
 
     def parse(self, args):
         parser = argparse.ArgumentParser(usage='key value\n    Sets a key equal to a value.\n')
-        parser.add_argument('key', choices=['compiler', 'demo'])
+        parser.add_argument('key', choices=['compiler', 'config', 'demo'])
         parser.add_argument('value')
 
         try:
@@ -355,7 +362,9 @@ class Hammer(cmd.Cmd):
             print(f'Build dir does not exist at {build_dir}')
             return
 
-        cmake_args = ['cmake', '--build', '.', '--parallel', str(multiprocessing.cpu_count())]
+        cmake_args = ['cmake', '--build', '.',
+                      '--parallel', str(multiprocessing.cpu_count()),
+                      '--config', self.context.build_config()]
         run_program(cmake_args, cwd=build_dir)
 
     def do_check(self, args):
@@ -366,7 +375,9 @@ class Hammer(cmd.Cmd):
         if not os.path.exists(build_dir):
             print(f'Build dir does not exist at {build_dir}')
             return
-        run_program(['cmake', '--build', '.', '--target', 'check'], cwd=build_dir)
+        run_program(['cmake', '--build', '.',
+                     '--target', 'check',
+                     '--config', self.context.build_config()], cwd=build_dir)
 
     def do_check_iterate(self, args):
         """
@@ -374,9 +385,11 @@ class Hammer(cmd.Cmd):
         """
         build_dir = self.context.build_dir()
         if not os.path.exists(build_dir):
-            print(f'Build for {compiler} does not exist at {build_dir}')
+            print(f'Build dir does not exist at {build_dir}')
             return
-        run_program(['cmake', '--build', '.', '--target', 'check-iterate'], cwd=build_dir)
+        run_program(['cmake', '--build', '.',
+                     '--target', 'check-iterate',
+                     '--config', self.context.build_config()], cwd=build_dir)
 
     def do_demo(self, args):
         """
@@ -397,7 +410,9 @@ class Hammer(cmd.Cmd):
             if self.context.demo() is None:
                 print('No demo to run')
                 return
-            if run_program(['cmake', '--build', '.', '--target', self.context.demo()], cwd=build_dir) == 0:
+            if run_program(['cmake', '--build', '.',
+                            '--target', self.context.demo(),
+                            '--config', self.context.build_config()], cwd=build_dir) == 0:
                 run_demo(self.context)
 
     def do_history(self, args):
@@ -430,7 +445,7 @@ class Hammer(cmd.Cmd):
                 print(f'Build dir does not exist at {build_dir}')
                 return
             lines: List[str] = subprocess.check_output(['nm', '-D', self.context.lib_path()],
-                                                 cwd=self.context.build_dir()).decode().splitlines()
+                                                       cwd=self.context.build_dir()).decode().splitlines()
             categories = set()
             for line in filter(lambda sym_line: ' T ' in sym_line, lines):
                 # line will be in "ADDRESS T Symbol" format
