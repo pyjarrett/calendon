@@ -16,7 +16,7 @@ A 2D single-threaded main loop C99 game engine for prototyping and learning.
 
 - "As simple as possible": Doing things with the engine should be
   straightforward and explicit.  It might be more verbose than languages with
-  more features than C; let's not conflate terseness with simplicity.
+  more features than C, however terseness does not always mean simplicity.
 - "As soon as possible": Use the ability to create prototypes to streamline
   the development process by trying ideas in fast-to-compile sandboxes.
 
