@@ -12,8 +12,8 @@ function(add_unit_test)
 	set(multiValueArgs SOURCES LIBS)
 	cmake_parse_arguments(UTEST "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-	add_definitions(-DKN_TESTING=1)
 	add_executable("${UTEST_NAME}" ${UTEST_SOURCES})
+	target_compile_definitions(${UTEST_NAME} PRIVATE KN_TESTING=1)
 
 	# Generate coverage data only under GCC
 	if(CMAKE_BUILD_TYPE MATCHES Debug AND CMAKE_COMPILER_IS_GNUCC)

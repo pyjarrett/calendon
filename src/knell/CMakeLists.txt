@@ -40,18 +40,14 @@ if (UNIX)
 		)
 endif ()
 
-remove_definitions(-DKN_LIBRARY)
-add_definitions(-DKN_LIBRARY=1)
 add_library(knell SHARED ${KNELL_SRCS} ${KNELL_HEADERS})
+target_compile_definitions(knell PRIVATE KN_TESTING=0 KN_LIBRARY=1)
 target_link_libraries(knell ${KNELL_LIBS})
 
 # Define a special version of knell to allow unit tests to actually verify
 # that asserts (primarily preconditions) are actually checked.
-remove_definitions(-DKN_LIBRARY)
-remove_definitions(-DKN_TESTING)
-add_definitions(-DKN_LIBRARY=1)
-add_definitions(-DKN_TESTING=1)
 add_library(knell-testable SHARED ${KNELL_SRCS} ${KNELL_HEADERS})
+target_compile_definitions(knell-testable PRIVATE KN_TESTING=1 KN_LIBRARY=1)
 target_link_libraries(knell-testable ${KNELL_LIBS})
 remove_definitions(-DKN_TESTING)
 

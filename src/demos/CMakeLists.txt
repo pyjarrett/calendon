@@ -12,15 +12,13 @@ function(add_demo)
 	cmake_parse_arguments(DEMO "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
 	add_library(${DEMO_NAME} SHARED ${DEMO_SOURCES})
+	target_compile_definitions(${DEMO_NAME} PRIVATE KN_LIBRARY=0)
 	target_link_libraries(${DEMO_NAME} ${DEMO_LIBS} knell)
 	add_dependencies(${DEMO_NAME} knell)
 
 	set(KN_ALL_DEMOS ${KN_ALL_DEMOS} ${DEMO_NAME} CACHE INTERNAL "KN_ALL_DEMOS")
 	message("Adding ${DEMO_NAME} to demo list.")
 endfunction()
-
-remove_definitions(-DKN_LIBRARY)
-add_definitions(-DKN_LIBRARY=0)
 
 add_demo(NAME sample SOURCES sample.c)
 add_demo(NAME koch-curve SOURCES koch_curve.c)

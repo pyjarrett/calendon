@@ -210,7 +210,11 @@ extern KN_API char fatalErrorBuffer[fatalErrorBufferLength];
 		}
 #else
 	#define KN_FATAL_ERROR(error_message, ...) \
-		do { printf(error_message, ##__VA_ARGS__); abort(); } while (0)
+		do { \
+			printf(error_message, ##__VA_ARGS__); \
+			KN_DEBUG_BREAK(); \
+			abort(); \
+		} while (0)
 #endif
 
 /**
