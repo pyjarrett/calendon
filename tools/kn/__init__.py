@@ -163,6 +163,15 @@ class BuildAndRunContext:
     def __init__(self):
         self.config = {}
 
+    def save(self):
+        pass
+
+    def load(self):
+        pass
+
+    def save_path(self):
+        return self.config.get('save-path', '.hammer')
+
     def values(self):
         return self.config
 
@@ -281,6 +290,12 @@ class Hammer(cmd.Cmd):
         """Alias for quit."""
         self.reload = False
         return True
+
+    def do_save(self, arg):
+        pass
+
+    def do_load(self, args):
+        pass
 
     def do_reload(self, args):
         """[For Development] Reloads Hammer with updated source."""
