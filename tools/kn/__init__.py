@@ -23,7 +23,7 @@ def git_cmd_version():
 
 
 def generate_prompt():
-    return f'(hammer {git_branch()}) '
+    return f'({git_branch()}) '
 
 
 # TODO: Should support building for clang, gcc and MSVC, wherever each one is available.

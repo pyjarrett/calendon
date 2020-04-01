@@ -41,19 +41,19 @@ inspection.
 tools/hammer.py
 
 # Generate build directory
-(hammer master) gen
+(master) gen
 
 # Do a build
-(hammer master) build
+(master) build
 
 # Run tests
-(hammer master) check
+(master) check
 
 # List the demos which can be run
-(hammer master) set demo planets
+(master) set demo planets
 
 # Run the demo
-(hammer master) run demo
+(master) run demo
 ```
 
 When developing Hammer, changes can be dynamically reloaded at runtime.
@@ -63,10 +63,10 @@ tools/hammer.py
 
 # Make changes to the Hammer scripts in the kn/ directory.
 
-(hammer master) reload
+(master) reload
 
 # << script saves config, restarts the REPL, and reloads configs >>
 
-(hammer master)
+(master)
 ```
 
