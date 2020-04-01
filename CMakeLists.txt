@@ -1,4 +1,12 @@
 cmake_minimum_required(VERSION 3.10)
+
+# ccache can speed up program compilation, especially if you wipe and regenerate
+# your build directory.
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+	set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
+endif()
+
 project(knell C)
 
 # Using basic C99 for this engine until reaching technical and complexity
