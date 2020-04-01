@@ -1,6 +1,7 @@
 import argparse
 import cmd
 import glob
+import json
 import os
 import multiprocessing
 import queue
@@ -163,6 +164,28 @@ class BuildAndRunContext:
     def __init__(self):
         self.config = {}
 
+    def save(self):
+        ctx = {}
+        if self.build_config() is not None:
+            ctx['config'] = self.build_config()
+        if self.compiler() is not None:
+            ctx['compiler'] = self.compiler()
+        if self.demo() is not None:
+            ctx['demo'] = self.demo()
+
+        with open(self.save_path(), 'w') as file:
+            json.dump(ctx, file)
+
+    def load(self):
+        if os.path.isfile(self.save_path()):
+            with open(self.save_path(), 'r') as file:
+                ctx = json.load(file)
+                for k in ctx:
+                    self.config[k] = ctx[k]
+
+    def save_path(self):
+        return self.config.get('save-path', '.hammer')
+
     def values(self):
         return self.config
 
@@ -246,6 +269,7 @@ class Hammer(cmd.Cmd):
     def __init__(self, reload_fn):
         super().__init__()
         self.context = BuildAndRunContext()
+        self.context.load()
         self.reload_fn = reload_fn
         self.reload = False
         self.history = []
@@ -282,10 +306,17 @@ class Hammer(cmd.Cmd):
         self.reload = False
         return True
 
+    def do_save(self, arg):
+        pass
+
+    def do_load(self, args):
+        pass
+
     def do_reload(self, args):
         """[For Development] Reloads Hammer with updated source."""
         self.reload_fn()
         self.reload = True
+        self.context.save()
         return True
 
     def do_last_commit(self, arg):
@@ -296,8 +327,8 @@ class Hammer(cmd.Cmd):
         """Print the current state of configuration variables."""
         for key in self.context.values():
             print(f'{key:<15}{self.context.values()[key]:<}')
-        print(f'Build Dir: {self.context.build_dir()}')
-        print(f'Compiler:  {self.context.compiler() if self.context.compiler() else "Default"}')
+        print(f'Build Dir:     {self.context.build_dir()}')
+        print(f'Compiler:      {self.context.compiler() if self.context.compiler() else "Default"}')
 
     def do_set(self, args):
         """
