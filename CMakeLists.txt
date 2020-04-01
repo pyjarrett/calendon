@@ -146,6 +146,10 @@ if (WIN32)
 	set(KNELL_COMMON_C_FLAGS "${KNELL_COMMON_C_FLAGS} /MP")      # Enable parallel build
 endif (WIN32)
 
+if (UNIX)
+	set(KNELL_LIBS ${KNELL_LIBS} m)
+endif (UNIX)
+
 # Eliminate extra dead code
 #set(KNELL_COMMON_C_FLAGS "-ffunction-sections -fdata-sections")
 

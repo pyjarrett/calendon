@@ -39,6 +39,7 @@
  * function are exclusive, annotating a function with most is an error.
  */
 #include <knell/kn.h>
+#include <knell/float.h>
 
 #include <string.h>
 
@@ -210,6 +211,14 @@ KN_TEST_HARNESS_API void knTest_CleanUpPreviousUnit(knTestSuiteReport* r, knTest
 		knTest_UnitAssertFailed(&unitReport); \
 		printf("%s:%i  \"" #a " != " #b "\" (%" formatter " != %" formatter ")\n", \
 			__FILE__, __LINE__, ((type)(a)), ((type)(b))); \
+		break; \
+	}
+
+#define KN_TEST_ASSERT_CLOSE_F(a, b, pct) \
+	if (float_RelativeDiff(a, b) > pct) { \
+		knTest_UnitAssertFailed(&unitReport); \
+		printf("%s:%i  \"" #a " is not within %f%% of " #b "\" (%f != %f)\n", \
+			__FILE__, __LINE__, (10.0f * (float)pct), ((float)(a)), ((float)(b))); \
 		break; \
 	}
 
