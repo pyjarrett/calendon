@@ -294,6 +294,9 @@ class Hammer(cmd.Cmd):
         else:
             return True
 
+    def default(self, arg):
+        self.do_help('')
+
     def do_version(self, arg):
         print(f'hammer REPL version: {git_cmd_version()}')
 
