@@ -163,6 +163,7 @@ class BuildAndRunContext:
 
     def __init__(self):
         self.config = {}
+        self.config['compilers'] = {}
 
     def save(self):
         ctx = {}
@@ -172,16 +173,15 @@ class BuildAndRunContext:
             ctx['compiler'] = self.compiler()
         if self.demo() is not None:
             ctx['demo'] = self.demo()
-
         with open(self.save_path(), 'w') as file:
             json.dump(ctx, file)
 
     def load(self):
         if os.path.isfile(self.save_path()):
             with open(self.save_path(), 'r') as file:
-                ctx = json.load(file)
-                for k in ctx:
-                    self.config[k] = ctx[k]
+                self.config = json.load(file)
+                if 'compilers' not in self.config:
+                    self.config['compilers'] = {}
 
     def save_path(self):
         return self.config.get('save-path', '.hammer')
@@ -213,11 +213,22 @@ class BuildAndRunContext:
         """
         return self.config.get('config', 'Debug')
 
+    def has_default_compiler(self):
+        return self.config.get('compiler') is not None
+
     def compiler(self):
         """
         The type of the compiler, independent of the path.
         """
         return self.config.get('compiler')
+
+    def compiler_path(self):
+        compiler_alias = self.config.get('compiler')
+        if compiler_alias is None:
+            return None
+
+        if compiler_alias in self.config['compilers'].keys():
+            return self.config['compilers'][compiler_alias]
 
     def demo(self):
         """
@@ -226,6 +237,19 @@ class BuildAndRunContext:
         """
         return self.config.get('demo')
 
+    def add(self, args):
+        parser = argparse.ArgumentParser(usage='key value\n    Sets a key equal to a value.\n')
+        parser.add_argument('key', choices=['compiler'])
+        parser.add_argument('alias')
+        parser.add_argument('path')
+
+        try:
+            args = parser.parse_args(args.split())
+            if args.key == 'compiler':
+                self.config['compilers'][args.alias] = args.path
+        except SystemExit:
+            pass
+
     def parse(self, args):
         parser = argparse.ArgumentParser(usage='key value\n    Sets a key equal to a value.\n')
         parser.add_argument('key', choices=['compiler', 'config', 'demo'])
@@ -233,7 +257,10 @@ class BuildAndRunContext:
 
         try:
             args = parser.parse_args(args.split())
-            self.config[args.key] = args.value
+            if args.key == 'compiler' and args.value not in self.config['compilers'].keys():
+                print(f'Unknown compiler: {args.key}.  Add compiler aliases first.')
+            else:
+                self.config[args.key] = args.value
         except SystemExit:
             pass
 
@@ -328,16 +355,16 @@ class Hammer(cmd.Cmd):
 
     def do_config(self, arg):
         """Print the current state of configuration variables."""
-        for key in self.context.values():
-            print(f'{key:<15}{self.context.values()[key]:<}')
-        print(f'Build Dir:     {self.context.build_dir()}')
-        print(f'Compiler:      {self.context.compiler() if self.context.compiler() else "Default"}')
+        print(json.dumps(self.context.values(), indent=4))
 
     def do_set(self, args):
         """
         Sets configuration values.
         """
         self.context.parse(args)
+
+    def do_add(self, args):
+        self.context.add(args)
 
     def do_clean(self, args):
         """
@@ -399,6 +426,10 @@ class Hammer(cmd.Cmd):
         cmake_args = ['cmake', '--build', '.',
                       '--parallel', str(multiprocessing.cpu_count()),
                       '--config', self.context.build_config()]
+
+        if not self.context.has_default_compiler():
+            cmake_args.append(f'-DCMAKE_C_COMPILER={self.context.compiler_path()}')
+
         run_program(cmake_args, cwd=build_dir)
 
     def do_check(self, args):
