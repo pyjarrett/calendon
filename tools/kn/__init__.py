@@ -166,10 +166,12 @@ class BuildAndRunContext:
         self.config['compilers'] = {}
 
     def save(self):
+        print(f'Saving to {self.save_path()}')
         with open(self.save_path(), 'w') as file:
             json.dump(self.config, file)
 
     def load(self):
+        print(f'Loading from {self.save_path()}')
         if os.path.isfile(self.save_path()):
             with open(self.save_path(), 'r') as file:
                 self.config = json.load(file)
@@ -339,10 +341,10 @@ class Hammer(cmd.Cmd):
         return True
 
     def do_save(self, arg):
-        self.context.save(arg)
+        self.context.save()
 
     def do_load(self, arg):
-        self.context.load(arg)
+        self.context.load()
 
     def do_reload(self, args):
         """[For Development] Reloads Hammer with updated source."""

@@ -23,5 +23,7 @@ if __name__ == '__main__':
         run_repl()
     else:
         toll = kn.Hammer(reload_hammer)
-        toll.onecmd(" ".join(args))
+        toll.onecmd(' '.join(args))
+        if toll.last_exit_code == 0:
+            toll.do_save('')
         sys.exit(toll.last_exit_code)
