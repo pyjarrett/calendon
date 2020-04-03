@@ -14,7 +14,7 @@ def run_repl():
         toll.cmdloop()
 
         if not toll.reload:
-            break
+            sys.exit(toll.last_exit_code)
 
 
 if __name__ == '__main__':
@@ -24,3 +24,4 @@ if __name__ == '__main__':
     else:
         toll = kn.Hammer(reload_hammer)
         toll.onecmd(" ".join(args))
+        sys.exit(toll.last_exit_code)

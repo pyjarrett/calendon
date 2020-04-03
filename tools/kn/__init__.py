@@ -166,15 +166,8 @@ class BuildAndRunContext:
         self.config['compilers'] = {}
 
     def save(self):
-        ctx = {}
-        if self.build_config() is not None:
-            ctx['config'] = self.build_config()
-        if self.compiler() is not None:
-            ctx['compiler'] = self.compiler()
-        if self.demo() is not None:
-            ctx['demo'] = self.demo()
         with open(self.save_path(), 'w') as file:
-            json.dump(ctx, file)
+            json.dump(self.config, file)
 
     def load(self):
         if os.path.isfile(self.save_path()):
@@ -246,9 +239,14 @@ class BuildAndRunContext:
         try:
             args = parser.parse_args(args.split())
             if args.key == 'compiler':
-                self.config['compilers'][args.alias] = args.path
+                if os.path.isfile(args.path):
+                    self.config['compilers'][args.alias] = args.path
+                    return 0
+                else:
+                    print(f'Compiler "{args.alias}" does not exist at {args.path}')
+                    return 1
         except SystemExit:
-            pass
+            return 1
 
     def parse(self, args):
         parser = argparse.ArgumentParser(usage='key value\n    Sets a key equal to a value.\n')
@@ -259,10 +257,12 @@ class BuildAndRunContext:
             args = parser.parse_args(args.split())
             if args.key == 'compiler' and args.value not in self.config['compilers'].keys():
                 print(f'Unknown compiler: {args.key}.  Add compiler aliases first.')
+                return 1
             else:
                 self.config[args.key] = args.value
+                return 0
         except SystemExit:
-            pass
+            return 1
 
 
 def demos(context: BuildAndRunContext) -> List[str]:
@@ -281,8 +281,9 @@ def run_demo(context: BuildAndRunContext):
     print('Running demo')
     if context.demo() is None:
         print('No demo selected to run')
+        return 1
     else:
-        run_program([context.driver_path(), '--game', context.demo_path()], cwd=context.build_dir())
+        return run_program([context.driver_path(), '--game', context.demo_path()], cwd=context.build_dir())
 
 
 class Hammer(cmd.Cmd):
@@ -301,6 +302,7 @@ class Hammer(cmd.Cmd):
         self.reload = False
         self.history = []
         self.cmd_start_time = 0
+        self.last_exit_code = 0
 
     @staticmethod
     def update_prompt():
@@ -337,10 +339,10 @@ class Hammer(cmd.Cmd):
         return True
 
     def do_save(self, arg):
-        pass
+        self.context.save(arg)
 
-    def do_load(self, args):
-        pass
+    def do_load(self, arg):
+        self.context.load(arg)
 
     def do_reload(self, args):
         """[For Development] Reloads Hammer with updated source."""
@@ -361,10 +363,10 @@ class Hammer(cmd.Cmd):
         """
         Sets configuration values.
         """
-        self.context.parse(args)
+        self.last_exit_code = self.context.parse(args)
 
     def do_add(self, args):
-        self.context.add(args)
+        self.last_exit_code = self.context.add(args)
 
     def do_clean(self, args):
         """
@@ -389,8 +391,8 @@ class Hammer(cmd.Cmd):
             'git push origin',
         ]
         for line in commands:
-            exit_code = run_program(line.split())
-            if exit_code != 0:
+            self.last_exit_code = run_program(line.split())
+            if self.last_exit_code != 0:
                 break
 
     def do_gen(self, args):
@@ -412,7 +414,7 @@ class Hammer(cmd.Cmd):
 
         compiler = self.context.compiler()
         cmake_args.extend(cmake_compiler_generator_settings(compiler))
-        run_program(cmake_args, cwd=build_dir)
+        self.last_exit_code = run_program(cmake_args, cwd=build_dir)
 
     def do_build(self, args):
         """
@@ -421,6 +423,7 @@ class Hammer(cmd.Cmd):
         build_dir = self.context.build_dir()
         if not os.path.exists(build_dir):
             print(f'Build dir does not exist at {build_dir}')
+            self.last_exit_code = 1
             return
 
         cmake_args = ['cmake', '--build', '.',
@@ -430,7 +433,7 @@ class Hammer(cmd.Cmd):
         if not self.context.has_default_compiler():
             cmake_args.append(f'-DCMAKE_C_COMPILER={self.context.compiler_path()}')
 
-        run_program(cmake_args, cwd=build_dir)
+        self.last_exit_code = run_program(cmake_args, cwd=build_dir)
 
     def do_check(self, args):
         """
@@ -440,9 +443,10 @@ class Hammer(cmd.Cmd):
         if not os.path.exists(build_dir):
             print(f'Build dir does not exist at {build_dir}')
             return
-        run_program(['cmake', '--build', '.',
-                     '--target', 'check',
-                     '--config', self.context.build_config()], cwd=build_dir)
+        self.last_exit_code = run_program(['cmake', '--build', '.',
+                                           '--target', 'check',
+                                           '--config', self.context.build_config()],
+                                          cwd=build_dir)
 
     def do_check_iterate(self, args):
         """
@@ -452,9 +456,10 @@ class Hammer(cmd.Cmd):
         if not os.path.exists(build_dir):
             print(f'Build dir does not exist at {build_dir}')
             return
-        run_program(['cmake', '--build', '.',
-                     '--target', 'check-iterate',
-                     '--config', self.context.build_config()], cwd=build_dir)
+        self.last_exit_code = run_program(['cmake', '--build', '.',
+                                           '--target', 'check-iterate',
+                                           '--config', self.context.build_config()],
+                                          cwd=build_dir)
 
     def do_demo(self, args):
         """
@@ -475,10 +480,13 @@ class Hammer(cmd.Cmd):
             if self.context.demo() is None:
                 print('No demo to run')
                 return
-            if run_program(['cmake', '--build', '.',
-                            '--target', self.context.demo(),
-                            '--config', self.context.build_config()], cwd=build_dir) == 0:
-                run_demo(self.context)
+            build_status = run_program(['cmake', '--build', '.',
+                                        '--target', self.context.demo(),
+                                        '--config', self.context.build_config()], cwd=build_dir)
+            if build_status == 0:
+                self.last_exit_code = run_demo(self.context)
+            else:
+                self.last_exit_code = build_status
 
     def do_history(self, args):
         """
