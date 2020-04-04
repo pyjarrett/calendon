@@ -209,7 +209,7 @@ class BuildAndRunContext:
         return self.config.get('config', 'Debug')
 
     def has_default_compiler(self):
-        return self.config.get('compiler') is not None
+        return self.config.get('compiler') is None
 
     def compiler(self):
         """
