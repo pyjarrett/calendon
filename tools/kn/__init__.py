@@ -26,24 +26,11 @@ def generate_prompt():
     return f'({git_branch()}) '
 
 
-# TODO: Should support building for clang, gcc and MSVC, wherever each one is available.
-def supported_compilers():
-    return ['default', 'clang', 'gcc']
-
-
-def supported_commands():
-    return ['gen']
-
-
 def build_dir_for_compiler(compiler):
     if compiler == 'default' or compiler is None:
         return 'build'
     else:
         return f'build-{compiler}'
-
-
-KN_CONFIG_COMPILER = 'compiler'
-KN_CONFIG_KEYS = [KN_CONFIG_COMPILER]
 
 
 def cmake_compiler_generator_settings(compiler):
@@ -54,6 +41,7 @@ def cmake_compiler_generator_settings(compiler):
     # https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2015%202017.html
     if sys.platform == 'win32' and (compiler is None or compiler == 'default'):
         help_output = subprocess.check_output(['cmake', '--help'])
+        generator = None
         for line in help_output.decode().splitlines():
             if line.startswith('*'):
                 print(line)
@@ -63,7 +51,8 @@ def cmake_compiler_generator_settings(compiler):
                 generator = generator.strip()
                 print(f'"{generator}"')
                 break
-        settings.extend(['-G', generator, '-A', 'x64'])
+        if generator is None:
+            settings.extend(['-G', generator, '-A', 'x64'])
 
     return settings
 
