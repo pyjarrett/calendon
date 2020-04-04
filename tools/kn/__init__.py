@@ -171,12 +171,14 @@ class BuildAndRunContext:
             json.dump(self.config, file)
 
     def load(self):
-        print(f'Loading from {self.save_path()}')
         if os.path.isfile(self.save_path()):
+            print(f'Loading from {self.save_path()}')
             with open(self.save_path(), 'r') as file:
                 self.config = json.load(file)
                 if 'compilers' not in self.config:
                     self.config['compilers'] = {}
+        else:
+            print(f'Config file {self.save_path()} does not exist.')
 
     def save_path(self):
         return self.config.get('save-path', '.hammer')
