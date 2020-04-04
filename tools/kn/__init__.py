@@ -432,9 +432,6 @@ class Hammer(cmd.Cmd):
                       '--parallel', str(multiprocessing.cpu_count()),
                       '--config', self.context.build_config()]
 
-        if not self.context.has_default_compiler():
-            cmake_args.append(f'-DCMAKE_C_COMPILER={self.context.compiler_path()}')
-
         self.last_exit_code = run_program(cmake_args, cwd=build_dir)
 
     def do_check(self, args):
