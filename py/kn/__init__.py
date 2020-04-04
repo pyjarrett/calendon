@@ -19,7 +19,7 @@ def git_branch():
 
 def git_cmd_version():
     return subprocess.check_output(['git', 'log', '-1', '--pretty=%ad',
-                                    '--date=format:%d %b %H:%M', 'tools/kn']).decode().strip()
+                                    '--date=format:%d %b %H:%M', 'py/kn']).decode().strip()
 
 
 def generate_prompt():
