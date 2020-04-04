@@ -414,6 +414,9 @@ class Hammer(cmd.Cmd):
         os.mkdir(build_dir)
         cmake_args = ['cmake', '..']
 
+        if args == '--enable-ccache':
+            cmake_args.append('-DKN_ENABLE_CCACHE=1')
+
         compiler = self.context.compiler()
         cmake_args.extend(cmake_compiler_generator_settings(compiler))
         self.last_exit_code = run_program(cmake_args, cwd=build_dir)
