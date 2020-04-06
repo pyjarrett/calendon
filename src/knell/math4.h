@@ -1,11 +1,11 @@
 /*
  * Mathematical types for rendering and collision detection.
  *
- * This mathematics library assumes the use of column vectors.  This means the
- * correct way to multiply a matrix M and a vector v is (M * v).
+ * This assumes the use of row vectors.  This means the
+ * correct way to multiply a matrix M and a vector v is (v * M).
  */
-#ifndef KN_MATH_H
-#define KN_MATH_H
+#ifndef KN_MATH4_H
+#define KN_MATH4_H
 
 /**
  * ROW vector.
@@ -24,13 +24,6 @@ typedef union {
  *  8  9 10 11
  * 12 13 14 15
  *
- * This means that matrices can be written in the form of a singular array:
- * ```
- * float translate[16] = { 1, 0, 0, x,
- *                         0, 1, 0, y,
- *                         0, 0, 1, z,
- *                         0, 0, 0, 1 };
- * ```
  */
 typedef struct {
 	float m[4][4];
