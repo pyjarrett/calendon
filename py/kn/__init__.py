@@ -19,6 +19,8 @@ import threading
 import time
 from typing import IO, List
 
+import kn.multiplatform as mp
+
 
 def py_files() -> List[str]:
     """
@@ -142,45 +144,6 @@ def run_program(command_line: List[str], **kwargs):
     return process.wait()
 
 
-def os_specific_executable(named):
-    """Produce an executable file name from the generic basename."""
-    if sys.platform == 'win32':
-        return named + '.exe'
-
-    return named
-
-
-def os_specific_shared_lib(named):
-    """Give a shared library with appropriate prefix/suffix from a basename."""
-    if sys.platform == 'win32':
-        return named + '.dll'
-
-    return 'lib' + named + '.so'
-
-
-def os_specific_demo_glob():
-    """Produce a glob suitable for identifying demo shared libraries."""
-    if sys.platform == 'win32':
-        return '*.dll'
-
-    return 'lib*.so'
-
-
-def demo_name_from_os_specific_shared_lib(shared_lib: str):
-    """
-    Converts a name from an OS-specific shared library name to the generic name.
-    """
-    if sys.platform == 'win32':
-        if not shared_lib.endswith('.dll'):
-            raise ValueError('Shared library provided without .dll suffix.')
-        return os.path.splitext(shared_lib)[0]
-
-    if not shared_lib.startswith('lib') or shared_lib.endswith('.so'):
-        raise ValueError(f'Shared lib does not match "lib*.so"')
-
-    return shared_lib[3:-3]
-
-
 class BuildAndRunContext:
     """A description of the current build and run environment."""
     def __init__(self):
@@ -215,15 +178,15 @@ class BuildAndRunContext:
 
     def driver_path(self):
         """Path to the Knell driver, relative to the build directory."""
-        return os.path.join('src', 'driver', os_specific_executable('knell-driver'))
+        return os.path.join('src', 'driver', mp.root_to_executable('knell-driver'))
 
     def lib_path(self):
         """Path to the Knell lib itself, relative to the build directory."""
-        return os.path.join('src', 'knell', os_specific_shared_lib('knell'))
+        return os.path.join('src', 'knell', mp.root_to_shared_lib('knell'))
 
     def demo_path(self):
         """Path to a demo, relative to the build directory."""
-        return os.path.join('src', 'demos', os_specific_shared_lib(self.demo()))
+        return os.path.join('src', 'demos', mp.root_to_shared_lib(self.demo()))
 
     def build_dir(self):
         """The location of the out-of-tree build."""
@@ -295,9 +258,9 @@ class BuildAndRunContext:
 
 def all_demos(context: BuildAndRunContext) -> List[str]:
     """Return a list of all currently available demos."""
-    demo_glob = os.path.join(context.build_dir(), 'src', 'demos', os_specific_demo_glob())
+    demo_glob = os.path.join(context.build_dir(), 'src', 'demos', mp.demo_glob())
     demos = [os.path.basename(demo) for demo in glob.glob(demo_glob)]
-    return sorted([demo_name_from_os_specific_shared_lib(d) for d in demos])
+    return sorted([mp.shared_lib_to_root(d) for d in demos])
 
 
 def run_demo(context: BuildAndRunContext):
