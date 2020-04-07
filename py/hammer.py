@@ -1,29 +1,39 @@
 #!/usr/bin/env python3
+
+"""
+Hammer can be run interactively or a single command at a time.
+
+The same commands which would have been run from the interactive version.
+"""
+
 import importlib
-import kn
 import sys
+import kn
 
 
-def reload_hammer():
-    importlib.reload(kn)
-
-
-def run_repl():
+def _run_repl():
+    """Run Hammer interactively, reloading it if requested."""
     while True:
-        toll = kn.Hammer(reload_hammer)
-        toll.cmdloop()
+        repl = kn.Hammer()
+        repl.cmdloop()
 
-        if not toll.reload:
-            sys.exit(toll.last_exit_code)
+        if repl.reload:
+            importlib.reload(kn)
+        else:
+            sys.exit(repl.last_exit_code)
+
+
+def _main():
+    args = sys.argv[1:]
+    if len(args) == 0:
+        _run_repl()
+    else:
+        hammer = kn.Hammer()
+        hammer.onecmd(' '.join(args))
+        if hammer.last_exit_code == 0:
+            hammer.do_save('')
+        sys.exit(hammer.last_exit_code)
 
 
 if __name__ == '__main__':
-    args = sys.argv[1:]
-    if len(args) == 0:
-        run_repl()
-    else:
-        toll = kn.Hammer(reload_hammer)
-        toll.onecmd(' '.join(args))
-        if toll.last_exit_code == 0:
-            toll.do_save('')
-        sys.exit(toll.last_exit_code)
+    _main()

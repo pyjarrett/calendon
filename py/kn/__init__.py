@@ -1,3 +1,10 @@
+"""
+Knell build tool module for Hammer tool.
+
+Hammer is the programmer's helper tool for having consistent commands across
+environment and simplifying the passing of command line parameters between
+multiple runs of the game.
+"""
 import argparse
 import cmd
 import glob
@@ -10,30 +17,63 @@ import subprocess
 import sys
 import threading
 import time
-from typing import List
+from typing import IO, List
+
+
+def py_files() -> List[str]:
+    """
+    A list containing the top-level directories and files to provide to tools.
+    """
+    return ['hammer.py', 'kn']
+
+
+def run_pycheck() -> bool:
+    """
+    Run all the checks on the Hammer Python source.
+
+    Return true if the tests succeeded.
+    """
+    checks = [['mypy'],
+              ['pylint'],
+              ['pycodestyle', '--max-line-length=120', '--show-source', '--statistics', '--count'],
+              ['pydocstyle', '--ignore=D200,D203,D204,D212,D401'],
+              ['bandit', '-r'],
+              ]
+
+    for program in checks:
+        cmd_line = program
+        cmd_line.extend(py_files())
+        if run_program(cmd_line, cwd='py') != 0:
+            return False
+
+    return True
 
 
 def git_branch():
+    """Return the current git branch."""
     return subprocess.check_output('git branch --show-current'.split()).decode().strip()
 
 
 def git_cmd_version():
+    """Returns the date of the last commit."""
     return subprocess.check_output(['git', 'log', '-1', '--pretty=%ad',
                                     '--date=format:%d %b %H:%M', 'py/kn']).decode().strip()
 
 
 def generate_prompt():
+    """Return a prompt suitable for command input in Hammer."""
     return f'({git_branch()}) '
 
 
 def build_dir_for_compiler(compiler):
+    """Maps a compiler to its own out-of-tree build directory."""
     if compiler == 'default' or compiler is None:
         return 'build'
-    else:
-        return f'build-{compiler}'
+    return f'build-{compiler}'
 
 
 def cmake_compiler_generator_settings(compiler):
+    """Makes settings to give the generator for a specific compiler."""
     settings = []
     if compiler != 'default' and compiler is not None:
         settings = [f'-DCMAKE_C_COMPILER={compiler}']
@@ -57,23 +97,25 @@ def cmake_compiler_generator_settings(compiler):
     return settings
 
 
-def read_stream(stream, q):
+def read_stream(stream: IO, queued_lines: queue.Queue):
+    """Reads a stream into a queue."""
     for line in stream:
         try:
-            q.put(line.decode().strip())
+            queued_lines.put(line.decode().strip())
         except UnicodeDecodeError:
-            q.put(line.strip())
+            queued_lines.put(line.strip())
 
 
-def run_program(command_line_array, **kwargs):
-    """
-    Runs another process while streaming its stdout and stderr.
-    """
-    print(f'Running: {" ".join(command_line_array)} {kwargs}')
-    process = subprocess.Popen(command_line_array, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
+def run_program(command_line: List[str], **kwargs):
+    """Runs another process while streaming its stdout and stderr."""
+    print(f'Running: {" ".join(command_line)} {kwargs}')
+    process = subprocess.Popen(command_line,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE,
+                               **kwargs)
 
-    out_queue = queue.Queue()
-    err_queue = queue.Queue()
+    out_queue: queue.Queue = queue.Queue()
+    err_queue: queue.Queue = queue.Queue()
 
     out_thread = threading.Thread(target=read_stream, args=(process.stdout, out_queue))
     err_thread = threading.Thread(target=read_stream, args=(process.stderr, err_queue))
@@ -101,35 +143,27 @@ def run_program(command_line_array, **kwargs):
 
 
 def os_specific_executable(named):
-    """
-    Produces an executable file name with an optional extension from the generic
-    basename.
-    """
+    """Produce an executable file name from the generic basename."""
     if sys.platform == 'win32':
         return named + '.exe'
-    else:
-        return named
+
+    return named
 
 
 def os_specific_shared_lib(named):
-    """
-    Produces a shared library with appropriate prefix and suffix from a generic
-    basename.
-    """
+    """Give a shared library with appropriate prefix/suffix from a basename."""
     if sys.platform == 'win32':
         return named + '.dll'
-    else:
-        return 'lib' + named + '.so'
+
+    return 'lib' + named + '.so'
 
 
 def os_specific_demo_glob():
-    """
-    Produces a glob suitable for identifying demo shared libraries.
-    """
+    """Produce a glob suitable for identifying demo shared libraries."""
     if sys.platform == 'win32':
         return '*.dll'
-    else:
-        return 'lib*.so'
+
+    return 'lib*.so'
 
 
 def demo_name_from_os_specific_shared_lib(shared_lib: str):
@@ -137,29 +171,31 @@ def demo_name_from_os_specific_shared_lib(shared_lib: str):
     Converts a name from an OS-specific shared library name to the generic name.
     """
     if sys.platform == 'win32':
-        assert shared_lib.endswith('.dll')
+        if not shared_lib.endswith('.dll'):
+            raise ValueError('Shared library provided without .dll suffix.')
         return os.path.splitext(shared_lib)[0]
-    else:
-        assert shared_lib.startswith('lib')
-        assert shared_lib.endswith('.so')
-        return shared_lib[3:-3]
+
+    if not shared_lib.startswith('lib') or shared_lib.endswith('.so'):
+        raise ValueError(f'Shared lib does not match "lib*.so"')
+
+    return shared_lib[3:-3]
 
 
 class BuildAndRunContext:
-    """
-    A description of the current build and run environment.
-    """
-
+    """A description of the current build and run environment."""
     def __init__(self):
+        """Create an empty config."""
         self.config = {}
         self.config['compilers'] = {}
 
     def save(self):
+        """Save current configuration."""
         print(f'Saving to {self.save_path()}')
         with open(self.save_path(), 'w') as file:
             json.dump(self.config, file)
 
     def load(self):
+        """Load configuration from file."""
         if os.path.isfile(self.save_path()):
             print(f'Loading from {self.save_path()}')
             with open(self.save_path(), 'r') as file:
@@ -170,9 +206,11 @@ class BuildAndRunContext:
             print(f'Config file {self.save_path()} does not exist.')
 
     def save_path(self):
+        """The currently set configuration save path."""
         return self.config.get('save-path', '.hammer')
 
     def values(self):
+        """A copy of all configuration values."""
         return self.config
 
     def driver_path(self):
@@ -188,27 +226,23 @@ class BuildAndRunContext:
         return os.path.join('src', 'demos', os_specific_shared_lib(self.demo()))
 
     def build_dir(self):
-        """
-        The location of the out-of-tree build.
-        """
+        """The location of the out-of-tree build."""
         return build_dir_for_compiler(self.config.get('compiler'))
 
     def build_config(self):
-        """
-        A particular version of the build, such as Debug, or Release.
-        """
+        """A particular version of the build, such as Debug, or Release."""
         return self.config.get('config', 'Debug')
 
     def has_default_compiler(self):
+        """Check to see if CMake's compiler choice been overriden."""
         return self.config.get('compiler') is None and self.config.get('compiler') != 'default'
 
     def compiler(self):
-        """
-        The type of the compiler, independent of the path.
-        """
+        """The type of the compiler, independent of the path."""
         return self.config.get('compiler')
 
     def compiler_path(self):
+        """Return the current compiler path or None if none set."""
         compiler_alias = self.config.get('compiler')
         if compiler_alias is None:
             return None
@@ -216,14 +250,14 @@ class BuildAndRunContext:
         if compiler_alias in self.config['compilers'].keys():
             return self.config['compilers'][compiler_alias]
 
+        return None
+
     def demo(self):
-        """
-        The generic name of the current demo (without a prefix or suffix).
-        :return:
-        """
+        """The generic name of the current demo without a prefix or suffix."""
         return self.config.get('demo')
 
     def add(self, args):
+        """Add to the environment settings."""
         parser = argparse.ArgumentParser(usage='key value\n    Sets a key equal to a value.\n')
         parser.add_argument('key', choices=['compiler'])
         parser.add_argument('alias')
@@ -235,13 +269,14 @@ class BuildAndRunContext:
                 if os.path.isfile(args.path):
                     self.config['compilers'][args.alias] = args.path
                     return 0
-                else:
-                    print(f'Compiler "{args.alias}" does not exist at {args.path}')
-                    return 1
+
+                print(f'Compiler "{args.alias}" does not exist at {args.path}')
+            return 1
         except SystemExit:
             return 1
 
-    def parse(self, args):
+    def parse_config_value(self, args):
+        """Parse a config key value pair and set it."""
         parser = argparse.ArgumentParser(usage='key value\n    Sets a key equal to a value.\n')
         parser.add_argument('key', choices=['compiler', 'config', 'demo'])
         parser.add_argument('value')
@@ -251,133 +286,131 @@ class BuildAndRunContext:
             if args.key == 'compiler' and args.value not in self.config['compilers'].keys():
                 print(f'Unknown compiler: {args.key}.  Add compiler aliases first.')
                 return 1
-            else:
-                self.config[args.key] = args.value
-                return 0
+
+            self.config[args.key] = args.value
+            return 0
         except SystemExit:
             return 1
 
 
-def demos(context: BuildAndRunContext) -> List[str]:
-    """
-    Returns a list of all currently available demos.
-    """
+def all_demos(context: BuildAndRunContext) -> List[str]:
+    """Return a list of all currently available demos."""
     demo_glob = os.path.join(context.build_dir(), 'src', 'demos', os_specific_demo_glob())
     demos = [os.path.basename(demo) for demo in glob.glob(demo_glob)]
     return sorted([demo_name_from_os_specific_shared_lib(d) for d in demos])
 
 
 def run_demo(context: BuildAndRunContext):
-    """
-    Runs the current demo using a given context.
-    """
+    """Run the current demo using a given context."""
     print('Running demo')
     if context.demo() is None:
         print('No demo selected to run')
         return 1
-    else:
-        return run_program([context.driver_path(), '--game', context.demo_path()], cwd=context.build_dir())
+
+    return run_program([context.driver_path(), '--game', context.demo_path()], cwd=context.build_dir())
 
 
 class Hammer(cmd.Cmd):
     """
-    Interactive command-line tool to simplify development with Knell.  This
-    allows building, testing, and running knell consistently across platforms.
+    Interactive command-line tool to simplify development with Knell.
+
+    This allows building, testing, and running knell consistently across
+    platforms.
     """
     prompt = generate_prompt()
     intro = 'hammer: A tool to help with Knell building, running, and debugging\n'
 
-    def __init__(self, reload_fn):
+    def __init__(self):
+        """Start up a Hammer instanced, pre-loaded with its config."""
         super().__init__()
         self.context = BuildAndRunContext()
         self.context.load()
-        self.reload_fn = reload_fn
         self.reload = False
         self.history = []
         self.cmd_start_time = 0
         self.last_exit_code = 0
 
     @staticmethod
-    def update_prompt():
+    def _update_prompt():
         Hammer.prompt = generate_prompt()
 
     def precmd(self, line):
+        """Executed before each command is interpreted and executed."""
         self.cmd_start_time = time.monotonic()
         self.history.append(line)
         return line
 
     def postcmd(self, stop, line):
+        """Executed after each command."""
         now = time.monotonic()
         print(f'{line} {now - self.cmd_start_time:>8.2f}s')
 
-        if not stop:
-            Hammer.update_prompt()
-            return False
-        else:
+        if stop:
             return True
 
-    def default(self, arg):
+        Hammer._update_prompt()
+        return False
+
+    def default(self, _args):
+        """Override 'default' to print help."""
         self.do_help('')
 
-    def do_version(self, arg):
+    def do_version(self, _args):
+        """Print the current git version."""
         print(f'hammer REPL version: {git_cmd_version()}')
 
-    def do_quit(self, arg):
+    def do_quit(self, _args):
+        """Save configuration and exit."""
         self.reload = False
         return True
 
-    def do_exit(self, arg):
+    def do_exit(self, _args):
         """Alias for quit."""
         self.reload = False
         return True
 
-    def do_save(self, arg):
+    def do_save(self, _args):
+        """Save the current configuration."""
         self.context.save()
 
-    def do_load(self, arg):
+    def do_load(self, _args):
+        """Reload the configuration."""
         self.context.load()
 
-    def do_reload(self, args):
-        """[For Development] Reloads Hammer with updated source."""
-        self.reload_fn()
+    def do_reload(self, _args):
+        """[For Development] Reload Hammer with updated source."""
         self.reload = True
         self.context.save()
         return True
 
-    def do_last_commit(self, arg):
-        """Prints the hash and short log of the last commit."""
+    def do_last_commit(self, _args):
+        """Print the hash and short log of the last commit."""
         print(subprocess.check_output('git log -1 --pretty=format:%h:%s'.split()).decode())
 
-    def do_config(self, arg):
+    def do_config(self, _args):
         """Print the current state of configuration variables."""
         print(json.dumps(self.context.values(), indent=4))
 
     def do_set(self, args):
-        """
-        Sets configuration values.
-        """
-        self.last_exit_code = self.context.parse(args)
+        """Set configuration values."""
+        self.last_exit_code = self.context.parse_config_value(args)
 
     def do_add(self, args):
+        """Add a variable to the environment."""
         self.last_exit_code = self.context.add(args)
 
-    def do_clean(self, args):
-        """
-        Wipes build directory.
-        """
+    def do_clean(self, _args):
+        """Wipe build directory."""
         build_dir = self.context.build_dir()
         if os.path.exists(build_dir):
             if not os.path.isdir(build_dir):
                 print(f'Build directory {build_dir} exists as something other than a directory')
-                return
             else:
                 print(f'Wiping the build directory {build_dir}')
                 shutil.rmtree(build_dir)
 
-    def do_sync(self, args):
-        """
-        Fetch, rebase and push to all remotes.
-        """
+    def do_sync(self, _args):
+        """Fetch, rebase and push to all remotes."""
         commands = [
             'git fetch',
             'git pull --rebase',
@@ -389,17 +422,14 @@ class Hammer(cmd.Cmd):
                 break
 
     def do_gen(self, args):
-        """
-        Generate project files.
-        """
+        """Generate project files."""
         build_dir = self.context.build_dir()
         if os.path.exists(build_dir):
             if not os.path.isdir(build_dir):
                 print(f'Build directory {build_dir} exists as something other than a directory')
-                return
-            else:
-                print(f'{build_dir} exists.')
-                return
+
+            print(f'{build_dir} exists.')
+            return
 
         print(f'Creating build directory {build_dir}')
         os.mkdir(build_dir)
@@ -412,10 +442,8 @@ class Hammer(cmd.Cmd):
         cmake_args.extend(cmake_compiler_generator_settings(compiler))
         self.last_exit_code = run_program(cmake_args, cwd=build_dir)
 
-    def do_build(self, args):
-        """
-        Builds using the current project configuration.
-        """
+    def do_build(self, _args):
+        """Build using the current project configuration."""
         build_dir = self.context.build_dir()
         if not os.path.exists(build_dir):
             print(f'Build dir does not exist at {build_dir}')
@@ -431,10 +459,12 @@ class Hammer(cmd.Cmd):
 
         self.last_exit_code = run_program(cmake_args, cwd=build_dir)
 
-    def do_check(self, args):
-        """
-        Runs all tests.
-        """
+    def do_pycheck(self, _args):
+        """Run python checks on Hammer scripts."""
+        run_pycheck()
+
+    def do_check(self, _args):
+        """Run all tests."""
         build_dir = self.context.build_dir()
         if not os.path.exists(build_dir):
             print(f'Build dir does not exist at {build_dir}')
@@ -444,10 +474,8 @@ class Hammer(cmd.Cmd):
                                            '--config', self.context.build_config()],
                                           cwd=build_dir)
 
-    def do_check_iterate(self, args):
-        """
-        Runs only failed tests.
-        """
+    def do_check_iterate(self, _args):
+        """Run only failed tests."""
         build_dir = self.context.build_dir()
         if not os.path.exists(build_dir):
             print(f'Build dir does not exist at {build_dir}')
@@ -457,17 +485,13 @@ class Hammer(cmd.Cmd):
                                            '--config', self.context.build_config()],
                                           cwd=build_dir)
 
-    def do_demo(self, args):
-        """
-        Lists all available demos.
-        """
-        for demo in demos(self.context):
+    def do_demo(self, _args):
+        """List all available demos."""
+        for demo in all_demos(self.context):
             print(demo)
 
     def do_run(self, args):
-        """
-        Use 'run demo' to run your currently selected demo.
-        """
+        """Use 'run demo' to run your currently selected demo."""
         build_dir = self.context.build_dir()
         if not os.path.exists(build_dir):
             print(f'Build dir does not exist at {build_dir}')
@@ -484,17 +508,13 @@ class Hammer(cmd.Cmd):
             else:
                 self.last_exit_code = build_status
 
-    def do_history(self, args):
-        """
-        Prints command history.
-        """
+    def do_history(self, _args):
+        """Print command history."""
         for index, line in enumerate(self.history):
             print(f'{index:<5} {line}')
 
     def do_redo(self, args):
-        """
-        "redo i" re-runs command 'i' from history.
-        """
+        """'redo i' re-runs command 'i' from history."""
         try:
             index = int(args)
             if index >= 0 and index < len(self.history):
@@ -505,10 +525,8 @@ class Hammer(cmd.Cmd):
             print(f'Can only redo history commands based on index.')
 
     if sys.platform != 'win32':
-        def do_symbols(self, args):
-            """
-            Lists symbols exported in the Knell shared library.
-            """
+        def do_symbols(self, _args):
+            """List symbols exported in the Knell shared library."""
             build_dir = self.context.build_dir()
             if not os.path.exists(build_dir):
                 print(f'Build dir does not exist at {build_dir}')
