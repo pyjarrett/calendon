@@ -9,15 +9,6 @@ float4 float4_Make(float x, float y, float z, float w)
 
 float4 float4_Multiply(float4 v, float4x4 m)
 {
-	//float4 out;
-	//for (uint32_t i=0; i<4; ++i) {
-	//	float element = 0.0f;
-	//	for (uint32_t j=0; j<4; ++j) {
-	//		element += v.v[j] * m.m[j][i];
-	//	}
-	//	out.v[i] = element;
-	//}
-	//return out;
 	const float x = v.v[0] * m.m[0][0] + v.v[1] * m.m[0][1] + v.v[2] * m.m[0][2] + v.v[3] * m.m[0][3];
 	const float y = v.v[0] * m.m[1][0] + v.v[1] * m.m[1][1] + v.v[2] * m.m[1][2] + v.v[3] * m.m[1][3];
 	const float z = v.v[0] * m.m[2][0] + v.v[1] * m.m[2][1] + v.v[2] * m.m[2][2] + v.v[3] * m.m[2][3];
