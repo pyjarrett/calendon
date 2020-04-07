@@ -8,7 +8,7 @@
 #define KN_RENDER_LL_H
 
 #include <knell/color.h>
-#include <tests/handle.h>
+#include <knell/handle.h>
 #include <knell/math2.h>
 #include <knell/math4.h>
 #include <knell/render-resources.h>
