@@ -270,7 +270,11 @@ def run_demo(context: BuildAndRunContext):
         print('No demo selected to run')
         return 1
 
-    return run_program([context.driver_path(), '--game', context.demo_path()], cwd=context.build_dir())
+    return run_program(
+        [os.path.join(context.build_dir(), context.driver_path()),
+         '--game',
+         'src/demos/planets.dll'],
+        cwd='build')
 
 
 class Hammer(cmd.Cmd):

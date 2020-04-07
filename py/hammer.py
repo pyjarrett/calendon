@@ -5,7 +5,6 @@ Hammer can be run interactively or a single command at a time.
 
 The same commands which would have been run from the interactive version.
 """
-
 import importlib
 import sys
 import kn
