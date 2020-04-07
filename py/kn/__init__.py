@@ -91,7 +91,7 @@ def cmake_compiler_generator_settings(compiler):
                 generator = generator.strip()
                 print(f'"{generator}"')
                 break
-        if generator is None:
+        if generator is not None:
             settings.extend(['-G', generator, '-A', 'x64'])
 
     return settings
