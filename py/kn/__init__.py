@@ -19,6 +19,7 @@ import threading
 import time
 from typing import IO, List
 
+import kn.git as git
 import kn.multiplatform as mp
 
 
@@ -51,20 +52,9 @@ def run_pycheck() -> bool:
     return True
 
 
-def git_branch():
-    """Return the current git branch."""
-    return subprocess.check_output('git branch --show-current'.split()).decode().strip()
-
-
-def git_cmd_version():
-    """Returns the date of the last commit."""
-    return subprocess.check_output(['git', 'log', '-1', '--pretty=%ad',
-                                    '--date=format:%d %b %H:%M', 'py/kn']).decode().strip()
-
-
 def generate_prompt():
     """Return a prompt suitable for command input in Hammer."""
-    return f'({git_branch()}) '
+    return f'({git.current_branch()}) '
 
 
 def build_dir_for_compiler(compiler):
@@ -324,7 +314,7 @@ class Hammer(cmd.Cmd):
 
     def do_version(self, _args):
         """Print the current git version."""
-        print(f'hammer REPL version: {git_cmd_version()}')
+        print(f'hammer REPL version: {git.last_commit_date()}')
 
     def do_quit(self, _args):
         """Save configuration and exit."""
@@ -375,18 +365,6 @@ class Hammer(cmd.Cmd):
             else:
                 print(f'Wiping the build directory {build_dir}')
                 shutil.rmtree(build_dir)
-
-    def do_sync(self, _args):
-        """Fetch, rebase and push to all remotes."""
-        commands = [
-            'git fetch',
-            'git pull --rebase',
-            'git push origin',
-        ]
-        for line in commands:
-            self.last_exit_code = run_program(line.split())
-            if self.last_exit_code != 0:
-                break
 
     def do_gen(self, args):
         """Generate project files."""
