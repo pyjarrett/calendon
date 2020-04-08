@@ -19,6 +19,7 @@ import threading
 import time
 from typing import IO, List
 
+import kn.cmake as cmake
 import kn.git as git
 import kn.multiplatform as mp
 
@@ -62,31 +63,6 @@ def build_dir_for_compiler(compiler):
     if compiler == 'default' or compiler is None:
         return 'build'
     return f'build-{compiler}'
-
-
-def cmake_compiler_generator_settings(compiler):
-    """Makes settings to give the generator for a specific compiler."""
-    settings = []
-    if compiler != 'default' and compiler is not None:
-        settings = [f'-DCMAKE_C_COMPILER={compiler}']
-
-    # https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2015%202017.html
-    if sys.platform == 'win32' and (compiler is None or compiler == 'default'):
-        help_output = subprocess.check_output(['cmake', '--help'])
-        generator = None
-        for line in help_output.decode().splitlines():
-            if line.startswith('*'):
-                print(line)
-                generator = line[1:line.index('=')]
-                if '[arch]' in generator:
-                    generator = generator.replace('[arch]', '')
-                generator = generator.strip()
-                print(f'"{generator}"')
-                break
-        if generator is not None:
-            settings.extend(['-G', generator, '-A', 'x64'])
-
-    return settings
 
 
 def read_stream(stream: IO, queued_lines: queue.Queue):
@@ -384,7 +360,7 @@ class Hammer(cmd.Cmd):
             cmake_args.append('-DKN_ENABLE_CCACHE=1')
 
         compiler = self.context.compiler()
-        cmake_args.extend(cmake_compiler_generator_settings(compiler))
+        cmake_args.extend(cmake.generator_settings_for_compiler(compiler))
         self.last_exit_code = run_program(cmake_args, cwd=build_dir)
 
     def do_build(self, _args):
