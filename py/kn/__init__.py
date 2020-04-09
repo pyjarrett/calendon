@@ -53,11 +53,6 @@ def run_pycheck() -> bool:
     return True
 
 
-def generate_prompt():
-    """Return a prompt suitable for command input in Hammer."""
-    return f'({git.current_branch()}) '
-
-
 def build_dir_for_compiler(compiler):
     """Maps a compiler to its own out-of-tree build directory."""
     if compiler == 'default' or compiler is None:
@@ -254,7 +249,7 @@ class Hammer(cmd.Cmd):
     This allows building, testing, and running knell consistently across
     platforms.
     """
-    prompt = generate_prompt()
+    prompt = ''
     intro = 'hammer: A tool to help with Knell building, running, and debugging\n'
 
     def __init__(self):
@@ -266,10 +261,16 @@ class Hammer(cmd.Cmd):
         self.history = []
         self.cmd_start_time = 0
         self.last_exit_code = 0
+        self.prompt = self._generate_prompt()
 
-    @staticmethod
-    def _update_prompt():
-        Hammer.prompt = generate_prompt()
+    def _generate_prompt(self):
+        """Return a prompt suitable for command input in Hammer."""
+        current_prompt = f'{git.current_branch()} {self.context.build_config()}'
+
+        if self.context.demo() is not None:
+            current_prompt += f' {self.context.demo()}'
+
+        return f'({current_prompt}) '
 
     def precmd(self, line):
         """Executed before each command is interpreted and executed."""
@@ -285,7 +286,7 @@ class Hammer(cmd.Cmd):
         if stop:
             return True
 
-        Hammer._update_prompt()
+        self.prompt = self._generate_prompt()
         return False
 
     def default(self, _args):
