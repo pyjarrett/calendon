@@ -148,11 +148,15 @@ class BuildAndRunContext:
 
     def lib_path(self):
         """Path to the Knell lib itself, relative to the build directory."""
-        return os.path.join('src', 'knell', mp.root_to_shared_lib('knell'))
+        return os.path.join(self.build_dir(), 'src', 'knell', mp.root_to_shared_lib('knell'))
 
     def demo_path(self):
-        """Path to a demo, relative to the build directory."""
-        return os.path.join('src', 'demos', mp.root_to_shared_lib(self.demo()))
+        """Absolute path to the demo."""
+        return os.path.join(self.demo_dir(), mp.root_to_shared_lib(self.demo()))
+
+    def demo_dir(self):
+        """Absolute path to directory containing demos."""
+        return os.path.join(self.build_dir(), 'src', 'demos')
 
     def build_dir(self):
         """The location of the out-of-tree build."""
