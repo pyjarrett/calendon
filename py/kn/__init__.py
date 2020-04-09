@@ -142,16 +142,16 @@ class BuildAndRunContext:
         """A copy of all configuration values."""
         return self.config
 
-    def driver_path(self):
-        """Path to the Knell driver, relative to the build directory."""
-        return os.path.join('src', 'driver', mp.root_to_executable('knell-driver'))
+    def driver_executable(self):
+        """Absolute path to the Knell driver executable."""
+        return os.path.join(self.build_dir(), 'src', 'driver', mp.root_to_executable('knell-driver'))
 
     def lib_path(self):
-        """Path to the Knell lib itself, relative to the build directory."""
+        """Path to the Knell lib itself."""
         return os.path.join(self.build_dir(), 'src', 'knell', mp.root_to_shared_lib('knell'))
 
-    def demo_path(self):
-        """Absolute path to the demo."""
+    def current_demo_path(self):
+        """Absolute path to current the demo."""
         return os.path.join(self.demo_dir(), mp.root_to_shared_lib(self.demo()))
 
     def demo_dir(self):
@@ -160,7 +160,7 @@ class BuildAndRunContext:
 
     def build_dir(self):
         """The location of the out-of-tree build."""
-        return build_dir_for_compiler(self.config.get('compiler'))
+        return os.path.abspath(build_dir_for_compiler(self.config.get('compiler')))
 
     def build_config(self):
         """A particular version of the build, such as Debug, or Release."""
@@ -228,7 +228,7 @@ class BuildAndRunContext:
 
 def all_demos(context: BuildAndRunContext) -> List[str]:
     """Return a list of all currently available demos."""
-    demo_glob = os.path.join(context.build_dir(), 'src', 'demos', mp.demo_glob())
+    demo_glob = os.path.join(context.demo_dir(), mp.demo_glob())
     demos = [os.path.basename(demo) for demo in glob.glob(demo_glob)]
     return sorted([mp.shared_lib_to_root(d) for d in demos])
 
@@ -241,9 +241,9 @@ def run_demo(context: BuildAndRunContext):
         return 1
 
     return run_program(
-        [os.path.join(context.build_dir(), context.driver_path()),
+        [os.path.join(context.build_dir(), context.driver_executable()),
          '--game',
-         'src/demos/planets.dll'],
+         context.current_demo_path()],
         cwd='build')
 
 
