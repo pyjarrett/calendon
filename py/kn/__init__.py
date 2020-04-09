@@ -41,7 +41,6 @@ def run_pycheck() -> bool:
               ['pylint'],
               ['pycodestyle', '--max-line-length=120', '--show-source', '--statistics', '--count'],
               ['pydocstyle', '--ignore=D200,D203,D204,D212,D401'],
-              ['bandit', '-r'],
               ]
 
     for program in checks:

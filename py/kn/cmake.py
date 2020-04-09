@@ -1,3 +1,6 @@
+"""
+Integration with CMake.
+"""
 import subprocess
 import sys
 

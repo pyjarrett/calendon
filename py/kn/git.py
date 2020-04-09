@@ -1,3 +1,6 @@
+"""
+Just call git instead of adding yet another dependency.
+"""
 import subprocess
 
 
