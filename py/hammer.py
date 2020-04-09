@@ -13,7 +13,7 @@ import kn
 def _run_repl():
     """Run Hammer interactively, reloading it if requested."""
     while True:
-        repl = kn.Hammer()
+        repl = kn.Hammer(interactive=True)
         repl.cmdloop()
 
         if repl.reload:
@@ -27,7 +27,7 @@ def _main():
     if len(args) == 0:
         _run_repl()
     else:
-        hammer = kn.Hammer()
+        hammer = kn.Hammer(interactive=False)
         hammer.onecmd(' '.join(args))
         if hammer.last_exit_code == 0:
             hammer.do_save('')

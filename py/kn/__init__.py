@@ -118,8 +118,8 @@ class BuildAndRunContext:
                 self.config = json.load(file)
                 if 'compilers' not in self.config:
                     self.config['compilers'] = {}
-        else:
-            print(f'Config file {self.save_path()} does not exist.')
+
+        print(f'Config file {self.save_path()} does not exist.')
 
     def save_path(self):
         """The currently set configuration save path."""
@@ -132,6 +132,13 @@ class BuildAndRunContext:
     def driver_executable(self):
         """Absolute path to the Knell driver executable."""
         return os.path.join(self.build_dir(), 'src', 'driver', mp.root_to_executable('knell-driver'))
+
+    def set_home_dir(self, home):
+        self.config['knell-home'] = home
+
+    def home_dir(self):
+        """The specified root directory for the Knell project."""
+        return self.config.get('knell-home', os.environ.get('KNELL_HOME'))
 
     def lib_path(self):
         """Path to the Knell lib itself."""
@@ -153,7 +160,7 @@ class BuildAndRunContext:
             build_dir = f'build-{compiler}'
 
         build_dir += '-' + self.build_config()
-        return os.path.abspath(build_dir)
+        return os.path.abspath(os.path.join(self.home_dir(), build_dir))
 
     def build_config(self):
         """A particular version of the build, such as Debug, or Release."""
@@ -250,9 +257,10 @@ class Hammer(cmd.Cmd):
     prompt = ''
     intro = 'hammer: A tool to help with Knell building, running, and debugging\n'
 
-    def __init__(self):
+    def __init__(self, interactive: bool):
         """Start up a Hammer instanced, pre-loaded with its config."""
         super().__init__()
+        self.interactive = interactive
         self.context = BuildAndRunContext()
         self.context.load()
         self.reload = False
@@ -260,6 +268,7 @@ class Hammer(cmd.Cmd):
         self.cmd_start_time = 0
         self.last_exit_code = 0
         self.prompt = self._generate_prompt()
+        self._ensure_home_dir_exists()
 
     def _generate_prompt(self):
         """Return a prompt suitable for command input in Hammer."""
@@ -269,6 +278,31 @@ class Hammer(cmd.Cmd):
             current_prompt += f' {self.context.demo()}'
 
         return f'({current_prompt}) '
+
+    def _ensure_home_dir_exists(self):
+        if self.context.home_dir() is None:
+            if self.interactive:
+                print('No home directory for Knell specified.')
+                self._input_home_dir()
+            else:
+                print('No root specified for Knell home, either as KNELL_HOME or in .hammer file.')
+                sys.exit(1)
+
+        if not os.path.isdir(self.context.home_dir()):
+            print(f'Home directory {self.context.home_dir()} does not exist.')
+            if self.interactive:
+                self._input_home_dir()
+            else:
+                sys.exit(1)
+
+    def _input_home_dir(self):
+        possible_knell_root: str = input(f'Current Directory: {os.getcwd()}\n'
+                                         'Where is the root of the Knell project? ')
+        if os.path.isdir(possible_knell_root):
+            self.context.set_home_dir(possible_knell_root)
+        else:
+            print(f'No directory exists at {possible_knell_root}')
+            sys.exit(1)
 
     def precmd(self, line):
         """Executed before each command is interpreted and executed."""
