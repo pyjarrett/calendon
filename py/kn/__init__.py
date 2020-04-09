@@ -53,13 +53,6 @@ def run_pycheck() -> bool:
     return True
 
 
-def build_dir_for_compiler(compiler):
-    """Maps a compiler to its own out-of-tree build directory."""
-    if compiler == 'default' or compiler is None:
-        return 'build'
-    return f'build-{compiler}'
-
-
 def read_stream(stream: IO, queued_lines: queue.Queue):
     """Reads a stream into a queue."""
     for line in stream:
@@ -155,7 +148,13 @@ class BuildAndRunContext:
 
     def build_dir(self):
         """The location of the out-of-tree build."""
-        return os.path.abspath(build_dir_for_compiler(self.config.get('compiler')))
+        compiler = self.config.get('compiler')
+        build_dir = 'build'
+        if compiler is not None and compiler != 'default':
+            build_dir = f'build-{compiler}'
+
+        build_dir += '-' + self.build_config()
+        return os.path.abspath(build_dir)
 
     def build_config(self):
         """A particular version of the build, such as Debug, or Release."""
