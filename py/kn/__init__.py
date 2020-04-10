@@ -346,22 +346,26 @@ class Hammer(cmd.Cmd):
     def do_save(self, args):
         """Save the current configuration."""
         if args == '':
-            print(f'Unknown arguments: {args}')
-        else:
             self.context.save()
+        else:
+            print(f'Unknown arguments: {args}')
 
     def do_load(self, args):
         """Reload the configuration."""
         if args == '':
-            print(f'Unknown arguments: {args}')
-        else:
             self.context.load()
+        else:
+            print(f'Unknown arguments: {args}')
 
-    def do_reload(self, _args):
+    def do_reload(self, args):
         """[For Development] Reload Hammer with updated source."""
-        self.reload = True
-        self.context.save()
-        return True
+        if args == '':
+            self.reload = True
+            self.context.save()
+            return True
+        else:
+            print(f'Unknown arguments: {args}')
+            return False
 
     def do_last_commit(self, _args):
         """Print the hash and short log of the last commit."""
