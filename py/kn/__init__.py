@@ -369,7 +369,7 @@ class Hammer(cmd.Cmd):
 
     def do_last_commit(self, _args):
         """Print the hash and short log of the last commit."""
-        print(subprocess.check_output('git log -1 --pretty=format:%h:%s'.split()).decode())
+        print(git.last_commit_short_log())
 
     def do_config(self, _args):
         """Print the current state of configuration variables."""

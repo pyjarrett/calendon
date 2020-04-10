@@ -13,3 +13,8 @@ def last_commit_date():
     """Returns the date of the last commit."""
     return subprocess.check_output(['git', 'log', '-1', '--pretty=%ad',
                                     '--date=format:%d %b %H:%M', 'py/kn']).decode().strip()
+
+
+def last_commit_short_log():
+    """Print the hash and short log of the last commit."""
+    subprocess.check_output('git log -1 --pretty=format:%h:%s'.split()).decode()
