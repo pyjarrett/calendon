@@ -325,9 +325,13 @@ class Hammer(cmd.Cmd):
         """Override 'default' to print help."""
         self.do_help('')
 
-    def do_version(self, _args):
+    def do_version(self, args):
         """Print the current git version."""
-        print(f'hammer REPL version: {git.last_commit_date()}')
+        if args == '':
+            print(f'hammer REPL version: {git.last_commit_date()}')
+        else:
+            print(f'Unknown arguments: {args}')
+
 
     def do_quit(self, _args):
         """Save configuration and exit."""
@@ -339,13 +343,19 @@ class Hammer(cmd.Cmd):
         self.reload = False
         return True
 
-    def do_save(self, _args):
+    def do_save(self, args):
         """Save the current configuration."""
-        self.context.save()
+        if args == '':
+            print(f'Unknown arguments: {args}')
+        else:
+            self.context.save()
 
-    def do_load(self, _args):
+    def do_load(self, args):
         """Reload the configuration."""
-        self.context.load()
+        if args == '':
+            print(f'Unknown arguments: {args}')
+        else:
+            self.context.load()
 
     def do_reload(self, _args):
         """[For Development] Reload Hammer with updated source."""
