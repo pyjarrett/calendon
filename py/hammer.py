@@ -17,7 +17,7 @@ def _run_repl():
         repl.cmdloop()
 
         if repl.reload:
-            importlib.reload(kn)
+            kn.reload()
         else:
             sys.exit(repl.last_exit_code)
 

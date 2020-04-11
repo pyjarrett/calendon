@@ -9,6 +9,7 @@ import argparse
 import cmd
 import glob
 import json
+import importlib
 import os
 import multiprocessing
 import queue
@@ -19,10 +20,17 @@ import threading
 import time
 from typing import IO, List
 
-from kn.project import BuildAndRunContext
 import kn.cmake as cmake
 import kn.git as git
 import kn.multiplatform as mp
+import kn.project as proj
+
+
+def reload():
+    importlib.reload(cmake)
+    importlib.reload(git)
+    importlib.reload(mp)
+    importlib.reload(proj)
 
 
 def py_files() -> List[str]:
@@ -98,14 +106,14 @@ def run_program(command_line: List[str], **kwargs):
     return process.wait()
 
 
-def all_demos(context: BuildAndRunContext) -> List[str]:
+def all_demos(context: proj.BuildAndRunContext) -> List[str]:
     """Return a list of all currently available demos."""
     demo_glob = os.path.join(context.demo_dir(), mp.demo_glob())
     demos = [os.path.basename(demo) for demo in glob.glob(demo_glob)]
     return sorted([mp.shared_lib_to_root(d) for d in demos])
 
 
-def run_demo(context: BuildAndRunContext):
+def run_demo(context: proj.BuildAndRunContext):
     """Run the current demo using a given context."""
     print('Running demo')
     if context.demo() is None:
@@ -133,7 +141,7 @@ class Hammer(cmd.Cmd):
         """Start up a Hammer instanced, pre-loaded with its config."""
         super().__init__()
         self.interactive = interactive
-        self.context = BuildAndRunContext()
+        self.context = proj.BuildAndRunContext()
         self.context.load()
         self.reload = False
         self.history: List[str] = []
