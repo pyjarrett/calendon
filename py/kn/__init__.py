@@ -367,13 +367,19 @@ class Hammer(cmd.Cmd):
             print(f'Unknown arguments: {args}')
             return False
 
-    def do_last_commit(self, _args):
+    def do_last_commit(self, args):
         """Print the hash and short log of the last commit."""
-        print(git.last_commit_short_log())
+        if args == '':
+            print(git.last_commit_short_log())
+        else:
+            print(f'Unknown arguments: {args}')
 
-    def do_config(self, _args):
+    def do_config(self, args):
         """Print the current state of configuration variables."""
-        print(json.dumps(self.context.values(), indent=4))
+        if args == '':
+            print(json.dumps(self.context.values(), indent=4))
+        else:
+            print(f'Unknown arguments: {args}')
 
     def do_set(self, args):
         """Set configuration values."""
