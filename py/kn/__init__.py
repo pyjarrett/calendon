@@ -271,54 +271,63 @@ class Hammer(cmd.Cmd):
 
     def do_clean(self, args):
         """Wipe build directory."""
-        if args == '':
-            build_dir = self.context.build_dir()
+        with project.parse_build_context_with_overrides(self.context, args.split()) as overridden:
+            if overridden is None:
+                return
+
+            build_dir = overridden.build_dir()
             if os.path.exists(build_dir):
                 if not os.path.isdir(build_dir):
                     print(f'Build directory {build_dir} exists as something other than a directory')
                 else:
                     print(f'Wiping the build directory {build_dir}')
                     shutil.rmtree(build_dir)
-        else:
-            print(f'Unknown arguments: {args}')
 
     def do_gen(self, args):
         """Generate project files."""
-        build_dir = self.context.build_dir()
-        if os.path.exists(build_dir):
-            if not os.path.isdir(build_dir):
-                print(f'Build directory {build_dir} exists as something other than a directory')
+        with project.parse_build_context_with_overrides(self.context, args.split()) as overridden:
+            if overridden is None:
+                return
 
-            print(f'{build_dir} exists.')
-            return
+            build_dir = overridden.build_dir()
+            if os.path.exists(build_dir):
+                if not os.path.isdir(build_dir):
+                    print(f'Build directory {build_dir} exists as something other than a directory')
 
-        print(f'Creating build directory {build_dir}')
-        os.mkdir(build_dir)
-        cmake_args = ['cmake', '..']
+                print(f'{build_dir} exists.')
+                return
 
-        if args == '--enable-ccache':
-            cmake_args.append('-DKN_ENABLE_CCACHE=1')
+            print(f'Creating build directory {build_dir}')
+            os.mkdir(build_dir)
+            cmake_args = ['cmake', '..']
 
-        compiler = self.context.compiler()
-        cmake_args.extend(cmake.generator_settings_for_compiler(compiler))
-        self.last_exit_code = run_program(cmake_args, cwd=build_dir)
+            if args == '--enable-ccache':
+                cmake_args.append('-DKN_ENABLE_CCACHE=1')
 
-    def do_build(self, _args):
+            compiler = overridden.compiler()
+            cmake_args.extend(cmake.generator_settings_for_compiler(compiler))
+            self.last_exit_code = run_program(cmake_args, cwd=build_dir)
+
+    def do_build(self, args):
         """Build using the current project configuration."""
-        build_dir = self.context.build_dir()
-        if not os.path.exists(build_dir):
-            print(f'Build dir does not exist at {build_dir}')
-            self.last_exit_code = 1
-            return
+        with project.parse_build_context_with_overrides(self.context, args.split()) as overridden:
+            if overridden is None:
+                return
 
-        cmake_args = ['cmake', '--build', '.',
-                      '--parallel', str(multiprocessing.cpu_count()),
-                      '--config', self.context.build_config()]
+            build_dir = overridden.build_dir()
+            if not os.path.exists(build_dir):
+                print(f'Build dir does not exist at {build_dir}')
+                self.last_exit_code = 1
+                return
 
-        if not self.context.has_default_compiler():
-            cmake_args.append(f'-DCMAKE_C_COMPILER={self.context.compiler_path()}')
+            cmake_args = ['cmake', '--build', '.',
+                          '--parallel', str(multiprocessing.cpu_count()),
+                          '--config', overridden.build_config()]
 
-        self.last_exit_code = run_program(cmake_args, cwd=build_dir)
+            if not overridden.has_default_compiler():
+                cmake_args.append(f'-DCMAKE_C_COMPILER={overridden.compiler_path()}')
+
+            self.last_exit_code = run_program(cmake_args, cwd=build_dir)
 
     def do_pycheck(self, _args):
         """Run python checks on Hammer scripts."""
@@ -326,25 +335,33 @@ class Hammer(cmd.Cmd):
 
     def do_check(self, _args):
         """Run all tests."""
-        build_dir = self.context.build_dir()
-        if not os.path.exists(build_dir):
-            print(f'Build dir does not exist at {build_dir}')
-            return
-        self.last_exit_code = run_program(['cmake', '--build', '.',
-                                           '--target', 'check',
-                                           '--config', self.context.build_config()],
-                                          cwd=build_dir)
+        with project.parse_build_context_with_overrides(self.context, args.split()) as overridden:
+            if overridden is None:
+                return
+
+            build_dir = overridden.build_dir()
+            if not os.path.exists(build_dir):
+                print(f'Build dir does not exist at {build_dir}')
+                return
+            self.last_exit_code = run_program(['cmake', '--build', '.',
+                                               '--target', 'check',
+                                               '--config', overridden.build_config()],
+                                              cwd=build_dir)
 
     def do_check_iterate(self, _args):
         """Run only failed tests."""
-        build_dir = self.context.build_dir()
-        if not os.path.exists(build_dir):
-            print(f'Build dir does not exist at {build_dir}')
-            return
-        self.last_exit_code = run_program(['cmake', '--build', '.',
-                                           '--target', 'check-iterate',
-                                           '--config', self.context.build_config()],
-                                          cwd=build_dir)
+        with project.parse_build_context_with_overrides(self.context, args.split()) as overridden:
+            if overridden is None:
+                return
+
+            build_dir = overridden.build_dir()
+            if not os.path.exists(build_dir):
+                print(f'Build dir does not exist at {build_dir}')
+                return
+            self.last_exit_code = run_program(['cmake', '--build', '.',
+                                               '--target', 'check-iterate',
+                                               '--config', overridden.build_config()],
+                                              cwd=build_dir)
 
     def do_demo(self, _args):
         """List all available demos."""

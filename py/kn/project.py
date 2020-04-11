@@ -1,15 +1,48 @@
 import argparse
+import contextlib
+import copy
 import json
 import os
+from typing import Optional
 
 import kn.multiplatform as mp
 
 
+@contextlib.contextmanager
+def parse_build_context_with_overrides(original_context, args):
+    usage = """for build overrides
+--build-dir DIR
+--build-config Debug|Release
+--compiler COMPILER_ALIAS"""
+    parser = argparse.ArgumentParser(usage=usage)
+    parser.add_argument('--build-dir', type=str, default=None)
+    parser.add_argument('--build-config', type=str, default=None)
+    parser.add_argument('--compiler', type=str, default=None)
+
+    try:
+        parsed_args = parser.parse_args(args)
+        context = copy.deepcopy(original_context)
+        if parsed_args.build_dir:
+            context.set_build_dir(parsed_args.build_dir)
+
+        if parsed_args.compiler:
+            context.set_compiler_alias(parsed_args.compiler)
+
+        if parsed_args.build_config:
+            context.set_build_config(parsed_args.build_config)
+
+        yield context
+    except SystemExit:
+        yield None
+
+
 class BuildAndRunContext:
     """A description of the current build and run environment."""
+
     def __init__(self):
         """Create an empty config."""
         self.config = self._empty_config()
+        self.registered_programs = {}
 
     @staticmethod
     def _empty_config():
@@ -63,27 +96,55 @@ class BuildAndRunContext:
         """Absolute path to directory containing demos."""
         return os.path.join(self.build_dir(), 'src', 'demos')
 
+    def set_build_dir(self, build_dir: str):
+        self.config['build-dir'] = build_dir
+
     def build_dir(self):
         """The location of the out-of-tree build."""
-        compiler = self.config.get('compiler')
-        build_dir = 'build'
-        if compiler is not None and compiler != 'default':
-            build_dir = f'build-{compiler}'
+        build_dir = self.config.get('build-dir')
 
-        build_dir += '-' + self.build_config()
+        if build_dir is None:
+            compiler = self.config.get('compiler')
+            build_dir = 'build'
+            if compiler is not None and compiler != 'default':
+                build_dir = f'build-{compiler}'
+
+            build_dir += '-' + self.build_config()
         return os.path.abspath(os.path.join(self.home_dir(), build_dir))
 
     def build_config(self):
         """A particular version of the build, such as Debug, or Release."""
         return self.config.get('config', 'Debug')
 
+    def register_program(self, alias, path, force=False):
+        """Adds programs to a list of "known good" programs which should be allowed to be run."""
+        if os.path.isfile(path) or force:
+            self.registered_programs[alias] = path
+
     def has_default_compiler(self):
-        """Check to see if CMake's compiler choice been overriden."""
+        """Check to see if CMake's compiler choice been overridden."""
         return self.config.get('compiler') is None and self.config.get('compiler') != 'default'
 
     def compiler(self):
         """The type of the compiler, independent of the path."""
         return self.config.get('compiler')
+
+    def compiler_alias(self) -> Optional[str]:
+        """The pseudoname for the compiler, independent of the path."""
+        return self.config.get('compiler')
+
+    def set_compiler_alias(self, alias) -> bool:
+        if alias not in self.registered_programs.keys():
+            return False
+
+        self.config['compiler'] = alias
+        return True
+
+    def set_build_config(self, config: str) -> bool:
+        if config not in ['Debug', 'Release']:
+            return False
+        self.config['config'] = config
+        return True
 
     def compiler_path(self):
         """Return the current compiler path or None if none set."""
