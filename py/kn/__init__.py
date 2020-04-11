@@ -101,8 +101,11 @@ class BuildAndRunContext:
     """A description of the current build and run environment."""
     def __init__(self):
         """Create an empty config."""
-        self.config = {}
-        self.config['compilers'] = {}
+        self.config = self._empty_config()
+
+    @staticmethod
+    def _empty_config():
+        return {'compilers': {}}
 
     def save(self):
         """Save current configuration."""
@@ -389,15 +392,18 @@ class Hammer(cmd.Cmd):
         """Add a variable to the environment."""
         self.last_exit_code = self.context.add(args)
 
-    def do_clean(self, _args):
+    def do_clean(self, args):
         """Wipe build directory."""
-        build_dir = self.context.build_dir()
-        if os.path.exists(build_dir):
-            if not os.path.isdir(build_dir):
-                print(f'Build directory {build_dir} exists as something other than a directory')
-            else:
-                print(f'Wiping the build directory {build_dir}')
-                shutil.rmtree(build_dir)
+        if args == '':
+            build_dir = self.context.build_dir()
+            if os.path.exists(build_dir):
+                if not os.path.isdir(build_dir):
+                    print(f'Build directory {build_dir} exists as something other than a directory')
+                else:
+                    print(f'Wiping the build directory {build_dir}')
+                    shutil.rmtree(build_dir)
+        else:
+            print(f'Unknown arguments: {args}')
 
     def do_gen(self, args):
         """Generate project files."""
