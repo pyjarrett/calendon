@@ -48,9 +48,11 @@ def parse_overrides(args: str, parser: argparse.ArgumentParser) -> Optional[argp
 
 
 def reload():
-    """Reloads Knell and it's associated submodules.
+    """
+    Reloads Knell and it's associated submodules.
 
-    Provided to improve iteration of development on Hammer."""
+    Provided to improve iteration of development on Hammer.
+    """
     importlib.reload(cmake)
     importlib.reload(git)
     importlib.reload(mp)
