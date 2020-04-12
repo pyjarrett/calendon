@@ -1,3 +1,6 @@
+"""
+Module to deal with project-related options and configurations.
+"""
 import argparse
 import contextlib
 import copy
@@ -8,32 +11,20 @@ from typing import Optional
 import kn.multiplatform as mp
 
 
-@contextlib.contextmanager
-def parse_build_context_with_overrides(original_context, args):
-    usage = """for build overrides
+def add_build_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+    """Adds argument parsing of build-specific arguments to a parser."""
+    usage = """\nfor build overrides
 --build-dir DIR
 --build-config Debug|Release
 --compiler COMPILER_ALIAS"""
-    parser = argparse.ArgumentParser(usage=usage)
+    if parser.usage is None:
+        parser.usage = usage
+    else:
+        parser.usage = parser.usage + usage
     parser.add_argument('--build-dir', type=str, default=None)
     parser.add_argument('--build-config', type=str, default=None)
     parser.add_argument('--compiler', type=str, default=None)
-
-    try:
-        parsed_args = parser.parse_args(args)
-        context = copy.deepcopy(original_context)
-        if parsed_args.build_dir:
-            context.set_build_dir(parsed_args.build_dir)
-
-        if parsed_args.compiler:
-            context.set_compiler_alias(parsed_args.compiler)
-
-        if parsed_args.build_config:
-            context.set_build_config(parsed_args.build_config)
-
-        yield context
-    except SystemExit:
-        yield None
+    return parser
 
 
 class BuildAndRunContext:
@@ -78,6 +69,7 @@ class BuildAndRunContext:
         return os.path.join(self.build_dir(), 'src', 'driver', mp.root_to_executable('knell-driver'))
 
     def set_home_dir(self, home):
+        """Sets the Knell home directory, which all other paths are relative to."""
         self.config['knell-home'] = home
 
     def home_dir(self):
@@ -97,6 +89,7 @@ class BuildAndRunContext:
         return os.path.join(self.build_dir(), 'src', 'demos')
 
     def set_build_dir(self, build_dir: str):
+        """Sets a specific build directory to prevent from inferring it."""
         self.config['build-dir'] = build_dir
 
     def build_dir(self):
@@ -134,6 +127,7 @@ class BuildAndRunContext:
         return self.config.get('compiler')
 
     def set_compiler_alias(self, alias) -> bool:
+        """Sets which registered program alias it should run."""
         if alias not in self.registered_programs.keys():
             return False
 
@@ -141,6 +135,7 @@ class BuildAndRunContext:
         return True
 
     def set_build_config(self, config: str) -> bool:
+        """Sets the build config version to use, such as Debug or Release."""
         if config not in ['Debug', 'Release']:
             return False
         self.config['config'] = config
@@ -196,3 +191,19 @@ class BuildAndRunContext:
             return 0
         except SystemExit:
             return 1
+
+
+@contextlib.contextmanager
+def parse_build_context_with_overrides(original_context: BuildAndRunContext, overrides: argparse.Namespace):
+    """Takes a context and provides an context with the given overrides."""
+    context = copy.deepcopy(original_context)
+    if overrides.build_dir:
+        context.set_build_dir(overrides.build_dir)
+
+    if overrides.compiler:
+        context.set_compiler_alias(overrides.compiler)
+
+    if overrides.build_config:
+        context.set_build_config(overrides.build_config)
+
+    yield context

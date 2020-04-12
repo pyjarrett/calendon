@@ -18,7 +18,7 @@ import subprocess
 import sys
 import threading
 import time
-from typing import IO, List
+from typing import IO, List, Optional
 
 import kn.cmake as cmake
 import kn.git as git
@@ -26,7 +26,31 @@ import kn.multiplatform as mp
 import kn.project as proj
 
 
+def base_arg_parser() -> argparse.ArgumentParser:
+    """Creates a generic parser for additional arguments to commands."""
+    usage = """generic
+--help
+--dry-run
+--verbose
+"""
+    parser = argparse.ArgumentParser(usage=usage)
+    parser.add_argument('--dry-run', action='store_true')
+    parser.add_argument('--verbose', action='store_true')
+    return parser
+
+
+def parse_overrides(args: str, parser: argparse.ArgumentParser) -> Optional[argparse.Namespace]:
+    """Parses an argument string with a given parser."""
+    try:
+        return parser.parse_args(args.split())
+    except SystemExit:
+        return None
+
+
 def reload():
+    """Reloads Knell and it's associated submodules.
+
+    Provided to improve iteration of development on Hammer."""
     importlib.reload(cmake)
     importlib.reload(git)
     importlib.reload(mp)
@@ -212,7 +236,6 @@ class Hammer(cmd.Cmd):
         else:
             print(f'Unknown arguments: {args}')
 
-
     def do_quit(self, _args):
         """Save configuration and exit."""
         self.reload = False
@@ -271,7 +294,8 @@ class Hammer(cmd.Cmd):
 
     def do_clean(self, args):
         """Wipe build directory."""
-        with project.parse_build_context_with_overrides(self.context, args.split()) as overridden:
+        overrides = parse_overrides(args, proj.add_build_args(base_arg_parser()))
+        with proj.parse_build_context_with_overrides(self.context, overrides) as overridden:
             if overridden is None:
                 return
 
@@ -285,10 +309,10 @@ class Hammer(cmd.Cmd):
 
     def do_gen(self, args):
         """Generate project files."""
-        with project.parse_build_context_with_overrides(self.context, args.split()) as overridden:
-            if overridden is None:
-                return
-
+        overrides = parse_overrides(args, proj.add_build_args(base_arg_parser()))
+        if overrides is None:
+            return
+        with proj.parse_build_context_with_overrides(self.context, overrides) as overridden:
             build_dir = overridden.build_dir()
             if os.path.exists(build_dir):
                 if not os.path.isdir(build_dir):
@@ -310,10 +334,10 @@ class Hammer(cmd.Cmd):
 
     def do_build(self, args):
         """Build using the current project configuration."""
-        with project.parse_build_context_with_overrides(self.context, args.split()) as overridden:
-            if overridden is None:
-                return
-
+        overrides = parse_overrides(args, proj.add_build_args(base_arg_parser()))
+        if overrides is None:
+            return
+        with proj.parse_build_context_with_overrides(self.context, overrides) as overridden:
             build_dir = overridden.build_dir()
             if not os.path.exists(build_dir):
                 print(f'Build dir does not exist at {build_dir}')
@@ -333,12 +357,12 @@ class Hammer(cmd.Cmd):
         """Run python checks on Hammer scripts."""
         run_pycheck()
 
-    def do_check(self, _args):
+    def do_check(self, args):
         """Run all tests."""
-        with project.parse_build_context_with_overrides(self.context, args.split()) as overridden:
-            if overridden is None:
-                return
-
+        overrides = parse_overrides(args, proj.add_build_args(base_arg_parser()))
+        if overrides is None:
+            return
+        with proj.parse_build_context_with_overrides(self.context, overrides) as overridden:
             build_dir = overridden.build_dir()
             if not os.path.exists(build_dir):
                 print(f'Build dir does not exist at {build_dir}')
@@ -348,12 +372,12 @@ class Hammer(cmd.Cmd):
                                                '--config', overridden.build_config()],
                                               cwd=build_dir)
 
-    def do_check_iterate(self, _args):
+    def do_check_iterate(self, args):
         """Run only failed tests."""
-        with project.parse_build_context_with_overrides(self.context, args.split()) as overridden:
-            if overridden is None:
-                return
-
+        overrides = parse_overrides(args, proj.add_build_args(base_arg_parser()))
+        if overrides is None:
+            return
+        with proj.parse_build_context_with_overrides(self.context, overrides) as overridden:
             build_dir = overridden.build_dir()
             if not os.path.exists(build_dir):
                 print(f'Build dir does not exist at {build_dir}')
@@ -363,28 +387,36 @@ class Hammer(cmd.Cmd):
                                                '--config', overridden.build_config()],
                                               cwd=build_dir)
 
-    def do_demo(self, _args):
+    def do_demo(self, args):
         """List all available demos."""
-        for demo in all_demos(self.context):
-            print(demo)
+        overrides = parse_overrides(args, proj.add_build_args(base_arg_parser()))
+        if overrides is None:
+            return
+        with proj.parse_build_context_with_overrides(self.context, overrides) as overridden:
+            for demo in all_demos(overridden):
+                print(demo)
 
     def do_run(self, args):
         """Use 'run demo' to run your currently selected demo."""
-        build_dir = self.context.build_dir()
-        if not os.path.exists(build_dir):
-            print(f'Build dir does not exist at {build_dir}')
+        overrides = parse_overrides(args, proj.add_build_args(base_arg_parser()))
+        if overrides is None:
             return
-        if args == 'demo':
-            if self.context.demo() is None:
-                print('No demo to run')
+        with proj.parse_build_context_with_overrides(self.context, overrides) as overridden:
+            build_dir = overridden.build_dir()
+            if not os.path.exists(build_dir):
+                print(f'Build dir does not exist at {build_dir}')
                 return
-            build_status = run_program(['cmake', '--build', '.',
-                                        '--target', self.context.demo(),
-                                        '--config', self.context.build_config()], cwd=build_dir)
-            if build_status == 0:
-                self.last_exit_code = run_demo(self.context)
-            else:
-                self.last_exit_code = build_status
+            if args == 'demo':
+                if overridden.demo() is None:
+                    print('No demo to run')
+                    return
+                build_status = run_program(['cmake', '--build', '.',
+                                            '--target', overridden.demo(),
+                                            '--config', overridden.build_config()], cwd=build_dir)
+                if build_status == 0:
+                    self.last_exit_code = run_demo(overridden)
+                else:
+                    self.last_exit_code = build_status
 
     def do_history(self, _args):
         """Print command history."""
@@ -403,20 +435,24 @@ class Hammer(cmd.Cmd):
             print(f'Can only redo history commands based on index.')
 
     if sys.platform != 'win32':
-        def do_symbols(self, _args):
+        def do_symbols(self, args):
             """List symbols exported in the Knell shared library."""
-            build_dir = self.context.build_dir()
-            if not os.path.exists(build_dir):
-                print(f'Build dir does not exist at {build_dir}')
+            overrides = parse_overrides(args, proj.add_build_args(base_arg_parser()))
+            if overrides is None:
                 return
-            lines: List[str] = subprocess.check_output(['nm', '-D', self.context.lib_path()],
-                                                       cwd=self.context.build_dir()).decode().splitlines()
-            categories = set()
-            for line in filter(lambda sym_line: ' T ' in sym_line, lines):
-                # line will be in "ADDRESS T Symbol" format
-                symbol = line.split()[2]
-                categories.add(symbol.split('_')[0])
-                print(symbol)
-            print()
-            print(f'Exporting {len(lines)} symbols from systems')
-            print(f'{" ".join(sorted(categories))}')
+            with proj.parse_build_context_with_overrides(self.context, overrides) as overridden:
+                build_dir = overridden.build_dir()
+                if not os.path.exists(build_dir):
+                    print(f'Build dir does not exist at {build_dir}')
+                    return
+                lines: List[str] = subprocess.check_output(['nm', '-D', overridden.lib_path()],
+                                                           cwd=overridden.build_dir()).decode().splitlines()
+                categories = set()
+                for line in filter(lambda sym_line: ' T ' in sym_line, lines):
+                    # line will be in "ADDRESS T Symbol" format
+                    symbol = line.split()[2]
+                    categories.add(symbol.split('_')[0])
+                    print(symbol)
+                print()
+                print(f'Exporting {len(lines)} symbols from systems')
+                print(f'{" ".join(sorted(categories))}')
