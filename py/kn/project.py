@@ -30,15 +30,13 @@ def add_build_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
 
 class BuildAndRunContext:
     """A description of the current build and run environment."""
-
     def __init__(self):
         """Create an empty config."""
         self.config = self._empty_config()
-        self.registered_programs = {}
 
     @staticmethod
     def _empty_config():
-        return {'compilers': {}}
+        return {'compilers': {}, 'registered-programs': {}}
 
     def save(self):
         """Save current configuration."""
@@ -54,6 +52,8 @@ class BuildAndRunContext:
                 self.config = json.load(file)
                 if 'compilers' not in self.config:
                     self.config['compilers'] = {}
+                if 'registered-programs' not in self.config:
+                    self.config['registered-programs'] = {}
 
         print(f'Config file {self.save_path()} does not exist.')
 
@@ -110,10 +110,15 @@ class BuildAndRunContext:
         """A particular version of the build, such as Debug, or Release."""
         return self.config.get('config', 'Debug')
 
-    def register_program(self, alias, path, force=False):
+    def register_program(self, alias, path, force=False) -> bool:
         """Adds programs to a list of "known good" programs which should be allowed to be run."""
         if os.path.isfile(path) or force:
-            self.registered_programs[alias] = path
+            self.config['registered-programs'][alias] = path
+            return True
+        return False
+
+    def is_registered_program(self, program_name: str) -> bool:
+        return program_name in self.config['registered-programs'].keys()
 
     def has_default_compiler(self):
         """Check to see if CMake's compiler choice been overridden."""
@@ -129,7 +134,10 @@ class BuildAndRunContext:
 
     def set_compiler_alias(self, alias) -> bool:
         """Sets which registered program alias it should run."""
-        if alias not in self.registered_programs.keys():
+        if alias in self.config['compilers'].keys():
+            return False
+
+        if not self.is_registered_program(alias):
             return False
 
         self.config['compiler'] = alias
@@ -148,8 +156,8 @@ class BuildAndRunContext:
         if compiler_alias is None:
             return None
 
-        if compiler_alias in self.config['compilers'].keys():
-            return self.config['compilers'][compiler_alias]
+        if compiler_alias in self.config['registered-programs'].keys():
+            return self.config['registered-programs'][compiler_alias]
 
         return None
 

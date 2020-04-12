@@ -9,7 +9,7 @@ def generator_settings_for_compiler(compiler):
     """Makes settings to give the generator for a specific compiler."""
     settings = []
     if compiler != 'default' and compiler is not None:
-        settings = [f'-DCMAKE_C_COMPILER={compiler}']
+        settings = [f'-DCMAKE_C_COMPILER="{compiler}"']
 
     # https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2015%202017.html
     if sys.platform == 'win32' and (compiler is None or compiler == 'default'):
@@ -26,5 +26,7 @@ def generator_settings_for_compiler(compiler):
                 break
         if generator is not None:
             settings.extend(['-G', generator, '-A', 'x64'])
+    else:
+        settings.extend(['-G', 'Unix Makefiles'])
 
     return settings

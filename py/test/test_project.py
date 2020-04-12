@@ -6,13 +6,18 @@ from kn.project import BuildAndRunContext, parse_build_context_with_overrides, a
 
 
 class BuildAndRunContextTest(unittest.TestCase):
+    def test_defaults(self):
+        bar = BuildAndRunContext()
+        self.assertEqual(bar.build_config(), 'Debug')
+        self.assertEqual(os.path.basename(bar.build_dir()), 'build-Debug')
+
     def test_build_override_parser(self):
         args = '--build-dir special_build_dir --build-config Release --compiler gcc'
         overrides = parse_overrides(args, add_build_args(base_arg_parser()))
         original = BuildAndRunContext()
-        original.register_program('clang', '/usr/bin/clang', force=True)
-        original.register_program('gcc', '/usr/bin/gcc', force=True)
-        original.set_compiler_alias('clang')
+        self.assertTrue(original.register_program('clang', '/usr/bin/clang', force=True))
+        self.assertTrue(original.register_program('gcc', '/usr/bin/gcc', force=True))
+        self.assertTrue(original.set_compiler_alias('clang'))
         with parse_build_context_with_overrides(original, overrides) as overridden:
             self.assertEqual(original.compiler(), 'clang')
             self.assertEqual(overridden.compiler(), 'gcc')

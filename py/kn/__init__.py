@@ -332,7 +332,7 @@ class Hammer(cmd.Cmd):
                 cmake_args.append('-DKN_ENABLE_CCACHE=1')
 
             compiler = overridden.compiler()
-            cmake_args.extend(cmake.generator_settings_for_compiler(compiler))
+            cmake_args.extend(cmake.generator_settings_for_compiler(overridden.compiler_path()))
             self.last_exit_code = run_program(cmake_args, cwd=build_dir)
 
     def do_build(self, args):
@@ -425,6 +425,19 @@ class Hammer(cmd.Cmd):
         """Print command history."""
         for index, line in enumerate(self.history):
             print(f'{index:<5} {line}')
+
+    def do_register(self, args):
+        parser = argparse.ArgumentParser(usage="""
+        ALIAS PATH [--force]
+        """)
+        parser.add_argument("alias", type=str)
+        parser.add_argument("path", type=str)
+        parser.add_argument("--force", action='store_true')
+        try:
+            args = parser.parse_args(shlex.split(args))
+            self.context.register_program(args.alias, args.path, args.force)
+        except SystemExit:
+            pass
 
     def do_redo(self, args):
         """'redo i' re-runs command 'i' from history."""
