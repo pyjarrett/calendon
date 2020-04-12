@@ -5,7 +5,6 @@ Hammer can be run interactively or a single command at a time.
 
 The same commands which would have been run from the interactive version.
 """
-import importlib
 import sys
 import kn
 
@@ -17,7 +16,7 @@ def _run_repl():
         repl.cmdloop()
 
         if repl.reload:
-            importlib.reload(kn)
+            kn.reload()
         else:
             sys.exit(repl.last_exit_code)
 

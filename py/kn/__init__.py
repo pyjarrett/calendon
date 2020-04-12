@@ -9,6 +9,7 @@ import argparse
 import cmd
 import glob
 import json
+import importlib
 import os
 import multiprocessing
 import queue
@@ -17,11 +18,45 @@ import subprocess
 import sys
 import threading
 import time
-from typing import IO, List
+from typing import IO, List, Optional
 
 import kn.cmake as cmake
 import kn.git as git
 import kn.multiplatform as mp
+import kn.project as proj
+
+
+def base_arg_parser() -> argparse.ArgumentParser:
+    """Creates a generic parser for additional arguments to commands."""
+    usage = """generic
+--help
+--dry-run
+--verbose
+"""
+    parser = argparse.ArgumentParser(usage=usage)
+    parser.add_argument('--dry-run', action='store_true')
+    parser.add_argument('--verbose', action='store_true')
+    return parser
+
+
+def parse_overrides(args: str, parser: argparse.ArgumentParser) -> Optional[argparse.Namespace]:
+    """Parses an argument string with a given parser."""
+    try:
+        return parser.parse_args(args.split())
+    except SystemExit:
+        return None
+
+
+def reload():
+    """
+    Reloads Knell and it's associated submodules.
+
+    Provided to improve iteration of development on Hammer.
+    """
+    importlib.reload(cmake)
+    importlib.reload(git)
+    importlib.reload(mp)
+    importlib.reload(proj)
 
 
 def py_files() -> List[str]:
@@ -97,143 +132,14 @@ def run_program(command_line: List[str], **kwargs):
     return process.wait()
 
 
-class BuildAndRunContext:
-    """A description of the current build and run environment."""
-    def __init__(self):
-        """Create an empty config."""
-        self.config = {}
-        self.config['compilers'] = {}
-
-    def save(self):
-        """Save current configuration."""
-        print(f'Saving to {self.save_path()}')
-        with open(self.save_path(), 'w') as file:
-            json.dump(self.config, file)
-
-    def load(self):
-        """Load configuration from file."""
-        if os.path.isfile(self.save_path()):
-            print(f'Loading from {self.save_path()}')
-            with open(self.save_path(), 'r') as file:
-                self.config = json.load(file)
-                if 'compilers' not in self.config:
-                    self.config['compilers'] = {}
-
-        print(f'Config file {self.save_path()} does not exist.')
-
-    def save_path(self):
-        """The currently set configuration save path."""
-        return self.config.get('save-path', '.hammer')
-
-    def values(self):
-        """A copy of all configuration values."""
-        return self.config
-
-    def driver_executable(self):
-        """Absolute path to the Knell driver executable."""
-        return os.path.join(self.build_dir(), 'src', 'driver', mp.root_to_executable('knell-driver'))
-
-    def set_home_dir(self, home):
-        self.config['knell-home'] = home
-
-    def home_dir(self):
-        """The specified root directory for the Knell project."""
-        return self.config.get('knell-home', os.environ.get('KNELL_HOME'))
-
-    def lib_path(self):
-        """Path to the Knell lib itself."""
-        return os.path.join(self.build_dir(), 'src', 'knell', mp.root_to_shared_lib('knell'))
-
-    def current_demo_path(self):
-        """Absolute path to current the demo."""
-        return os.path.join(self.demo_dir(), mp.root_to_shared_lib(self.demo()))
-
-    def demo_dir(self):
-        """Absolute path to directory containing demos."""
-        return os.path.join(self.build_dir(), 'src', 'demos')
-
-    def build_dir(self):
-        """The location of the out-of-tree build."""
-        compiler = self.config.get('compiler')
-        build_dir = 'build'
-        if compiler is not None and compiler != 'default':
-            build_dir = f'build-{compiler}'
-
-        build_dir += '-' + self.build_config()
-        return os.path.abspath(os.path.join(self.home_dir(), build_dir))
-
-    def build_config(self):
-        """A particular version of the build, such as Debug, or Release."""
-        return self.config.get('config', 'Debug')
-
-    def has_default_compiler(self):
-        """Check to see if CMake's compiler choice been overriden."""
-        return self.config.get('compiler') is None and self.config.get('compiler') != 'default'
-
-    def compiler(self):
-        """The type of the compiler, independent of the path."""
-        return self.config.get('compiler')
-
-    def compiler_path(self):
-        """Return the current compiler path or None if none set."""
-        compiler_alias = self.config.get('compiler')
-        if compiler_alias is None:
-            return None
-
-        if compiler_alias in self.config['compilers'].keys():
-            return self.config['compilers'][compiler_alias]
-
-        return None
-
-    def demo(self):
-        """The generic name of the current demo without a prefix or suffix."""
-        return self.config.get('demo')
-
-    def add(self, args):
-        """Add to the environment settings."""
-        parser = argparse.ArgumentParser(usage='key value\n    Sets a key equal to a value.\n')
-        parser.add_argument('key', choices=['compiler'])
-        parser.add_argument('alias')
-        parser.add_argument('path')
-
-        try:
-            args = parser.parse_args(args.split())
-            if args.key == 'compiler':
-                if os.path.isfile(args.path):
-                    self.config['compilers'][args.alias] = args.path
-                    return 0
-
-                print(f'Compiler "{args.alias}" does not exist at {args.path}')
-            return 1
-        except SystemExit:
-            return 1
-
-    def parse_config_value(self, args):
-        """Parse a config key value pair and set it."""
-        parser = argparse.ArgumentParser(usage='key value\n    Sets a key equal to a value.\n')
-        parser.add_argument('key', choices=['compiler', 'config', 'demo'])
-        parser.add_argument('value')
-
-        try:
-            args = parser.parse_args(args.split())
-            if args.key == 'compiler' and args.value not in self.config['compilers'].keys():
-                print(f'Unknown compiler: {args.key}.  Add compiler aliases first.')
-                return 1
-
-            self.config[args.key] = args.value
-            return 0
-        except SystemExit:
-            return 1
-
-
-def all_demos(context: BuildAndRunContext) -> List[str]:
+def all_demos(context: proj.BuildAndRunContext) -> List[str]:
     """Return a list of all currently available demos."""
     demo_glob = os.path.join(context.demo_dir(), mp.demo_glob())
     demos = [os.path.basename(demo) for demo in glob.glob(demo_glob)]
     return sorted([mp.shared_lib_to_root(d) for d in demos])
 
 
-def run_demo(context: BuildAndRunContext):
+def run_demo(context: proj.BuildAndRunContext):
     """Run the current demo using a given context."""
     print('Running demo')
     if context.demo() is None:
@@ -261,10 +167,10 @@ class Hammer(cmd.Cmd):
         """Start up a Hammer instanced, pre-loaded with its config."""
         super().__init__()
         self.interactive = interactive
-        self.context = BuildAndRunContext()
+        self.context = proj.BuildAndRunContext()
         self.context.load()
         self.reload = False
-        self.history = []
+        self.history: List[str] = []
         self.cmd_start_time = 0
         self.last_exit_code = 0
         self.prompt = self._generate_prompt()
@@ -325,9 +231,12 @@ class Hammer(cmd.Cmd):
         """Override 'default' to print help."""
         self.do_help('')
 
-    def do_version(self, _args):
+    def do_version(self, args):
         """Print the current git version."""
-        print(f'hammer REPL version: {git.last_commit_date()}')
+        if args == '':
+            print(f'hammer REPL version: {git.last_commit_date()}')
+        else:
+            print(f'Unknown arguments: {args}')
 
     def do_quit(self, _args):
         """Save configuration and exit."""
@@ -339,27 +248,43 @@ class Hammer(cmd.Cmd):
         self.reload = False
         return True
 
-    def do_save(self, _args):
+    def do_save(self, args):
         """Save the current configuration."""
-        self.context.save()
+        if args == '':
+            self.context.save()
+        else:
+            print(f'Unknown arguments: {args}')
 
-    def do_load(self, _args):
+    def do_load(self, args):
         """Reload the configuration."""
-        self.context.load()
+        if args == '':
+            self.context.load()
+        else:
+            print(f'Unknown arguments: {args}')
 
-    def do_reload(self, _args):
+    def do_reload(self, args):
         """[For Development] Reload Hammer with updated source."""
-        self.reload = True
-        self.context.save()
-        return True
+        if args == '':
+            self.reload = True
+            self.context.save()
+            return True
 
-    def do_last_commit(self, _args):
+        print(f'Unknown arguments: {args}')
+        return False
+
+    def do_last_commit(self, args):
         """Print the hash and short log of the last commit."""
-        print(subprocess.check_output('git log -1 --pretty=format:%h:%s'.split()).decode())
+        if args == '':
+            print(git.last_commit_short_log())
+        else:
+            print(f'Unknown arguments: {args}')
 
-    def do_config(self, _args):
+    def do_config(self, args):
         """Print the current state of configuration variables."""
-        print(json.dumps(self.context.values(), indent=4))
+        if args == '':
+            print(json.dumps(self.context.values(), indent=4))
+        else:
+            print(f'Unknown arguments: {args}')
 
     def do_set(self, args):
         """Set configuration values."""
@@ -369,102 +294,131 @@ class Hammer(cmd.Cmd):
         """Add a variable to the environment."""
         self.last_exit_code = self.context.add(args)
 
-    def do_clean(self, _args):
+    def do_clean(self, args):
         """Wipe build directory."""
-        build_dir = self.context.build_dir()
-        if os.path.exists(build_dir):
-            if not os.path.isdir(build_dir):
-                print(f'Build directory {build_dir} exists as something other than a directory')
-            else:
-                print(f'Wiping the build directory {build_dir}')
-                shutil.rmtree(build_dir)
+        overrides = parse_overrides(args, proj.add_build_args(base_arg_parser()))
+        with proj.parse_build_context_with_overrides(self.context, overrides) as overridden:
+            if overridden is None:
+                return
+
+            build_dir = overridden.build_dir()
+            if os.path.exists(build_dir):
+                if not os.path.isdir(build_dir):
+                    print(f'Build directory {build_dir} exists as something other than a directory')
+                else:
+                    print(f'Wiping the build directory {build_dir}')
+                    shutil.rmtree(build_dir)
 
     def do_gen(self, args):
         """Generate project files."""
-        build_dir = self.context.build_dir()
-        if os.path.exists(build_dir):
-            if not os.path.isdir(build_dir):
-                print(f'Build directory {build_dir} exists as something other than a directory')
-
-            print(f'{build_dir} exists.')
+        overrides = parse_overrides(args, proj.add_build_args(base_arg_parser()))
+        if overrides is None:
             return
+        with proj.parse_build_context_with_overrides(self.context, overrides) as overridden:
+            build_dir = overridden.build_dir()
+            if os.path.exists(build_dir):
+                if not os.path.isdir(build_dir):
+                    print(f'Build directory {build_dir} exists as something other than a directory')
 
-        print(f'Creating build directory {build_dir}')
-        os.mkdir(build_dir)
-        cmake_args = ['cmake', '..']
+                print(f'{build_dir} exists.')
+                return
 
-        if args == '--enable-ccache':
-            cmake_args.append('-DKN_ENABLE_CCACHE=1')
+            print(f'Creating build directory {build_dir}')
+            os.mkdir(build_dir)
+            cmake_args = ['cmake', '..']
 
-        compiler = self.context.compiler()
-        cmake_args.extend(cmake.generator_settings_for_compiler(compiler))
-        self.last_exit_code = run_program(cmake_args, cwd=build_dir)
+            if args == '--enable-ccache':
+                cmake_args.append('-DKN_ENABLE_CCACHE=1')
 
-    def do_build(self, _args):
+            compiler = overridden.compiler()
+            cmake_args.extend(cmake.generator_settings_for_compiler(compiler))
+            self.last_exit_code = run_program(cmake_args, cwd=build_dir)
+
+    def do_build(self, args):
         """Build using the current project configuration."""
-        build_dir = self.context.build_dir()
-        if not os.path.exists(build_dir):
-            print(f'Build dir does not exist at {build_dir}')
-            self.last_exit_code = 1
+        overrides = parse_overrides(args, proj.add_build_args(base_arg_parser()))
+        if overrides is None:
             return
+        with proj.parse_build_context_with_overrides(self.context, overrides) as overridden:
+            build_dir = overridden.build_dir()
+            if not os.path.exists(build_dir):
+                print(f'Build dir does not exist at {build_dir}')
+                self.last_exit_code = 1
+                return
 
-        cmake_args = ['cmake', '--build', '.',
-                      '--parallel', str(multiprocessing.cpu_count()),
-                      '--config', self.context.build_config()]
+            cmake_args = ['cmake', '--build', '.',
+                          '--parallel', str(multiprocessing.cpu_count()),
+                          '--config', overridden.build_config()]
 
-        if not self.context.has_default_compiler():
-            cmake_args.append(f'-DCMAKE_C_COMPILER={self.context.compiler_path()}')
+            if not overridden.has_default_compiler():
+                cmake_args.append(f'-DCMAKE_C_COMPILER={overridden.compiler_path()}')
 
-        self.last_exit_code = run_program(cmake_args, cwd=build_dir)
+            self.last_exit_code = run_program(cmake_args, cwd=build_dir)
 
     def do_pycheck(self, _args):
         """Run python checks on Hammer scripts."""
         run_pycheck()
 
-    def do_check(self, _args):
+    def do_check(self, args):
         """Run all tests."""
-        build_dir = self.context.build_dir()
-        if not os.path.exists(build_dir):
-            print(f'Build dir does not exist at {build_dir}')
+        overrides = parse_overrides(args, proj.add_build_args(base_arg_parser()))
+        if overrides is None:
             return
-        self.last_exit_code = run_program(['cmake', '--build', '.',
-                                           '--target', 'check',
-                                           '--config', self.context.build_config()],
-                                          cwd=build_dir)
+        with proj.parse_build_context_with_overrides(self.context, overrides) as overridden:
+            build_dir = overridden.build_dir()
+            if not os.path.exists(build_dir):
+                print(f'Build dir does not exist at {build_dir}')
+                return
+            self.last_exit_code = run_program(['cmake', '--build', '.',
+                                               '--target', 'check',
+                                               '--config', overridden.build_config()],
+                                              cwd=build_dir)
 
-    def do_check_iterate(self, _args):
+    def do_check_iterate(self, args):
         """Run only failed tests."""
-        build_dir = self.context.build_dir()
-        if not os.path.exists(build_dir):
-            print(f'Build dir does not exist at {build_dir}')
+        overrides = parse_overrides(args, proj.add_build_args(base_arg_parser()))
+        if overrides is None:
             return
-        self.last_exit_code = run_program(['cmake', '--build', '.',
-                                           '--target', 'check-iterate',
-                                           '--config', self.context.build_config()],
-                                          cwd=build_dir)
+        with proj.parse_build_context_with_overrides(self.context, overrides) as overridden:
+            build_dir = overridden.build_dir()
+            if not os.path.exists(build_dir):
+                print(f'Build dir does not exist at {build_dir}')
+                return
+            self.last_exit_code = run_program(['cmake', '--build', '.',
+                                               '--target', 'check-iterate',
+                                               '--config', overridden.build_config()],
+                                              cwd=build_dir)
 
-    def do_demo(self, _args):
+    def do_demo(self, args):
         """List all available demos."""
-        for demo in all_demos(self.context):
-            print(demo)
+        overrides = parse_overrides(args, proj.add_build_args(base_arg_parser()))
+        if overrides is None:
+            return
+        with proj.parse_build_context_with_overrides(self.context, overrides) as overridden:
+            for demo in all_demos(overridden):
+                print(demo)
 
     def do_run(self, args):
         """Use 'run demo' to run your currently selected demo."""
-        build_dir = self.context.build_dir()
-        if not os.path.exists(build_dir):
-            print(f'Build dir does not exist at {build_dir}')
+        overrides = parse_overrides(args, proj.add_build_args(base_arg_parser()))
+        if overrides is None:
             return
-        if args == 'demo':
-            if self.context.demo() is None:
-                print('No demo to run')
+        with proj.parse_build_context_with_overrides(self.context, overrides) as overridden:
+            build_dir = overridden.build_dir()
+            if not os.path.exists(build_dir):
+                print(f'Build dir does not exist at {build_dir}')
                 return
-            build_status = run_program(['cmake', '--build', '.',
-                                        '--target', self.context.demo(),
-                                        '--config', self.context.build_config()], cwd=build_dir)
-            if build_status == 0:
-                self.last_exit_code = run_demo(self.context)
-            else:
-                self.last_exit_code = build_status
+            if args == 'demo':
+                if overridden.demo() is None:
+                    print('No demo to run')
+                    return
+                build_status = run_program(['cmake', '--build', '.',
+                                            '--target', overridden.demo(),
+                                            '--config', overridden.build_config()], cwd=build_dir)
+                if build_status == 0:
+                    self.last_exit_code = run_demo(overridden)
+                else:
+                    self.last_exit_code = build_status
 
     def do_history(self, _args):
         """Print command history."""
@@ -483,20 +437,24 @@ class Hammer(cmd.Cmd):
             print(f'Can only redo history commands based on index.')
 
     if sys.platform != 'win32':
-        def do_symbols(self, _args):
+        def do_symbols(self, args):
             """List symbols exported in the Knell shared library."""
-            build_dir = self.context.build_dir()
-            if not os.path.exists(build_dir):
-                print(f'Build dir does not exist at {build_dir}')
+            overrides = parse_overrides(args, proj.add_build_args(base_arg_parser()))
+            if overrides is None:
                 return
-            lines: List[str] = subprocess.check_output(['nm', '-D', self.context.lib_path()],
-                                                       cwd=self.context.build_dir()).decode().splitlines()
-            categories = set()
-            for line in filter(lambda sym_line: ' T ' in sym_line, lines):
-                # line will be in "ADDRESS T Symbol" format
-                symbol = line.split()[2]
-                categories.add(symbol.split('_')[0])
-                print(symbol)
-            print()
-            print(f'Exporting {len(lines)} symbols from systems')
-            print(f'{" ".join(sorted(categories))}')
+            with proj.parse_build_context_with_overrides(self.context, overrides) as overridden:
+                build_dir = overridden.build_dir()
+                if not os.path.exists(build_dir):
+                    print(f'Build dir does not exist at {build_dir}')
+                    return
+                lines: List[str] = subprocess.check_output(['nm', '-D', overridden.lib_path()],
+                                                           cwd=overridden.build_dir()).decode().splitlines()
+                categories = set()
+                for line in filter(lambda sym_line: ' T ' in sym_line, lines):
+                    # line will be in "ADDRESS T Symbol" format
+                    symbol = line.split()[2]
+                    categories.add(symbol.split('_')[0])
+                    print(symbol)
+                print()
+                print(f'Exporting {len(lines)} symbols from systems')
+                print(f'{" ".join(sorted(categories))}')
