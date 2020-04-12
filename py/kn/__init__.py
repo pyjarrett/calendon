@@ -13,6 +13,7 @@ import importlib
 import os
 import multiprocessing
 import queue
+import shlex
 import shutil
 import subprocess
 import sys
@@ -42,7 +43,7 @@ def base_arg_parser() -> argparse.ArgumentParser:
 def parse_overrides(args: str, parser: argparse.ArgumentParser) -> Optional[argparse.Namespace]:
     """Parses an argument string with a given parser."""
     try:
-        return parser.parse_args(args.split())
+        return parser.parse_args(shlex.split(args))
     except SystemExit:
         return None
 

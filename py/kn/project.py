@@ -6,6 +6,7 @@ import contextlib
 import copy
 import json
 import os
+import shlex
 from typing import Optional
 
 import kn.multiplatform as mp
@@ -164,7 +165,7 @@ class BuildAndRunContext:
         parser.add_argument('path')
 
         try:
-            args = parser.parse_args(args.split())
+            args = parser.parse_args(shlex.split(args))
             if args.key == 'compiler':
                 if os.path.isfile(args.path):
                     self.config['compilers'][args.alias] = args.path
@@ -182,7 +183,7 @@ class BuildAndRunContext:
         parser.add_argument('value')
 
         try:
-            args = parser.parse_args(args.split())
+            args = parser.parse_args(shlex.split(args))
             if args.key == 'compiler' and args.value not in self.config['compilers'].keys():
                 print(f'Unknown compiler: {args.key}.  Add compiler aliases first.')
                 return 1
