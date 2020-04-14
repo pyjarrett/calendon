@@ -22,7 +22,7 @@ locate Knell if Hammer is run from a non-standard directory.
 
 `--verbose` - Log more details than normal.
 
-## Builds
+## Build and testing
 
 `clean` - Wipes a build directory.  When using `ccache`, the penalty on the
 next build is minimal.
@@ -35,6 +35,11 @@ occurs. With `--force`, will delete any preexisting build directory.
 configuration. With `--clean` will delete the previously existing build
 directory.
 
+`check [--iterate]` - Runs regression tests, which include both unit and
+integration tests.  `--iterate` will only cause previously failed tests to run
+which improves programmer iteration cycle when using test-driven development
+(TDD).
+
 ### Arguments
 
 `--build-dir DIR` - A directory to create or use, which will contain artifacts
@@ -45,13 +50,6 @@ compiler and linker flags, and may change preprocessor defines.
 
 `--compiler COMPILER_ALIAS` - Use a registered program as the compiler.
 
-## Testing
-
-`check [--iterate]` - Runs regression tests, which include both unit and
-integration tests.  `--iterate` will only cause previously failed tests to run
-which improves programmer iteration cycle when using test-driven development
-(TDD).
-
 ## Running demos
 
 Demos live in `src/demos`, and provide example programs to run and learn from.
@@ -59,7 +57,7 @@ Demos live in `src/demos`, and provide example programs to run and learn from.
 complete games. 
 
 `demo` - List available demos.
-`demo run [DEMO_NAME]` - Run the default demo.
+`run [DEMO_NAME]` - Run the default demo.
 
 ### Arguments
 
