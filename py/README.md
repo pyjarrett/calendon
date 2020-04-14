@@ -3,6 +3,14 @@
 A common tool across platform to do builds, run tests, run demos and control
 the Knell environment.
 
+## Hammer arguments
+
+`--knell-home DIR` - Root directory of the Knell project.  This will override
+the environment variable `KNELL_HOME` if used.
+
+`--config FILE` - Specify a different configuration file to use rather than
+searching the current directory and user's home directory.
+
 ## Environment Variables
 
 `KNELL_HOME` - Specifies the root folder of the project.  This is used to
@@ -10,15 +18,9 @@ locate Knell if Hammer is run from a non-standard directory.
 
 ## General Purpose Arguments
 
-`--knell-home DIR` - Root directory of the Knell project.  This will override
-the environment variable `KNELL_HOME` if used.
-
 `--dry-run` - Show what commands would have been run.
 
 `--verbose` - Log more details than normal.
-
-`--config FILE` - Specify a different configuration file to use rather than
-searching the current directory and user's home directory.
 
 ## Builds
 
