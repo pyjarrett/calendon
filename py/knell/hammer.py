@@ -83,20 +83,27 @@ COMMAND_PARSERS = {
 }
 
 
-if __name__ == '__main__':
+def parse_args() -> argparse.Namespace:
+    """
+    Parse command arguments and return a namespace for creating a project
+    context.
+    """
     parser = argparse.ArgumentParser()
     commands = parser.add_subparsers(dest='command')
-
     for command in COMMAND_PARSERS:
         COMMAND_PARSERS[command][0](commands)
-
     parser_add_hammer_args(parser)
-    args = parser.parse_args()
 
+    args = parser.parse_args()
     if args.command is None:
         parser.print_help()
         sys.exit(0)
 
+    return args
+
+
+if __name__ == '__main__':
+    args = parse_args()
     print('COMMAND: ' + args.command)
     print(args)
     COMMAND_PARSERS[args.command][1](args)
