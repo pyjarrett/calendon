@@ -9,15 +9,14 @@ from dataclasses import dataclass
 import os
 from parsers import *
 import sys
-from typing import Optional
+from typing import Dict, Optional
 
 
 class Terminal(cmd.Cmd):
     pass
 
-def override_flavor_from_namespace(flavor: object, ns: argparse.Namespace):
+def override_flavor_from_namespace(flavor: object, kv: Dict):
     """Overrides values in a flavor if they assigned in the namespace."""
-    kv = vars(ns)
     for k in kv:
         if kv[k] is not None and hasattr(flavor, k):
             setattr(flavor, k, kv[k])
@@ -42,16 +41,25 @@ class RunFlavor:
 
 
 class ProjectContext:
+    """A concise description of the environment in which the script will run."""
     def __init__(self, knell_home: str):
+        """Creates a default context from a home directory."""
         self.knell_home = os.path.abspath(knell_home)
         self._build_flavor = BuildFlavor()
         self._run_flavor = RunFlavor()
+        self.verbose = True
 
-    def copy_with_overrides(self, ns: argparse.Namespace) -> ProjectContext:
+    def copy_with_overrides(self, kv: Dict) -> ProjectContext:
         """Creates a new context with the given overrides applied."""
         ctx = copy.deepcopy(self)
-        override_flavor_from_namespace(ctx._build_flavor, ns)
-        override_flavor_from_namespace(ctx._run_flavor, ns)
+        ctx.verbose = kv.get('verbose', ctx.verbose)
+        override_flavor_from_namespace(ctx._build_flavor, kv)
+        override_flavor_from_namespace(ctx._run_flavor, kv)
+
+        if self.verbose:
+            print(f'Overrode: {self.__dict__}')
+            print(f'Using:    {kv}')
+            print(f'Result:   {self.__dict__}')
         return ctx
 
 
@@ -177,7 +185,7 @@ if __name__ == '__main__':
 
     # Build the context using the given home directory.
     ctx: ProjectContext = ProjectContext(knell_home)
-    ctx = ctx.copy_with_overrides(args)
+    ctx = ctx.copy_with_overrides(vars(args))
 
     # Running in non-interactive mode.
     # Dispatch to the appropriate handling function.
