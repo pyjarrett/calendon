@@ -8,6 +8,7 @@ import copy
 from dataclasses import dataclass
 import os
 from parsers import *
+import shutil
 import sys
 from typing import Dict, Optional
 
@@ -17,9 +18,20 @@ class Terminal(cmd.Cmd):
 
 def override_flavor_from_namespace(flavor: object, kv: Dict):
     """Overrides values in a flavor if they assigned in the namespace."""
+    print(kv)
     for k in kv:
         if kv[k] is not None and hasattr(flavor, k):
+            print(f'setting {k} -> {kv[k]}')
             setattr(flavor, k, kv[k])
+        else:
+            print(f'skipping {k}')
+
+
+@dataclass
+class ScriptFlavor:
+    knell_home: str = None
+    verbose: bool = False
+    dry_run: bool = False
 
 
 @dataclass
@@ -45,27 +57,51 @@ class ProjectContext:
     def __init__(self, knell_home: str):
         """Creates a default context from a home directory."""
         self.knell_home = os.path.abspath(knell_home)
+        self._script_flavor = ScriptFlavor()
         self._build_flavor = BuildFlavor()
         self._run_flavor = RunFlavor()
-        self.verbose = True
 
     def copy_with_overrides(self, kv: Dict) -> ProjectContext:
         """Creates a new context with the given overrides applied."""
         ctx = copy.deepcopy(self)
-        ctx.verbose = kv.get('verbose', ctx.verbose)
+        override_flavor_from_namespace(ctx._script_flavor, kv)
         override_flavor_from_namespace(ctx._build_flavor, kv)
         override_flavor_from_namespace(ctx._run_flavor, kv)
 
-        if self.verbose:
+        if self._script_flavor.verbose:
             print(f'Overrode: {self.__dict__}')
             print(f'Using:    {kv}')
             print(f'Result:   {self.__dict__}')
         return ctx
 
+    def is_dry_run(self) -> bool:
+        return self._script_flavor.dry_run
+
+    def build_dir(self) -> str:
+        return os.path.abspath(os.path.join(self.knell_home, self._build_flavor.build_dir))
+
 
 # Atomic operations which produce a status and a new context.
 def do_clean(ctx: ProjectContext) -> int:
-    pass
+    build_dir: str = ctx.build_dir()
+    if not os.path.exists(build_dir):
+        print(f'Build directory {build_dir} does not exist')
+        return 1
+
+    if not os.path.isdir(build_dir):
+        print(f'Build directory {build_dir} is not a directory')
+        return 1
+
+    if ctx.is_dry_run():
+        print(f'Dry run')
+        print(f'Would have removed: {build_dir}')
+    else:
+        print(f'Removing: {build_dir}')
+        try:
+            shutil.rmtree(build_dir)
+        except OSError as err:
+            print(f'Error removing {build_dir} {str(err)}')
+    return 0
 
 
 def do_gen(ctx: ProjectContext) -> int:
