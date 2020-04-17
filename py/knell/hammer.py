@@ -19,7 +19,7 @@ class Terminal(cmd.Cmd):
     pass
 
 
-def override_flavor_from_namespace(flavor: object, kv: Dict):
+def override_flavor_from_dict(flavor: object, kv: Dict):
     """Overrides values in a flavor if they assigned in the namespace."""
     for k in kv:
         if kv[k] is not None and hasattr(flavor, k):
@@ -62,6 +62,11 @@ class ProjectContext:
         self._run_flavor = RunFlavor()
         self._load_config(os.path.join(self.knell_home(), '.hammer'))
 
+    def _override_from_dict(self, kv: Dict):
+        override_flavor_from_dict(self._script_flavor, kv)
+        override_flavor_from_dict(self._build_flavor, kv)
+        override_flavor_from_dict(self._run_flavor, kv)
+
     def _load_config(self, config_path: str):
         """Loads a config from a path."""
         if not os.path.isfile(config_path):
@@ -70,9 +75,7 @@ class ProjectContext:
 
         with open(config_path, 'r') as file:
             kv = json.load(file)
-            override_flavor_from_namespace(self._script_flavor, kv)
-            override_flavor_from_namespace(self._build_flavor, kv)
-            override_flavor_from_namespace(self._run_flavor, kv)
+            self._override_from_dict(kv)
 
     def _save_config(self, config_path: str):
         with open(config_path, 'w') as file:
@@ -85,13 +88,10 @@ class ProjectContext:
     def save(self):
         self._save_config(os.path.join(self.knell_home(), '.hammer'))
 
-
     def copy_with_overrides(self, kv: Dict) -> ProjectContext:
         """Creates a new context with the given overrides applied."""
         ctx = copy.deepcopy(self)
-        override_flavor_from_namespace(ctx._script_flavor, kv)
-        override_flavor_from_namespace(ctx._build_flavor, kv)
-        override_flavor_from_namespace(ctx._run_flavor, kv)
+        ctx._override_from_dict(kv)
 
         if self._script_flavor.verbose:
             print(f'Overrode: {self.__dict__}')
