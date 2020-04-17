@@ -3,6 +3,17 @@
 A common tool across platform to do builds, run tests, run demos and control
 the Knell environment.
 
+## Modes
+
+Hammer may be run from a shell like many tools which have subcommands and
+related arguments and options:
+
+`py/hammer.py command [arg1] [args2] ...`
+
+Hammer may also be run in an interactive mode, by simply not providing a
+command to run.  This allows team members to maintain their build and run
+environment between commands.
+
 ## Hammer arguments
 
 `--knell-home DIR` - Root directory of the Knell project.  This will override
