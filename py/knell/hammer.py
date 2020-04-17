@@ -172,6 +172,7 @@ def run_interactive_loop():
 if __name__ == '__main__':
     if len(sys.argv) == 1:
         run_interactive_loop()
+        sys.exit(0)
 
     # `args` is a namespace of all of our possible arguments, appropriate for
     # whatever command is going to be executed.  This isn't going to be a
