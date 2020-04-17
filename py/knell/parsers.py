@@ -9,11 +9,14 @@ DEFAULT_NAMES = ['compiler', 'build-config', 'build-dir', 'demo']
 
 
 def parser_add_hammer_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
-    """Adds arguments for hammer to a parser."""
+    """
+    Adds arguments for hammer to a parser.
+
+    Adds properties `knell_home` and `config`.
+    """
     hammer = parser.add_argument_group('hammer')
     hammer.add_argument('--knell-home',
                         type=str,
-                        default=os.environ['KNELL_HOME'],
                         help="Root directory of the Knell project, which will "
                              "override KNELL_HOME")
     hammer.add_argument('--config', type=str,
@@ -24,7 +27,11 @@ def parser_add_hammer_args(parser: argparse.ArgumentParser) -> argparse.Argument
 
 
 def parser_add_general_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
-    """Adds general arguments to a parser."""
+    """
+    Adds general arguments to a parser.
+
+    Adds properties `dry_run` and `verbose`.
+    """
     general = parser.add_argument_group('general')
     general.add_argument('--dry-run',
                          action='store_true',
@@ -36,29 +43,35 @@ def parser_add_general_args(parser: argparse.ArgumentParser) -> argparse.Argumen
 
 
 def parser_add_build_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
-    """Adds common build arguments to a parser."""
+    """
+    Adds common build arguments to a parser.
+
+    Adds properties `build_dir`, `build_config` and `compiler`.
+    """
     build = parser.add_argument_group('build')
     build.add_argument('--build-dir',
-                       type=str,
-                       default='build')
+                       type=str)
     build.add_argument('--build-config',
                        type=str,
-                       default='Debug',
                        choices=['Debug', 'Release'],
                        help="Changes applied compiler/linker flags and "
                             "preprocessor defines.")
     build.add_argument('--compiler',
                        type=str,
-                       default='default',
                        help='Use a registered program as the compiler.')
     return parser
 
 
 def parser_add_driver_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+    """
+    Adds arguments for running the driver.
+
+    Adds properties `ticks`, `runtime`, `headless`, `game`, `asset_dir`,
+    `from_replay`, and `to_replay`.
+    """
     driver = parser.add_argument_group('driver')
     driver.add_argument('--ticks',
                         type=int,
-                        default=0,
                         help='Specifies the number of game ticks to run the demo.')
     driver.add_argument('--runtime',
                         type=int,
