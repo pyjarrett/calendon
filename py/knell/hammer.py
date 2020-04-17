@@ -16,15 +16,12 @@ from typing import Dict, Optional
 class Terminal(cmd.Cmd):
     pass
 
+
 def override_flavor_from_namespace(flavor: object, kv: Dict):
     """Overrides values in a flavor if they assigned in the namespace."""
-    print(kv)
     for k in kv:
         if kv[k] is not None and hasattr(flavor, k):
-            print(f'setting {k} -> {kv[k]}')
             setattr(flavor, k, kv[k])
-        else:
-            print(f'skipping {k}')
 
 
 @dataclass
@@ -226,5 +223,4 @@ if __name__ == '__main__':
 
     # Running in non-interactive mode.
     # Dispatch to the appropriate handling function.
-    print('COMMAND: ' + args.command)
     COMMAND_PARSERS[args.command][1](ctx)
