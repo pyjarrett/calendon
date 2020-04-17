@@ -191,7 +191,7 @@ def parser_save(parser) -> argparse.ArgumentParser:
                                                  "If no file is specified, it "
                                                  "will save to the configuration "
                                                  "file originally loaded.")
-    save_parser.add_argument('file', metavar='FILE')
+    save_parser.add_argument('--file', metavar='FILE')
     return parser
 
 

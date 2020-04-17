@@ -6,6 +6,8 @@ import argparse
 import cmd
 import copy
 from dataclasses import dataclass
+import dataclasses
+import json
 import os
 from parsers import *
 import shutil
@@ -51,12 +53,38 @@ class RunFlavor:
 
 class ProjectContext:
     """A concise description of the environment in which the script will run."""
+
     def __init__(self, knell_home: str):
         """Creates a default context from a home directory."""
-        self.knell_home = os.path.abspath(knell_home)
         self._script_flavor = ScriptFlavor()
+        self._script_flavor.knell_home = os.path.abspath(knell_home)
         self._build_flavor = BuildFlavor()
         self._run_flavor = RunFlavor()
+        self._load_config(os.path.join(self.knell_home(), '.hammer'))
+
+    def _load_config(self, config_path: str):
+        """Loads a config from a path."""
+        if not os.path.isfile(config_path):
+            print(f'No config file found at {config_path}')
+            return
+
+        with open(config_path, 'r') as file:
+            kv = json.load(file)
+            override_flavor_from_namespace(self._script_flavor, kv)
+            override_flavor_from_namespace(self._build_flavor, kv)
+            override_flavor_from_namespace(self._run_flavor, kv)
+
+    def _save_config(self, config_path: str):
+        with open(config_path, 'w') as file:
+            combined = {}
+            for flavor in [self._script_flavor, self._build_flavor, self._run_flavor]:
+                for field in dataclasses.fields(flavor):
+                    combined[field.name] = getattr(flavor, field.name)
+            json.dump(combined, file, indent=4)
+
+    def save(self):
+        self._save_config(os.path.join(self.knell_home(), '.hammer'))
+
 
     def copy_with_overrides(self, kv: Dict) -> ProjectContext:
         """Creates a new context with the given overrides applied."""
@@ -74,8 +102,12 @@ class ProjectContext:
     def is_dry_run(self) -> bool:
         return self._script_flavor.dry_run
 
+    def knell_home(self) -> str:
+        """Project root directory."""
+        return self._script_flavor.knell_home
+
     def build_dir(self) -> str:
-        return os.path.abspath(os.path.join(self.knell_home, self._build_flavor.build_dir))
+        return os.path.abspath(os.path.join(self._script_flavor.knell_home, self._build_flavor.build_dir))
 
 
 # Atomic operations which produce a status and a new context.
@@ -142,7 +174,8 @@ def do_source(ctx: ProjectContext) -> int:
 
 
 def do_save(ctx: ProjectContext) -> int:
-    return 1
+    ctx.save()
+    return 0
 
 
 def do_load(ctx: ProjectContext) -> int:
