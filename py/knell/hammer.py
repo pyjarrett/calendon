@@ -159,16 +159,19 @@ class ProjectContext:
 
     def _save_config(self, config_path: str):
         with open(config_path, 'w') as file:
-            combined = {}
-            for flavor in [self._script_flavor, self._build_flavor, self._run_flavor]:
-                for field in dataclasses.fields(flavor):
-                    combined[field.name] = getattr(flavor, field.name)
-            combined['registered_programs'] = self._registered_programs
-
+            combined = self.dump()
             if self.is_verbose():
                 print(f'Saving to {config_path}')
                 print(combined)
             json.dump(combined, file, indent=4)
+
+    def dump(self) -> Dict:
+        combined = {}
+        for flavor in [self._script_flavor, self._build_flavor, self._run_flavor]:
+            for field in dataclasses.fields(flavor):
+                combined[field.name] = getattr(flavor, field.name)
+        combined['registered_programs'] = self._registered_programs
+        return combined
 
     def save(self):
         self._save_config(os.path.join(self.knell_home(), '.hammer'))
@@ -365,8 +368,9 @@ def do_run(ctx: ProjectContext, args: argparse.Namespace) -> int:
     return 1
 
 
-def do_env(ctx: ProjectContext, args: argparse.Namespace) -> int:
-    return 1
+def do_env(ctx: ProjectContext, _args: argparse.Namespace) -> int:
+    json.dump(ctx.dump(), sys.stdout, indent=4)
+    return 0
 
 
 def do_register(ctx: ProjectContext, args: argparse.Namespace) -> int:
