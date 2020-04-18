@@ -74,7 +74,7 @@ def override_flavor_from_dict(flavor: object, kv: Dict):
             setattr(flavor, k, kv[k])
 
 
-def generator_settings_for_compiler(compiler_path: Optional[str]):
+def generator_settings_for_compiler(cmake_path: str, compiler_path: Optional[str]):
     """Makes settings to give the generator for a specific compiler."""
     settings = []
     if compiler_path is not None:
@@ -84,7 +84,7 @@ def generator_settings_for_compiler(compiler_path: Optional[str]):
     if sys.platform == 'win32':
         if compiler_path is None:
             arch = 'x64'
-            help_output = subprocess.check_output(['cmake', '--help'])
+            help_output = subprocess.check_output([cmake_path, '--help'])
             generator = None
             for line in help_output.decode().splitlines():
                 if line.startswith('*'):
@@ -245,7 +245,7 @@ def do_gen(ctx: ProjectContext, args: argparse.Namespace) -> int:
         print('No alias exists for `cmake`')
         return 1
 
-    cmake_path = ctx.path_for_program('cmake')
+    cmake_path: str = ctx.path_for_program('cmake')
     if not os.path.isfile(cmake_path):
         print(f'CMake does not exist at {cmake_path}')
 
@@ -265,7 +265,7 @@ def do_gen(ctx: ProjectContext, args: argparse.Namespace) -> int:
             return 1
 
     print(f'Creating build directory {build_dir}')
-    if (ctx.is_dry_run()):
+    if ctx.is_dry_run():
         print(f'Would have created {build_dir}')
     else:
         os.mkdir(build_dir)
@@ -277,7 +277,7 @@ def do_gen(ctx: ProjectContext, args: argparse.Namespace) -> int:
     compiler_path: Optional[str] = None
     if ctx.compiler():
         compiler_path = ctx.path_for_program(ctx.compiler())
-    cmake_args.extend(generator_settings_for_compiler(compiler_path))
+    cmake_args.extend(generator_settings_for_compiler(cmake_path, compiler_path))
 
     if ctx.is_dry_run():
         print(f'Would have run {cmake_args} in {build_dir}')
