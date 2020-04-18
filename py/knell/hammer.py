@@ -276,6 +276,9 @@ def do_gen(ctx: ProjectContext, args: argparse.Namespace) -> int:
 
     compiler_path: Optional[str] = None
     if ctx.compiler():
+        if not ctx.has_registered_program(ctx.compiler()):
+            print(f'Compiler alias "{ctx.compiler()}" is not registered.')
+            return 1
         compiler_path = ctx.path_for_program(ctx.compiler())
     cmake_args.extend(generator_settings_for_compiler(cmake_path, compiler_path))
 
