@@ -118,9 +118,6 @@ def parser_gen(parser) -> argparse.ArgumentParser:
 def parser_build(parser) -> argparse.ArgumentParser:
     build_parser = parser.add_parser('build', help='Do a build')
     parser_add_general_args(parser_add_build_args(build_parser))
-    build_parser.add_argument('--clean',
-                              action='store_true',
-                              help='Delete any preexisting build directory')
     return parser
 
 

@@ -8,6 +8,7 @@ import copy
 from dataclasses import dataclass
 import dataclasses
 import json
+import multiprocessing
 import os
 from parsers import *
 import queue
@@ -196,6 +197,9 @@ class ProjectContext:
     def build_dir(self) -> str:
         return os.path.abspath(os.path.join(self._script_flavor.knell_home, self._build_flavor.build_dir))
 
+    def build_config(self) -> str:
+        return self._build_flavor.build_config
+
     def compiler(self) -> Optional[str]:
         return self._build_flavor.compiler
 
@@ -218,7 +222,7 @@ class ProjectContext:
 
 
 # Atomic operations which produce a status and a new context.
-def do_clean(ctx: ProjectContext) -> int:
+def do_clean(ctx: ProjectContext, _args: argparse.Namespace) -> int:
     build_dir: str = ctx.build_dir()
     if not os.path.exists(build_dir):
         print(f'Build directory {build_dir} does not exist')
@@ -289,8 +293,34 @@ def do_gen(ctx: ProjectContext, args: argparse.Namespace) -> int:
         return run_program(cmake_args, cwd=build_dir)
 
 
-def do_build(ctx: ProjectContext, args: argparse.Namespace) -> int:
-    return 1
+def do_build(ctx: ProjectContext, _args: argparse.Namespace) -> int:
+    """Build using the current project configuration."""
+    build_dir = ctx.build_dir()
+    if not os.path.isdir(build_dir):
+        print(f'Build dir does not exist at {build_dir}')
+        return 1
+
+    if not ctx.has_registered_program('cmake'):
+        print('No alias exists for `cmake`')
+        return 1
+
+    cmake_path: str = ctx.path_for_program('cmake')
+    if not os.path.isfile(cmake_path):
+        print(f'CMake does not exist at {cmake_path}')
+    cmake_args = [cmake_path, '--build', '.',
+                  '--parallel', str(multiprocessing.cpu_count()),
+                  '--config', ctx.build_config()]
+
+    if ctx.compiler():
+        if not ctx.has_registered_program(ctx.compiler()):
+            print(f'Compiler alias "{ctx.compiler()}" is not registered.')
+            return 1
+        cmake_args.append(f'-DCMAKE_C_COMPILER={ctx.path_for_program(ctx.compiler())}')
+
+    if ctx.is_dry_run():
+        print(f'Would have run {cmake_args} in {build_dir}')
+    else:
+        return run_program(cmake_args, cwd=build_dir)
 
 
 def do_check(ctx: ProjectContext, args: argparse.Namespace) -> int:

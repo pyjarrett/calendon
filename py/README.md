@@ -42,9 +42,7 @@ next build is minimal.
 general, builds should be generated very few times for every build which
 occurs. With `--force`, will delete any preexisting build directory.
 
-`build [--clean]` - Build a configuration with a known compiler and
-configuration. With `--clean` will delete the previously existing build
-directory.
+`build` - Build a configuration with a known compiler and configuration.
 
 `check [--iterate]` - Runs regression tests, which include both unit and
 integration tests.  `--iterate` will only cause previously failed tests to run
