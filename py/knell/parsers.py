@@ -151,6 +151,7 @@ def parser_env(parser) -> argparse.ArgumentParser:
 
 def parser_register(parser) -> argparse.ArgumentParser:
     register_parser = parser.add_parser('register')
+    parser_add_general_args(register_parser)
     register_parser.add_argument('alias',
                                  metavar='ALIAS',
                                  help='Short name to use for the program')

@@ -60,6 +60,7 @@ class ProjectContext:
         self._script_flavor.knell_home = os.path.abspath(knell_home)
         self._build_flavor = BuildFlavor()
         self._run_flavor = RunFlavor()
+        self._registered_programs = {}
         self._load_config(os.path.join(self.knell_home(), '.hammer'))
 
     def _override_from_dict(self, kv: Dict):
@@ -75,6 +76,7 @@ class ProjectContext:
 
         with open(config_path, 'r') as file:
             kv = json.load(file)
+            self._registered_programs = kv.get('registered_programs', {})
             self._override_from_dict(kv)
 
     def _save_config(self, config_path: str):
@@ -83,6 +85,11 @@ class ProjectContext:
             for flavor in [self._script_flavor, self._build_flavor, self._run_flavor]:
                 for field in dataclasses.fields(flavor):
                     combined[field.name] = getattr(flavor, field.name)
+            combined['registered_programs'] = self._registered_programs
+
+            if self.is_verbose():
+                print(f'Saving to {config_path}')
+                print(combined)
             json.dump(combined, file, indent=4)
 
     def save(self):
@@ -102,12 +109,18 @@ class ProjectContext:
     def is_dry_run(self) -> bool:
         return self._script_flavor.dry_run
 
+    def is_verbose(self) -> bool:
+        return self._script_flavor.verbose
+
     def knell_home(self) -> str:
         """Project root directory."""
         return self._script_flavor.knell_home
 
     def build_dir(self) -> str:
         return os.path.abspath(os.path.join(self._script_flavor.knell_home, self._build_flavor.build_dir))
+
+    def register_program(self, alias: str, path: str):
+        self._registered_programs[alias] = path
 
 
 # Atomic operations which produce a status and a new context.
@@ -133,52 +146,60 @@ def do_clean(ctx: ProjectContext) -> int:
     return 0
 
 
-def do_gen(ctx: ProjectContext) -> int:
+def do_gen(ctx: ProjectContext, args: argparse.Namespace) -> int:
     return 1
 
 
-def do_build(ctx: ProjectContext) -> int:
+def do_build(ctx: ProjectContext, args: argparse.Namespace) -> int:
     return 1
 
 
-def do_check(ctx: ProjectContext) -> int:
+def do_check(ctx: ProjectContext, args: argparse.Namespace) -> int:
     return 1
 
 
-def do_demo(ctx: ProjectContext) -> int:
+def do_demo(ctx: ProjectContext, args: argparse.Namespace) -> int:
     return 1
 
 
-def do_run(ctx: ProjectContext) -> int:
+def do_run(ctx: ProjectContext, args: argparse.Namespace) -> int:
     return 1
 
 
-def do_env(ctx: ProjectContext) -> int:
+def do_env(ctx: ProjectContext, args: argparse.Namespace) -> int:
     return 1
 
 
-def do_register(ctx: ProjectContext) -> int:
+def do_register(ctx: ProjectContext, args: argparse.Namespace) -> int:
+    if os.path.isfile(args.path) or args.force:
+        if ctx.is_dry_run():
+            print(f'Would have added alias {args.alias} -> {args.path}')
+        else:
+            ctx.register_program(args.alias, args.path)
+    else:
+        print(f'No program exists at {args.path}')
+
     return 1
 
 
-def do_default(ctx: ProjectContext) -> int:
+def do_default(ctx: ProjectContext, args: argparse.Namespace) -> int:
     return 1
 
 
-def do_pycheck(ctx: ProjectContext) -> int:
+def do_pycheck(ctx: ProjectContext, args: argparse.Namespace) -> int:
     return 1
 
 
-def do_source(ctx: ProjectContext) -> int:
+def do_source(ctx: ProjectContext, args: argparse.Namespace) -> int:
     return 1
 
 
-def do_save(ctx: ProjectContext) -> int:
+def do_save(ctx: ProjectContext, args: argparse.Namespace) -> int:
     ctx.save()
     return 0
 
 
-def do_load(ctx: ProjectContext) -> int:
+def do_load(ctx: ProjectContext, args: argparse.Namespace) -> int:
     return 1
 
 
@@ -256,4 +277,7 @@ if __name__ == '__main__':
 
     # Running in non-interactive mode.
     # Dispatch to the appropriate handling function.
-    COMMAND_PARSERS[args.command][1](ctx)
+    COMMAND_PARSERS[args.command][1](ctx, args)
+
+    if args.command in ['register']:
+        ctx.save()
