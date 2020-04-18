@@ -79,7 +79,7 @@ def generator_settings_for_compiler(cmake_path: str, compiler_path: Optional[str
     """Makes settings to give the generator for a specific compiler."""
     settings = []
     if compiler_path is not None:
-        settings = [f'-DCMAKE_C_COMPILER="{compiler_path}"']
+        settings = ['-D', 'CMAKE_C_COMPILER', compiler_path]
 
     # https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2015%202017.html
     if sys.platform == 'win32':
@@ -322,12 +322,6 @@ def do_build(ctx: ProjectContext, _args: argparse.Namespace) -> int:
     cmake_args = [ctx.path_for_program('cmake'), '--build', '.',
                   '--parallel', str(multiprocessing.cpu_count()),
                   '--config', ctx.build_config()]
-
-    if ctx.compiler():
-        if not ctx.has_registered_program(ctx.compiler()):
-            print(f'Compiler alias "{ctx.compiler()}" is not registered.')
-            return 1
-        cmake_args.append(f'-DCMAKE_C_COMPILER={ctx.path_for_program(ctx.compiler())}')
 
     if ctx.is_dry_run():
         print(f'Would have run {cmake_args} in {ctx.build_dir()}')
