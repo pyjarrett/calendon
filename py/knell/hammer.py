@@ -79,7 +79,7 @@ def generator_settings_for_compiler(cmake_path: str, compiler_path: Optional[str
     """Makes settings to give the generator for a specific compiler."""
     settings = []
     if compiler_path is not None:
-        settings = ['-D', 'CMAKE_C_COMPILER', compiler_path]
+        settings = [f'-DCMAKE_C_COMPILER={compiler_path}']
 
     # https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2015%202017.html
     if sys.platform == 'win32':
@@ -476,7 +476,9 @@ if __name__ == '__main__':
 
     # Running in non-interactive mode.
     # Dispatch to the appropriate handling function.
-    COMMAND_PARSERS[args.command][1](ctx, args)
+    retval = COMMAND_PARSERS[args.command][1](ctx, args)
 
     if args.command in ['register']:
         ctx.save()
+
+    sys.exit(retval)
