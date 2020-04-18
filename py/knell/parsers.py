@@ -161,6 +161,9 @@ def parser_register(parser) -> argparse.ArgumentParser:
     register_parser.add_argument('--force',
                                  action='store_true',
                                  help='Add, even if the path does not exist.')
+    register_parser.add_argument('--override',
+                                 action='store_true',
+                                 help='Override an existing alias.')
     return parser
 
 

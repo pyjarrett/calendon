@@ -119,14 +119,22 @@ class ProjectContext:
     def build_dir(self) -> str:
         return os.path.abspath(os.path.join(self._script_flavor.knell_home, self._build_flavor.build_dir))
 
-    def register_program(self, alias: str, path: str) -> bool:
-        if alias in self._registered_programs:
+    def register_program(self, alias: str, path: str, override: bool = False) -> bool:
+        if alias in self._registered_programs and not override:
             existing: str = self._registered_programs[alias]
             print(f'Trying to override {existing} of {alias} with {path}')
             return False
 
         self._registered_programs[alias] = path
         return True
+
+    def has_registered_program(self, alias: str) -> bool:
+        return alias in self._registered_programs
+
+    def path_for_program(self, alias: str) -> str:
+        if not self.has_registered_program(alias):
+            raise ValueError(f'No registered path for {alias}')
+        return self._registered_programs[alias]
 
 
 # Atomic operations which produce a status and a new context.
@@ -180,9 +188,14 @@ def do_register(ctx: ProjectContext, args: argparse.Namespace) -> int:
     """Registers a new program for use in the given context."""
     if os.path.isfile(args.path) or args.force:
         if ctx.is_dry_run():
-            print(f'Would have added alias {args.alias} -> {args.path}')
+            if ctx.has_registered_program(args.alias) and not args.override:
+                print(f'Trying to override {ctx.path_for_program(args.alias)} of {args.alias} with {args.path}')
+                return 1
+            else:
+                print(f'Would have added alias {args.alias} -> {args.path}')
+                return 0
         else:
-            if ctx.register_program(args.alias, args.path):
+            if ctx.register_program(args.alias, args.path, args.override):
                 return 0
             return 1
 
