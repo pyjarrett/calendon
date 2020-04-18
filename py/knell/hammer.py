@@ -119,8 +119,14 @@ class ProjectContext:
     def build_dir(self) -> str:
         return os.path.abspath(os.path.join(self._script_flavor.knell_home, self._build_flavor.build_dir))
 
-    def register_program(self, alias: str, path: str):
+    def register_program(self, alias: str, path: str) -> bool:
+        if alias in self._registered_programs:
+            existing: str = self._registered_programs[alias]
+            print(f'Trying to override {existing} of {alias} with {path}')
+            return False
+
         self._registered_programs[alias] = path
+        return True
 
 
 # Atomic operations which produce a status and a new context.
@@ -171,14 +177,16 @@ def do_env(ctx: ProjectContext, args: argparse.Namespace) -> int:
 
 
 def do_register(ctx: ProjectContext, args: argparse.Namespace) -> int:
+    """Registers a new program for use in the given context."""
     if os.path.isfile(args.path) or args.force:
         if ctx.is_dry_run():
             print(f'Would have added alias {args.alias} -> {args.path}')
         else:
-            ctx.register_program(args.alias, args.path)
-    else:
-        print(f'No program exists at {args.path}')
+            if ctx.register_program(args.alias, args.path):
+                return 0
+            return 1
 
+    print(f'No program exists at {args.path}')
     return 1
 
 
