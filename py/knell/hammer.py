@@ -10,13 +10,61 @@ import dataclasses
 import json
 import os
 from parsers import *
+import queue
 import shutil
+import subprocess
 import sys
-from typing import Dict, Optional
+import threading
+from typing import Dict, IO, List, Optional
 
 
 class Terminal(cmd.Cmd):
     pass
+
+
+def read_stream(stream: IO, queued_lines: queue.Queue):
+    """Reads a stream into a queue."""
+    for line in stream:
+        try:
+            queued_lines.put(line.decode().strip())
+        except UnicodeDecodeError:
+            queued_lines.put(line.strip())
+
+
+def run_program(command_line: List[str], **kwargs):
+    """Runs another process while streaming its stdout and stderr."""
+    print(f'Running: {" ".join(command_line)} {kwargs}')
+    process = subprocess.Popen(command_line,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE,
+                               **kwargs)
+
+    out_queue: queue.Queue = queue.Queue()
+    err_queue: queue.Queue = queue.Queue()
+
+    out_thread = threading.Thread(target=read_stream, args=(process.stdout, out_queue))
+    err_thread = threading.Thread(target=read_stream, args=(process.stderr, err_queue))
+
+    out_thread.start()
+    err_thread.start()
+
+    while out_thread.is_alive() or err_thread.is_alive() or not out_queue.empty() or not err_queue.empty():
+        try:
+            line = out_queue.get_nowait()
+            print(line)
+        except queue.Empty:
+            pass
+
+        try:
+            line = err_queue.get_nowait()
+            print(f'err:{line}')
+        except queue.Empty:
+            pass
+
+    out_thread.join()
+    err_thread.join()
+
+    return process.wait()
 
 
 def override_flavor_from_dict(flavor: object, kv: Dict):
@@ -24,6 +72,35 @@ def override_flavor_from_dict(flavor: object, kv: Dict):
     for k in kv:
         if kv[k] is not None and hasattr(flavor, k):
             setattr(flavor, k, kv[k])
+
+
+def generator_settings_for_compiler(compiler_path: Optional[str]):
+    """Makes settings to give the generator for a specific compiler."""
+    settings = []
+    if compiler_path is not None:
+        settings = [f'-DCMAKE_C_COMPILER="{compiler_path}"']
+
+    # https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2015%202017.html
+    if sys.platform == 'win32':
+        if compiler_path is None:
+            arch = 'x64'
+            help_output = subprocess.check_output(['cmake', '--help'])
+            generator = None
+            for line in help_output.decode().splitlines():
+                if line.startswith('*'):
+                    print(line)
+                    generator = line[1:line.index('=')]
+                    if '[arch]' in generator:
+                        generator = generator.replace('[arch]', '')
+                    generator = generator.strip()
+                    print(f'"{generator}"')
+                    break
+            if generator is not None:
+                settings.extend(['-G', generator, '-A', arch])
+        else:
+            settings.extend(['-G', 'Unix Makefiles'])
+
+    return settings
 
 
 @dataclass
@@ -119,6 +196,9 @@ class ProjectContext:
     def build_dir(self) -> str:
         return os.path.abspath(os.path.join(self._script_flavor.knell_home, self._build_flavor.build_dir))
 
+    def compiler(self) -> Optional[str]:
+        return self._build_flavor.compiler
+
     def register_program(self, alias: str, path: str, override: bool = False) -> bool:
         if alias in self._registered_programs and not override:
             existing: str = self._registered_programs[alias]
@@ -161,7 +241,49 @@ def do_clean(ctx: ProjectContext) -> int:
 
 
 def do_gen(ctx: ProjectContext, args: argparse.Namespace) -> int:
-    return 1
+    if not ctx.has_registered_program('cmake'):
+        print('No alias exists for `cmake`')
+        return 1
+
+    cmake_path = ctx.path_for_program('cmake')
+    if not os.path.isfile(cmake_path):
+        print(f'CMake does not exist at {cmake_path}')
+
+    build_dir = ctx.build_dir()
+    if os.path.isfile(build_dir):
+        print(f'Build directory {build_dir} exists as something other than a directory')
+        return 1
+
+    if os.path.isdir(build_dir):
+        if args.force:
+            if ctx.is_dry_run():
+                print(f'Would have removed previously existing directory {build_dir}')
+            else:
+                shutil.rmtree(build_dir)
+        else:
+            print(f'{build_dir} exists.  Use --force to wipe and recreate the build dir.')
+            return 1
+
+    print(f'Creating build directory {build_dir}')
+    if (ctx.is_dry_run()):
+        print(f'Would have created {build_dir}')
+    else:
+        os.mkdir(build_dir)
+    cmake_args = [cmake_path, '..']
+
+    if args.enable_ccache:
+        cmake_args.append('-DKN_ENABLE_CCACHE=1')
+
+    compiler_path: Optional[str] = None
+    if ctx.compiler():
+        compiler_path = ctx.path_for_program(ctx.compiler())
+    cmake_args.extend(generator_settings_for_compiler(compiler_path))
+
+    if ctx.is_dry_run():
+        print(f'Would have run {cmake_args} in {build_dir}')
+        return 0
+    else:
+        return run_program(cmake_args, cwd=build_dir)
 
 
 def do_build(ctx: ProjectContext, args: argparse.Namespace) -> int:

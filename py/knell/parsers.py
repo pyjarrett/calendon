@@ -109,6 +109,9 @@ def parser_gen(parser) -> argparse.ArgumentParser:
     gen_parser.add_argument('--force',
                             action='store_true',
                             help='Delete any preexisting build directory')
+    gen_parser.add_argument('--enable-ccache',
+                            action='store_true',
+                            help='Use ccache (if available)')
     return parser
 
 
