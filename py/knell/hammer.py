@@ -221,9 +221,34 @@ class ProjectContext:
         return self._registered_programs[alias]
 
 
-# Atomic operations which produce a status and a new context.
+def verify_executable_exists(ctx: ProjectContext, alias: str) -> bool:
+    if not ctx.has_registered_program(alias):
+        print(f'No alias exists for {alias}')
+        return False
+    program_path = ctx.path_for_program(alias)
+    if not os.path.isfile(program_path):
+        print(f'Executable path for {alias} does not exist at {program_path}')
+        return False
+    return True
+
+
+def verify_build_dir_exists(build_dir: str) -> bool:
+    if os.path.isfile(build_dir):
+        print(f'Build directory {build_dir} exists as something other than a directory')
+        return False
+
+    if not os.path.isdir(build_dir):
+        print(f'Build directory {build_dir} does not exist')
+        return False
+    return True
+
+
 def do_clean(ctx: ProjectContext, _args: argparse.Namespace) -> int:
+    if not verify_build_dir_exists(ctx.build_dir()):
+        return 1
+
     build_dir: str = ctx.build_dir()
+
     if not os.path.exists(build_dir):
         print(f'Build directory {build_dir} does not exist')
         return 1
@@ -245,19 +270,16 @@ def do_clean(ctx: ProjectContext, _args: argparse.Namespace) -> int:
 
 
 def do_gen(ctx: ProjectContext, args: argparse.Namespace) -> int:
-    if not ctx.has_registered_program('cmake'):
-        print('No alias exists for `cmake`')
+    if not verify_executable_exists(ctx, 'cmake'):
         return 1
 
-    cmake_path: str = ctx.path_for_program('cmake')
-    if not os.path.isfile(cmake_path):
-        print(f'CMake does not exist at {cmake_path}')
+    if ctx.compiler() is not None and not verify_executable_exists(ctx, ctx.compiler()):
+        return 1
 
     build_dir = ctx.build_dir()
     if os.path.isfile(build_dir):
         print(f'Build directory {build_dir} exists as something other than a directory')
         return 1
-
     if os.path.isdir(build_dir):
         if args.force:
             if ctx.is_dry_run():
@@ -268,23 +290,21 @@ def do_gen(ctx: ProjectContext, args: argparse.Namespace) -> int:
             print(f'{build_dir} exists.  Use --force to wipe and recreate the build dir.')
             return 1
 
-    print(f'Creating build directory {build_dir}')
     if ctx.is_dry_run():
         print(f'Would have created {build_dir}')
     else:
+        print(f'Creating build directory {build_dir}')
         os.mkdir(build_dir)
-    cmake_args = [cmake_path, '..']
 
+    cmake_path: str = ctx.path_for_program('cmake')
+    cmake_args = [cmake_path, '..']
     if args.enable_ccache:
         cmake_args.append('-DKN_ENABLE_CCACHE=1')
 
-    compiler_path: Optional[str] = None
-    if ctx.compiler():
-        if not ctx.has_registered_program(ctx.compiler()):
-            print(f'Compiler alias "{ctx.compiler()}" is not registered.')
-            return 1
-        compiler_path = ctx.path_for_program(ctx.compiler())
-    cmake_args.extend(generator_settings_for_compiler(cmake_path, compiler_path))
+    compiler = None
+    if ctx.compiler() is not None:
+        compiler = ctx.path_for_program(ctx.compiler())
+    cmake_args.extend(generator_settings_for_compiler(cmake_path, compiler))
 
     if ctx.is_dry_run():
         print(f'Would have run {cmake_args} in {build_dir}')
@@ -295,19 +315,13 @@ def do_gen(ctx: ProjectContext, args: argparse.Namespace) -> int:
 
 def do_build(ctx: ProjectContext, _args: argparse.Namespace) -> int:
     """Build using the current project configuration."""
-    build_dir = ctx.build_dir()
-    if not os.path.isdir(build_dir):
-        print(f'Build dir does not exist at {build_dir}')
+    if not verify_executable_exists(ctx, 'cmake'):
         return 1
 
-    if not ctx.has_registered_program('cmake'):
-        print('No alias exists for `cmake`')
+    if not verify_build_dir_exists(ctx.build_dir()):
         return 1
 
-    cmake_path: str = ctx.path_for_program('cmake')
-    if not os.path.isfile(cmake_path):
-        print(f'CMake does not exist at {cmake_path}')
-    cmake_args = [cmake_path, '--build', '.',
+    cmake_args = [ctx.path_for_program('cmake'), '--build', '.',
                   '--parallel', str(multiprocessing.cpu_count()),
                   '--config', ctx.build_config()]
 
@@ -318,36 +332,29 @@ def do_build(ctx: ProjectContext, _args: argparse.Namespace) -> int:
         cmake_args.append(f'-DCMAKE_C_COMPILER={ctx.path_for_program(ctx.compiler())}')
 
     if ctx.is_dry_run():
-        print(f'Would have run {cmake_args} in {build_dir}')
+        print(f'Would have run {cmake_args} in {ctx.build_dir()}')
     else:
-        return run_program(cmake_args, cwd=build_dir)
+        return run_program(cmake_args, cwd=(ctx.build_dir()))
 
 
 def do_check(ctx: ProjectContext, args: argparse.Namespace) -> int:
-    if not ctx.has_registered_program('cmake'):
-        print('No alias exists for `cmake`')
+    if not verify_executable_exists(ctx, 'cmake'):
         return 1
 
-    cmake_path: str = ctx.path_for_program('cmake')
-    if not os.path.isfile(cmake_path):
-        print(f'CMake does not exist at {cmake_path}')
-
-    build_dir = ctx.build_dir()
-    if not os.path.isdir(build_dir):
-        print(f'Build dir does not exist at {build_dir}')
+    if not verify_build_dir_exists(ctx.build_dir()):
         return 1
 
     check_target: str = 'check'
     if args.iterate:
         check_target += '-iterate'
 
-    cmake_args = [cmake_path, '--build', '.',
+    cmake_args = [ctx.path_for_program('cmake'), '--build', '.',
                   '--target', check_target,
                   '--config', ctx.build_config()]
     if ctx.is_dry_run():
-        print(f'Would have run {cmake_args} in {build_dir}')
+        print(f'Would have run {cmake_args} in {ctx.build_dir()}')
     else:
-        return run_program(cmake_args, cwd=build_dir)
+        return run_program(cmake_args, cwd=(ctx.build_dir()))
 
 
 def do_demo(ctx: ProjectContext, args: argparse.Namespace) -> int:
