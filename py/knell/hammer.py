@@ -324,7 +324,30 @@ def do_build(ctx: ProjectContext, _args: argparse.Namespace) -> int:
 
 
 def do_check(ctx: ProjectContext, args: argparse.Namespace) -> int:
-    return 1
+    if not ctx.has_registered_program('cmake'):
+        print('No alias exists for `cmake`')
+        return 1
+
+    cmake_path: str = ctx.path_for_program('cmake')
+    if not os.path.isfile(cmake_path):
+        print(f'CMake does not exist at {cmake_path}')
+
+    build_dir = ctx.build_dir()
+    if not os.path.isdir(build_dir):
+        print(f'Build dir does not exist at {build_dir}')
+        return 1
+
+    check_target: str = 'check'
+    if args.iterate:
+        check_target += '-iterate'
+
+    cmake_args = [cmake_path, '--build', '.',
+                  '--target', check_target,
+                  '--config', ctx.build_config()]
+    if ctx.is_dry_run():
+        print(f'Would have run {cmake_args} in {build_dir}')
+    else:
+        return run_program(cmake_args, cwd=build_dir)
 
 
 def do_demo(ctx: ProjectContext, args: argparse.Namespace) -> int:
