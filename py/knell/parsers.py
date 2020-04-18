@@ -42,23 +42,9 @@ def parser_add_general_args(parser: argparse.ArgumentParser) -> argparse.Argumen
     return parser
 
 
-def parser_add_build_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
-    """
-    Adds common build arguments to a parser.
-
-    Adds properties `build_dir`, `build_config` and `compiler`.
-    """
-    build = parser.add_argument_group('build')
-    build.add_argument('--build-dir',
+def parser_add_build_dir(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+    parser.add_argument('--build-dir',
                        type=str)
-    build.add_argument('--build-config',
-                       type=str,
-                       choices=['Debug', 'Release'],
-                       help="Changes applied compiler/linker flags and "
-                            "preprocessor defines.")
-    build.add_argument('--compiler',
-                       type=str,
-                       help='Use a registered program as the compiler.')
     return parser
 
 
@@ -99,13 +85,16 @@ def parser_add_driver_args(parser: argparse.ArgumentParser) -> argparse.Argument
 
 def parser_clean(parser) -> argparse.ArgumentParser:
     clean_parser = parser.add_parser('clean', help='Remove build directories')
-    parser_add_general_args(parser_add_build_args(clean_parser))
+    parser_add_general_args(parser_add_build_dir(clean_parser))
     return parser
 
 
 def parser_gen(parser) -> argparse.ArgumentParser:
     gen_parser = parser.add_parser('gen', help='Generate build types')
-    parser_add_general_args(parser_add_build_args(gen_parser))
+    parser_add_general_args(parser_add_build_dir(gen_parser))
+    gen_parser.add_argument('--compiler',
+                            type=str,
+                            help='Use a registered program as the compiler.')
     gen_parser.add_argument('--force',
                             action='store_true',
                             help='Delete any preexisting build directory')
@@ -117,13 +106,18 @@ def parser_gen(parser) -> argparse.ArgumentParser:
 
 def parser_build(parser) -> argparse.ArgumentParser:
     build_parser = parser.add_parser('build', help='Do a build')
-    parser_add_general_args(parser_add_build_args(build_parser))
+    parser_add_general_args(parser_add_build_dir(build_parser))
+    build_parser.add_argument('--build-config',
+                        type=str,
+                        choices=['Debug', 'Release'],
+                        help="Changes applied compiler/linker flags and "
+                             "preprocessor defines.")
     return parser
 
 
 def parser_check(parser) -> argparse.ArgumentParser:
     check_parser = parser.add_parser('check', help='Run tests')
-    parser_add_general_args(parser_add_build_args(check_parser))
+    parser_add_general_args(parser_add_build_dir(check_parser))
     check_parser.add_argument('--iterate',
                               action='store_true',
                               help='Only rerun failed tests.')
