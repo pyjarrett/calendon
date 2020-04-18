@@ -4,7 +4,6 @@ Parsers for various commands used by Hammer.
 import argparse
 import os
 
-
 DEFAULT_NAMES = ['compiler', 'build-config', 'build-dir', 'demo']
 
 
@@ -44,7 +43,16 @@ def parser_add_general_args(parser: argparse.ArgumentParser) -> argparse.Argumen
 
 def parser_add_build_dir(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     parser.add_argument('--build-dir',
-                       type=str)
+                        type=str)
+    return parser
+
+
+def parser_add_build_config(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+    parser.add_argument('--build-config',
+                        type=str,
+                        choices=['Debug', 'Release'],
+                        help="Changes applied compiler/linker flags and "
+                             "preprocessor defines.")
     return parser
 
 
@@ -106,18 +114,17 @@ def parser_gen(parser) -> argparse.ArgumentParser:
 
 def parser_build(parser) -> argparse.ArgumentParser:
     build_parser = parser.add_parser('build', help='Do a build')
-    parser_add_general_args(parser_add_build_dir(build_parser))
-    build_parser.add_argument('--build-config',
-                        type=str,
-                        choices=['Debug', 'Release'],
-                        help="Changes applied compiler/linker flags and "
-                             "preprocessor defines.")
+    parser_add_general_args(build_parser)
+    parser_add_build_config(build_parser)
+    parser_add_build_dir(build_parser)
     return parser
 
 
 def parser_check(parser) -> argparse.ArgumentParser:
     check_parser = parser.add_parser('check', help='Run tests')
-    parser_add_general_args(parser_add_build_dir(check_parser))
+    parser_add_general_args(check_parser)
+    parser_add_build_config(check_parser)
+    parser_add_build_dir(check_parser)
     check_parser.add_argument('--iterate',
                               action='store_true',
                               help='Only rerun failed tests.')
