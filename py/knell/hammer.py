@@ -246,7 +246,7 @@ def verify_build_dir_exists(build_dir: str) -> bool:
     return True
 
 
-def do_clean(ctx: ProjectContext, _args: argparse.Namespace) -> int:
+def cmd_clean(ctx: ProjectContext, _args: argparse.Namespace) -> int:
     build_dir: str = ctx.build_dir()
     if not os.path.exists(build_dir):
         return 0
@@ -267,7 +267,7 @@ def do_clean(ctx: ProjectContext, _args: argparse.Namespace) -> int:
     return 0
 
 
-def do_gen(ctx: ProjectContext, args: argparse.Namespace) -> int:
+def cmd_gen(ctx: ProjectContext, args: argparse.Namespace) -> int:
     if not verify_executable_exists(ctx, 'cmake'):
         return 1
 
@@ -311,7 +311,7 @@ def do_gen(ctx: ProjectContext, args: argparse.Namespace) -> int:
         return run_program(cmake_args, cwd=build_dir)
 
 
-def do_build(ctx: ProjectContext, _args: argparse.Namespace) -> int:
+def cmd_build(ctx: ProjectContext, _args: argparse.Namespace) -> int:
     """Build using the current project configuration."""
     if not verify_executable_exists(ctx, 'cmake'):
         return 1
@@ -329,7 +329,7 @@ def do_build(ctx: ProjectContext, _args: argparse.Namespace) -> int:
         return run_program(cmake_args, cwd=(ctx.build_dir()))
 
 
-def do_check(ctx: ProjectContext, args: argparse.Namespace) -> int:
+def cmd_check(ctx: ProjectContext, args: argparse.Namespace) -> int:
     if not verify_executable_exists(ctx, 'cmake'):
         return 1
 
@@ -349,20 +349,20 @@ def do_check(ctx: ProjectContext, args: argparse.Namespace) -> int:
         return run_program(cmake_args, cwd=(ctx.build_dir()))
 
 
-def do_demo(ctx: ProjectContext, args: argparse.Namespace) -> int:
+def cmd_demo(ctx: ProjectContext, args: argparse.Namespace) -> int:
     return 1
 
 
-def do_run(ctx: ProjectContext, args: argparse.Namespace) -> int:
+def cmd_run(ctx: ProjectContext, args: argparse.Namespace) -> int:
     return 1
 
 
-def do_env(ctx: ProjectContext, _args: argparse.Namespace) -> int:
+def cmd_env(ctx: ProjectContext, _args: argparse.Namespace) -> int:
     json.dump(ctx.dump(), sys.stdout, indent=4)
     return 0
 
 
-def do_register(ctx: ProjectContext, args: argparse.Namespace) -> int:
+def cmd_register(ctx: ProjectContext, args: argparse.Namespace) -> int:
     """Registers a new program for use in the given context."""
     if os.path.isfile(args.path) or args.force:
         if ctx.is_dry_run():
@@ -381,50 +381,50 @@ def do_register(ctx: ProjectContext, args: argparse.Namespace) -> int:
     return 1
 
 
-def do_default(ctx: ProjectContext, args: argparse.Namespace) -> int:
+def cmd_default(ctx: ProjectContext, args: argparse.Namespace) -> int:
     return 1
 
 
-def do_pycheck(ctx: ProjectContext, args: argparse.Namespace) -> int:
+def cmd_pycheck(ctx: ProjectContext, args: argparse.Namespace) -> int:
     return 1
 
 
-def do_source(ctx: ProjectContext, args: argparse.Namespace) -> int:
+def cmd_source(ctx: ProjectContext, args: argparse.Namespace) -> int:
     return 1
 
 
-def do_save(ctx: ProjectContext, args: argparse.Namespace) -> int:
+def cmd_save(ctx: ProjectContext, args: argparse.Namespace) -> int:
     ctx.save()
     return 0
 
 
-def do_load(ctx: ProjectContext, args: argparse.Namespace) -> int:
+def cmd_load(ctx: ProjectContext, args: argparse.Namespace) -> int:
     return 1
 
 
 COMMAND_PARSERS = {
     # Build and test
-    'clean': (parser_clean, do_clean),
-    'gen': (parser_gen, do_gen),
-    'build': (parser_build, do_build),
-    'check': (parser_check, do_check),
+    'clean': (parser_clean, cmd_clean),
+    'gen': (parser_gen, cmd_gen),
+    'build': (parser_build, cmd_build),
+    'check': (parser_check, cmd_check),
 
     # Run
-    'demo': (parser_demo, do_demo),
-    'run': (parser_run, do_run),
+    'demo': (parser_demo, cmd_demo),
+    'run': (parser_run, cmd_run),
 
     # Environment
-    'env': (parser_env, do_env),
-    'register': (parser_register, do_register),
-    'default': (parser_default, do_default),
+    'env': (parser_env, cmd_env),
+    'register': (parser_register, cmd_register),
+    'default': (parser_default, cmd_default),
 
     # Command history and automation
-    'source': (parser_source, do_source),
-    'save': (parser_save, do_save),
-    'load': (parser_load, do_load),
+    'source': (parser_source, cmd_source),
+    'save': (parser_save, cmd_save),
+    'load': (parser_load, cmd_load),
 
     # Development
-    'pycheck': (parser_pycheck, do_pycheck),
+    'pycheck': (parser_pycheck, cmd_pycheck),
 }
 
 
