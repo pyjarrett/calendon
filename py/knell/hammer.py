@@ -247,14 +247,9 @@ def verify_build_dir_exists(build_dir: str) -> bool:
 
 
 def do_clean(ctx: ProjectContext, _args: argparse.Namespace) -> int:
-    if not verify_build_dir_exists(ctx.build_dir()):
-        return 1
-
     build_dir: str = ctx.build_dir()
-
     if not os.path.exists(build_dir):
-        print(f'Build directory {build_dir} does not exist')
-        return 1
+        return 0
 
     if not os.path.isdir(build_dir):
         print(f'Build directory {build_dir} is not a directory')
