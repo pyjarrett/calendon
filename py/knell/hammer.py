@@ -6,6 +6,7 @@ import cmd
 import json
 import multiprocessing
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -15,10 +16,6 @@ from context import ProjectContext
 from multiplatform import root_to_executable
 from parsers import *
 from run import run_program
-
-
-class Terminal(cmd.Cmd):
-    pass
 
 
 def generator_settings_for_compiler(cmake_path: str, compiler_path: Optional[str]):
@@ -348,9 +345,67 @@ def parse_args() -> argparse.Namespace:
     return args
 
 
+class InteractiveMode(cmd.Cmd):
+    def __init__(self, ctx):
+        super().__init__()
+        self.ctx = ctx
+        self.parser = argparse.ArgumentParser()
+        commands = self.parser.add_subparsers(dest='command')
+        for command in COMMAND_PARSERS:
+            COMMAND_PARSERS[command][0](commands)
+        parser_add_hammer_args(self.parser)
+
+    def default(self, line):
+        print(line)
+        try:
+            args = self.parser.parse_args(shlex.split(line))
+
+            # Establish the target environment for the script.
+            knell_home: str = os.environ.get('KNELL_HOME', os.getcwd())
+            if args.knell_home:
+                knell_home = args.knell_home
+
+            # Build the context using the given home directory.
+            ctx: ProjectContext = ProjectContext(knell_home)
+            ctx = ctx.copy_with_overrides(vars(args))
+
+            # Running in non-interactive mode.
+            # Dispatch to the appropriate handling function.
+            retval = COMMAND_PARSERS[args.command][1](ctx, args)
+        except SystemExit:
+            self.parser.print_help(sys.stdout)
+
+    def do_help(self, arg):
+        if arg == '':
+            self.parser.print_help(sys.stdout)
+
+        if arg in COMMAND_PARSERS.keys():
+            print(COMMAND_PARSERS[arg][1].__doc__)
+
+    def do_quit(self, _arg):
+        return True
+
+    def do_exit(self, _arg):
+        return True
+
+
 def run_interactive_loop():
     """Starts an interactive terminal."""
     print('Running interactively.')
+
+    # Establish the target environment for the script.
+    knell_home: str = os.environ.get('KNELL_HOME', os.getcwd())
+
+    # Build the context using the given home directory.
+    ctx: ProjectContext = ProjectContext(knell_home)
+
+    repl = InteractiveMode(ctx)
+    repl.cmdloop()
+
+    # if repl.reload:
+    #     kn.reload()
+    # else:
+    #     sys.exit(repl.last_exit_code)
 
 
 # Hammer is runnable as a script, providing the appropriate command and options
