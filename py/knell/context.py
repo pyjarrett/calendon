@@ -38,6 +38,7 @@ class RunFlavor:
     run_time_seconds: Optional[int] = 0
     headless: bool = False
 
+
 class ProjectContext:
     """A concise description of the environment in which the script will run."""
 
@@ -106,8 +107,14 @@ class ProjectContext:
         """Project root directory."""
         return self._script_flavor.knell_home
 
+    def py_dir(self) -> str:
+        return os.path.abspath(os.path.join(self.knell_home(), 'py'))
+
     def build_dir(self) -> str:
         return os.path.abspath(os.path.join(self._script_flavor.knell_home, self._build_flavor.build_dir))
+
+    def venv_dir(self) -> str:
+        return os.path.abspath(os.path.join(self._script_flavor.knell_home, 'venv'))
 
     def build_config(self) -> str:
         return self._build_flavor.build_config

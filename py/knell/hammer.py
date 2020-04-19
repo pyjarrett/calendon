@@ -11,6 +11,7 @@ import sys
 from typing import Optional
 
 from context import ProjectContext
+from multiplatform import root_to_executable
 from parsers import *
 from run import run_program
 
@@ -66,6 +67,17 @@ def verify_build_dir_exists(build_dir: str) -> bool:
 
     if not os.path.isdir(build_dir):
         print(f'Build directory {build_dir} does not exist')
+        return False
+    return True
+
+
+def verify_venv_dir_exists(venv: str) -> bool:
+    if os.path.isfile(venv):
+        print(f'Virtual environment {venv} exists as something other than a directory')
+        return False
+
+    if not os.path.isdir(venv):
+        print(f'Virtual environment {venv} does not exist')
         return False
     return True
 
@@ -209,7 +221,49 @@ def cmd_default(ctx: ProjectContext, args: argparse.Namespace) -> int:
     return 1
 
 
+def cmd_pysetup(ctx: ProjectContext, args: argparse.Namespace) -> int:
+    """Creates a virtual environment for helper module installs."""
+    if not verify_executable_exists(ctx, 'python3'):
+        return 1
+
+    if os.path.isfile(ctx.venv_dir()):
+        print(f'Cannot create venv, {ctx.venv_dir()} is a file.')
+        return 1
+
+    if  os.path.isdir(ctx.venv_dir()) and args.clean:
+        shutil.rmtree(ctx.venv_dir())
+
+    if not os.path.isdir(ctx.venv_dir()):
+        venv_args = [(ctx.path_for_program('python3')), '-m', 'venv', ctx.venv_dir()]
+        venv_setup = run_program(venv_args, cwd=ctx.knell_home())
+        if venv_setup != 0:
+            print(f'Could not create virtual environment at {ctx.venv_dir()}')
+            return venv_setup
+        ctx.register_program('localpython3', os.path.join(ctx.venv_dir(), 'Scripts', root_to_executable('python')),
+                             override=True)
+
+    pip_upgrade_result = run_program(
+        [(ctx.path_for_program('localpython3')), '-m', 'pip', 'install', '--upgrade', 'pip'], cwd=ctx.knell_home())
+    if pip_upgrade_result != 0:
+        print('Could not upgrade pip.')
+
+    requirements_file = os.path.join(ctx.py_dir(), 'requirements.txt')
+    if os.path.isfile(requirements_file):
+        pip_install_args = [ctx.path_for_program('localpython3'), '-m', 'pip', 'install', '-r', requirements_file]
+    else:
+        required_dev_packages = ['mypy', 'pylint', 'pydocstyle', 'pycodestyle', 'bandit', 'colorama']
+        pip_install_args = [ctx.path_for_program('localpython3'), '-m', 'pip', 'install']
+        pip_install_args.extend(required_dev_packages)
+    return run_program(pip_install_args, cwd=ctx.knell_home())
+
+
 def cmd_pycheck(ctx: ProjectContext, args: argparse.Namespace) -> int:
+    if not verify_executable_exists(ctx, 'localpython3'):
+        return 1
+
+    if not verify_venv_dir_exists(ctx.venv_dir()):
+        return 1
+
     return 1
 
 
@@ -248,6 +302,7 @@ COMMAND_PARSERS = {
     'load': (parser_load, cmd_load),
 
     # Development
+    'pysetup': (parser_pysetup, cmd_pysetup),
     'pycheck': (parser_pycheck, cmd_pycheck),
 }
 
@@ -302,7 +357,7 @@ if __name__ == '__main__':
     # Dispatch to the appropriate handling function.
     retval = COMMAND_PARSERS[args.command][1](ctx, args)
 
-    if args.command in ['register']:
+    if args.command in ['register', 'pysetup']:
         ctx.save()
 
     sys.exit(retval)

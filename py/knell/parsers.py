@@ -177,6 +177,15 @@ def parser_default(parser) -> argparse.ArgumentParser:
     return parser
 
 
+def parser_pysetup(parser) -> argparse.ArgumentParser:
+    pysetup_parser = parser.add_parser('pysetup',
+                                       help='Run Python linting and testing.')
+    pysetup_parser.add_argument('--clean',
+                                action='store_true',
+                                help='Remove any existing virtual environment.')
+    return parser
+
+
 def parser_pycheck(parser) -> argparse.ArgumentParser:
     pycheck_parser = parser.add_parser('pycheck',
                                        help='Run Python linting and testing.')
