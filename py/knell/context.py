@@ -16,7 +16,6 @@ def _override_flavor_from_dict(flavor: object, kv: Dict):
 
 @dataclass
 class ScriptFlavor:
-    knell_home: str = None
     verbose: bool = False
     dry_run: bool = False
 
@@ -26,14 +25,14 @@ class BuildFlavor:
     """Define enough information to do a build."""
     build_dir: str = 'build'
     build_config: str = 'Debug'
-    compiler: str = None
+    compiler: Optional[str] = None
 
 
 @dataclass
 class RunFlavor:
     """Environment specification of how to do a 'run'."""
-    game: str = None
-    asset_dir: str = None
+    game: Optional[str] = None
+    asset_dir: Optional[str] = None
     ticks: Optional[int] = 0
     run_time_seconds: Optional[int] = 0
     headless: bool = False
@@ -45,10 +44,10 @@ class ProjectContext:
     def __init__(self, knell_home: str):
         """Creates a default context from a home directory."""
         self._script_flavor = ScriptFlavor()
-        self._script_flavor.knell_home = os.path.abspath(knell_home)
+        self._knell_home = os.path.abspath(knell_home)
         self._build_flavor = BuildFlavor()
         self._run_flavor = RunFlavor()
-        self._registered_programs = {}
+        self._registered_programs: Dict[str, str] = {}
         self._load_config(os.path.join(self.knell_home(), '.hammer'))
 
     def _override_from_dict(self, kv: Dict):
@@ -105,16 +104,16 @@ class ProjectContext:
 
     def knell_home(self) -> str:
         """Project root directory."""
-        return self._script_flavor.knell_home
+        return self._knell_home
 
     def py_dir(self) -> str:
         return os.path.abspath(os.path.join(self.knell_home(), 'py'))
 
     def build_dir(self) -> str:
-        return os.path.abspath(os.path.join(self._script_flavor.knell_home, self._build_flavor.build_dir))
+        return os.path.abspath(os.path.join(self._knell_home, self._build_flavor.build_dir))
 
     def venv_dir(self) -> str:
-        return os.path.abspath(os.path.join(self._script_flavor.knell_home, 'venv'))
+        return os.path.abspath(os.path.join(self._knell_home, 'venv'))
 
     def build_config(self) -> str:
         return self._build_flavor.build_config

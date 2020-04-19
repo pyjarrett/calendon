@@ -3,6 +3,7 @@ A Hammer context in which commands can be dispatched and executed.
 """
 import argparse
 import cmd
+import json
 import multiprocessing
 import os
 import shutil
@@ -161,6 +162,7 @@ def cmd_build(ctx: ProjectContext, _args: argparse.Namespace) -> int:
 
     if ctx.is_dry_run():
         print(f'Would have run {cmake_args} in {ctx.build_dir()}')
+        return 0
     else:
         return run_program(cmake_args, cwd=(ctx.build_dir()))
 
@@ -181,6 +183,7 @@ def cmd_check(ctx: ProjectContext, args: argparse.Namespace) -> int:
                   '--config', ctx.build_config()]
     if ctx.is_dry_run():
         print(f'Would have run {cmake_args} in {ctx.build_dir()}')
+        return 0
     else:
         return run_program(cmake_args, cwd=(ctx.build_dir()))
 
@@ -276,16 +279,15 @@ def cmd_pycheck(ctx: ProjectContext, args: argparse.Namespace) -> int:
               ['pydocstyle', '--ignore=D200,D203,D204,D212,D401'],
               ]
 
+    failures = 0
     for program in checks:
         cmd_line = [python_path, '-m']
         cmd_line.extend(program)
         cmd_line.extend(py_files())
         if run_program(cmd_line, cwd=ctx.py_dir()) != 0:
-            return False
+            failures += 1
 
-    return True
-
-    return 1
+    return failures
 
 
 def cmd_source(ctx: ProjectContext, args: argparse.Namespace) -> int:
@@ -330,8 +332,7 @@ COMMAND_PARSERS = {
 
 def parse_args() -> argparse.Namespace:
     """
-    Parse command arguments and return a namespace for creating a project
-    context.
+    Parse command arguments and return a namespace for creating a project context.
     """
     parser = argparse.ArgumentParser()
     commands = parser.add_subparsers(dest='command')
