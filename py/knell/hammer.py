@@ -257,12 +257,33 @@ def cmd_pysetup(ctx: ProjectContext, args: argparse.Namespace) -> int:
     return run_program(pip_install_args, cwd=ctx.knell_home())
 
 
+def py_files():
+    return ['knell']
+
+
 def cmd_pycheck(ctx: ProjectContext, args: argparse.Namespace) -> int:
+    """Run all the checks on the Hammer Python source."""
     if not verify_executable_exists(ctx, 'localpython3'):
         return 1
 
     if not verify_venv_dir_exists(ctx.venv_dir()):
         return 1
+
+    python_path = ctx.path_for_program('localpython3')
+    checks = [['mypy'],
+              ['pylint'],
+              ['pycodestyle', '--max-line-length=120', '--show-source', '--statistics', '--count'],
+              ['pydocstyle', '--ignore=D200,D203,D204,D212,D401'],
+              ]
+
+    for program in checks:
+        cmd_line = [python_path, '-m']
+        cmd_line.extend(program)
+        cmd_line.extend(py_files())
+        if run_program(cmd_line, cwd=ctx.py_dir()) != 0:
+            return False
+
+    return True
 
     return 1
 
