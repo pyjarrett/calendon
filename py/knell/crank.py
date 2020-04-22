@@ -311,28 +311,28 @@ def cmd_load(ctx: ProjectContext, args: argparse.Namespace) -> int:
 
 COMMAND_PARSERS = {
     # Build and test
-    'clean': (parser_clean, cmd_clean),
-    'gen': (parser_gen, cmd_gen),
-    'build': (parser_build, cmd_build),
-    'check': (parser_check, cmd_check),
+    'clean': (parser_clean, cmd_clean, 'Remove build directories'),
+    'gen': (parser_gen, cmd_gen, 'Generate build types'),
+    'build': (parser_build, cmd_build, 'Do a build'),
+    'check': (parser_check, cmd_check, 'Run tests'),
 
     # Run
-    'demo': (parser_demo, cmd_demo),
-    'run': (parser_run, cmd_run),
+    'demo': (parser_demo, cmd_demo, 'List built demos available to be run'),
+    'run': (parser_run, cmd_run, 'Run a demo or a game.'),
 
     # Environment
-    'env': (parser_env, cmd_env),
-    'register': (parser_register, cmd_register),
-    'default': (parser_default, cmd_default),
+    'env': (parser_env, cmd_env, 'Prints the current tool configuration'),
+    'register': (parser_register, cmd_register, 'Change program registration.'),
+    'default': (parser_default, cmd_default, 'Set default configuration parameters.'),
 
     # Command history and automation
-    'source': (parser_source, cmd_source),
-    'save': (parser_save, cmd_save),
-    'load': (parser_load, cmd_load),
+    'source': (parser_source, cmd_source, 'Run each line from a file as a command.'),
+    'save': (parser_save, cmd_save, 'Save configuration to file.'),
+    'load': (parser_load, cmd_load, 'Load configuration from a file.'),
 
     # Development
-    'pysetup': (parser_pysetup, cmd_pysetup),
-    'pycheck': (parser_pycheck, cmd_pycheck),
+    'pysetup': (parser_pysetup, cmd_pysetup, 'Setup virtual environment for subtools.'),
+    'pycheck': (parser_pycheck, cmd_pycheck, 'Run Python linting and testing.'),
 }
 
 
@@ -343,7 +343,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     commands = parser.add_subparsers(dest='command')
     for command in COMMAND_PARSERS:
-        COMMAND_PARSERS[command][0](commands)
+        subparser = commands.add_parser(command, help=COMMAND_PARSERS[command][2])
+        COMMAND_PARSERS[command][0](subparser)
     parser_add_top_level_args(parser)
 
     args = parser.parse_args()
@@ -354,42 +355,54 @@ def parse_args() -> argparse.Namespace:
     return args
 
 
-class InteractiveMode(cmd.Cmd):
-    def __init__(self, ctx):
-        super().__init__()
-        self.ctx = ctx
-        self.parser = argparse.ArgumentParser()
-        commands = self.parser.add_subparsers(dest='command')
-        for command in COMMAND_PARSERS:
-            COMMAND_PARSERS[command][0](commands)
-        parser_add_top_level_args(self.parser)
+def map_help(action):
+    help = lambda self: action.__doc__
+    return help
 
-    def default(self, line):
-        print(line)
+
+class CmdArgumentParser(argparse.ArgumentParser):
+    def parse_args(self, args):
+        """Catch the SystemExit so bad parses don't crash the interactive session."""
         try:
-            args = self.parser.parse_args(shlex.split(line))
-
-            # Establish the target environment for the script.
-            knell_home: str = os.environ.get('KNELL_HOME', os.getcwd())
-            if args.knell_home:
-                knell_home = args.knell_home
-
-            # Build the context using the given home directory.
-            ctx: ProjectContext = ProjectContext(knell_home)
-            ctx = ctx.copy_with_overrides(vars(args))
-
-            # Running in non-interactive mode.
-            # Dispatch to the appropriate handling function.
-            retval = COMMAND_PARSERS[args.command][1](ctx, args)
+            return super().parse_args(args)
         except SystemExit:
-            self.parser.print_help(sys.stdout)
+            return None
 
-    def do_help(self, arg):
-        if arg == '':
-            self.parser.print_help(sys.stdout)
 
-        if arg in COMMAND_PARSERS.keys():
-            print(COMMAND_PARSERS[arg][1].__doc__)
+def map_command(self, command, parser, action):
+    # Double-parser args because this needs to fit into a lambda.
+    # Shortcircuit on argument parsing to prevent command functions from needing
+    # to perform error handling relating to argument parsing.
+    wrap = lambda args: parser(CmdArgumentParser(usage=command)).parse_args(shlex.split(args)) is not None and action(
+        self.ctx, parser(CmdArgumentParser(usage=command)).parse_args(shlex.split(args))) and False
+    wrap.__doc__ = action.__doc__
+    return wrap
+
+
+class InteractiveMode(cmd.Cmd):
+    """Handler for Crank's interactive mode."""
+
+    def __init__(self, ctx):
+        """Initialize interactive mode with a known context."""
+        self._names = []
+        self.ctx = ctx
+        self.parser = CmdArgumentParser()
+        for command in COMMAND_PARSERS:
+            parser = COMMAND_PARSERS[command][0]
+            action = COMMAND_PARSERS[command][1]
+            setattr(self, f'do_{command}', map_command(self, command, parser, action))
+            self._names.append(f'do_{command}')
+        parser_add_top_level_args(self.parser)
+        super().__init__()
+
+    def get_names(self):
+        """
+        Overridden to provide support for dynamically adding commands.
+
+        cmd.Cmd uses dir(self.__class__) which won't include our monkey-patched
+        methods in the default command list.
+        """
+        return self._names
 
     def do_quit(self, _arg):
         return True
