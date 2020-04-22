@@ -12,10 +12,10 @@ import subprocess
 import sys
 from typing import Optional
 
-from context import ProjectContext
-from multiplatform import root_to_executable
-from parsers import *
-from run import run_program
+from .context import ProjectContext
+from .multiplatform import root_to_executable
+from .parsers import *
+from .run import run_program
 
 
 def generator_settings_for_compiler(cmake_path: str, compiler_path: Optional[str]):
@@ -411,13 +411,8 @@ def run_interactive_loop():
     #     sys.exit(repl.last_exit_code)
 
 
-# This tool is runnable as a script, providing the appropriate command and
-# options to use.  Running commands individually should be indistinguishable
-# from using an interactive environment.
-if __name__ == '__main__':
-    if len(sys.argv) == 1:
-        run_interactive_loop()
-        sys.exit(0)
+def run_as_script():
+    """Runs Crank as a simple command using the current command line."""
 
     # `args` is a namespace of all of our possible arguments, appropriate for
     # whatever command is going to be executed.  This isn't going to be a
@@ -440,4 +435,4 @@ if __name__ == '__main__':
     if args.command in ['register', 'pysetup']:
         ctx.save()
 
-    sys.exit(retval)
+    return retval
