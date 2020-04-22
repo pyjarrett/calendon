@@ -14,13 +14,13 @@ def parser_add_top_level_args(parser: argparse.ArgumentParser) -> argparse.Argum
     """
     top_level = parser.add_argument_group('top-level')
     top_level.add_argument('--knell-home',
-                        type=str,
-                        help="Root directory of the Knell project, which will "
-                             "override KNELL_HOME")
+                           type=str,
+                           help="Root directory of the Knell project, which will "
+                                "override KNELL_HOME")
     top_level.add_argument('--config', type=str,
-                        help="Specify a different configuration file to use "
-                             "rather than searching the current directory and "
-                             "user's home directory.")
+                           help="Specify a different configuration file to use "
+                                "rather than searching the current directory and "
+                                "user's home directory.")
     return parser
 
 
@@ -188,6 +188,9 @@ def parser_pysetup(parser) -> argparse.ArgumentParser:
 def parser_pycheck(parser) -> argparse.ArgumentParser:
     pycheck_parser = parser.add_parser('pycheck',
                                        help='Run Python linting and testing.')
+    pycheck_parser.add_argument('--incremental',
+                                action='store_true',
+                                help='Stop on first failure in linting and testing.')
     return parser
 
 

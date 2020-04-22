@@ -121,7 +121,7 @@ to identify that release as `vMAJOR.MINOR.PATH`.
 
 - miscellaneous operations
     - `lint` - Run linting for the engine code.
-    - `pycheck` - Run python lint and testing.
+    - `pycheck [--incremental]` - Run python lint and testing.
     - `prepush` - Run presubmit checks.    
 
 ## Command history and automation

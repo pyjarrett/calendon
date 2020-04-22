@@ -47,8 +47,12 @@ def generator_settings_for_compiler(cmake_path: str, compiler_path: Optional[str
     return settings
 
 
-def verify_executable_exists(ctx: ProjectContext, alias: str) -> bool:
+def verify_executable_exists(ctx: ProjectContext, alias: Optional[str]) -> bool:
     """Return true if an alias maps to a file in a context and provide user messaging."""
+    if alias is None:
+        print(f'Cannot find an executable for a null alias.')
+        return False
+
     if not ctx.has_registered_program(alias):
         print(f'No alias exists for {alias}')
         return False
@@ -136,9 +140,9 @@ def cmd_gen(ctx: ProjectContext, args: argparse.Namespace) -> int:
     if args.enable_ccache:
         cmake_args.append('-DKN_ENABLE_CCACHE=1')
 
-    compiler = None
-    if ctx.compiler() is not None:
-        compiler = ctx.path_for_program(ctx.compiler())
+    compiler = ctx.compiler()
+    if compiler is not None:
+        compiler = ctx.path_for_program(compiler)
     cmake_args.extend(generator_settings_for_compiler(cmake_path, compiler))
 
     if ctx.is_dry_run():
@@ -286,6 +290,8 @@ def cmd_pycheck(ctx: ProjectContext, args: argparse.Namespace) -> int:
         cmd_line.extend(py_files())
         if run_program(cmd_line, cwd=ctx.py_dir()) != 0:
             failures += 1
+            if args.incremental:
+                return failures
 
     return failures
 
