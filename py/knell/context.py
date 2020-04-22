@@ -48,7 +48,7 @@ class ProjectContext:
         self._build_flavor = BuildFlavor()
         self._run_flavor = RunFlavor()
         self._registered_programs: Dict[str, str] = {}
-        self._load_config(os.path.join(self.knell_home(), '.hammer'))
+        self._load_config(os.path.join(self.knell_home(), '.crank'))
 
     def _override_from_dict(self, kv: Dict):
         _override_flavor_from_dict(self._script_flavor, kv)
@@ -83,7 +83,7 @@ class ProjectContext:
         return combined
 
     def save(self):
-        self._save_config(os.path.join(self.knell_home(), '.hammer'))
+        self._save_config(os.path.join(self.knell_home(), '.crank'))
 
     def copy_with_overrides(self, kv: Dict) -> ProjectContext:
         """Creates a new context with the given overrides applied."""

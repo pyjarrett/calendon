@@ -1,24 +1,23 @@
 """
-Parsers for various commands used by Hammer.
+Parsers for various commands.
 """
 import argparse
-import os
 
 DEFAULT_NAMES = ['compiler', 'build-config', 'build-dir', 'demo']
 
 
-def parser_add_hammer_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+def parser_add_top_level_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     """
-    Adds arguments for hammer to a parser.
+    Adds arguments for the helper tool itself to a parser.
 
     Adds properties `knell_home` and `config`.
     """
-    hammer = parser.add_argument_group('hammer')
-    hammer.add_argument('--knell-home',
+    top_level = parser.add_argument_group('top-level')
+    top_level.add_argument('--knell-home',
                         type=str,
                         help="Root directory of the Knell project, which will "
                              "override KNELL_HOME")
-    hammer.add_argument('--config', type=str,
+    top_level.add_argument('--config', type=str,
                         help="Specify a different configuration file to use "
                              "rather than searching the current directory and "
                              "user's home directory.")
@@ -144,7 +143,7 @@ def parser_run(parser) -> argparse.ArgumentParser:
 
 
 def parser_env(parser) -> argparse.ArgumentParser:
-    parser.add_parser('env', help="Prints the current Hammer configuration, "
+    parser.add_parser('env', help="Prints the current tool configuration, "
                                   "environment variables and the list of "
                                   "registered programs")
     return parser

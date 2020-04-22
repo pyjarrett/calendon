@@ -6,7 +6,7 @@
 # Flow
 
 - Program boot.
-- Decide which .hammer configuration to load.
-- Create a program context from the .hammer configuration.
+- Decide which .crank configuration to load.
+- Create a program context from the .crank configuration.
 - Apply command line configuration options and arguments to modify the original program context.
 - 

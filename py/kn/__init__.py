@@ -64,7 +64,7 @@ def py_files() -> List[str]:
     """
     A list containing the top-level directories and files to provide to tools.
     """
-    return ['hammer.py', 'kn']
+    return ['crank.py', 'kn']
 
 
 def run_pycheck() -> bool:

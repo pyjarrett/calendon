@@ -1,6 +1,6 @@
 import unittest
 
-import knell.hammer as h
+import knell.crank as h
 
 class HammerTestCase(unittest.TestCase):
     def test_hammer_arguments(self):

@@ -5,16 +5,16 @@ the Knell environment.
 
 ## Modes
 
-Hammer may be run from a shell like many tools which have subcommands and
-related arguments and options:
+The helper tool may be run from a shell like many tools which have subcommands
+and related arguments and options:
 
-`py/hammer.py command [arg1] [args2] ...`
+`py/crank.py command [arg1] [args2] ...`
 
-Hammer may also be run in an interactive mode, by simply not providing a
+Crank may also be run in an interactive mode, by simply not providing a
 command to run.  This allows team members to maintain their build and run
 environment between commands.
 
-## Hammer arguments
+## Crank arguments
 
 `--knell-home DIR` - Root directory of the Knell project.  This will override
 the environment variable `KNELL_HOME` if used.
@@ -25,7 +25,7 @@ searching the current directory and user's home directory.
 ## Environment Variables
 
 `KNELL_HOME` - Specifies the root folder of the project.  This is used to
-locate Knell if Hammer is run from a non-standard directory.
+locate Knell if Crank is run from a non-standard directory.
 
 ## General Purpose Arguments
 
@@ -87,7 +87,7 @@ and frame draws.
  
 ## Control the Environment
 
-`env` - Prints the current Hammer configuration, environment variables (except
+`env` - Prints the current Crank configuration, environment variables (except
 PATH), and the list of registered programs.  PATH is split appropriately by OS
 delimiter and reported on separate lines.
 
@@ -95,7 +95,7 @@ delimiter and reported on separate lines.
 run.
 
 `default NAME VALUE` - Most of the build and run flags can be set as defaults
-within the `.hammer` config file.
+within the `.crank` config file.
 
     `default build-dir BUILD_DIR`
     `default build-config BUILD_CONFIG`
@@ -144,7 +144,7 @@ configuration file which will be saved.
 
 ### General purpose
 
-These programs are **required** for Hammer to function properly.
+These programs are **required** for Crank to function properly.
 
 - `cmake`
 - `python`

@@ -1,5 +1,5 @@
 """
-A Hammer context in which commands can be dispatched and executed.
+A tool in which commands can be dispatched and executed.
 """
 import argparse
 import cmd
@@ -265,7 +265,7 @@ def py_files():
 
 
 def cmd_pycheck(ctx: ProjectContext, args: argparse.Namespace) -> int:
-    """Run all the checks on the Hammer Python source."""
+    """Run all the checks on Python source."""
     if not verify_executable_exists(ctx, 'localpython3'):
         return 1
 
@@ -338,7 +338,7 @@ def parse_args() -> argparse.Namespace:
     commands = parser.add_subparsers(dest='command')
     for command in COMMAND_PARSERS:
         COMMAND_PARSERS[command][0](commands)
-    parser_add_hammer_args(parser)
+    parser_add_top_level_args(parser)
 
     args = parser.parse_args()
     if args.command is None:
@@ -356,7 +356,7 @@ class InteractiveMode(cmd.Cmd):
         commands = self.parser.add_subparsers(dest='command')
         for command in COMMAND_PARSERS:
             COMMAND_PARSERS[command][0](commands)
-        parser_add_hammer_args(self.parser)
+        parser_add_top_level_args(self.parser)
 
     def default(self, line):
         print(line)
@@ -411,9 +411,9 @@ def run_interactive_loop():
     #     sys.exit(repl.last_exit_code)
 
 
-# Hammer is runnable as a script, providing the appropriate command and options
-# to use.  Running commands individually should be indistinguishable from
-# using an interactive environment.
+# This tool is runnable as a script, providing the appropriate command and
+# options to use.  Running commands individually should be indistinguishable
+# from using an interactive environment.
 if __name__ == '__main__':
     if len(sys.argv) == 1:
         run_interactive_loop()
