@@ -237,7 +237,7 @@ def cmd_pysetup(ctx: ProjectContext, args: argparse.Namespace) -> int:
         print(f'Cannot create venv, {ctx.venv_dir()} is a file.')
         return 1
 
-    if  os.path.isdir(ctx.venv_dir()) and args.clean:
+    if os.path.isdir(ctx.venv_dir()) and args.clean:
         shutil.rmtree(ctx.venv_dir())
 
     if not os.path.isdir(ctx.venv_dir()):
@@ -398,12 +398,17 @@ class InteractiveMode(cmd.Cmd):
         return True
 
 
+def default_knell_home():
+    """Knell is assumed to be provided by the environment, or the current directory."""
+    return os.environ.get('KNELL_HOME', os.getcwd())
+
+
 def run_interactive_loop():
     """Starts an interactive terminal."""
     print('Running interactively.')
 
     # Establish the target environment for the script.
-    knell_home: str = os.environ.get('KNELL_HOME', os.getcwd())
+    knell_home: str = default_knell_home()
 
     # Build the context using the given home directory.
     ctx: ProjectContext = ProjectContext(knell_home)
@@ -426,7 +431,7 @@ def run_as_script():
     args = parse_args()
 
     # Establish the target environment for the script.
-    knell_home: str = os.environ.get('KNELL_HOME', os.getcwd())
+    knell_home: str = default_knell_home()
     if args.knell_home:
         knell_home = args.knell_home
 
