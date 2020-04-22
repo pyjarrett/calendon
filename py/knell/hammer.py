@@ -48,6 +48,7 @@ def generator_settings_for_compiler(cmake_path: str, compiler_path: Optional[str
 
 
 def verify_executable_exists(ctx: ProjectContext, alias: str) -> bool:
+    """Return true if an alias maps to a file in a context and provide user messaging."""
     if not ctx.has_registered_program(alias):
         print(f'No alias exists for {alias}')
         return False
@@ -59,6 +60,7 @@ def verify_executable_exists(ctx: ProjectContext, alias: str) -> bool:
 
 
 def verify_build_dir_exists(build_dir: str) -> bool:
+    """Return true if the build dir exists while providing user messaging."""
     if os.path.isfile(build_dir):
         print(f'Build directory {build_dir} exists as something other than a directory')
         return False
@@ -70,6 +72,7 @@ def verify_build_dir_exists(build_dir: str) -> bool:
 
 
 def verify_venv_dir_exists(venv: str) -> bool:
+    """Return true if the virtual environment dir exists while providing user messaging."""
     if os.path.isfile(venv):
         print(f'Virtual environment {venv} exists as something other than a directory')
         return False
