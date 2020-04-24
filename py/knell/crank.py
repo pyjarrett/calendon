@@ -87,7 +87,7 @@ def verify_venv_dir_exists(venv: str) -> bool:
     return True
 
 
-def cmd_clean(ctx: ProjectContext, _args: argparse.Namespace) -> int:
+def cmd_clean(ctx: ProjectContext, args: argparse.Namespace) -> int:
     build_dir: str = ctx.build_dir()
     if not os.path.exists(build_dir):
         return 0
@@ -96,7 +96,7 @@ def cmd_clean(ctx: ProjectContext, _args: argparse.Namespace) -> int:
         print(f'Build directory {build_dir} is not a directory')
         return 1
 
-    if ctx.is_dry_run():
+    if args.dry_run:
         print(f'Dry run')
         print(f'Would have removed: {build_dir}')
     else:
@@ -121,7 +121,7 @@ def cmd_gen(ctx: ProjectContext, args: argparse.Namespace) -> int:
         return 1
     if os.path.isdir(build_dir):
         if args.force:
-            if ctx.is_dry_run():
+            if args.dry_run:
                 print(f'Would have removed previously existing directory {build_dir}')
             else:
                 shutil.rmtree(build_dir)
@@ -129,7 +129,7 @@ def cmd_gen(ctx: ProjectContext, args: argparse.Namespace) -> int:
             print(f'{build_dir} exists.  Use --force to wipe and recreate the build dir.')
             return 1
 
-    if ctx.is_dry_run():
+    if args.dry_run:
         print(f'Would have created {build_dir}')
     else:
         print(f'Creating build directory {build_dir}')
@@ -145,14 +145,14 @@ def cmd_gen(ctx: ProjectContext, args: argparse.Namespace) -> int:
         compiler = ctx.path_for_program(compiler)
     cmake_args.extend(generator_settings_for_compiler(cmake_path, compiler))
 
-    if ctx.is_dry_run():
+    if args.dry_run:
         print(f'Would have run {cmake_args} in {build_dir}')
         return 0
     else:
         return run_program(cmake_args, cwd=build_dir)
 
 
-def cmd_build(ctx: ProjectContext, _args: argparse.Namespace) -> int:
+def cmd_build(ctx: ProjectContext, args: argparse.Namespace) -> int:
     """Build using the current project configuration."""
     if not verify_executable_exists(ctx, 'cmake'):
         return 1
@@ -164,7 +164,7 @@ def cmd_build(ctx: ProjectContext, _args: argparse.Namespace) -> int:
                   '--parallel', str(multiprocessing.cpu_count()),
                   '--config', ctx.build_config()]
 
-    if ctx.is_dry_run():
+    if args.dry_run:
         print(f'Would have run {cmake_args} in {ctx.build_dir()}')
         return 0
     else:
@@ -185,7 +185,7 @@ def cmd_check(ctx: ProjectContext, args: argparse.Namespace) -> int:
     cmake_args = [ctx.path_for_program('cmake'), '--build', '.',
                   '--target', check_target,
                   '--config', ctx.build_config()]
-    if ctx.is_dry_run():
+    if args.dry_run:
         print(f'Would have run {cmake_args} in {ctx.build_dir()}')
         return 0
     else:
@@ -208,7 +208,7 @@ def cmd_env(ctx: ProjectContext, _args: argparse.Namespace) -> int:
 def cmd_register(ctx: ProjectContext, args: argparse.Namespace) -> int:
     """Registers a new program for use in the given context."""
     if os.path.isfile(args.path) or args.force:
-        if ctx.is_dry_run():
+        if args.dry_run:
             if ctx.has_registered_program(args.alias) and not args.override:
                 print(f'Trying to override {ctx.path_for_program(args.alias)} of {args.alias} with {args.path}')
                 return 1

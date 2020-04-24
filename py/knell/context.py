@@ -15,12 +15,6 @@ def _override_flavor_from_dict(flavor: object, kv: Dict):
 
 
 @dataclass
-class ScriptFlavor:
-    verbose: bool = False
-    dry_run: bool = False
-
-
-@dataclass
 class BuildFlavor:
     """Define enough information to do a build."""
     build_dir: str = 'build'
@@ -43,7 +37,6 @@ class ProjectContext:
 
     def __init__(self, knell_home: str):
         """Creates a default context from a home directory."""
-        self._script_flavor = ScriptFlavor()
         self._knell_home = os.path.abspath(knell_home)
         self._build_flavor = BuildFlavor()
         self._run_flavor = RunFlavor()
@@ -51,7 +44,6 @@ class ProjectContext:
         self._load_config(os.path.join(self.knell_home(), '.crank'))
 
     def _override_from_dict(self, kv: Dict):
-        _override_flavor_from_dict(self._script_flavor, kv)
         _override_flavor_from_dict(self._build_flavor, kv)
         _override_flavor_from_dict(self._run_flavor, kv)
 
@@ -69,14 +61,11 @@ class ProjectContext:
     def _save_config(self, config_path: str):
         with open(config_path, 'w') as file:
             combined = self.dump()
-            if self.is_verbose():
-                print(f'Saving to {config_path}')
-                print(combined)
             json.dump(combined, file, indent=4)
 
     def dump(self) -> Dict:
         combined = {}
-        for flavor in [self._script_flavor, self._build_flavor, self._run_flavor]:
+        for flavor in [self._build_flavor, self._run_flavor]:
             for field in dataclasses.fields(flavor):
                 combined[field.name] = getattr(flavor, field.name)
         combined['registered_programs'] = self._registered_programs
@@ -89,18 +78,7 @@ class ProjectContext:
         """Creates a new context with the given overrides applied."""
         ctx = copy.deepcopy(self)
         ctx._override_from_dict(kv)
-
-        if self._script_flavor.verbose:
-            print(f'Overrode: {self.__dict__}')
-            print(f'Using:    {kv}')
-            print(f'Result:   {self.__dict__}')
         return ctx
-
-    def is_dry_run(self) -> bool:
-        return self._script_flavor.dry_run
-
-    def is_verbose(self) -> bool:
-        return self._script_flavor.verbose
 
     def knell_home(self) -> str:
         """Project root directory."""
