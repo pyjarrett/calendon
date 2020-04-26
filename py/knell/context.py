@@ -4,7 +4,10 @@ from dataclasses import dataclass
 import dataclasses
 import json
 import os
-from typing import Dict, Optional
+from typing import Dict, List, Optional
+
+from knell.multiplatform import root_to_executable
+from knell.run import run_program
 
 
 def _override_flavor_from_dict(flavor: object, kv: Dict):
@@ -28,9 +31,21 @@ class RunFlavor:
     game: Optional[str] = None
     asset_dir: Optional[str] = None
     ticks: Optional[int] = 0
-    run_time_seconds: Optional[int] = 0
     headless: bool = False
 
+    def to_driver_args(self) -> List[str]:
+        """Convert this run flavor into arguments readable by the driver."""
+        args = []
+        if self.game:
+            args.extend(['--game', self.game])
+        if self.asset_dir:
+            args.extend(['--asset-dir', self.asset_dir])
+        if self.ticks:
+            args.extend(['--tick-limit', str(self.ticks)])
+        if self.headless:
+            args.append('--headless')
+        print(args)
+        return args
 
 class ProjectContext:
     """A concise description of the environment in which the script will run."""
@@ -90,8 +105,19 @@ class ProjectContext:
     def build_dir(self) -> str:
         return os.path.abspath(os.path.join(self._knell_home, self._build_flavor.build_dir))
 
+    def demo_dir(self) -> str:
+        """Absolute directory path for where demos are stored."""
+        return os.path.join(self.build_dir(), 'src', 'demos')
+
+    def set_game(self, game):
+        self._run_flavor.game = game
+
     def venv_dir(self) -> str:
         return os.path.abspath(os.path.join(self._knell_home, 'venv'))
+
+    def driver_path(self) -> str:
+        """The path to the driver executable, when built."""
+        return os.path.join(self.build_dir(), 'src', 'driver', root_to_executable('knell-driver'))
 
     def build_config(self) -> str:
         return self._build_flavor.build_config
@@ -115,3 +141,8 @@ class ProjectContext:
         if not self.has_registered_program(alias):
             raise ValueError(f'No registered path for {alias}')
         return self._registered_programs[alias]
+
+    def run_driver(self) -> int:
+        args = [self.driver_path()]
+        args.extend(self._run_flavor.to_driver_args())
+        return run_program(args, cwd=self.build_dir())

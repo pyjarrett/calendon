@@ -13,7 +13,7 @@ import sys
 from typing import Optional
 
 from .context import ProjectContext
-from .multiplatform import root_to_executable
+from .multiplatform import root_to_executable, root_to_shared_lib
 from .parsers import *
 from .run import run_program
 
@@ -55,6 +55,8 @@ def verify_executable_exists(ctx: ProjectContext, alias: Optional[str]) -> bool:
 
     if not ctx.has_registered_program(alias):
         print(f'No alias exists for {alias}')
+        print('Use `crank register ALIAS PATH` to register a program for use.')
+        print('Example: crank register cmake "C:/Program Files/CMake/bin/cmake.exe"')
         return False
     program_path = ctx.path_for_program(alias)
     if not os.path.isfile(program_path):
@@ -197,7 +199,13 @@ def cmd_demo(ctx: ProjectContext, args: argparse.Namespace) -> int:
 
 
 def cmd_run(ctx: ProjectContext, args: argparse.Namespace) -> int:
-    return 1
+    ovr_ctx = ctx.copy_with_overrides(vars(args))
+
+    # Ensure an up-to-date build.
+    cmd_build(ovr_ctx, args)
+
+    ovr_ctx.set_game(os.path.join(ctx.demo_dir(), root_to_shared_lib(args.demo)))
+    return ovr_ctx.run_driver()
 
 
 def cmd_env(ctx: ProjectContext, _args: argparse.Namespace) -> int:
@@ -220,7 +228,7 @@ def cmd_register(ctx: ProjectContext, args: argparse.Namespace) -> int:
                 return 0
             return 1
 
-    print(f'No program exists at {args.path}')
+    print(f'No program exists at {args.path}.')
     return 1
 
 
