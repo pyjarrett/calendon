@@ -343,6 +343,9 @@ COMMAND_PARSERS = {
     'pycheck': (parser_pycheck, cmd_pycheck, 'Run Python linting and testing.'),
 }
 
+# Commands which should save settings when run non-interactively.
+COMMANDS_WHICH_SAVE = ['register', 'pysetup']
+
 
 def parse_args() -> argparse.Namespace:
     """
@@ -445,10 +448,6 @@ def run_interactive_loop():
 
 def run_as_script():
     """Runs Crank as a simple command using the current command line."""
-
-    # `args` is a namespace of all of our possible arguments, appropriate for
-    # whatever command is going to be executed.  This isn't going to be a
-    # suitable thing for passing around to each command though.
     args = parse_args()
 
     # Establish the target environment for the script.
@@ -456,15 +455,12 @@ def run_as_script():
     if args.knell_home:
         knell_home = args.knell_home
 
-    # Build the context using the given home directory.
     ctx: ProjectContext = ProjectContext(knell_home)
     ctx = ctx.copy_with_overrides(vars(args))
 
-    # Running in non-interactive mode.
     # Dispatch to the appropriate handling function.
-    retval = COMMAND_PARSERS[args.command][1](ctx, args)
-
-    if args.command in ['register', 'pysetup']:
+    exit_code: int = COMMAND_PARSERS[args.command][1](ctx, args)
+    if args.command in COMMANDS_WHICH_SAVE:
         ctx.save()
 
-    return retval
+    return exit_code
