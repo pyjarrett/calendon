@@ -1,50 +1,20 @@
 """
 A tool in which commands can be dispatched and executed.
 """
-import argparse
 import cmd
 import json
 import multiprocessing
 import os
 import shlex
 import shutil
-import subprocess
 import sys
 from typing import Optional
 
-from .context import ProjectContext
-from .multiplatform import root_to_executable, root_to_shared_lib
-from .parsers import *
-from .run import run_program
-
-
-def generator_settings_for_compiler(cmake_path: str, compiler_path: Optional[str]):
-    """Makes settings to give the generator for a specific compiler."""
-    settings = []
-    if compiler_path is not None:
-        settings = [f'-DCMAKE_C_COMPILER={compiler_path}']
-
-    # https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2015%202017.html
-    if sys.platform == 'win32':
-        if compiler_path is None:
-            arch = 'x64'
-            help_output = subprocess.check_output([cmake_path, '--help'])
-            generator = None
-            for line in help_output.decode().splitlines():
-                if line.startswith('*'):
-                    print(line)
-                    generator = line[1:line.index('=')]
-                    if '[arch]' in generator:
-                        generator = generator.replace('[arch]', '')
-                    generator = generator.strip()
-                    print(f'"{generator}"')
-                    break
-            if generator is not None:
-                settings.extend(['-G', generator, '-A', arch])
-        else:
-            settings.extend(['-G', 'Unix Makefiles'])
-
-    return settings
+from knell.cmake import generator_settings_for_compiler
+from knell.context import ProjectContext
+from knell.multiplatform import root_to_executable, root_to_shared_lib
+from knell.parsers import *
+from knell.run import run_program
 
 
 def verify_executable_exists(ctx: ProjectContext, alias: Optional[str]) -> bool:
@@ -392,12 +362,14 @@ def map_command(self, command, parser, action):
 
 class InteractiveMode(cmd.Cmd):
     """Handler for Crank's interactive mode."""
+    prompt = "crank>  "
 
     def __init__(self, ctx):
         """Initialize interactive mode with a known context."""
         self._names = []
         self.ctx = ctx
         self.parser = CmdArgumentParser()
+        self.reload = False
         for command in COMMAND_PARSERS:
             parser = COMMAND_PARSERS[command][0]
             action = COMMAND_PARSERS[command][1]
@@ -415,35 +387,22 @@ class InteractiveMode(cmd.Cmd):
         """
         return self._names
 
+    def do_reload(self, _arg):
+        self.reload = True
+        return True
+
     def do_quit(self, _arg):
+        """Stop and do not reload Crank."""
         return True
 
     def do_exit(self, _arg):
+        """Stop and do not reload Crank."""
         return True
 
 
 def default_knell_home():
     """Knell is assumed to be provided by the environment, or the current directory."""
     return os.environ.get('KNELL_HOME', os.getcwd())
-
-
-def run_interactive_loop():
-    """Starts an interactive terminal."""
-    print('Running interactively.')
-
-    # Establish the target environment for the script.
-    knell_home: str = default_knell_home()
-
-    # Build the context using the given home directory.
-    ctx: ProjectContext = ProjectContext(knell_home)
-
-    repl = InteractiveMode(ctx)
-    repl.cmdloop()
-
-    # if repl.reload:
-    #     kn.reload()
-    # else:
-    #     sys.exit(repl.last_exit_code)
 
 
 def run_as_script():
