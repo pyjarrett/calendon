@@ -1,8 +1,10 @@
 import importlib
 
 import knell.cmake as cmake
+import knell.commands as commands
+import knell.command_map as command_map
 import knell.context as context
-import knell.crank as crank
+import knell.interactive as interactive
 import knell.multiplatform as mp
 import knell.parsers as parsers
 import knell.run as run
@@ -22,4 +24,6 @@ def reload():
     importlib.reload(run)
     importlib.reload(context)
     importlib.reload(parsers)
-    importlib.reload(crank)
+    importlib.reload(commands)
+    importlib.reload(command_map)
+    importlib.reload(interactive)

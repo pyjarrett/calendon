@@ -146,3 +146,8 @@ class ProjectContext:
         args = [self.driver_path()]
         args.extend(self._run_flavor.to_driver_args())
         return run_program(args, cwd=self.build_dir())
+
+
+def default_knell_home():
+    """Knell is assumed to be provided by the environment, or the current directory."""
+    return os.environ.get('KNELL_HOME', os.getcwd())

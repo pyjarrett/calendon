@@ -4,7 +4,10 @@ as a script.
 """
 import sys
 
-from knell import crank, reload
+import knell.context as context
+import knell.interactive as interactive
+import knell.script as script
+from knell import reload
 
 # This tool is runnable as a script, providing the appropriate command and
 # options to use.  Running commands individually should be indistinguishable
@@ -12,13 +15,13 @@ from knell import crank, reload
 if __name__ == '__main__':
     if len(sys.argv) == 1:
         # Establish the target environment for the script.
-        knell_home: str = crank.default_knell_home()
+        knell_home: str = context.default_knell_home()
 
         # Build the context using the given home directory.
-        ctx: crank.ProjectContext = crank.ProjectContext(knell_home)
+        ctx: context.ProjectContext = context.ProjectContext(knell_home)
 
         while True:
-            repl = crank.InteractiveMode(ctx)
+            repl = interactive.InteractiveMode(ctx)
             repl.cmdloop()
 
             if repl.reload:
@@ -27,4 +30,4 @@ if __name__ == '__main__':
             else:
                 sys.exit(0)
 
-    sys.exit(crank.run_as_script())
+    sys.exit(script.run_as_script())
