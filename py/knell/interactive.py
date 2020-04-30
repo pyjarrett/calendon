@@ -1,10 +1,23 @@
+"""
+Interactive control mode for Crank.
+"""
 import argparse
 import cmd
 import shlex
 
-import knell.script
-from knell.command_map import COMMAND_PARSERS
+from knell.command_map import COMMANDS
 from knell.parsers import parser_add_top_level_args
+
+
+def _map_command(self, command, parser, action):
+    """Wraps argument parsing and execution of an action."""
+    # Double-parser args because this needs to fit into a lambda.
+    # Short-circuit on argument parsing to prevent command functions from needing
+    # to perform error handling relating to argument parsing.
+    wrap = lambda args: parser(CmdArgumentParser(usage=command)).parse_args(shlex.split(args)) is not None and action(
+        self.ctx, parser(CmdArgumentParser(usage=command)).parse_args(shlex.split(args))) and False
+    wrap.__doc__ = action.__doc__
+    return wrap
 
 
 class InteractiveMode(cmd.Cmd):
@@ -17,10 +30,10 @@ class InteractiveMode(cmd.Cmd):
         self.ctx = ctx
         self.parser = CmdArgumentParser()
         self.reload = False
-        for command in COMMAND_PARSERS:
-            parser = COMMAND_PARSERS[command][0]
-            action = COMMAND_PARSERS[command][1]
-            setattr(self, f'do_{command}', map_command(self, command, parser, action))
+        for command in COMMANDS:
+            parser = COMMANDS[command].parser
+            action = COMMANDS[command].command
+            setattr(self, f'do_{command}', _map_command(self, command, parser, action))
             self._names.append(f'do_{command}')
         parser_add_top_level_args(self.parser)
         super().__init__()
@@ -35,6 +48,7 @@ class InteractiveMode(cmd.Cmd):
         return self._names
 
     def do_reload(self, _arg):
+        """Indicate the script should reload on the next pass."""
         self.reload = True
         return True
 
@@ -48,19 +62,10 @@ class InteractiveMode(cmd.Cmd):
 
 
 class CmdArgumentParser(argparse.ArgumentParser):
+    """Base parser for use with Cmd to prevent crashing on bad parses."""
     def parse_args(self, args):
         """Catch the SystemExit so bad parses don't crash the interactive session."""
         try:
             return super().parse_args(args)
         except SystemExit:
             return None
-
-
-def map_command(self, command, parser, action):
-    # Double-parser args because this needs to fit into a lambda.
-    # Shortcircuit on argument parsing to prevent command functions from needing
-    # to perform error handling relating to argument parsing.
-    wrap = lambda args: knell.script.parse_args(shlex.split(args)) is not None and action(
-        self.ctx, knell.script.parse_args(shlex.split(args))) and False
-    wrap.__doc__ = action.__doc__
-    return wrap

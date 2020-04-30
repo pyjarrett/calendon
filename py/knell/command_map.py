@@ -1,28 +1,47 @@
+"""
+Map command names to parsers and actions so they don't need to be mapped individually.
+"""
+from __future__ import annotations  # See PEP 484 and PEP 563.
+from dataclasses import dataclass
+from typing import Any
 import knell.commands as cmd
 import knell.parsers as parsers
 
-COMMAND_PARSERS = {
-    # Build and test
-    'clean': (parsers.parser_clean, cmd.cmd_clean, 'Remove build directories'),
-    'gen': (parsers.parser_gen, cmd.cmd_gen, 'Generate build types'),
-    'build': (parsers.parser_build, cmd.cmd_build, 'Do a build'),
-    'check': (parsers.parser_check, cmd.cmd_check, 'Run tests'),
 
-    # Run
-    'demo': (parsers.parser_demo, cmd.cmd_demo, 'List built demos available to be run'),
-    'run': (parsers.parser_run, cmd.cmd_run, 'Run a demo or a game.'),
+@dataclass
+class CrankCommand:
+    """A description of a command to hook up in Crank."""
+    name: str
+    help: str
+    parser: Any
+    command: Any
 
-    # Environment
-    'env': (parsers.parser_env, cmd.cmd_env, 'Prints the current tool configuration'),
-    'register': (parsers.parser_register, cmd.cmd_register, 'Change program registration.'),
-    'default': (parsers.parser_default, cmd.cmd_default, 'Set default configuration parameters.'),
+    @staticmethod
+    def create(name: str, help: str) -> CrankCommand:
+        """Make a command using parser_* and cmd_* functions from associated libraries."""
+        parser = getattr(parsers, f'parser_{name}', None)
+        command = getattr(cmd, f'cmd_{name}', None)
 
-    # Command history and automation
-    'source': (parsers.parser_source, cmd.cmd_source, 'Run each line from a file as a command.'),
-    'save': (parsers.parser_save, cmd.cmd_save, 'Save configuration to file.'),
-    'load': (parsers.parser_load, cmd.cmd_load, 'Load configuration from a file.'),
+        if parser is None:
+            raise ValueError(f'No parser function for {name}. parse_{name} is missing.')
+        if command is None:
+            raise ValueError(f'No command function for {name}. cmd_{name} is missing.')
 
-    # Development
-    'pysetup': (parsers.parser_pysetup, cmd.cmd_pysetup, 'Setup virtual environment for subtools.'),
-    'pycheck': (parsers.parser_pycheck, cmd.cmd_pycheck, 'Run Python linting and testing.'),
-}
+        return CrankCommand(name=name, help=help, parser=parser, command=command)
+
+
+COMMANDS_DESCRIPTION = [('clean', 'Remove build directories.'),
+                        ('gen', 'Generate build types.'),
+                        ('build', 'Do a build.'),
+                        ('check', 'Run tests.'),
+                        ('demo', 'Sets the default demo to run.'),
+                        ('run', 'Run a program with the driver.'),
+                        ('register', 'Register a path as a safe program to run.'),
+                        ('default', 'Default a value across multiple Crank commands.'),
+                        ('source', 'Read and run Crank commands from file'),
+                        ('save', 'Save Crank configuration to file.'),
+                        ('load', 'Load Crank configuration from file.'),
+                        ('pysetup', 'Setup virtual environment for subtools.'),
+                        ('pycheck', 'Run Python checks on Crank source.')]
+
+COMMANDS = {name: CrankCommand.create(name, help) for name, help in COMMANDS_DESCRIPTION}

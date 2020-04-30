@@ -5,6 +5,7 @@ from typing import Optional
 import subprocess
 import sys
 
+
 def generator_settings_for_compiler(cmake_path: str, compiler_path: Optional[str]):
     """Makes settings to give the generator for a specific compiler."""
     settings = []

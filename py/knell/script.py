@@ -1,7 +1,10 @@
+"""
+Support for running Crank commands as a script.
+"""
 import argparse
 import sys
 
-from knell.command_map import COMMAND_PARSERS
+from knell.command_map import COMMANDS
 from knell.context import default_knell_home, ProjectContext
 from knell.parsers import parser_add_top_level_args
 
@@ -9,15 +12,16 @@ from knell.parsers import parser_add_top_level_args
 COMMANDS_WHICH_SAVE = ['register', 'pysetup']
 
 
-def _parse_args() -> argparse.Namespace:
+def parse_args() -> argparse.Namespace:
     """
     Parse command arguments and return a namespace for creating a project context.
     """
     parser = argparse.ArgumentParser()
     commands = parser.add_subparsers(dest='command')
-    for command in COMMAND_PARSERS:
-        subparser = commands.add_parser(command, help=COMMAND_PARSERS[command][2])
-        COMMAND_PARSERS[command][0](subparser)
+    for command in COMMANDS:
+        subparser = commands.add_parser(COMMANDS[command].name, help=COMMANDS[command].help)
+        parser_builder = COMMANDS[command].parser
+        parser_builder(subparser)
     parser_add_top_level_args(parser)
 
     args = parser.parse_args()
@@ -30,7 +34,7 @@ def _parse_args() -> argparse.Namespace:
 
 def run_as_script():
     """Runs Crank as a simple command using the current command line."""
-    args = _parse_args()
+    args = parse_args()
 
     # Establish the target environment for the script.
     knell_home: str = default_knell_home()
@@ -41,7 +45,8 @@ def run_as_script():
     ctx = ctx.copy_with_overrides(vars(args))
 
     # Dispatch to the appropriate handling function.
-    exit_code: int = COMMAND_PARSERS[args.command][1](ctx, args)
+    command = COMMANDS[args.command].command
+    exit_code: int = command(ctx, args)
     if args.command in COMMANDS_WHICH_SAVE:
         ctx.save()
 
