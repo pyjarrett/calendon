@@ -49,8 +49,8 @@ bool Path_IsFile(const char* path)
 
 KN_API bool Path_Append(const char* toAdd, char* current, uint32_t length)
 {
-	size_t currentLength = strlen(current);
-	size_t finalLength = currentLength + sizeof(toAdd) + 1 + 1;
+	const size_t currentLength = strlen(current);
+	const size_t finalLength = currentLength + strlen(toAdd) + 1 + 1;
 	if (finalLength >= length) {
 		return false;
 	}
