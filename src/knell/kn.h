@@ -201,13 +201,15 @@ extern KN_API char fatalErrorBuffer[fatalErrorBufferLength];
 	#include <knell/compat-windows.h>
 	#include <debugapi.h>
 	#define KN_FATAL_ERROR(error_message, ...) \
-		if (IsDebuggerPresent()) { \
-			KN_DEBUG_BREAK(); \
-            abort(); \
-		} else { \
-            snprintf(fatalErrorBuffer, fatalErrorBufferLength, "%s:%i\n" error_message, __FILE__, __LINE__, ##__VA_ARGS__); \
-            MessageBox(NULL, fatalErrorBuffer, "Fatal Error", MB_OK); abort(); \
-		}
+	    do { \
+            if (IsDebuggerPresent()) { \
+                KN_DEBUG_BREAK(); \
+                abort(); \
+            } else { \
+                snprintf(fatalErrorBuffer, fatalErrorBufferLength, "%s:%i\n" error_message, __FILE__, __LINE__, ##__VA_ARGS__); \
+                MessageBox(NULL, fatalErrorBuffer, "Fatal Error", MB_OK); abort(); \
+            } \
+        } while (0)
 #else
 	#define KN_FATAL_ERROR(error_message, ...) \
 		do { \
