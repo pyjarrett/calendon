@@ -251,6 +251,7 @@ void RLL_ReadyTexture2(GLuint index, GLuint texture)
 void RLL_ApplyUniform(Uniform* u, UniformStorage storage)
 {
 	KN_ASSERT(u != NULL, "Cannot apply a null uniform");
+	KN_ASSERT_NO_GL_ERROR();
 
 	switch(u->type) {
 		case GL_FLOAT_VEC2:
@@ -258,7 +259,7 @@ void RLL_ApplyUniform(Uniform* u, UniformStorage storage)
 			glUniform2fv(u->location, 1, storage[u->storageLocation].f2.v);
 			break;
 		case GL_FLOAT_VEC4:
-			KN_ASSERT(u->size == 1, "Arrays of float3 are not supported");
+			KN_ASSERT(u->size == 1, "Arrays of float4 are not supported");
 			glUniform4fv(u->location, 1, storage[u->storageLocation].f4.v);
 			break;
 		case GL_FLOAT_MAT4:
@@ -306,7 +307,9 @@ void RLL_RegisterProgram(uint32_t index, GLuint program)
 		const uint32_t semanticName = RLL_LookupAttributeSemanticName(p->attributes[i].name);
 		KN_ASSERT(semanticName < AttributeSemanticNameTypes, "Couldn't find attribute "
 			"semantic name for %s", p->attributes[i].name);
-		p->attributes[i].location = i;
+		const GLint location = glGetAttribLocation(p->id, p->attributes[i].name);
+		KN_ASSERT(location >= 0, "Attribute %s cannot be found.", p->attributes[i].name);
+		p->attributes[i].location = location;
 		p->attributes[i].semanticName = semanticName;
 		p->attributes[i].type = type;
 		p->attributes[i].size = size;
@@ -331,7 +334,7 @@ void RLL_RegisterProgram(uint32_t index, GLuint program)
 			"semantic name for %s", p->uniforms[i].name);
 		p->uniforms[i].size = size;
 		p->uniforms[i].type = type;
-		p->uniforms[i].location = i;
+		p->uniforms[i].location = glGetUniformLocation(p->id, p->uniforms[i].name);
 		p->uniforms[i].storageLocation = storageLocation;
 	}
 	p->numUniforms = numActiveUniforms;
@@ -938,10 +941,12 @@ void RLL_Shutdown(void)
 void RLL_StartFrame(void)
 {
 	SDL_GL_MakeCurrent(window, gl);
+	KN_ASSERT_NO_GL_ERROR();
 }
 
 void RLL_EndFrame(void)
 {
+	KN_ASSERT_NO_GL_ERROR();
 	SDL_GL_SwapWindow(window);
 }
 
@@ -1037,9 +1042,9 @@ bool RLL_LoadPSF2Font(FontId id, const char* path)
 	Font_PSF2Allocate(&fonts[id], path);
 
 	glGenTextures(1, &fontTextures[id]);
+	KN_ASSERT(fontTextures[id] != 0, "Could not allocate a texture name for the font.");
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, fontTextures[id]);
-	KN_ASSERT(glIsTexture(fontTextures[id]), "Do not have a valid texture to work with.");
 
 	// Don't mipmap for now.
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);

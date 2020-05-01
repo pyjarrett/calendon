@@ -14,3 +14,5 @@ tags
 src/post_build_dummy.h
 
 __pycache__/
+venv/
+.mypy_cache/

@@ -31,42 +31,10 @@ A 2D single-threaded main loop C99 game engine for prototyping and learning.
   reason about program behavior while learning.  It also simplifies interfacing
   with other languages.
 
-## Building, Running Tests, and Running Demos
+## Overview
 
-Keeping with the "bell" theme, "Hammer" is the project launch tool, aiming to
-provide an interactive environment for building, running tests, and program
-inspection.
+The only code you write for Knell is a game module which gets loaded by a
+driver program at runtime.  Your game accesses Knell functionality using the
+same Knell library that the driver does.
 
-```bash
-tools/hammer.py
-
-# Generate build directory
-(master) gen
-
-# Do a build
-(master) build
-
-# Run tests
-(master) check
-
-# List the demos which can be run
-(master) set demo planets
-
-# Run the demo
-(master) run demo
-```
-
-When developing Hammer, changes can be dynamically reloaded at runtime.
-
-```bash
-tools/hammer.py
-
-# Make changes to the Hammer scripts in the kn/ directory.
-
-(master) reload
-
-# << script saves config, restarts the REPL, and reloads configs >>
-
-(master)
-```
-
+![Runtime Structure](diagrams/runtime_structure.svg)
