@@ -40,14 +40,6 @@
 
 static uint64_t lastTick;
 
-#ifdef _WIN32
-	#define KN_DEFAULT_ASSET_PATH "C:/workshop/knell/assets"
-	#define KN_DEFAULT_GAME_LIBRARY "C:/workshop/knell/cmake-build-debug/src/demos/texture-drawing.dll"
-#else
-	#define KN_DEFAULT_ASSET_PATH "/home/paul/lab/knell/assets"
-	#define KN_DEFAULT_GAME_LIBRARY "/home/paul/lab/knell/cmake-build-debug/src/demos/libmouse-tracker.so"
-#endif
-
 typedef struct {
 	PathBuffer gameLibPath;
 	PathBuffer assetDirPath;
@@ -169,7 +161,20 @@ void Main_InitAllSystems(void)
 		Assets_Init(mainConfig.assetDirPath.str);
 	}
 	else {
-		Assets_Init(KN_DEFAULT_ASSET_PATH);
+		// If no asset directory was provided, look for `$KNELL_HOME/assets`, or
+		// for an `assets/` directory in the working directory.
+		PathBuffer defaultAssetDir;
+		if (!Env_DefaultKnellHome(&defaultAssetDir)) {
+			KN_FATAL_ERROR("Unable to determine the current Knell home directory.");
+		}
+		if (!PathBuffer_Join(&defaultAssetDir, "assets")) {
+			KN_FATAL_ERROR("Unable to assemble a default asset directory name.");
+		}
+		Assets_Init(defaultAssetDir.str);
+	}
+
+	if (!Path_IsFile(mainConfig.gameLibPath.str)) {
+		KN_FATAL_ERROR("Cannot load game. '%s' is not a game library.", mainConfig.gameLibPath.str);
 	}
 
 	const uint32_t width = 1024;
@@ -178,10 +183,6 @@ void Main_InitAllSystems(void)
 	R_Init(width, height);
 
 	const char* gameLib = mainConfig.gameLibPath.str;
-	if (strlen(mainConfig.gameLibPath.str) != 0) {
-		gameLib = mainConfig.gameLibPath.str;
-	}
-
 	uint64_t gameLibModified;
 	if (!Assets_LastModifiedTime(gameLib, &gameLibModified)) {
 		KN_FATAL_ERROR("Unable to determine last modified time of '%s'", gameLib);

@@ -16,3 +16,20 @@ KN_API bool Env_CurrentWorkingDirectory(char* buffer, uint32_t bufferSize)
 	return getcwd(buffer, bufferSize) != NULL;
 #endif
 }
+
+KN_API bool Env_DefaultKnellHome(PathBuffer* buffer)
+{
+    KN_ASSERT(buffer, "Cannot write the default Knell home to a null PathBuffer.");
+
+    /*
+     * KNELL_HOME should the root directory of the Knell project, which should
+     * also be the root of the git repo.
+     */
+    const char* knellHomeEnvVar = getenv("KNELL_HOME");
+    if (knellHomeEnvVar) {
+        PathBuffer_Set(buffer, knellHomeEnvVar);
+        return true;
+    }
+
+    return Env_CurrentWorkingDirectory(buffer->str, KN_PATH_MAX);
+}
