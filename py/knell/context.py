@@ -148,6 +148,54 @@ class ProjectContext:
         args.extend(self._run_flavor.to_driver_args())
         return run_program(args, cwd=self.build_dir())
 
+    def set_default(self, name: str, value: str) -> bool:
+        """Returns true if default was set."""
+        if name == 'compiler':
+            self._build_flavor.compiler = value
+            return True
+
+        if name == 'build-dir':
+            self._build_flavor.build_dir = value
+            return True
+
+        if name == 'build-config':
+            self._build_flavor.build_config = value
+            return True
+
+        if name == 'game':
+            self._run_flavor.game = value
+            return True
+
+        if name == 'asset-dir':
+            self._run_flavor.asset_dir = value
+            return True
+
+        return False
+
+    def clear_default(self, name) -> bool:
+        if name == 'compiler':
+            self._build_flavor.compiler = None
+            return True
+
+        if name == 'build-dir':
+            self._build_flavor.build_dir = 'build'
+            return True
+
+        if name == 'build-config':
+            self._build_flavor.build_config = 'Debug'
+            return True
+
+        if name == 'game':
+            self._run_flavor.game = None
+            return True
+
+        if name == 'asset-dir':
+            self._run_flavor.asset_dir = None
+            return True
+
+        return False
+
+
 
 def default_knell_home():
     """Knell is assumed to be provided by the environment, or the current directory."""

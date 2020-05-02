@@ -3,7 +3,7 @@ Parsers for various commands.
 """
 import argparse
 
-DEFAULT_NAMES = ['compiler', 'build-config', 'build-dir', 'demo']
+DEFAULT_NAMES = ['compiler', 'build-config', 'build-dir', 'game', 'asset-dir']
 
 
 def parser_add_top_level_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -163,6 +163,9 @@ def parser_default(parser) -> argparse.ArgumentParser:
     parser.add_argument('value', metavar='VALUE')
     return parser
 
+def parser_reset(parser) -> argparse.ArgumentParser:
+    parser.add_argument('name')
+    return parser
 
 def parser_pysetup(parser) -> argparse.ArgumentParser:
     parser.add_argument('--clean',

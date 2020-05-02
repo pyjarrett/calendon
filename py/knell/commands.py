@@ -203,8 +203,11 @@ def cmd_register(ctx: ProjectContext, args: argparse.Namespace) -> int:
 
 
 def cmd_default(ctx: ProjectContext, args: argparse.Namespace) -> int:
-    return 1
+    return ctx.set_default(args.name, args.value)
 
+
+def cmd_reset(ctx: ProjectContext, args: argparse.Namespace) -> int:
+    return ctx.clear_default(args.name)
 
 def cmd_pysetup(ctx: ProjectContext, args: argparse.Namespace) -> int:
     """Creates a virtual environment for helper module installs."""

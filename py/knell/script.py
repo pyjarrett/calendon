@@ -9,7 +9,7 @@ from knell.context import default_knell_home, ProjectContext
 from knell.parsers import parser_add_top_level_args
 
 # Commands which should save settings when run non-interactively.
-COMMANDS_WHICH_SAVE = ['register', 'pysetup']
+COMMANDS_WHICH_SAVE = ['register', 'pysetup', 'default', 'reset']
 
 
 def parse_args() -> argparse.Namespace:
