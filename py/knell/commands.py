@@ -179,6 +179,7 @@ def cmd_run(ctx: ProjectContext, args: argparse.Namespace) -> int:
 
 def cmd_env(ctx: ProjectContext, _args: argparse.Namespace) -> int:
     json.dump(ctx.dump(), sys.stdout, indent=4)
+    print()
     return 0
 
 
