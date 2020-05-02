@@ -232,7 +232,7 @@ def cmd_pysetup(ctx: ProjectContext, args: argparse.Namespace) -> int:
                              override=True)
 
     pip_upgrade_result = run_program(
-        [(ctx.path_for_program('localpython3')), '-m', 'pip', 'install', '--upgrade', 'pip'], cwd=ctx.knell_home())
+        [(ctx.path_for_program('localpython3')), '-m', 'pip', 'install', '--upgrade', 'pip', 'setuptools', 'wheel'], cwd=ctx.knell_home())
     if pip_upgrade_result != 0:
         print('Could not upgrade pip.')
 
