@@ -223,7 +223,11 @@ def cmd_pysetup(ctx: ProjectContext, args: argparse.Namespace) -> int:
         if venv_setup != 0:
             print(f'Could not create virtual environment at {ctx.venv_dir()}')
             return venv_setup
-        ctx.register_program('localpython3', os.path.join(ctx.venv_dir(), 'Scripts', root_to_executable('python')),
+        if sys.platform == 'win32':
+            subdir = 'Scripts'
+        else:
+            subdir = 'bin'
+        ctx.register_program('localpython3', os.path.join(ctx.venv_dir(), subdir, root_to_executable('python')),
                              override=True)
 
     pip_upgrade_result = run_program(
