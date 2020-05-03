@@ -16,6 +16,15 @@ function(add_demo)
 	target_link_libraries(${DEMO_NAME} ${DEMO_LIBS} knell)
 	add_dependencies(${DEMO_NAME} knell)
 
+	foreach(config ${CMAKE_CONFIGURATION_TYPES})
+		string(TOUPPER ${config} CONFIG)
+		set_target_properties(${DEMO_NAME}
+			PROPERTIES
+			RUNTIME_OUTPUT_DIRECTORY_${CONFIG} "${DEMO_DIR}"
+			LIBRARY_OUTPUT_DIRECTORY_${CONFIG} "${DEMO_DIR}"
+			ARCHIVE_OUTPUT_DIRECTORY_${CONFIG} "${DEMO_DIR}")
+	endforeach()
+
 	set(KN_ALL_DEMOS ${KN_ALL_DEMOS} ${DEMO_NAME} CACHE INTERNAL "KN_ALL_DEMOS")
 	message("Adding ${DEMO_NAME} to demo list.")
 endfunction()

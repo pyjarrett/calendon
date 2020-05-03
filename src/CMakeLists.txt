@@ -70,18 +70,6 @@ if (WIN32)
 		${BINARY_DIR}
 		)
 
-    add_custom_command(TARGET windows-dll-copy POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-		$<TARGET_FILE:knell>
-		${BINARY_DIR}
-		COMMENT "Copying knell shared lib to driver directory")
-
-	add_custom_command(TARGET windows-dll-copy POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_if_different
-		$<TARGET_FILE:knell-testable>
-		${BINARY_DIR}
-		COMMENT "Copying knell-testable shared lib to driver directory")
-
 	# Only create dumps in Debug.
 	# Uses a x64 version of the dll.
 	# TODO: Provide an x86 and an ARM version.

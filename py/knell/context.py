@@ -108,7 +108,7 @@ class ProjectContext:
 
     def demo_dir(self) -> str:
         """Absolute directory path for where demos are stored."""
-        return os.path.join(self.build_dir(), 'src', 'demos')
+        return os.path.join(self.build_dir(), 'demos')
 
     def set_game(self, game):
         self._run_flavor.game = game
@@ -118,7 +118,7 @@ class ProjectContext:
 
     def driver_path(self) -> str:
         """The path to the driver executable, when built."""
-        return os.path.join(self.build_dir(), 'src', 'driver', root_to_executable('knell-driver'))
+        return os.path.join(self.build_dir(), root_to_executable('knell-driver'))
 
     def build_config(self) -> str:
         return self._build_flavor.build_config

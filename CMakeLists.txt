@@ -47,35 +47,27 @@ elseif (WIN32)
 endif()
 if(NOT CMAKE_BUILD_TYPE)
     # Visual studio might not correctly set CMAKEBUILD_TYPE
-	set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build Type: (Debug, Release)." FORCE)
+	set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build Type: ${CMAKE_CONFIGURATION_TYPES}." FORCE)
 endif()
+message("Configuration types: ${CMAKE_CONFIGURATION_TYPES}")
 
 # Provide standardized output locations.  This particularly
 # helps when dealing with additional directories such as for
 # assets to ensure they are placed correctly relative to
 # executables.
-set(BINARY_DIR "${PROJECT_BINARY_DIR}")
-set(LIBRARY_DIR "${PROJECT_BINARY_DIR}/lib")
-set(ARCHIVE_DIR "${PROJECT_BINARY_DIR}/lib")
-set(ASSET_DIR "${PROJECT_BINARY_DIR}/assets")
-set(CONFIG_DIR "${PROJECT_BINARY_DIR}/configs")
-set(RESOURCE_DIR "${PROJECT_BINARY_DIR}/resources")
-
-message(STATUS "BINARY_DIR:   ${BINARY_DIR}")
-message(STATUS "LIBRARY_DIR:  ${LIBRARY_DIR}")
-message(STATUS "ARCHIVE_DIR:  ${ARCHIVE_DIR}")
-message(STATUS "ASSET_DIR:    ${ASSET_DIR}")
-message(STATUS "CONFIG_DIR:   ${CONFIG_DIR}")
-message(STATUS "RESOURCE_DIR: ${RESOURCE_DIR}")
-
+#
 # https://stackoverflow.com/questions/543203/cmake-runtime-output-directory-on-windows
+set(OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+set(BINARY_DIR ${OUTPUT_DIRECTORY})
+set(DEMO_DIR ${OUTPUT_DIRECTORY}/demos)
 message("Output directory: ${OUTPUT_DIRECTORY}")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${OUTPUT_DIRECTORY}")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG "${OUTPUT_DIRECTORY}")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${OUTPUT_DIRECTORY}")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${OUTPUT_DIRECTORY}")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE "${OUTPUT_DIRECTORY}")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${OUTPUT_DIRECTORY}")
+
+foreach(config ${CMAKE_CONFIGURATION_TYPES})
+	string(TOUPPER ${config} CONFIG)
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CONFIG} "${OUTPUT_DIRECTORY}")
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CONFIG} "${OUTPUT_DIRECTORY}")
+	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${CONFIG} "${OUTPUT_DIRECTORY}")
+endforeach()
 
 # KNELL_LIBS is the list of all libraries to link with the Knell lib itself.
 # Client should be required to do minimum linking themselves.

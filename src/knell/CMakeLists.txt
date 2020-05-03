@@ -50,18 +50,3 @@ add_library(knell-testable SHARED ${KNELL_SRCS} ${KNELL_HEADERS})
 target_compile_definitions(knell-testable PRIVATE KN_TESTING=1 KN_LIBRARY=1)
 target_link_libraries(knell-testable ${KNELL_LIBS})
 remove_definitions(-DKN_TESTING)
-
-add_custom_command(TARGET knell-testable POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different
-	$<TARGET_FILE:knell-testable>
-	${BINARY_DIR}
-	COMMENT "Copying knell-testable to binary directory")
-
-# TODO: Replace this with a file describing where to find assets.
-if (UNIX)
-	add_custom_target(sync_assets
-			COMMAND rsync -avz "${CMAKE_SOURCE_DIR}/assets/" "${ASSET_DIR}"
-			COMMENT "Copying assets")
-	add_dependencies(knell sync_assets)
-	add_dependencies(knell-testable sync_assets)
-endif(UNIX)
