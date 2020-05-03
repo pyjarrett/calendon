@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Entry point for running Knell's helper tool, "crank", interactively or
 as a script.
