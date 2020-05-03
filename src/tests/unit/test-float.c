@@ -13,10 +13,10 @@ KN_TEST_SUITE_BEGIN("float")
 		KN_TEST_ASSERT_TRUE(fabsf(float_RelativeDiff(1.0f, 4.0f) - 0.75f) < 0.001f);
 		KN_TEST_ASSERT_CLOSE_F(float_RelativeDiff(1.0f, 4.0f), 0.75f, 0.001f);
 
-		KN_TEST_ASSERT_TRUE(fabsf(float_RelativeDiff(1.0f, 10.0f) - 0.90) < 0.001f);
+		KN_TEST_ASSERT_TRUE(fabsf(float_RelativeDiff(1.0f, 10.0f) - 0.90f) < 0.001f);
 		KN_TEST_ASSERT_CLOSE_F(float_RelativeDiff(1.0f, 10.0f), 0.90f, 0.001f);
 
-		KN_TEST_ASSERT_TRUE(fabsf(float_RelativeDiff(1.0f, 100.0f) - 0.99) < 0.001f);
+		KN_TEST_ASSERT_TRUE(fabsf(float_RelativeDiff(1.0f, 100.0f) - 0.99f) < 0.001f);
 		KN_TEST_ASSERT_CLOSE_F(float_RelativeDiff(1.0f, 100.0f), 0.99f, 0.001f);
 	}
 

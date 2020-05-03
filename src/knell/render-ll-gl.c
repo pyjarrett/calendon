@@ -1174,7 +1174,7 @@ void RLL_DrawSimpleText(FontId id, TextDrawParams* params, const char* text)
 	float2 glyphAdvance = float2_Make(font->glyphSize.width * scale, 0.0f);
 
 	// Text is a utf-8 string, so its byte length is not necessarily its glyph length.
-	const uint32_t textLengthInBytes = strlen(text);
+	const size_t textLengthInBytes = strlen(text);
 	const char* textAfterLastByte = text + textLengthInBytes;
 
 	while (cursor < textAfterLastByte) {

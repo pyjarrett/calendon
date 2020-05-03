@@ -12,7 +12,7 @@ KN_TEST_API void TextureAtlas_Allocate(TextureAtlas* ta, Dimension2u32 subImageS
 	ta->usedImages = 0;
 	ta->totalImages = numImages;
 	ta->subImageSizePixels = subImageSize;
-	ta->gridSize = (Dimension2u32) { ceil(sqrt(numImages)), ceil(sqrt(numImages)) };
+	ta->gridSize = (Dimension2u32) { (uint32_t)ceil(sqrt(numImages)), (uint32_t)ceil(sqrt(numImages)) };
 	ta->backingSizePixels = (Dimension2u32) { ta->gridSize.width * subImageSize.width,
 		ta->gridSize.height * subImageSize.height };
 
