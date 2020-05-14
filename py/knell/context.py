@@ -85,6 +85,7 @@ class ProjectContext:
             for field in dataclasses.fields(flavor):
                 combined[field.name] = getattr(flavor, field.name)
         combined['registered_programs'] = self._registered_programs
+        combined['knell_home'] = self._knell_home
         return combined
 
     def save(self):
