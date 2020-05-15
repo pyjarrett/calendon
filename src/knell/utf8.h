@@ -16,15 +16,19 @@
  * encoding of a string you are dealing with at the time.  In Knell, you are
  * either dealing with UTF-8, or with ASCII, which coincidentally, is UTF-8.
  *
- * Usage of `uint8_t` over `char`: It is not specified where `char` is signed
+ * Usage of `KNchar` over `char`: It is not specified where `char` is signed
  * or unsigned.  To eliminate any ambiguities, all UTF-8 strings within Knell
- * should be treated as `uint8_t`, and the interfaces are written as such.
+ * should be treated as `KNchar`, and the interfaces are written as such.
+ * Using `uint8_t` seems a more accurate solution, but using `KNchar` ensures
+ * better semantics, while also silencing clang/gcc errors.
  *
  * "CodePoint" is the Knell term for a series of UTF-8 encoded bytes which
  * represent a single UTF code point.
  */
 
 #include <knell/kn.h>
+
+typedef signed char KNchar;
 
 /**
  * The maximum number of bytes to encode a UTF-8 code point is 4.
@@ -50,17 +54,17 @@ typedef enum {
 	Utf8ByteValidityPossible = 2
 } Utf8ByteValidity;
 
-KN_TEST_API Utf8ByteValidity Utf8_IsValidByte(uint8_t codeUnit);
-KN_TEST_API bool Utf8_IsLeadingByte(uint8_t codeUnit);
-KN_TEST_API bool Utf8_IsStringValid(const uint8_t* str);
+KN_TEST_API Utf8ByteValidity Utf8_IsValidByte(KNchar codeUnit);
+KN_TEST_API bool Utf8_IsLeadingByte(KNchar codeUnit);
+KN_TEST_API bool Utf8_IsStringValid(const KNchar* str);
 
-KN_TEST_API uint8_t Utf8_NumBytesInCodePoint(uint8_t leadingByte);
-KN_TEST_API bool Utf8_CodePointsMatch(const uint8_t* left, const uint8_t* right);
-KN_TEST_API void Utf8_CodePointCopy(uint8_t* dest, const uint8_t* src);
+KN_TEST_API uint8_t Utf8_NumBytesInCodePoint(KNchar leadingByte);
+KN_TEST_API bool Utf8_CodePointsMatch(const KNchar* left, const KNchar* right);
+KN_TEST_API void Utf8_CodePointCopy(KNchar* dest, const KNchar* src);
 
-KN_TEST_API size_t Utf8_StringLength(const uint8_t* str);
-KN_TEST_API const uint8_t* Utf8_StringNext(const uint8_t* str);
-KN_TEST_API bool Utf8_StringEqual(const uint8_t* left, const uint8_t* right);
+KN_TEST_API size_t Utf8_StringLength(const KNchar* str);
+KN_TEST_API const KNchar* Utf8_StringNext(const KNchar* str);
+KN_TEST_API bool Utf8_StringEqual(const KNchar* left, const KNchar* right);
 
 /**
  * A sequence of code points which represents a single glyph.  The proper term
@@ -71,17 +75,17 @@ KN_TEST_API bool Utf8_StringEqual(const uint8_t* left, const uint8_t* right);
 typedef struct {
 	// Add an additional space for a null byte so graphemes can be written as
 	// null-terminated strings.
-	uint8_t codePoints[KN_MAX_BYTES_IN_GRAPHEME + 1];
+	KNchar codePoints[KN_MAX_BYTES_IN_GRAPHEME + 1];
 	uint8_t codePointLength;
 	uint32_t byteLength;
 } Grapheme;
 
-KN_TEST_API void Grapheme_Set(Grapheme* seq, const uint8_t* codePoint, uint8_t numCodePoints);
-KN_TEST_API bool Grapheme_EqualsCodePoints(Grapheme* seq, const uint8_t* codePoint, uint8_t numCodePoints);
+KN_TEST_API void Grapheme_Set(Grapheme* seq, const KNchar* codePoint, uint8_t numCodePoints);
+KN_TEST_API bool Grapheme_EqualsCodePoints(Grapheme* seq, const KNchar* codePoint, uint8_t numCodePoints);
 KN_TEST_API bool Grapheme_EqualsGrapheme(Grapheme* left, Grapheme* right);
 
 KN_TEST_API void Grapheme_Begin(Grapheme* seq);
-KN_TEST_API bool Grapheme_AddCodePoint(Grapheme*, const uint8_t* codePoint);
+KN_TEST_API bool Grapheme_AddCodePoint(Grapheme*, const KNchar* codePoint);
 
 #if KN_DEBUG
 void Grapheme_Print(Grapheme* g, FILE* stream);

@@ -12,7 +12,7 @@ KN_TEST_API void GraphemeMap_Clear(GraphemeMap* map)
 }
 
 KN_TEST_API uint32_t GraphemeMap_GlyphForCodePoints(GraphemeMap* map,
-	const uint8_t* codePoint, uint8_t numCodePoints)
+	const KNchar* codePoint, uint8_t numCodePoints)
 {
 	KN_ASSERT(map != NULL, "Cannot map to glyphs with a null grapheme map.");
 	KN_ASSERT(codePoint != NULL, "Cannot map a null list of graphemes to glyphs.");
@@ -28,7 +28,7 @@ KN_TEST_API uint32_t GraphemeMap_GlyphForCodePoints(GraphemeMap* map,
 }
 
 KN_TEST_API uint32_t GraphemeMap_GraphemeIndexForCodePoints(GraphemeMap* map,
-	const uint8_t* codePoint, uint8_t numCodePoints)
+	const KNchar* codePoint, uint8_t numCodePoints)
 {
 	KN_ASSERT(map != NULL, "Cannot map to glyphs with a null grapheme map.");
 	KN_ASSERT(codePoint != NULL, "Cannot map a null list of graphemes to glyphs.");
@@ -46,7 +46,7 @@ KN_TEST_API uint32_t GraphemeMap_GraphemeIndexForCodePoints(GraphemeMap* map,
 /**
  * Creates a grapheme mapping for a sequence of code points.
  */
-KN_TEST_API bool GraphemeMap_Map(GraphemeMap* map, const uint8_t* codePoint,
+KN_TEST_API bool GraphemeMap_Map(GraphemeMap* map, const KNchar* codePoint,
 	uint8_t numCodePoints, GlyphIndex glyphIndex)
 {
 	KN_ASSERT(map != NULL, "Cannot write a glyph to a null map.");
