@@ -33,8 +33,8 @@ typedef struct {
 } GraphemeMap;
 
 KN_TEST_API void GraphemeMap_Clear(GraphemeMap* map);
-KN_TEST_API uint32_t GraphemeMap_GlyphForCodePoints(GraphemeMap* map, const KNchar* codePoints, uint8_t numCodePoints);
-KN_TEST_API uint32_t GraphemeMap_GraphemeIndexForCodePoints(GraphemeMap* map, const KNchar* codePoint, uint8_t numCodePoints);
-KN_TEST_API bool GraphemeMap_Map(GraphemeMap* map, const KNchar* codePoints, uint8_t numCodePoints, GlyphIndex glyphIndex);
+KN_TEST_API uint32_t GraphemeMap_GlyphForCodePoints(GraphemeMap* map, const uint8_t* codePoints, uint8_t numCodePoints);
+KN_TEST_API uint32_t GraphemeMap_GraphemeIndexForCodePoints(GraphemeMap* map, const uint8_t* codePoint, uint8_t numCodePoints);
+KN_TEST_API bool GraphemeMap_Map(GraphemeMap* map, const uint8_t* codePoints, uint8_t numCodePoints, GlyphIndex glyphIndex);
 
 #endif //KNELL_FONT_UTF8_GLYPH_H

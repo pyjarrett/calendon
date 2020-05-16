@@ -3,10 +3,10 @@
 #include <string.h>
 
 /**
- * Not all bytes are valid in UTF-8.  This returns a non-zero value for a good
+ * Note all bytes are valid in UTF-8.  This returns a non-zero value for a good
  * or potentially valid byte, so this value can work in boolean expressions.
  */
-KN_TEST_API Utf8ByteValidity Utf8_IsValidByte(KNchar aByte)
+KN_TEST_API Utf8ByteValidity Utf8_IsValidByte(uint8_t aByte)
 {
 	/*
 	 * E0, F0: could start overlong sequences
@@ -43,7 +43,7 @@ KN_TEST_API Utf8ByteValidity Utf8_IsValidByte(KNchar aByte)
 /**
  * Only specific bytes may be the leading byte in a code point.
  */
-KN_TEST_API bool Utf8_IsLeadingByte(KNchar codeUnit)
+KN_TEST_API bool Utf8_IsLeadingByte(uint8_t codeUnit)
 {
 	KN_ASSERT(Utf8_IsValidByte(codeUnit), "Invalid code byte: %X", codeUnit);
 
@@ -67,7 +67,7 @@ KN_TEST_API bool Utf8_IsLeadingByte(KNchar codeUnit)
  * many rules as I understand at the moment.
  */
 // TODO: Security risk, should be researched further and reviewed again.
-KN_TEST_API bool Utf8_IsStringValid(const KNchar* str)
+KN_TEST_API bool Utf8_IsStringValid(const uint8_t* str)
 {
 	// Null strings are not valid.
 	if (!str) return false;
@@ -87,7 +87,7 @@ KN_TEST_API bool Utf8_IsStringValid(const KNchar* str)
 	 * Verify the string ends at a null byte, and also that the sequence of
 	 * following every code point also arrives at the same null byte.
 	 */
-	const KNchar* cursor = str;
+	const uint8_t* cursor = str;
 	while (*cursor) {
 		/*
 		 * We're hopping byte code points, so every hop should be a code point.
@@ -121,11 +121,11 @@ KN_TEST_API bool Utf8_IsStringValid(const KNchar* str)
  * 3: 1110 xxxx : E
  * 4: 1111 0xxx : F
  */
-KN_TEST_API uint8_t Utf8_NumBytesInCodePoint(KNchar leadingByte)
+KN_TEST_API uint8_t Utf8_NumBytesInCodePoint(uint8_t leadingByte)
 {
 	KN_ASSERT(Utf8_IsValidByte(leadingByte),
 		"Unknown number of bytes for illegal byte %X", leadingByte);
-	const KNchar b = leadingByte & 0xF0;
+	const uint8_t b = leadingByte & 0xF0;
 	switch (b) {
 		case 0xF0: return 4;
 		case 0xE0: return 3;
@@ -142,7 +142,7 @@ KN_TEST_API uint8_t Utf8_NumBytesInCodePoint(KNchar leadingByte)
 /**
  * Checks to see if two possibly multiple byte code points equal each other.
  */
-KN_TEST_API bool Utf8_CodePointsMatch(const KNchar* left, const KNchar* right)
+KN_TEST_API bool Utf8_CodePointsMatch(const uint8_t* left, const uint8_t* right)
 {
 	KN_ASSERT(left != NULL, "Cannot check a null code point (left-side)");
 	KN_ASSERT(right != NULL, "Cannot check a null code point (right-side)");
@@ -165,19 +165,19 @@ KN_TEST_API bool Utf8_CodePointsMatch(const KNchar* left, const KNchar* right)
 /**
  * Copies a UTF-8 code point, with an interface similar to `memcpy`, or `strcpy`.
  */
-KN_TEST_API void Utf8_CodePointCopy(KNchar* dest, const KNchar* src)
+KN_TEST_API void Utf8_CodePointCopy(uint8_t* dest, const uint8_t* src)
 {
 	KN_ASSERT(dest != NULL, "Cannot copy to null code point.");
 	KN_ASSERT(src != NULL, "Cannot copy a null code point.");
 	memcpy(dest, src, Utf8_NumBytesInCodePoint(*src));
 }
 
-KN_TEST_API size_t Utf8_StringLength(const KNchar* str)
+KN_TEST_API size_t Utf8_StringLength(const uint8_t* str)
 {
 	KN_ASSERT(str != NULL, "Cannot get length of a null string");
 
 	size_t numCodePoints = 0;
-	const KNchar* cursor = str;
+	const uint8_t* cursor = str;
 	while (*cursor) {
 		++numCodePoints;
 		cursor = Utf8_StringNext(cursor);
@@ -187,7 +187,7 @@ KN_TEST_API size_t Utf8_StringLength(const KNchar* str)
 	return numCodePoints;
 }
 
-KN_TEST_API const KNchar* Utf8_StringNext(const KNchar* str)
+KN_TEST_API const uint8_t* Utf8_StringNext(const uint8_t* str)
 {
 	KN_ASSERT(str != NULL, "Cannot get next code point in a null string.");
 	const uint32_t numBytesInCodePoint = Utf8_NumBytesInCodePoint(*str);
@@ -197,7 +197,7 @@ KN_TEST_API const KNchar* Utf8_StringNext(const KNchar* str)
 	return str + numBytesInCodePoint;
 }
 
-KN_TEST_API bool Utf8_StringEqual(const KNchar* left, const KNchar* right)
+KN_TEST_API bool Utf8_StringEqual(const uint8_t* left, const uint8_t* right)
 {
 	if (Utf8_StringLength(left) != Utf8_StringLength(right)) {
 		return false;
@@ -209,7 +209,7 @@ KN_TEST_API bool Utf8_StringEqual(const KNchar* left, const KNchar* right)
  * Initialize a grapheme with an initial code point.  All other possible bytes
  * within the grapheme are zeroed.
  */
-KN_TEST_API void Grapheme_Set(Grapheme* seq, const KNchar* codePoint, uint8_t numCodePoints)
+KN_TEST_API void Grapheme_Set(Grapheme* seq, const uint8_t* codePoint, uint8_t numCodePoints)
 {
 	KN_ASSERT(seq != NULL, "Cannot create a null Grapheme.");
 	KN_ASSERT(codePoint != NULL, "Cannot create a Grapheme from a null code point.");
@@ -218,7 +218,7 @@ KN_TEST_API void Grapheme_Set(Grapheme* seq, const KNchar* codePoint, uint8_t nu
 		numCodePoints);
 
 	memset(&seq->codePoints[0], 0, KN_MAX_BYTES_IN_GRAPHEME);
-	const KNchar* currentCodePoint = codePoint;
+	const uint8_t* currentCodePoint = codePoint;
 	uint8_t currentCodePointIndex = 0;
 	uint8_t usedBytes = 0;
 	while (currentCodePointIndex < numCodePoints) {
@@ -235,14 +235,14 @@ KN_TEST_API void Grapheme_Set(Grapheme* seq, const KNchar* codePoint, uint8_t nu
  * Compares a grapheme, which is a series of code points, against a series of
  * code points.
  */
-KN_TEST_API bool Grapheme_EqualsCodePoints(Grapheme* seq, const KNchar* codePoint, uint8_t numCodePoints)
+KN_TEST_API bool Grapheme_EqualsCodePoints(Grapheme* seq, const uint8_t* codePoint, uint8_t numCodePoints)
 {
 	KN_ASSERT(seq != NULL, "A null Grapheme is not equal to anything.");
 	KN_ASSERT(codePoint != NULL, "Cannot compare a Grapheme against a NULL code point.");
 	KN_ASSERT(numCodePoints <= KN_MAX_CODE_POINTS_IN_GRAPHEME, "Too many code points %" PRIu8
 		"to test for grapheme equality.", numCodePoints);
 
-	const KNchar* currentCodePoint = codePoint;
+	const uint8_t* currentCodePoint = codePoint;
 	uint8_t currentCodePointIndex = 0;
 	uint8_t usedBytes = 0;
 	while (currentCodePointIndex < numCodePoints) {
@@ -279,7 +279,7 @@ KN_TEST_API void Grapheme_Begin(Grapheme* seq)
 	memset(&seq->codePoints[0], 0, KN_MAX_BYTES_IN_GRAPHEME);
 }
 
-KN_TEST_API bool Grapheme_AddCodePoint(Grapheme* seq, const KNchar* codePoint)
+KN_TEST_API bool Grapheme_AddCodePoint(Grapheme* seq, const uint8_t* codePoint)
 {
 	KN_ASSERT(seq != NULL, "Cannot add to a null Grapheme.");
 	KN_ASSERT(codePoint != NULL, "Cannot add a null code point to a Grapheme.");
