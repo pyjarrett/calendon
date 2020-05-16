@@ -19,11 +19,25 @@
 #include <stdlib.h>
 
 /*
- * Symbol export/import markers for engine library functions.
+ * Features switches change behavior at compile time to improve debugging,
+ * or expose additional behavior:
+ * 
+ * - `KN_DEBUG`: Debug builds.  Gate features which should never affect end users.
+ * - `KN_TESTING`: When building the Knell library for testing.  Exposes
+ *   behavior used for testing.
+ */
+
+/*
+ * Knell aims to limit the number of exported functions for simplicity and 
+ * provides symbol export/import markers for engine library functions.
  *
- * - Use `KN_API` for engine library functions (within knell)
- * - Use `KN_TEST_API` for exposing functions for (primarily unit) testing.
- * - Use `KN_GAME_API` for game library functions (in demo/game code)
+ * - Use `KN_API` for engine library functions (within knell).
+ * - Use `KN_GAME_API` for game library functions exposed to Knell.
+ * - Use `KN_TEST_API` for exposing functions for testing.
+ *
+ * Windows makes symbols within DLLs invisible by default, so use `KN_TEST_API`
+ * to expose functions for testing purposes.  This limits the possibility of
+ * client creating dependencies on features only exposed for testing.
  *
  * Windows:
  * - dllimport - describe that we're going to find this when we link
