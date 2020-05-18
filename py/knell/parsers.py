@@ -135,6 +135,15 @@ def parser_run(parser) -> argparse.ArgumentParser:
     return parser
 
 
+def parser_new(parser) -> argparse.ArgumentParser:
+    parser_add_general_args(parser)
+    parser.add_argument('type',
+                        choices=['test', 'demo'],
+                        help='Creates new content from a template.')
+    parser.add_argument('name')
+    return parser
+
+
 def parser_env(parser) -> argparse.ArgumentParser:
     return parser
 

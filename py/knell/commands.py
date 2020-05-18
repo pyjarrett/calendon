@@ -2,6 +2,7 @@ import argparse
 import json
 import multiprocessing
 import os
+import re
 import shutil
 import sys
 from typing import Optional
@@ -175,6 +176,70 @@ def cmd_run(ctx: ProjectContext, args: argparse.Namespace) -> int:
 
     ovr_ctx.set_game(os.path.join(ctx.demo_dir(), root_to_shared_lib(args.demo)))
     return ovr_ctx.run_driver()
+
+
+def write_demo_template(ctx: ProjectContext, name: str, dry_run: bool) -> bool:
+    realname: str = sanitize_for_file_name(name)
+    demo_src_dir: str = os.path.join(ctx.knell_home(), 'src', 'demos')
+    demo_source_file: str = os.path.join(demo_src_dir, realname + '.c')
+    if os.path.exists(demo_source_file):
+        print(f'Demo source file already exists: {demo_source_file}')
+        return False
+
+    if dry_run:
+        print(f'Would have written demo to {demo_source_file}')
+        return True
+
+    with open(demo_source_file, 'w') as file:
+        file.write(f'''#include <knell/kn.h>
+#include <knell/log.h>
+
+LogHandle LogSysSample;
+
+KN_GAME_API bool Game_Init(void)
+{{
+    Log_RegisterSystem(&LogSysSample, "{realname}", KN_LOG_TRACE);
+    KN_TRACE(LogSysSample, "{realname} loaded");
+    return true;
+}}
+
+KN_GAME_API void Game_Draw(void)
+{{
+}}
+
+KN_GAME_API void Game_Tick(uint64_t dt)
+{{
+    KN_UNUSED(dt);
+}}
+
+KN_GAME_API void Game_Shutdown(void)
+{{
+}}
+''')
+    return True
+
+
+def sanitize_for_file_name(name: str) -> str:
+    return re.sub(r'[ \t\r\n%:<>{}\[\]"/\\?*-]', '', name.lower())
+
+
+def cmd_new(ctx: ProjectContext, args: argparse.Namespace) -> int:
+    # Some sort of template mapping between types and outputs.
+    # Some templates might eventually generate multiple output files.
+    # Types to eventually support:
+    # test -> src/tests/unit/test-{name}.c
+    # plugin -> src/plugins/{name}/{name}.c
+    # demo -> src/demos/{name}/demo-{name}.c
+    if args.type == 'demo':
+        if not write_demo_template(ctx, args.name, args.dry_run):
+            print('Unable to create content')
+            return 1
+    else:
+        print(f'Unrecognized template name {args.type}')
+        return 1
+
+    print('Regenerate the project to use your new demo')
+    return 0
 
 
 def cmd_env(ctx: ProjectContext, _args: argparse.Namespace) -> int:
