@@ -40,7 +40,9 @@ KN_API void Game_Load(const char* sharedLibraryName)
 		KN_FATAL_ERROR("Game_ShutdownFn function missing in %s", sharedLibraryName);
 	}
 
-	Game_InitFn();
+	if (!Game_InitFn()) {
+		KN_FATAL_ERROR("%s failed to initialize", sharedLibraryName);
+	}
 }
 
 #endif /* WIN32 */

@@ -43,7 +43,7 @@ void createCircle(float2* vertices, uint32_t numVertices, float radius)
 	vertices[numVertices - 1] = vertices[0];
 }
 
-KN_GAME_API void Game_Init(void)
+KN_GAME_API bool Game_Init(void)
 {
 	Log_RegisterSystem(&LogSysSample, "Sample", KN_LOG_TRACE);
 	KN_TRACE(LogSysSample, "Sample loaded");
@@ -84,6 +84,7 @@ KN_GAME_API void Game_Init(void)
 	if (!R_LoadPSF2Font(font, fontPath.str))	{
 		KN_FATAL_ERROR("Unable to load font: %s", fontPath.str);
 	}
+	return true;
 }
 
 KN_GAME_API void Game_Draw(void)
@@ -132,6 +133,6 @@ KN_GAME_API void Game_Tick(uint64_t dt)
 	lastDt = dt;
 }
 
-KN_GAME_API void Game_Shutdown()
+KN_GAME_API void Game_Shutdown(void)
 {
 }

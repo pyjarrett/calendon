@@ -18,7 +18,7 @@ LogHandle LogSysSample;
 
 static SpriteId spriteId;
 
-KN_GAME_API void Game_Init(void)
+KN_GAME_API bool Game_Init(void)
 {
 	Log_RegisterSystem(&LogSysSample, "Sample", KN_LOG_TRACE);
 	KN_TRACE(LogSysSample, "Sample loaded");
@@ -39,6 +39,7 @@ KN_GAME_API void Game_Init(void)
 	if (!R_LoadSprite(spriteId, spritePath.str)) {
 		KN_FATAL_ERROR("Unable to load texture for sprite: '%s'", spritePath.str);
 	}
+	return true;
 }
 
 KN_GAME_API void Game_Draw(void)
@@ -57,6 +58,6 @@ KN_GAME_API void Game_Tick(uint64_t dt)
 {
 }
 
-KN_GAME_API void Game_Shutdown()
+KN_GAME_API void Game_Shutdown(void)
 {
 }

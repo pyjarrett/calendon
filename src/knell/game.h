@@ -7,11 +7,15 @@
  * Games start by having their `Game_Init` function called.  Every tick, both
  * `Game_Tick` and `Game_Draw` are called in that order.  Immediately before the
  * game is unloaded `Game_Shutdown` is called.
+ *
+ * `Game_Init` may indicate failure in the payload initializing by returning
+ * false.  `KN_FATAL_ERROR` may also be used to indicate failures in Knell
+ * related components.
  */
 
 #include <knell/kn.h>
 
-typedef void (*Game_InitPROC)(void);
+typedef bool (*Game_InitPROC)(void);
 typedef void (*Game_DrawPROC)(void);
 typedef void (*Game_TickPROC)(uint64_t);
 typedef void (*Game_ShutdownPROC)(void);

@@ -106,7 +106,7 @@ void Anim_Update(BinaryAnimation* anim, uint64_t dt)
 float2 left, right;
 BinaryAnimation squareAnim;
 
-KN_GAME_API void Game_Init(void)
+KN_GAME_API bool Game_Init(void)
 {
 	Log_RegisterSystem(&LogSysSample, "Sample", KN_LOG_TRACE);
 	KN_TRACE(LogSysSample, "Sample loaded");
@@ -120,6 +120,7 @@ KN_GAME_API void Game_Init(void)
 	squareAnim.last = &right;
 	squareAnim.next = &left;
 	squareAnim.transitioning = false;
+	return true;
 }
 
 KN_GAME_API void Game_Draw(void)
@@ -162,6 +163,6 @@ KN_GAME_API void Game_Tick(uint64_t dt)
 	}
 }
 
-KN_GAME_API void Game_Shutdown()
+KN_GAME_API void Game_Shutdown(void)
 {
 }

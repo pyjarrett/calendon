@@ -63,7 +63,7 @@ void step(void)
 	}
 }
 
-KN_GAME_API void Game_Init(const char* target)
+KN_GAME_API bool Game_Init(void)
 {
 	Log_RegisterSystem(&LogSysSample, "Sample", KN_LOG_TRACE);
 	KN_TRACE(LogSysSample, "Sample loaded");
@@ -71,6 +71,7 @@ KN_GAME_API void Game_Init(const char* target)
 	reset();
     timeBeforeStep = Time_SecToNs(3);
     currentTime = 0;
+    return true;
 }
 
 KN_GAME_API void Game_Draw(void)
@@ -90,6 +91,6 @@ KN_GAME_API void Game_Tick(uint64_t dt)
 	}
 }
 
-KN_GAME_API void Game_Shutdown()
+KN_GAME_API void Game_Shutdown(void)
 {
 }

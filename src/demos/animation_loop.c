@@ -15,7 +15,7 @@ AnimationLoopCursor sampleCursor;
 AnimationLoop sampleLoop;
 float2 points[SAMPLE_POINTS];
 
-KN_GAME_API void Game_Init(void)
+KN_GAME_API bool Game_Init(void)
 {
 	Log_RegisterSystem(&LogSysSample, "Sample", KN_LOG_TRACE);
 	KN_TRACE(LogSysSample, "Sample loaded");
@@ -33,6 +33,7 @@ KN_GAME_API void Game_Init(void)
 	points[1] = float2_Make(400, 200);
 	points[2] = float2_Make(400, 400);
 	points[3] = float2_Make(200, 400);
+	return true;
 }
 
 KN_GAME_API void Game_Draw(void)
@@ -55,6 +56,6 @@ KN_GAME_API void Game_Tick(uint64_t dt)
 	AnimLoop_Tick(&sampleLoop, &sampleCursor, dt);
 }
 
-KN_GAME_API void Game_Shutdown()
+KN_GAME_API void Game_Shutdown(void)
 {
 }

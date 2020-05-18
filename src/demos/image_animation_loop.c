@@ -18,7 +18,7 @@ AnimationLoop sampleLoop;
 #define SPRITE_ANIMATION_FRAMES 3
 SpriteId spriteFrames[SPRITE_ANIMATION_FRAMES];
 
-KN_GAME_API void Game_Init(void)
+KN_GAME_API bool Game_Init(void)
 {
 	Log_RegisterSystem(&LogSysSample, "Sample", KN_LOG_TRACE);
 	KN_TRACE(LogSysSample, "Sample loaded");
@@ -46,6 +46,7 @@ KN_GAME_API void Game_Init(void)
 		Assets_PathBufferFor(frameFilenames[i], &path);
 		R_LoadSprite(spriteFrames[i], path.str);
 	}
+	return true;
 }
 
 KN_GAME_API void Game_Draw(void)
@@ -64,6 +65,6 @@ KN_GAME_API void Game_Tick(uint64_t dt)
 	AnimLoop_Tick(&sampleLoop, &sampleCursor, dt);
 }
 
-KN_GAME_API void Game_Shutdown()
+KN_GAME_API void Game_Shutdown(void)
 {
 }
