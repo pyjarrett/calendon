@@ -1,9 +1,9 @@
+# Demos are single source files which demonstrate capabilities within or
+# with Knell.  These are not intented to be large prototypes, or have external
+# dependencies.
+#
 # Describe a demo and link it against knell-lib, and add it to the demo list
 # so that knell will depend on it and force it to be build when knell is built.
-#
-# Format:
-#   add_demo(NAME test_name SOURCES a.cpp b.cpp)
-#   add_demo(NAME test_name SOURCES a.cpp b.cpp LIBS GL)
 #
 function(add_demo)
 	set(options "")
@@ -29,12 +29,8 @@ function(add_demo)
 	message("Adding ${DEMO_NAME} to demo list.")
 endfunction()
 
-add_demo(NAME sample SOURCES sample.c)
-add_demo(NAME koch-curve SOURCES koch_curve.c)
-add_demo(NAME mouse-tracker SOURCES mouse_tracker.c)
-add_demo(NAME interpolated-transitions SOURCES interpolated_transitions.c)
-add_demo(NAME animation-loop SOURCES animation_loop.c)
-add_demo(NAME texture-drawing SOURCES texture_drawing.c)
-add_demo(NAME image-animation-loop SOURCES image_animation_loop.c)
-add_demo(NAME graphics-sample SOURCES graphics_sample.c)
-add_demo(NAME planets SOURCES planets.c)
+file(GLOB_RECURSE KNELL_DEMO_SRCS ./*.c)
+foreach(DEMO_SRC_FILE ${KNELL_DEMO_SRCS})
+	get_filename_component(DEMO_NAME ${DEMO_SRC_FILE} NAME_WE)
+	add_demo(NAME ${DEMO_NAME} SOURCES ${DEMO_SRC_FILE})
+endforeach()
