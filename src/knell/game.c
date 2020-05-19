@@ -5,21 +5,52 @@
 #ifdef _WIN32
 
 #include <knell/compat-windows.h>
-#include <knell/process.h>
-static HMODULE GameModule;
+typedef HMODULE knSharedLibrary;
+
+static void SharedLibrary_Release(knSharedLibrary library)
+{
+	if (library) {
+		FreeLibrary(library);
+	}
+}
+
+static knSharedLibrary SharedLibrary_Load(const char* sharedLibraryName)
+{
+	return LoadLibrary(sharedLibraryName);
+}
+
+#endif /* _WIN32 */
+
+#ifdef __linux__
+
+#include <dlfcn.h>
+typedef void* knSharedLibrary;
+
+static void SharedLibrary_Release(knSharedLibrary library)
+{
+	if (library) {
+		dlclose(library);
+	}
+}
+
+static knSharedLibrary SharedLibrary_Load(const char* sharedLibraryName)
+{
+	return dlopen(sharedLibraryName,  RTLD_NOW);
+}
+
+#endif /* __linux__ */
+
+
+static knSharedLibrary GameModule;
 
 KN_API void Game_Load(const char* sharedLibraryName)
 {
-	// Shutdown any previous game.
 	if (Game_ShutdownFn) {
 		Game_ShutdownFn();
 	}
 
-	if (GameModule) {
-		FreeLibrary(GameModule);
-	}
-
-	GameModule = LoadLibrary(sharedLibraryName);
+	SharedLibrary_Release(GameModule);
+	GameModule = SharedLibrary_Load(sharedLibraryName);
 	if (!GameModule) {
 		KN_FATAL_ERROR("Unable to load game module: %s", sharedLibraryName);
 	}
@@ -44,36 +75,3 @@ KN_API void Game_Load(const char* sharedLibraryName)
 		KN_FATAL_ERROR("%s failed to initialize", sharedLibraryName);
 	}
 }
-
-#endif /* WIN32 */
-
-#ifdef __linux__
-
-#include <dlfcn.h>
-
-static void* GameModule;
-
-void Game_Load(const char* sharedLibraryName)
-{
-	// Shutdown any previous game.
-	if (Game_ShutdownFn) {
-		Game_ShutdownFn();
-	}
-
-	if (GameModule) {
-		dlclose(GameModule);
-	}
-
-	GameModule = dlopen(sharedLibraryName,  RTLD_NOW);
-	if (!GameModule) {
-		KN_FATAL_ERROR("Unable to load game module: %s", sharedLibraryName);
-	}
-	Game_InitFn = (Game_InitPROC)dlsym(GameModule, "Game_Init");
-	Game_DrawFn = (Game_DrawPROC)dlsym(GameModule, "Game_Draw");
-	Game_TickFn = (Game_TickPROC)dlsym(GameModule, "Game_Tick");
-	Game_ShutdownFn = (Game_ShutdownPROC)dlsym(GameModule, "Game_Shutdown");
-
-	Game_InitFn();
-}
-
-#endif /* __linux__ */
