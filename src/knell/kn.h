@@ -228,6 +228,7 @@ extern KN_API char fatalErrorBuffer[fatalErrorBufferLength];
 	#define KN_FATAL_ERROR(error_message, ...) \
 		do { \
 			printf(error_message, ##__VA_ARGS__); \
+			fflush(stdout); \
 			KN_DEBUG_BREAK(); \
 			abort(); \
 		} while (0)
