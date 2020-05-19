@@ -2,54 +2,7 @@
 
 #include <knell/kn.h>
 
-#ifdef _WIN32
-
-#include <knell/compat-windows.h>
-typedef HMODULE knSharedLibrary;
-
-static void SharedLibrary_Release(knSharedLibrary library)
-{
-	if (library) {
-		FreeLibrary(library);
-	}
-}
-
-static knSharedLibrary SharedLibrary_Load(const char* sharedLibraryName)
-{
-	return LoadLibrary(sharedLibraryName);
-}
-
-static void* SharedLibrary_LookupFn(knSharedLibrary library, const char* fnName)
-{
-    return GetProcAddress(library, fnName);
-}
-
-#endif /* _WIN32 */
-
-#ifdef __linux__
-
-#include <dlfcn.h>
-typedef void* knSharedLibrary;
-
-static void SharedLibrary_Release(knSharedLibrary library)
-{
-	if (library) {
-		dlclose(library);
-	}
-}
-
-static knSharedLibrary SharedLibrary_Load(const char* sharedLibraryName)
-{
-	return dlopen(sharedLibraryName,  RTLD_NOW);
-}
-
-static void* SharedLibrary_LookupFn(knSharedLibrary library, const char* fnName)
-{
-	return dlsym(library, fnName);
-}
-
-#endif /* __linux__ */
-
+#include <knell/shared-library.h>
 
 static knSharedLibrary GameModule;
 
