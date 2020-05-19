@@ -19,6 +19,11 @@ static knSharedLibrary SharedLibrary_Load(const char* sharedLibraryName)
 	return LoadLibrary(sharedLibraryName);
 }
 
+static void* SharedLibrary_LookupFn(knSharedLibrary library, const char* fnName)
+{
+    return GetProcAddress(library, fnName);
+}
+
 #endif /* _WIN32 */
 
 #ifdef __linux__
@@ -38,6 +43,11 @@ static knSharedLibrary SharedLibrary_Load(const char* sharedLibraryName)
 	return dlopen(sharedLibraryName,  RTLD_NOW);
 }
 
+static void* SharedLibrary_LookupFn(knSharedLibrary library, const char* fnName)
+{
+	return dlsym(library, fnName);
+}
+
 #endif /* __linux__ */
 
 
@@ -54,19 +64,19 @@ KN_API void Game_Load(const char* sharedLibraryName)
 	if (!GameModule) {
 		KN_FATAL_ERROR("Unable to load game module: %s", sharedLibraryName);
 	}
-	Game_InitFn = (Game_InitPROC)GetProcAddress(GameModule, "Game_Init");
+	Game_InitFn = (Game_InitPROC)SharedLibrary_LookupFn(GameModule, "Game_Init");
 	if (!Game_InitFn) {
 		KN_FATAL_ERROR("Game_Init function missing in %s", sharedLibraryName);
 	}
-	Game_DrawFn = (Game_DrawPROC)GetProcAddress(GameModule, "Game_Draw");
+	Game_DrawFn = (Game_DrawPROC)SharedLibrary_LookupFn(GameModule, "Game_Draw");
 	if (!Game_DrawFn) {
 		KN_FATAL_ERROR("Game_DrawFn function missing in %s", sharedLibraryName);
 	}
-	Game_TickFn = (Game_TickPROC)GetProcAddress(GameModule, "Game_Tick");
+	Game_TickFn = (Game_TickPROC)SharedLibrary_LookupFn(GameModule, "Game_Tick");
 	if (!Game_TickFn) {
 		KN_FATAL_ERROR("Game_TickFn function missing in %s", sharedLibraryName);
 	}
-	Game_ShutdownFn = (Game_ShutdownPROC)GetProcAddress(GameModule, "Game_Shutdown");
+	Game_ShutdownFn = (Game_ShutdownPROC)SharedLibrary_LookupFn(GameModule, "Game_Shutdown");
 	if (!Game_ShutdownFn) {
 		KN_FATAL_ERROR("Game_ShutdownFn function missing in %s", sharedLibraryName);
 	}
