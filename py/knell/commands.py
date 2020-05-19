@@ -1,4 +1,5 @@
 import argparse
+import glob
 import json
 import multiprocessing
 import os
@@ -9,7 +10,7 @@ from typing import Optional
 
 from knell.cmake import generator_settings_for_compiler
 from knell.context import ProjectContext
-from knell.multiplatform import root_to_shared_lib, root_to_executable
+import knell.multiplatform as mp
 from knell.run import run_program
 
 
@@ -165,7 +166,13 @@ def cmd_check(ctx: ProjectContext, args: argparse.Namespace) -> int:
 
 
 def cmd_demo(ctx: ProjectContext, args: argparse.Namespace) -> int:
-    return 1
+    """Prints all currently build demos which can be run."""
+    print('Demos:')
+    demo_glob: str = os.path.join(ctx.demo_dir(), mp.shared_lib_glob())
+    for demo_shared_lib in glob.glob(demo_glob):
+        demo_name = mp.shared_lib_to_root(os.path.basename(demo_shared_lib))
+        print(demo_name)
+    return 0
 
 
 def cmd_run(ctx: ProjectContext, args: argparse.Namespace) -> int:
@@ -174,7 +181,7 @@ def cmd_run(ctx: ProjectContext, args: argparse.Namespace) -> int:
     # Ensure an up-to-date build.
     cmd_build(ovr_ctx, args)
 
-    ovr_ctx.set_game(os.path.join(ctx.demo_dir(), root_to_shared_lib(args.demo)))
+    ovr_ctx.set_game(os.path.join(ctx.demo_dir(), mp.root_to_shared_lib(args.demo)))
     return ovr_ctx.run_driver()
 
 
@@ -296,7 +303,7 @@ def cmd_pysetup(ctx: ProjectContext, args: argparse.Namespace) -> int:
             subdir = 'Scripts'
         else:
             subdir = 'bin'
-        ctx.register_program('localpython3', os.path.join(ctx.venv_dir(), subdir, root_to_executable('python')),
+        ctx.register_program('localpython3', os.path.join(ctx.venv_dir(), subdir, mp.root_to_executable('python')),
                              override=True)
 
     pip_upgrade_result = run_program(

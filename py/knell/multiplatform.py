@@ -6,7 +6,7 @@ import os
 import sys
 
 
-def demo_glob():
+def shared_lib_glob():
     """Produce a glob suitable for identifying demo shared libraries."""
     if sys.platform == 'win32':
         return '*.dll'
