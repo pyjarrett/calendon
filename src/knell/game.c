@@ -6,7 +6,7 @@
 
 static knSharedLibrary GameModule;
 
-KN_API void Game_Load(const char* sharedLibraryName)
+void Game_Load(const char* sharedLibraryName)
 {
 	if (Game_ShutdownFn) {
 		Game_ShutdownFn();

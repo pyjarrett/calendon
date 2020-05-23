@@ -1,6 +1,6 @@
 #include "anim-loop.h"
 
-KN_API AnimationStateIndex AnimLoop_NextState(AnimationLoop* loop, uint64_t current)
+AnimationStateIndex AnimLoop_NextState(AnimationLoop* loop, uint64_t current)
 {
 	KN_ASSERT(loop != NULL, "Cannot update a null animation loop");
 	return (AnimationStateIndex)((current + 1) % loop->numStates);
@@ -9,7 +9,7 @@ KN_API AnimationStateIndex AnimLoop_NextState(AnimationLoop* loop, uint64_t curr
 /**
  * Calculates the fraction of the transition which is complete for the cursor.
  */
-KN_API float AnimLoop_CalcAlpha(AnimationLoop* loop, AnimationLoopCursor* cursor)
+float AnimLoop_CalcAlpha(AnimationLoop* loop, AnimationLoopCursor* cursor)
 {
 	KN_ASSERT(loop != NULL, "Cannot update a null animation loop");
 	KN_ASSERT(cursor != NULL, "Cannot update a null animation cursor");
@@ -27,7 +27,7 @@ KN_API float AnimLoop_CalcAlpha(AnimationLoop* loop, AnimationLoopCursor* cursor
  * Using an animation loop, update the animation cursor to the next stage
  * if necessary.
  */
-KN_API void AnimLoop_Tick(AnimationLoop* loop, AnimationLoopCursor* cursor, uint64_t dt)
+void AnimLoop_Tick(AnimationLoop* loop, AnimationLoopCursor* cursor, uint64_t dt)
 {
 	KN_ASSERT(loop != NULL, "Cannot update a null animation loop");
 	KN_ASSERT(cursor != NULL, "Cannot update a null animation cursor");

@@ -83,7 +83,7 @@ bool Crash_EnableCoreDump(void)
 }
 #endif /* KN_ENABLE_CORE_DUMPS */
 
-KN_API void Crash_Init(void)
+void Crash_Init(void)
 {
 #if KN_ENABLE_CORE_DUMPS
 	if (!Crash_EnableCoreDump()) {
@@ -159,7 +159,7 @@ bool Crash_EnableCoreDump(void)
 	}
 }
 
-KN_API void Crash_Init(void)
+void Crash_Init(void)
 {
 #if KN_ENABLE_CORE_DUMPS
 	if (!Crash_EnableCoreDump()) {

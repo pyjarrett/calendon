@@ -22,7 +22,7 @@ static void UI_CreateWindow(const uint32_t w, const uint32_t h)
 	}
 }
 
-KN_API void UI_Init(uint32_t w, uint32_t h)
+void UI_Init(uint32_t w, uint32_t h)
 {
 	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
 		KN_FATAL_ERROR("Unable to init SDL");
@@ -32,7 +32,7 @@ KN_API void UI_Init(uint32_t w, uint32_t h)
 	height = h;
 }
 
-KN_API void UI_Shutdown(void)
+void UI_Shutdown(void)
 {
 	if (window) {
 		SDL_DestroyWindow(window);
@@ -43,7 +43,7 @@ KN_API void UI_Shutdown(void)
 /**
  * Parses events off of the SDL event queue.
  */
-KN_API void UI_ProcessWindowEvents(void)
+void UI_ProcessWindowEvents(void)
 {
 	SDL_Event event;
 	bool mouseMoved = false;
@@ -77,7 +77,7 @@ KN_API void UI_ProcessWindowEvents(void)
 	}
 }
 
-KN_API Input* UI_InputPoll(void)
+Input* UI_InputPoll(void)
 {
 	// TODO: Not the preferred the way to do this since it doesn't indicate
 	// how long the pointer lasts;

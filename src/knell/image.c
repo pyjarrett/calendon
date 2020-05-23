@@ -9,7 +9,7 @@
 
 extern LogHandle LogSysAssets;
 
-KN_API void ImageRGBA8_Flip(ImageRGBA8* image)
+void ImageRGBA8_Flip(ImageRGBA8* image)
 {
 	KN_ASSERT(image != NULL, "Cannot load flip a null image.");
 	KN_ASSERT(image->pixels.size > 0, "No pixels to flip.");
@@ -54,7 +54,7 @@ KN_API void ImageRGBA8_Flip(ImageRGBA8* image)
  *
  * @todo support image types other than RGBA8.
  */
-KN_API bool ImageRGBA8_Allocate(ImageRGBA8* image, const char* fileName)
+bool ImageRGBA8_Allocate(ImageRGBA8* image, const char* fileName)
 {
 	KN_ASSERT(image != NULL, "Cannot load data into a null image.");
 	KN_ASSERT(fileName != NULL, "Cannot load an image with a null file name.");
@@ -96,7 +96,7 @@ KN_API bool ImageRGBA8_Allocate(ImageRGBA8* image, const char* fileName)
 	return true;
 }
 
-KN_API bool ImageRGBA8_AllocateSized(ImageRGBA8* image, Dimension2u32 size)
+bool ImageRGBA8_AllocateSized(ImageRGBA8* image, Dimension2u32 size)
 {
 	KN_ASSERT(image != NULL, "Cannot allocate a null ImageRGBA8.");
 	KN_ASSERT(size.width > 0 && size.height > 0, "ImageRGBA8 must have non-zero size %"
@@ -108,13 +108,13 @@ KN_API bool ImageRGBA8_AllocateSized(ImageRGBA8* image, Dimension2u32 size)
 	return true;
 }
 
-KN_API void ImageRGBA8_Free(ImageRGBA8* image)
+void ImageRGBA8_Free(ImageRGBA8* image)
 {
 	KN_ASSERT(image != NULL, "Cannot load data into a null image.");
 	Mem_Free(&image->pixels);
 }
 
-KN_API void ImageRGBA8_ClearRGBA(ImageRGBA8* image, uint8_t r, uint8_t b, uint8_t g, uint8_t a)
+void ImageRGBA8_ClearRGBA(ImageRGBA8* image, uint8_t r, uint8_t b, uint8_t g, uint8_t a)
 {
 	KN_ASSERT(image != NULL, "Cannot clear a null image.");
 
@@ -125,7 +125,7 @@ KN_API void ImageRGBA8_ClearRGBA(ImageRGBA8* image, uint8_t r, uint8_t b, uint8_
 	}
 }
 
-KN_API uint32_t ImageRGBA8_GetPixelRowCol(ImageRGBA8* image, RowColu32 rowCol)
+uint32_t ImageRGBA8_GetPixelRowCol(ImageRGBA8* image, RowColu32 rowCol)
 {
 	KN_ASSERT(image != NULL, "Cannot get pixels from a null image.");
 	uint32_t* pixels = (uint32_t*)image->pixels.contents;
@@ -134,7 +134,7 @@ KN_API uint32_t ImageRGBA8_GetPixelRowCol(ImageRGBA8* image, RowColu32 rowCol)
 	return pixels[rowCol.col + rowCol.row * image->width];
 }
 
-KN_API void ImageRGBA8_SetPixelRowCol(ImageRGBA8* image, RowColu32 rowCol, uint32_t rgba)
+void ImageRGBA8_SetPixelRowCol(ImageRGBA8* image, RowColu32 rowCol, uint32_t rgba)
 {
 	KN_ASSERT(image != NULL, "Cannot set pixels in a null image.");
 	uint32_t* pixels = (uint32_t*)image->pixels.contents;

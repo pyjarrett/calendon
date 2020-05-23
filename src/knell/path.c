@@ -47,7 +47,7 @@ bool Path_IsFile(const char* path)
 #endif
 }
 
-KN_API bool Path_Append(const char* toAdd, char* current, uint32_t length)
+bool Path_Append(const char* toAdd, char* current, uint32_t length)
 {
 	const size_t currentLength = strlen(current);
 	const size_t finalLength = currentLength + strlen(toAdd) + 1 + 1;
@@ -59,13 +59,13 @@ KN_API bool Path_Append(const char* toAdd, char* current, uint32_t length)
 	return true;
 }
 
-KN_API void PathBuffer_Clear(PathBuffer* path)
+void PathBuffer_Clear(PathBuffer* path)
 {
 	KN_ASSERT(path != NULL, "Cannot clear a null PathBuffer.");
 	memset(path->str, 0, KN_PATH_MAX + 1);
 }
 
-KN_API bool PathBuffer_Set(PathBuffer* path, const char* initialPath)
+bool PathBuffer_Set(PathBuffer* path, const char* initialPath)
 {
 	KN_ASSERT(path != NULL, "Cannot assign to a null PathBuffer");
 	KN_ASSERT(initialPath != NULL, "Cannot assign a null initial path to a PathBuffer");
@@ -77,7 +77,7 @@ KN_API bool PathBuffer_Set(PathBuffer* path, const char* initialPath)
 	return false;
 }
 
-KN_API bool PathBuffer_Join(PathBuffer* root, const char* suffix)
+bool PathBuffer_Join(PathBuffer* root, const char* suffix)
 {
 	KN_ASSERT(root != NULL, "Cannot append to a null root path");
 	KN_ASSERT(suffix != NULL, "Trying to append a null path");

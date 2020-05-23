@@ -10,7 +10,7 @@
 
 // Adapted from sample code at:
 // https://docs.microsoft.com/en-us/windows/win32/psapi/enumerating-all-modules-for-a-process?redirectedfrom=MSDN
-KN_API bool Proc_PrintLoadedDLLs(void)
+bool Proc_PrintLoadedDLLs(void)
 {
 	DWORD processID = GetCurrentProcessId();
 	HANDLE hProcess;

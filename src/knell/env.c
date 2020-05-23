@@ -6,7 +6,7 @@
 	#include <unistd.h>
 #endif
 
-KN_API bool Env_CurrentWorkingDirectory(char* buffer, uint32_t bufferSize)
+bool Env_CurrentWorkingDirectory(char* buffer, uint32_t bufferSize)
 {
 	KN_ASSERT(buffer, "Must provide buffer to get current working directory");
 #ifdef _WIN32
@@ -17,7 +17,7 @@ KN_API bool Env_CurrentWorkingDirectory(char* buffer, uint32_t bufferSize)
 #endif
 }
 
-KN_API bool Env_DefaultKnellHome(PathBuffer* buffer)
+bool Env_DefaultKnellHome(PathBuffer* buffer)
 {
     KN_ASSERT(buffer, "Cannot write the default Knell home to a null PathBuffer.");
 
