@@ -6,9 +6,14 @@
 Welcome to Knell's documentation!
 =================================
 
+Hello, world!
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+
+   project/conventions
+   project/setup
 
 
 Indices and tables
@@ -17,9 +22,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
-
-Docs
-====
-
-.. doxygenindex::

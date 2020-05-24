@@ -3,6 +3,7 @@ File conversions to support multiplatforms.
 """
 
 import os
+import subprocess
 import sys
 
 
@@ -43,3 +44,11 @@ def shared_lib_to_root(shared_lib: str):
         raise ValueError(f'Shared lib does not match "lib*.so"')
 
     return shared_lib[3:-3]
+
+
+def file_opener() -> str:
+    return {'linux': 'xdg-open', 'win32': 'start' }[sys.platform]
+
+
+def open_file(filename: str):
+    subprocess.Popen([file_opener(), filename], shell=True)

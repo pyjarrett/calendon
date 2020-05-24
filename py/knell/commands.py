@@ -146,23 +146,32 @@ def cmd_build(ctx: ProjectContext, args: argparse.Namespace) -> int:
 
 def cmd_doc(ctx: ProjectContext, args: argparse.Namespace) -> int:
     """Generate local project documentation."""
-    if not _verify_executable_exists(ctx, 'doxygen'):
-        return 1
-
     if not _verify_executable_exists(ctx, 'sphinx-build'):
         return 1
 
-    doxygen_args: List[str] = [ctx.path_for_program('doxygen'),
-                               os.path.join(ctx.knell_home(), 'Doxyfile')]
-    exit_code: int = run_program(doxygen_args, cwd=(ctx.knell_home()))
-    if exit_code != 0:
-        return exit_code
+    if args.doxygen:
+        if not _verify_executable_exists(ctx, 'doxygen'):
+            return 1
+
+        doxygen_args: List[str] = [ctx.path_for_program('doxygen'),
+                                   os.path.join(ctx.knell_home(), 'Doxyfile')]
+        exit_code: int = run_program(doxygen_args, cwd=(ctx.knell_home()))
+        if exit_code != 0:
+            return exit_code
 
     source_dir: str = os.path.join(ctx.sphinx_dir(), 'source')
     build_dir: str = 'build'
     sphinx_args: List[str] = [ctx.path_for_program('sphinx-build'),
                               '-M', 'html', source_dir, build_dir]
-    return run_program(sphinx_args, cwd=ctx.sphinx_dir())
+    exit_code: int = run_program(sphinx_args, cwd=ctx.sphinx_dir())
+    if exit_code != 0:
+        return exit_code
+
+    if args.no_open:
+        return exit_code
+
+    index: str = os.path.join(ctx.sphinx_dir(), 'build', 'html', 'index.html')
+    return mp.open_file(index)
 
 
 def cmd_check(ctx: ProjectContext, args: argparse.Namespace) -> int:

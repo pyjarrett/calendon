@@ -116,6 +116,12 @@ def parser_build(parser) -> argparse.ArgumentParser:
 
 
 def parser_doc(parser) -> argparse.ArgumentParser:
+    parser.add_argument('--doxygen',
+                        action='store_true',
+                        help='Regenerate doxygen docs')
+    parser.add_argument('--no-open',
+                        action='store_true',
+                        help='Do not open after generation')
     return parser
 
 

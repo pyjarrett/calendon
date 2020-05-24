@@ -8,12 +8,14 @@ tags
 .idea
 .vs
 .rcbuild
+.vscode/
 
 # Temporary files
 *.swp
 src/post_build_dummy.h
 
 docs/generated/
+docs/build/
 __pycache__/
 venv/
 .mypy_cache/
