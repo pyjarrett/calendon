@@ -1,4 +1,4 @@
-#include "tick_limits.h"
+#include "tick-limits.h"
 
 /**
  * The number of ticks the driver should run.

@@ -7,13 +7,13 @@
 static uint32_t MemOutstandingAllocations;
 static uint32_t LogSysMemory;
 
-KN_API void Mem_Init(void)
+void Mem_Init(void)
 {
 	MemOutstandingAllocations = 0;
 	Log_RegisterSystem(&LogSysMemory, "Memory", KN_LOG_TRACE);
 }
 
-KN_API void Mem_Allocate(DynamicBuffer* buffer, uint32_t size)
+void Mem_Allocate(DynamicBuffer* buffer, uint32_t size)
 {
 	if (!buffer) {
 		KN_ERROR(LogSysMemory, "Cannot allocate for a null DynamicBuffer");
@@ -33,7 +33,7 @@ KN_API void Mem_Allocate(DynamicBuffer* buffer, uint32_t size)
 	++MemOutstandingAllocations;
 }
 
-KN_API void Mem_Free(DynamicBuffer* buffer)
+void Mem_Free(DynamicBuffer* buffer)
 {
 	if (!buffer) {
 		KN_ERROR(LogSysMemory, "Cannot release a null DynamicBuffer.");
@@ -51,7 +51,7 @@ KN_API void Mem_Free(DynamicBuffer* buffer)
 	}
 }
 
-KN_API void Mem_Shutdown(void)
+void Mem_Shutdown(void)
 {
 	if (MemOutstandingAllocations != 0) {
 		//KN_ERROR(LogSysMemory, "Memory systems leaks: %" PRIu32, MemOutstandingAllocations);

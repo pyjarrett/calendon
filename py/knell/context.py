@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import dataclasses
 import json
 import os
+import sys
 from typing import Dict, List, Optional
 
 from knell.multiplatform import root_to_executable
@@ -116,6 +117,16 @@ class ProjectContext:
 
     def venv_dir(self) -> str:
         return os.path.abspath(os.path.join(self._knell_home, 'venv'))
+
+    def venv_bin_dir(self) -> str:
+        if sys.platform == 'win32':
+            subdir = 'Scripts'
+        else:
+            subdir = 'bin'
+        return os.path.join(os.path.join(self.venv_dir(), subdir))
+
+    def sphinx_dir(self) -> str:
+        return os.path.join(self._knell_home, 'docs')
 
     def driver_path(self) -> str:
         """The path to the driver executable, when built."""

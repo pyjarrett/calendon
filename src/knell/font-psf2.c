@@ -182,7 +182,7 @@ static void Font_PSF2ReadAndAllocateTextureAtlas(const PSF2Header* header, Textu
  * - How many glyphs are in a string?
  * - What is the width and height of a given string?
  */
-KN_API bool Font_PSF2Allocate(FontPSF2* font, const char* path)
+bool Font_PSF2Allocate(FontPSF2* font, const char* path)
 {
 	DynamicBuffer fileBuffer;
 	if (!Assets_ReadFile(path, KN_FILE_TYPE_BINARY, &fileBuffer)) {
@@ -227,7 +227,7 @@ KN_API bool Font_PSF2Allocate(FontPSF2* font, const char* path)
 	return true;
 }
 
-KN_API void Font_PSF2Free(FontPSF2* font)
+void Font_PSF2Free(FontPSF2* font)
 {
 	KN_ASSERT(font != NULL, "Cannot free a null PSF2 font.");
 	TextureAtlas_Free(&font->atlas);

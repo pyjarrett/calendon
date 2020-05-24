@@ -14,7 +14,7 @@ static uint32_t assetsRootLength = 0;
 LogHandle LogSysAssets;
 static bool assetsInitialized = false;
 
-KN_API bool Assets_IsReady(void)
+bool Assets_IsReady(void)
 {
 	return assetsInitialized;
 }
@@ -23,7 +23,7 @@ KN_API bool Assets_IsReady(void)
  * Initial the asset system with the top level directory where assets should
  * be found.
  */
-KN_API void Assets_Init(const char* assetDir)
+void Assets_Init(const char* assetDir)
 {
 	if (Assets_IsReady()) {
 		KN_FATAL_ERROR("Double initialization of assets system.");
@@ -46,7 +46,7 @@ KN_API void Assets_Init(const char* assetDir)
 	assetsInitialized = true;
 }
 
-KN_API void Assets_Shutdown(void)
+void Assets_Shutdown(void)
 {
 	KN_ASSERT(Assets_IsReady(), "Cannot shutdown assets system, is not initialized.");
 	assetsInitialized = false;
@@ -56,7 +56,7 @@ KN_API void Assets_Shutdown(void)
 /**
  * Gets the path for accessing a specific resource within the assets system.
  */
-KN_API bool Assets_PathFor(const char* assetName, char* buffer, uint32_t bufferSize)
+bool Assets_PathFor(const char* assetName, char* buffer, uint32_t bufferSize)
 {
 	KN_WARN_DEPRECATED("Use PathBuffer* functions instead");
 	if (assetsRootLength == 0) {
@@ -78,7 +78,7 @@ KN_API bool Assets_PathFor(const char* assetName, char* buffer, uint32_t bufferS
 	return true;
 }
 
-KN_API bool Assets_PathBufferFor(const char* assetName, PathBuffer* path)
+bool Assets_PathBufferFor(const char* assetName, PathBuffer* path)
 {
 	if (assetsRootLength == 0) {
 		KN_ERROR(LogSysAssets, "Asset system not initialized, cannot get path for %s", assetName);

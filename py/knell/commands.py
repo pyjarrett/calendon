@@ -1,15 +1,16 @@
 import argparse
+import glob
 import json
 import multiprocessing
 import os
 import re
 import shutil
 import sys
-from typing import Optional
+from typing import List, Optional
 
 from knell.cmake import generator_settings_for_compiler
 from knell.context import ProjectContext
-from knell.multiplatform import root_to_shared_lib, root_to_executable
+import knell.multiplatform as mp
 from knell.run import run_program
 
 
@@ -143,6 +144,36 @@ def cmd_build(ctx: ProjectContext, args: argparse.Namespace) -> int:
         return run_program(cmake_args, cwd=(ctx.build_dir()))
 
 
+def cmd_doc(ctx: ProjectContext, args: argparse.Namespace) -> int:
+    """Generate local project documentation."""
+    if not _verify_executable_exists(ctx, 'sphinx-build'):
+        return 1
+
+    if args.doxygen:
+        if not _verify_executable_exists(ctx, 'doxygen'):
+            return 1
+
+        doxygen_args: List[str] = [ctx.path_for_program('doxygen'),
+                                   os.path.join(ctx.knell_home(), 'Doxyfile')]
+        exit_code: int = run_program(doxygen_args, cwd=(ctx.knell_home()))
+        if exit_code != 0:
+            return exit_code
+
+    source_dir: str = os.path.join(ctx.sphinx_dir(), 'source')
+    build_dir: str = 'build'
+    sphinx_args: List[str] = [ctx.path_for_program('sphinx-build'),
+                              '-M', 'html', source_dir, build_dir]
+    exit_code: int = run_program(sphinx_args, cwd=ctx.sphinx_dir())
+    if exit_code != 0:
+        return exit_code
+
+    if args.no_open:
+        return exit_code
+
+    index: str = os.path.join(ctx.sphinx_dir(), 'build', 'html', 'index.html')
+    return mp.open_file(index)
+
+
 def cmd_check(ctx: ProjectContext, args: argparse.Namespace) -> int:
     if not _verify_executable_exists(ctx, 'cmake'):
         return 1
@@ -165,7 +196,13 @@ def cmd_check(ctx: ProjectContext, args: argparse.Namespace) -> int:
 
 
 def cmd_demo(ctx: ProjectContext, args: argparse.Namespace) -> int:
-    return 1
+    """Prints all currently build demos which can be run."""
+    print('Demos:')
+    demo_glob: str = os.path.join(ctx.demo_dir(), mp.shared_lib_glob())
+    for demo_shared_lib in glob.glob(demo_glob):
+        demo_name = mp.shared_lib_to_root(os.path.basename(demo_shared_lib))
+        print(demo_name)
+    return 0
 
 
 def cmd_run(ctx: ProjectContext, args: argparse.Namespace) -> int:
@@ -174,7 +211,7 @@ def cmd_run(ctx: ProjectContext, args: argparse.Namespace) -> int:
     # Ensure an up-to-date build.
     cmd_build(ovr_ctx, args)
 
-    ovr_ctx.set_game(os.path.join(ctx.demo_dir(), root_to_shared_lib(args.demo)))
+    ovr_ctx.set_game(os.path.join(ctx.demo_dir(), mp.root_to_shared_lib(args.demo)))
     return ovr_ctx.run_driver()
 
 
@@ -292,11 +329,8 @@ def cmd_pysetup(ctx: ProjectContext, args: argparse.Namespace) -> int:
         if venv_setup != 0:
             print(f'Could not create virtual environment at {ctx.venv_dir()}')
             return venv_setup
-        if sys.platform == 'win32':
-            subdir = 'Scripts'
-        else:
-            subdir = 'bin'
-        ctx.register_program('localpython3', os.path.join(ctx.venv_dir(), subdir, root_to_executable('python')),
+        ctx.register_program('localpython3', os.path.join(ctx.venv_bin_dir(),
+                                                          mp.root_to_executable('python')),
                              override=True)
 
     pip_upgrade_result = run_program(
@@ -309,8 +343,10 @@ def cmd_pysetup(ctx: ProjectContext, args: argparse.Namespace) -> int:
         pip_install_args = [ctx.path_for_program('localpython3'), '-m', 'pip', 'install', '-r', requirements_file]
     else:
         required_dev_packages = ['mypy', 'pylint', 'pydocstyle', 'pycodestyle', 'bandit', 'colorama']
+        required_dev_packages.extend(['sphinx', 'sphinx_rtd_theme', 'breathe'])
         pip_install_args = [ctx.path_for_program('localpython3'), '-m', 'pip', 'install']
         pip_install_args.extend(required_dev_packages)
+    ctx.register_program('sphinx-build', os.path.join(ctx.venv_bin_dir(), mp.root_to_executable('sphinx-build')))
     return run_program(pip_install_args, cwd=ctx.knell_home())
 
 

@@ -33,6 +33,7 @@ class CrankCommand:
 COMMANDS_DESCRIPTION = [('clean', 'Remove build directories.'),
                         ('gen', 'Generate build types.'),
                         ('build', 'Do a build.'),
+                        ('doc', 'Generate project documentation.'),
                         ('check', 'Run tests.'),
                         ('demo', 'Sets the default demo to run.'),
                         ('run', 'Run a program with the driver.'),

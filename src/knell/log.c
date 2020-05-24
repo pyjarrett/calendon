@@ -9,12 +9,12 @@ KN_API const char* LogSystemsRegistered[KN_LOG_MAX_SYSTEMS];
 KN_API uint32_t LogSystemsNumRegistered;
 KN_API LogHandle LogSysMain;
 
-KN_API bool Log_IsReady(void)
+bool Log_IsReady(void)
 {
 	return initialized;
 }
 
-KN_API void Log_Init(void)
+void Log_Init(void)
 {
 #if _WIN32
 	// Enable UTF-8 output on Windows.
@@ -39,7 +39,7 @@ KN_API void Log_Init(void)
 	KN_TRACE(LogSysMain, "Log system initialized.");
 }
 
-KN_API void Log_Shutdown(void)
+void Log_Shutdown(void)
 {
 	KN_ASSERT(Log_IsReady(), "Cannot shutdown log system, it was never initialized.");
 	for (uint32_t i = 0; i < LogSystemsNumRegistered; ++i) {
@@ -55,7 +55,7 @@ KN_API void Log_Shutdown(void)
  *
  * Assumes "name" is somewhere where it doesn't need dynamic allocation.
  */
-KN_API void Log_RegisterSystem(uint32_t* system, const char* name, uint32_t verbosity)
+void Log_RegisterSystem(uint32_t* system, const char* name, uint32_t verbosity)
 {
 	if (!Log_IsReady()) {
 		KN_FATAL_ERROR("Log system not initialized, cannot register any systems.");
