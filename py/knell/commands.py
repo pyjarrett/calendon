@@ -144,6 +144,16 @@ def cmd_build(ctx: ProjectContext, args: argparse.Namespace) -> int:
         return run_program(cmake_args, cwd=(ctx.build_dir()))
 
 
+def cmd_doc(ctx: ProjectContext, args: argparse.Namespace) -> int:
+    """Generate local project documentation."""
+    if not _verify_executable_exists(ctx, 'doxygen'):
+        return 1
+
+    doxygen_args = [ctx.path_for_program('doxygen'),
+                    os.path.join(ctx.knell_home(), 'Doxyfile')]
+    return run_program(doxygen_args, cwd=(ctx.knell_home()))
+
+
 def cmd_check(ctx: ProjectContext, args: argparse.Namespace) -> int:
     if not _verify_executable_exists(ctx, 'cmake'):
         return 1
@@ -316,7 +326,6 @@ def cmd_pysetup(ctx: ProjectContext, args: argparse.Namespace) -> int:
         pip_install_args = [ctx.path_for_program('localpython3'), '-m', 'pip', 'install', '-r', requirements_file]
     else:
         required_dev_packages = ['mypy', 'pylint', 'pydocstyle', 'pycodestyle', 'bandit', 'colorama']
-        required_dev_packages.extend(['sphinx', 'sphinx_rtd_theme', 'breathe'])
         pip_install_args = [ctx.path_for_program('localpython3'), '-m', 'pip', 'install']
         pip_install_args.extend(required_dev_packages)
     return run_program(pip_install_args, cwd=ctx.knell_home())

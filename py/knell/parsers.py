@@ -115,6 +115,10 @@ def parser_build(parser) -> argparse.ArgumentParser:
     return parser
 
 
+def parser_doc(parser) -> argparse.ArgumentParser:
+    return parser
+
+
 def parser_check(parser) -> argparse.ArgumentParser:
     parser_add_general_args(parser)
     parser_add_build_config(parser)
