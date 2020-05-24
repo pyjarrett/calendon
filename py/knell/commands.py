@@ -316,6 +316,7 @@ def cmd_pysetup(ctx: ProjectContext, args: argparse.Namespace) -> int:
         pip_install_args = [ctx.path_for_program('localpython3'), '-m', 'pip', 'install', '-r', requirements_file]
     else:
         required_dev_packages = ['mypy', 'pylint', 'pydocstyle', 'pycodestyle', 'bandit', 'colorama']
+        required_dev_packages.extend(['sphinx', 'sphinx_rtd_theme', 'breathe'])
         pip_install_args = [ctx.path_for_program('localpython3'), '-m', 'pip', 'install']
         pip_install_args.extend(required_dev_packages)
     return run_program(pip_install_args, cwd=ctx.knell_home())
