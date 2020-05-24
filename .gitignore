@@ -13,6 +13,7 @@ tags
 *.swp
 src/post_build_dummy.h
 
+docs/generated/
 __pycache__/
 venv/
 .mypy_cache/

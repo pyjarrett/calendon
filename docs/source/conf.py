@@ -30,7 +30,7 @@ author = 'Paul Jarrett'
 extensions = [ "breathe" ]
 
 # Breathe Configuration
-breathe_projects = { "Knell": "C:/workshop/knell/docs/generated/xml/"}
+breathe_projects = { "Knell": "../generated/xml/"}
 breathe_default_project = "Knell"
 
 # Add any paths that contain templates here, relative to this directory.

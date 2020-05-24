@@ -6,7 +6,7 @@ import os
 import re
 import shutil
 import sys
-from typing import Optional
+from typing import List, Optional
 
 from knell.cmake import generator_settings_for_compiler
 from knell.context import ProjectContext
@@ -149,9 +149,20 @@ def cmd_doc(ctx: ProjectContext, args: argparse.Namespace) -> int:
     if not _verify_executable_exists(ctx, 'doxygen'):
         return 1
 
-    doxygen_args = [ctx.path_for_program('doxygen'),
-                    os.path.join(ctx.knell_home(), 'Doxyfile')]
-    return run_program(doxygen_args, cwd=(ctx.knell_home()))
+    if not _verify_executable_exists(ctx, 'sphinx-build'):
+        return 1
+
+    doxygen_args: List[str] = [ctx.path_for_program('doxygen'),
+                               os.path.join(ctx.knell_home(), 'Doxyfile')]
+    exit_code: int = run_program(doxygen_args, cwd=(ctx.knell_home()))
+    if exit_code != 0:
+        return exit_code
+
+    source_dir: str = os.path.join(ctx.sphinx_dir(), 'source')
+    build_dir: str = 'build'
+    sphinx_args: List[str] = [ctx.path_for_program('sphinx-build'),
+                              '-M', 'html', source_dir, build_dir]
+    return run_program(sphinx_args, cwd=ctx.sphinx_dir())
 
 
 def cmd_check(ctx: ProjectContext, args: argparse.Namespace) -> int:
@@ -309,11 +320,8 @@ def cmd_pysetup(ctx: ProjectContext, args: argparse.Namespace) -> int:
         if venv_setup != 0:
             print(f'Could not create virtual environment at {ctx.venv_dir()}')
             return venv_setup
-        if sys.platform == 'win32':
-            subdir = 'Scripts'
-        else:
-            subdir = 'bin'
-        ctx.register_program('localpython3', os.path.join(ctx.venv_dir(), subdir, mp.root_to_executable('python')),
+        ctx.register_program('localpython3', os.path.join(ctx.venv_bin_dir(),
+                                                          mp.root_to_executable('python')),
                              override=True)
 
     pip_upgrade_result = run_program(
@@ -326,8 +334,10 @@ def cmd_pysetup(ctx: ProjectContext, args: argparse.Namespace) -> int:
         pip_install_args = [ctx.path_for_program('localpython3'), '-m', 'pip', 'install', '-r', requirements_file]
     else:
         required_dev_packages = ['mypy', 'pylint', 'pydocstyle', 'pycodestyle', 'bandit', 'colorama']
+        required_dev_packages.extend(['sphinx', 'sphinx_rtd_theme', 'breathe'])
         pip_install_args = [ctx.path_for_program('localpython3'), '-m', 'pip', 'install']
         pip_install_args.extend(required_dev_packages)
+    ctx.register_program('sphinx-build', os.path.join(ctx.venv_bin_dir(), mp.root_to_executable('sphinx-build')))
     return run_program(pip_install_args, cwd=ctx.knell_home())
 
 
