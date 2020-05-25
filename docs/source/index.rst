@@ -12,8 +12,9 @@ Hello, world!
    :maxdepth: 2
    :caption: Contents:
 
-   project/conventions
    project/setup
+   project/conventions
+   project/crank
 
 
 Indices and tables
