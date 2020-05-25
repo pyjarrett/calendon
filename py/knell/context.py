@@ -117,6 +117,13 @@ class ProjectContext:
     def build_dir(self) -> str:
         return os.path.abspath(os.path.join(self._knell_home, self._build_flavor.build_dir))
 
+    def export_dir(self) -> str:
+        return os.path.join(self.build_dir(), 'exported', 'knell')
+
+    def source_dir(self) -> str:
+        """The primary directory for Knell library source."""
+        return os.path.abspath(os.path.join(self._knell_home, 'src', 'knell'))
+
     def demo_dir(self) -> str:
         """Absolute directory path for where demos are stored."""
         return os.path.join(self.build_dir(), 'demos')

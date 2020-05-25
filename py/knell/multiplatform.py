@@ -15,6 +15,14 @@ def shared_lib_glob():
     return 'lib*.so'
 
 
+def static_lib_glob():
+    """Produce a glob suitable for identifying static libraries."""
+    if sys.platform == 'win32':
+        return '*.lib'
+
+    return '*.a'
+
+
 def root_to_executable(named):
     """Produce an executable file name from the generic basename."""
     if sys.platform == 'win32':

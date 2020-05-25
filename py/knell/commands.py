@@ -205,6 +205,28 @@ def cmd_demo(ctx: ProjectContext, _args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_export(ctx: ProjectContext, _args: argparse.Namespace) -> int:
+    """Exports the currently built shared libraries and headers."""
+    export_dir: str = ctx.export_dir()
+    header_dir: str = os.path.join(ctx.export_dir(), 'knell')
+    base_dir: str = ctx.source_dir()
+
+    if os.path.isdir(export_dir):
+        print(f'Removing export directory: {export_dir}')
+        shutil.rmtree(export_dir)
+
+    shutil.copytree(base_dir, header_dir, ignore=shutil.ignore_patterns('*.c', 'CMakeLists.txt'))
+
+    libraries = glob.glob(os.path.join(ctx.build_dir(), mp.shared_lib_glob()))
+    libraries.extend(glob.glob(os.path.join(ctx.build_dir(), mp.static_lib_glob())))
+    for lib in libraries:
+        exported_lib: str = os.path.basename(lib)
+        shutil.copyfile(lib, os.path.join(export_dir, exported_lib))
+
+    print(f'Exported Knell to: {export_dir}')
+    return 0
+
+
 def cmd_run(ctx: ProjectContext, args: argparse.Namespace) -> int:
     ovr_ctx = ctx.copy_with_overrides(vars(args))
 
