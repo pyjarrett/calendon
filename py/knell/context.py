@@ -1,3 +1,12 @@
+"""
+The project provides a long-term environment to run commands and scripts.
+
+This includes the build flavor: where a build output is targeted, the build
+config and the compiler.
+
+The run flavor: parameters to feed the driver, such as the asset directory,
+the number of ticks to do, and the payload (game or demo) to run.
+"""
 from __future__ import annotations  # See PEP 484 and PEP 563.
 import copy
 from dataclasses import dataclass
@@ -185,6 +194,7 @@ class ProjectContext:
         return False
 
     def clear_default(self, name) -> bool:
+        """Clears a defaulted value."""
         if name == 'compiler':
             self._build_flavor.compiler = None
             return True

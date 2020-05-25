@@ -41,14 +41,16 @@ def shared_lib_to_root(shared_lib: str):
         return os.path.splitext(shared_lib)[0]
 
     if not shared_lib.startswith('lib') or shared_lib.endswith('.so'):
-        raise ValueError(f'Shared lib does not match "lib*.so"')
+        raise ValueError('Shared lib does not match "lib*.so"')
 
     return shared_lib[3:-3]
 
 
 def file_opener() -> str:
-    return {'linux': 'xdg-open', 'win32': 'start' }[sys.platform]
+    """The shell program to use to open a file with the default program."""
+    return {'linux': 'xdg-open', 'win32': 'start'}[sys.platform]
 
 
 def open_file(filename: str):
+    """Opens a file using a default program."""
     subprocess.Popen([file_opener(), filename], shell=True)

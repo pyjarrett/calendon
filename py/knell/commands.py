@@ -21,7 +21,7 @@ def py_files():
 def _verify_executable_exists(ctx: ProjectContext, alias: Optional[str]) -> bool:
     """Return true if an alias maps to a file in a context and provide user messaging."""
     if alias is None:
-        print(f'Cannot find an executable for a null alias.')
+        print('Cannot find an executable for a null alias.')
         return False
 
     if not ctx.has_registered_program(alias):
@@ -70,7 +70,7 @@ def cmd_clean(ctx: ProjectContext, args: argparse.Namespace) -> int:
         return 1
 
     if args.dry_run:
-        print(f'Dry run')
+        print('Dry run')
         print(f'Would have removed: {build_dir}')
     else:
         print(f'Removing: {build_dir}')
@@ -121,8 +121,8 @@ def cmd_gen(ctx: ProjectContext, args: argparse.Namespace) -> int:
     if args.dry_run:
         print(f'Would have run {cmake_args} in {build_dir}')
         return 0
-    else:
-        return run_program(cmake_args, cwd=build_dir)
+
+    return run_program(cmake_args, cwd=build_dir)
 
 
 def cmd_build(ctx: ProjectContext, args: argparse.Namespace) -> int:
@@ -140,8 +140,8 @@ def cmd_build(ctx: ProjectContext, args: argparse.Namespace) -> int:
     if args.dry_run:
         print(f'Would have run {cmake_args} in {ctx.build_dir()}')
         return 0
-    else:
-        return run_program(cmake_args, cwd=(ctx.build_dir()))
+
+    return run_program(cmake_args, cwd=(ctx.build_dir()))
 
 
 def cmd_doc(ctx: ProjectContext, args: argparse.Namespace) -> int:
@@ -155,20 +155,20 @@ def cmd_doc(ctx: ProjectContext, args: argparse.Namespace) -> int:
 
         doxygen_args: List[str] = [ctx.path_for_program('doxygen'),
                                    os.path.join(ctx.knell_home(), 'Doxyfile')]
-        exit_code: int = run_program(doxygen_args, cwd=(ctx.knell_home()))
-        if exit_code != 0:
-            return exit_code
+        doxygen_exit_code: int = run_program(doxygen_args, cwd=(ctx.knell_home()))
+        if doxygen_exit_code != 0:
+            return doxygen_exit_code
 
     source_dir: str = os.path.join(ctx.sphinx_dir(), 'source')
     build_dir: str = 'build'
     sphinx_args: List[str] = [ctx.path_for_program('sphinx-build'),
                               '-M', 'html', source_dir, build_dir]
-    exit_code: int = run_program(sphinx_args, cwd=ctx.sphinx_dir())
-    if exit_code != 0:
-        return exit_code
+    sphinx_exit_code: int = run_program(sphinx_args, cwd=ctx.sphinx_dir())
+    if sphinx_exit_code != 0:
+        return sphinx_exit_code
 
     if args.no_open:
-        return exit_code
+        return sphinx_exit_code
 
     index: str = os.path.join(ctx.sphinx_dir(), 'build', 'html', 'index.html')
     return mp.open_file(index)
@@ -195,7 +195,7 @@ def cmd_check(ctx: ProjectContext, args: argparse.Namespace) -> int:
         return run_program(cmake_args, cwd=(ctx.build_dir()))
 
 
-def cmd_demo(ctx: ProjectContext, args: argparse.Namespace) -> int:
+def cmd_demo(ctx: ProjectContext, _args: argparse.Namespace) -> int:
     """Prints all currently build demos which can be run."""
     print('Demos:')
     demo_glob: str = os.path.join(ctx.demo_dir(), mp.shared_lib_glob())
@@ -334,7 +334,8 @@ def cmd_pysetup(ctx: ProjectContext, args: argparse.Namespace) -> int:
                              override=True)
 
     pip_upgrade_result = run_program(
-        [(ctx.path_for_program('localpython3')), '-m', 'pip', 'install', '--upgrade', 'pip', 'setuptools', 'wheel'], cwd=ctx.knell_home())
+        [(ctx.path_for_program('localpython3')), '-m', 'pip', 'install',
+         '--upgrade', 'pip', 'setuptools', 'wheel'], cwd=ctx.knell_home())
     if pip_upgrade_result != 0:
         print('Could not upgrade pip.')
 
@@ -378,14 +379,14 @@ def cmd_pycheck(ctx: ProjectContext, args: argparse.Namespace) -> int:
     return failures
 
 
-def cmd_source(ctx: ProjectContext, args: argparse.Namespace) -> int:
+def cmd_source(_ctx: ProjectContext, _args: argparse.Namespace) -> int:
     return 1
 
 
-def cmd_save(ctx: ProjectContext, args: argparse.Namespace) -> int:
+def cmd_save(ctx: ProjectContext, _args: argparse.Namespace) -> int:
     ctx.save()
     return 0
 
 
-def cmd_load(ctx: ProjectContext, args: argparse.Namespace) -> int:
+def cmd_load(_ctx: ProjectContext, _args: argparse.Namespace) -> int:
     return 1
