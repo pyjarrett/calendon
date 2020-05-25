@@ -1,6 +1,9 @@
 #pragma once
 
 /**
+ * @file test.h
+ * @addtogroup KnellTest
+ *
  * A very simple test framework for Knell.
  *
  * # Intent
@@ -36,7 +39,18 @@
  * `knell-testable` target.  This allows normally hidden functions within
  * Knell to be tested, and also serves to document which functions cannot or are
  * not tested.  The `KN_API` and `KN_TEST_API` macros to annotate a
- * function are exclusive, annotating a function with most is an error.
+ * function are exclusive, annotating a function with both is an error.
+ *
+ * # Limits
+ *
+ * `KN_TEST_*` doesn't require test registration because every test within a
+ * suite does not actually generate a separate test function.  Unfortunately
+ * this precludes reordering tests within a suite, and allocating extremely
+ * large or numerous objects on the stack may cause warnings due to excessive
+ * stack usage.  However, the effects of this are reduced because every test
+ * suite resides in its own test executable.  When using declaring gigantic
+ * objects, mark them as `static` to keep them off the stack, or heap allocate
+ * them.
  */
 #include <knell/kn.h>
 #include <knell/float.h>
@@ -44,10 +58,17 @@
 #include <string.h>
 
 /**
- * Prevent pollution of the symbol space with local testing functions.
+ * An annotation to prevent pollution of the symbol space with local
+ * testing functions.
+ *
+ * @ingroup KnellTestDetails
  */
 #define KN_TEST_HARNESS_API static
 
+/**
+ * @addtogroup KnellTestDetails
+ * @{
+ */
 typedef struct {
 	const char* name;
 	uint32_t testsPassed, testsFailed;
@@ -123,7 +144,7 @@ KN_TEST_HARNESS_API void knTest_SuiteShutdown(knTestSuiteReport* r) {
 	knTest_SuitePrintResults(&suiteReport);
 }
 
-KN_TEST_HARNESS_API void knTest_SuiteAddCompletedUnit(knTestSuiteReport* r, knTestUnitReport* u) {
+ KN_TEST_HARNESS_API void knTest_SuiteAddCompletedUnit(knTestSuiteReport* r, knTestUnitReport* u) {
 	if (!r) abort();
 	if (!u) abort();
 	if (!u->name) abort();
@@ -147,7 +168,15 @@ KN_TEST_HARNESS_API void knTest_CleanUpPreviousUnit(knTestSuiteReport* r, knTest
 		knTest_SuiteAddCompletedUnit(r, u);
 	}
 }
+/**
+ * @}
+ */
+// group KnellTestDetails
 
+/**
+ * @addtogroup KnellTest
+ * @{
+ */
 #if _WIN32
 #define KN_TEST_SUITE_BEGIN(name) int main() { \
 	SetConsoleOutputCP(CP_UTF8); \
@@ -160,12 +189,21 @@ KN_TEST_HARNESS_API void knTest_CleanUpPreviousUnit(knTestSuiteReport* r, knTest
 	knTest_UnitInit(&unitReport, NULL); \
 	knTest_SuiteStart(&suiteReport, name);
 #endif
+/**
+ * @}
+ */
 
+/**
+ * @ingroup KnellTest
+ */
 #define KN_TEST_SUITE_END \
 	knTest_CleanUpPreviousUnit(&suiteReport, &unitReport); \
 	knTest_SuiteShutdown(&suiteReport); \
 	return suiteReport.testsFailed > 0 ? EXIT_FAILURE : EXIT_SUCCESS; }
 
+/**
+ * @ingroup KnellTest
+ */
 #define KN_TEST_UNIT(name) \
 	knTest_CleanUpPreviousUnit(&suiteReport, &unitReport); \
 	knTest_UnitStart(&unitReport, name); \
@@ -183,6 +221,9 @@ KN_TEST_HARNESS_API void knTest_CleanUpPreviousUnit(knTestSuiteReport* r, knTest
 #endif
 #include <knell/test-asserts.h>
 
+/**
+ * @ingroup KnellTest
+ */
 #define KN_TEST_PRECONDITION(fn) { \
 		knTest_ExpectingAssert = true; \
 		int assertionStatus = setjmp(knTest_AssertJumpBuffer); \
@@ -196,6 +237,10 @@ KN_TEST_HARNESS_API void knTest_CleanUpPreviousUnit(knTestSuiteReport* r, knTest
 		knTest_ExpectingAssert = false; \
 	}
 
+/**
+ * @addtogroup KnellTest
+ * @{
+ */
 #define KN_TEST_ASSERT_EQ_SIZE_T(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, size_t, "zu");
 #define KN_TEST_ASSERT_EQ_I8(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, int8_t, PRIi8)
 #define KN_TEST_ASSERT_EQ_I16(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, int16_t, PRIi16)
@@ -205,7 +250,15 @@ KN_TEST_HARNESS_API void knTest_CleanUpPreviousUnit(knTestSuiteReport* r, knTest
 #define KN_TEST_ASSERT_EQ_U16(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, uint16_t, PRIu16)
 #define KN_TEST_ASSERT_EQ_U32(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, uint32_t, PRIu32)
 #define KN_TEST_ASSERT_EQ_U64(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, uint64_t, PRIu64)
+/**
+ * @}
+ */
 
+/**
+ * This generic testing macro is not intended to be directly used.
+ *
+ * @ingroup KnellTestDetails
+ */
 #define KN_TEST_ASSERT_EQ_GENERIC(a, b, type, formatter) \
 	if (((type)(a)) != ((type)(b))) { \
 		knTest_UnitAssertFailed(&unitReport); \
@@ -214,6 +267,9 @@ KN_TEST_HARNESS_API void knTest_CleanUpPreviousUnit(knTestSuiteReport* r, knTest
 		break; \
 	}
 
+/**
+ * @ingroup KnellTest
+ */
 #define KN_TEST_ASSERT_CLOSE_F(a, b, pct) \
 	if (float_RelativeDiff(a, b) > pct) { \
 		knTest_UnitAssertFailed(&unitReport); \
@@ -224,6 +280,8 @@ KN_TEST_HARNESS_API void knTest_CleanUpPreviousUnit(knTestSuiteReport* r, knTest
 
 /**
  * Assertion macro for testing null-terminated string equality.
+ *
+ * @ingroup KnellTest
  */
 #define KN_TEST_ASSERT_EQ_STR(expected, actual) \
 	if (strcmp(expected, actual) != 0) { \
@@ -233,6 +291,9 @@ KN_TEST_HARNESS_API void knTest_CleanUpPreviousUnit(knTestSuiteReport* r, knTest
 		break; \
 	}
 
+/**
+ * @ingroup KnellTest
+ */
 #define KN_TEST_ASSERT_TRUE(expr) { \
 		if (!(expr)) { \
 			knTest_UnitAssertFailed(&unitReport); \
@@ -242,6 +303,9 @@ KN_TEST_HARNESS_API void knTest_CleanUpPreviousUnit(knTestSuiteReport* r, knTest
 		} \
 	}
 
+/**
+ * @ingroup KnellTest
+ */
 #define KN_TEST_ASSERT_FALSE(expr) { \
 		if (!!(expr)) { \
 			knTest_UnitAssertFailed(&unitReport); \

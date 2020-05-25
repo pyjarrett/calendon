@@ -15,6 +15,7 @@ Hello, world!
    project/setup
    project/conventions
    project/crank
+   project/testing
 
 
 Indices and tables
