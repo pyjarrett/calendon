@@ -16,14 +16,6 @@
  * I looked at seemed lightweight enough to necessitate bringing in another
  * outside dependency.
  *
- * # Assertion (Precondition) Testing
- *
- * A side benefit of writing my own framework has been the opportunity to
- * leverage Knell's assertion mechanism, `KN_ASSERT` into testing.  Tests can be
- * written to verify that preconditions catch bad execution conditions with
- * `KN_TEST_PRECONDITION(function_name)`.  This allows tests to provide
- * documentation of function preconditions while also verifying them.
- *
  * # Usage
  *
  * Uses of this testing framework should only concern themselves with the macros
@@ -51,6 +43,15 @@
  * suite resides in its own test executable.  When using declaring gigantic
  * objects, mark them as `static` to keep them off the stack, or heap allocate
  * them.
+ *
+ * # Assertion (Precondition) Testing
+ *
+ * A side benefit of writing my own framework has been the opportunity to
+ * leverage Knell's assertion mechanism, `KN_ASSERT` into testing.  Tests can be
+ * written to verify that preconditions catch bad execution conditions with
+ * `KN_TEST_PRECONDITION(function_name)`.  This allows tests to provide
+ * documentation of function preconditions while also verifying them.
+ *
  */
 #include <knell/kn.h>
 #include <knell/float.h>
@@ -83,6 +84,7 @@ typedef struct {
 
 KN_TEST_HARNESS_API knTestSuiteReport suiteReport;
 KN_TEST_HARNESS_API knTestUnitReport unitReport;
+KN_TEST_HARNESS_API char errorFormatBuffer[4096];
 
 /**
  * A visibly noticable marker to use for when things fail.
@@ -115,6 +117,9 @@ KN_TEST_HARNESS_API bool knTest_UnitSucceeded(knTestUnitReport* u) {
 }
 
 KN_TEST_HARNESS_API void knTest_SuiteInit(knTestSuiteReport* r) {
+#if _WIN32
+	SetConsoleOutputCP(CP_UTF8);
+#endif
 	if (!r) abort();
 	r->testsPassed = 0;
 	r->testsFailed = 0;
@@ -174,26 +179,52 @@ KN_TEST_HARNESS_API void knTest_CleanUpPreviousUnit(knTestSuiteReport* r, knTest
 // group KnellTestDetails
 
 /**
- * @addtogroup KnellTest
- * @{
+ * Marks a group of tests to be executed within a source file.  Due to some
+ * underlying technical reasons, your test code should be within
+ * `KN_TEST_SUITE_BEGIN` and `KN_TEST_SUITE_END`.  You **may** put your code
+ * within curly braces, but it is not required.
+ *
+ * The code between `KN_TEST_SUITE_BEGIN` and `KN_TEST_SUITE_END` gets executed
+ * as a continuous block, so you can add code in between your unit tests like
+ * in a function.  Functions may not be declared between these labels,
+ * but can be declared outside and used within them.
+ *
+ * Usage:
+ * \code
+ * // test-foo.c
+ * #include <knell/test.h>
+ *
+ * // Helper functions declared outside `KN_TEST_SUITE_BEGIN` and `KN_TEST_SUITE_END`
+ * void helperFunction1() {}
+ * void helperFunction2() {}
+ *
+ * KN_TEST_SUITE_BEGIN("A short battery of tests")
+ *
+ * // Code can be put here if desired.
+ * printf("Running my test suite\n");
+ * helperFunction1();
+ *
+ * KN_TEST_UNIT("A test") {
+ *     helperFunction2();
+ * }
+ *
+ * KN_TEST_UNIT("Another test") {
+ * }
+ *
+ * KN_TEST_SUITE_END
+ * \endcode
+ *
+ * @ingroup KnellTest
  */
-#if _WIN32
 #define KN_TEST_SUITE_BEGIN(name) int main() { \
-	SetConsoleOutputCP(CP_UTF8); \
 	knTest_SuiteInit(&suiteReport); \
 	knTest_UnitInit(&unitReport, NULL); \
 	knTest_SuiteStart(&suiteReport, name);
-#else
-#define KN_TEST_SUITE_BEGIN(name) int main() { \
-	knTest_SuiteInit(&suiteReport); \
-	knTest_UnitInit(&unitReport, NULL); \
-	knTest_SuiteStart(&suiteReport, name);
-#endif
-/**
- * @}
- */
 
 /**
+ * Wraps up testing.  Completes a block of testing in a source file started by
+ * `KN_TEST_SUITE_BEGIN`.
+ *
  * @ingroup KnellTest
  */
 #define KN_TEST_SUITE_END \
@@ -202,6 +233,30 @@ KN_TEST_HARNESS_API void knTest_CleanUpPreviousUnit(knTestSuiteReport* r, knTest
 	return suiteReport.testsFailed > 0 ? EXIT_FAILURE : EXIT_SUCCESS; }
 
 /**
+ * Starts a new unit test within a suite.  Treat this sort of like a control
+ * structure and put your test within braces (`{}`).
+ *
+ * Usage:
+ * \code
+ * KN_TEST_SUITE_BEGIN("My test suite")
+ *
+ * KN_TEST_UNIT("My test") {
+ *   const int32_t x = 10;
+ *   KN_TEST_ASSERT_EQ_I32(10, x);
+ * }
+ *
+ * KN_TEST_UNIT("Another test") {
+ *   // More assertions.
+ * }
+ *
+ * KN_TEST_UNIT("A third test") {
+ *   // More assertions
+ * }
+ *
+ * KN_TEST_SUITE_END
+ *
+ * \endcode
+ *
  * @ingroup KnellTest
  */
 #define KN_TEST_UNIT(name) \
@@ -222,15 +277,22 @@ KN_TEST_HARNESS_API void knTest_CleanUpPreviousUnit(knTestSuiteReport* r, knTest
 #include <knell/test-asserts.h>
 
 /**
+ * Executes a statement, expecting that it triggers a `KN_ASSERT` assertion
+ * somewhere in the control flow.  Use this to verify that inputs to a control
+ * flow get flagged as illegal.
+ *
+ * This only covers checks by `KN_ASSERT` and any encountered `KN_FATAL_ERROR`
+ * will still cause a program crash.
+ *
  * @ingroup KnellTest
  */
-#define KN_TEST_PRECONDITION(fn) { \
+#define KN_TEST_PRECONDITION(stmt) { \
 		knTest_ExpectingAssert = true; \
 		int assertionStatus = setjmp(knTest_AssertJumpBuffer); \
-		if (assertionStatus == 0) { fn; }; \
+		if (assertionStatus == 0) { stmt; } \
 		if (assertionStatus != KN_TEST_ASSERTION_OCCURRED) { \
 			knTest_UnitAssertFailed(&unitReport); \
-			printf("%s:%i  Assertion not triggered: " #fn, \
+			printf("%s:%i  Assertion not triggered: " #stmt, \
 				__FILE__, __LINE__); \
 			break; \
 		} \
@@ -238,34 +300,50 @@ KN_TEST_HARNESS_API void knTest_CleanUpPreviousUnit(knTestSuiteReport* r, knTest
 	}
 
 /**
+ * Prevents problems with duplicate evaluation of test inputs, by creating
+ * appropriate functions into which to make the test macros.
+ *
+ * @ingroup KnellTestDetail
+ */
+#define KN_TEST_ASSERT_FN_DEFN(type, formatter) bool knTest_Assert_##type( \
+	type a, type b, const char* left, const char* right, char* file, uint64_t line) \
+{ \
+	if (a != b) { \
+		knTest_UnitAssertFailed(&unitReport); \
+		const int written = sprintf(errorFormatBuffer, "%s:%" PRIu64  "  \"%%%s != %%%s\" (%s != %s)\n", \
+			file, line, formatter, formatter, left, right); \
+		printf(errorFormatBuffer, a, b); \
+		return false; \
+	} \
+	return true; \
+}
+
+KN_TEST_ASSERT_FN_DEFN(size_t, "zu")
+KN_TEST_ASSERT_FN_DEFN(int8_t, PRIi8)
+KN_TEST_ASSERT_FN_DEFN(int16_t, PRIi16)
+KN_TEST_ASSERT_FN_DEFN(int32_t, PRIi32)
+KN_TEST_ASSERT_FN_DEFN(int64_t, PRIi64)
+KN_TEST_ASSERT_FN_DEFN(uint8_t, PRIu8)
+KN_TEST_ASSERT_FN_DEFN(uint16_t, PRIu16)
+KN_TEST_ASSERT_FN_DEFN(uint32_t, PRIu32)
+KN_TEST_ASSERT_FN_DEFN(uint64_t, PRIu64)
+
+/**
  * @addtogroup KnellTest
  * @{
  */
-#define KN_TEST_ASSERT_EQ_SIZE_T(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, size_t, "zu");
-#define KN_TEST_ASSERT_EQ_I8(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, int8_t, PRIi8)
-#define KN_TEST_ASSERT_EQ_I16(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, int16_t, PRIi16)
-#define KN_TEST_ASSERT_EQ_I32(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, int32_t, PRIi32)
-#define KN_TEST_ASSERT_EQ_I64(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, int64_t, PRIi64)
-#define KN_TEST_ASSERT_EQ_U8(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, uint8_t, PRIu8)
-#define KN_TEST_ASSERT_EQ_U16(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, uint16_t, PRIu16)
-#define KN_TEST_ASSERT_EQ_U32(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, uint32_t, PRIu32)
-#define KN_TEST_ASSERT_EQ_U64(a, b) KN_TEST_ASSERT_EQ_GENERIC(a, b, uint64_t, PRIu64)
+#define KN_TEST_ASSERT_EQ_SIZE_T(a, b) if (!knTest_Assert_size_t(a, b, #a, #b, __FILE__, __LINE__)) break;
+#define KN_TEST_ASSERT_EQ_I8(a, b)  if (!knTest_Assert_int8_t(a, b, #a, #b, __FILE__, __LINE__)) break;
+#define KN_TEST_ASSERT_EQ_I16(a, b) if (!knTest_Assert_int16_t(a, b, #a, #b, __FILE__, __LINE__)) break;
+#define KN_TEST_ASSERT_EQ_I32(a, b) if (!knTest_Assert_int32_t(a, b, #a, #b, __FILE__, __LINE__)) break;
+#define KN_TEST_ASSERT_EQ_I64(a, b) if (!knTest_Assert_int64_t(a, b, #a, #b, __FILE__, __LINE__)) break;
+#define KN_TEST_ASSERT_EQ_U8(a, b)  if (!knTest_Assert_uint8_t(a, b, #a, #b, __FILE__, __LINE__)) break;
+#define KN_TEST_ASSERT_EQ_U16(a, b) if (!knTest_Assert_uint16_t(a, b, #a, #b, __FILE__, __LINE__)) break;
+#define KN_TEST_ASSERT_EQ_U32(a, b) if (!knTest_Assert_uint32_t(a, b, #a, #b, __FILE__, __LINE__)) break;
+#define KN_TEST_ASSERT_EQ_U64(a, b) if (!knTest_Assert_uint64_t(a, b, #a, #b, __FILE__, __LINE__)) break;
 /**
  * @}
  */
-
-/**
- * This generic testing macro is not intended to be directly used.
- *
- * @ingroup KnellTestDetails
- */
-#define KN_TEST_ASSERT_EQ_GENERIC(a, b, type, formatter) \
-	if (((type)(a)) != ((type)(b))) { \
-		knTest_UnitAssertFailed(&unitReport); \
-		printf("%s:%i  \"" #a " != " #b "\" (%" formatter " != %" formatter ")\n", \
-			__FILE__, __LINE__, ((type)(a)), ((type)(b))); \
-		break; \
-	}
 
 /**
  * @ingroup KnellTest
