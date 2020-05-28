@@ -95,7 +95,6 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         # Allow symbol resolution when querying for symbols.
         add_definitions(/DPSAPI_VERSION=1)
         add_definitions(/DKN_DEBUG=1)
-        add_definitions(/analyze)
 		set(KNELL_LIBS ${KNELL_LIBS} psapi)
 
 		# Adds MiniDump reporting.
