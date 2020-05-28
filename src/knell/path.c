@@ -83,3 +83,21 @@ bool PathBuffer_Join(PathBuffer* root, const char* suffix)
 	KN_ASSERT(suffix != NULL, "Trying to append a null path");
 	return Path_Append(suffix, root->str, KN_PATH_MAX);
 }
+
+bool PathBuffer_Exists(PathBuffer* path)
+{
+	KN_ASSERT(path != NULL, "Cannot check path existence for a null PathBuffer.");
+	return Path_Exists(path->str);
+}
+
+bool PathBuffer_IsDir(PathBuffer* path)
+{
+	KN_ASSERT(path != NULL, "Cannot check to see if a null PathBuffer is a directory.");
+	return Path_IsDir(path->str);
+}
+
+bool PathBuffer_IsFile(PathBuffer* path)
+{
+	KN_ASSERT(path != NULL, "Cannot check to see if a null PathBuffer is a file.");
+	return Path_IsFile(path->str);
+}

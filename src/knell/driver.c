@@ -5,10 +5,10 @@
 #include <knell/control.h>
 #include <knell/crash.h>
 #include <knell/env.h>
-#include <knell/game.h>
 #include <knell/input.h>
 #include <knell/log.h>
 #include <knell/memory.h>
+#include <knell/plugin.h>
 #ifdef _WIN32
 #include <knell/process.h>
 #endif
@@ -30,6 +30,7 @@ typedef struct {
 } MainConfig;
 
 static MainConfig mainConfig;
+static Plugin Payload;
 
 void Main_PrintUsage(void)
 {
@@ -131,6 +132,40 @@ void Main_DescribeEnv(void)
 	KN_TRACE(LogSysMain, "CWD: '%s'", buffer);
 }
 
+void Main_LoadPayload(const char* sharedLibraryName)
+{
+	KN_ASSERT(sharedLibraryName, "Cannot use a null shared library name to load a payload.");
+	uint64_t gameLibModified;
+	if (!Assets_LastModifiedTime(sharedLibraryName, &gameLibModified)) {
+		KN_FATAL_ERROR("Unable to determine last modified time of '%s'", sharedLibraryName);
+	}
+
+	struct tm *lt = localtime((time_t*)&gameLibModified);
+	char timeBuffer[80];
+	strftime(timeBuffer, sizeof(timeBuffer), "%c", lt);
+	KN_TRACE(LogSysMain, "Last modified time: %s", timeBuffer);
+
+	if (Payload.shutdown) {
+		Payload.shutdown();
+	}
+
+	SharedLibrary_Release(Payload.sharedLibrary);
+	Payload.sharedLibrary = SharedLibrary_Load(sharedLibraryName);
+
+	if (!Plugin_LoadFromFile(&Payload, sharedLibraryName)) {
+		KN_FATAL_ERROR("Unable to load game module: %s", sharedLibraryName);
+	}
+
+	if (!Payload.init) KN_FATAL_ERROR("Plugin_Init function missing in %s", sharedLibraryName);
+	if (!Payload.draw) KN_FATAL_ERROR("Plugin_DrawFn function missing in %s", sharedLibraryName);
+	if (!Payload.tick) KN_FATAL_ERROR("Plugin_TickFn function missing in %s", sharedLibraryName);
+	if (!Payload.shutdown) KN_FATAL_ERROR("Plugin_ShutdownFn function missing in %s", sharedLibraryName);
+
+	if (!Payload.init()) {
+		KN_FATAL_ERROR("%s failed to initialize", sharedLibraryName);
+	}
+}
+
 /**
  * Common initialization point for all global systems.
  */
@@ -167,16 +202,7 @@ void Main_InitAllSystems(void)
 	R_Init(width, height);
 
 	const char* gameLib = mainConfig.gameLibPath.str;
-	uint64_t gameLibModified;
-	if (!Assets_LastModifiedTime(gameLib, &gameLibModified)) {
-		KN_FATAL_ERROR("Unable to determine last modified time of '%s'", gameLib);
-	}
-
-	struct tm *lt = localtime((time_t*)&gameLibModified);
-	char timeBuffer[80];
-	strftime(timeBuffer, sizeof(timeBuffer), "%c", lt);
-	KN_TRACE(LogSysMain, "Last modified time: %s", timeBuffer);
-	Game_Load(gameLib);
+	Main_LoadPayload(gameLib);
 
 	lastTick = Time_NowNs();
 
@@ -251,16 +277,16 @@ void knDriver_MainLoop(void)
 
 		uint64_t dt;
 		if (Main_GenerateTick(&dt)) {
-			Game_TickFn(dt);
+			Payload.tick(dt);
 			Main_TickCompleted();
 		}
-		Game_DrawFn();
+		Payload.draw();
 	}
 }
 
 void knDriver_Shutdown(void)
 {
-	Game_ShutdownFn();
+	Payload.shutdown();
 	R_Shutdown();
 	UI_Shutdown();
 	Assets_Shutdown();

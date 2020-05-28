@@ -63,7 +63,7 @@ void step(void)
 	}
 }
 
-KN_GAME_API bool Game_Init(void)
+KN_GAME_API bool Plugin_Init(void)
 {
 	Log_RegisterSystem(&LogSysSample, "Sample", KN_LOG_TRACE);
 	KN_TRACE(LogSysSample, "Sample loaded");
@@ -74,7 +74,7 @@ KN_GAME_API bool Game_Init(void)
     return true;
 }
 
-KN_GAME_API void Game_Draw(void)
+KN_GAME_API void Plugin_Draw(void)
 {
 	R_StartFrame();
 	rgb8 white = { 255u, 255u, 255u };
@@ -82,7 +82,7 @@ KN_GAME_API void Game_Draw(void)
 	R_EndFrame();
 }
 
-KN_GAME_API void Game_Tick(uint64_t dt)
+KN_GAME_API void Plugin_Tick(uint64_t dt)
 {
 	currentTime += dt;
 	if (currentTime > timeBeforeStep) {
@@ -91,6 +91,6 @@ KN_GAME_API void Game_Tick(uint64_t dt)
 	}
 }
 
-KN_GAME_API void Game_Shutdown(void)
+KN_GAME_API void Plugin_Shutdown(void)
 {
 }

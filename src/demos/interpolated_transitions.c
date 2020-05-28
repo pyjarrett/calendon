@@ -106,7 +106,7 @@ void Anim_Update(BinaryAnimation* anim, uint64_t dt)
 float2 left, right;
 BinaryAnimation squareAnim;
 
-KN_GAME_API bool Game_Init(void)
+KN_GAME_API bool Plugin_Init(void)
 {
 	Log_RegisterSystem(&LogSysSample, "Sample", KN_LOG_TRACE);
 	KN_TRACE(LogSysSample, "Sample loaded");
@@ -123,7 +123,7 @@ KN_GAME_API bool Game_Init(void)
 	return true;
 }
 
-KN_GAME_API void Game_Draw(void)
+KN_GAME_API void Plugin_Draw(void)
 {
 	R_StartFrame();
 
@@ -134,7 +134,7 @@ KN_GAME_API void Game_Draw(void)
 	R_EndFrame();
 }
 
-KN_GAME_API void Game_Tick(uint64_t dt)
+KN_GAME_API void Plugin_Tick(uint64_t dt)
 {
 	Input* input = UI_InputPoll();
 	KN_ASSERT(input, "Input poll provided a null pointer.");
@@ -163,6 +163,6 @@ KN_GAME_API void Game_Tick(uint64_t dt)
 	}
 }
 
-KN_GAME_API void Game_Shutdown(void)
+KN_GAME_API void Plugin_Shutdown(void)
 {
 }
