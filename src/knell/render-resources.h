@@ -8,6 +8,10 @@
 
 #include <knell/kn.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Opaque handle used to coordinate with the renderer to uniquely identify
  * sprites.
@@ -35,5 +39,9 @@ typedef struct {
 	uint32_t layout;
 	uint32_t printDirection;
 } TextDrawParams;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* KN_RENDER_RESOURCES_H */

@@ -5,6 +5,10 @@
 
 #include <knell/compat-sdl.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * Handling of player inputs.
  */
@@ -35,5 +39,9 @@ KN_API bool KeySet_Contains(KeySet* list, SDL_Keycode key);
 
 void Mouse_Still(Mouse* m);
 void Mouse_Move(Mouse*, int32_t x, int32_t y, int32_t dx, int32_t dy);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* KN_INPUT */

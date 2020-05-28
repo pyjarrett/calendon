@@ -3,6 +3,10 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
 	uint8_t red;
 	uint8_t green;
@@ -15,6 +19,10 @@ typedef struct {
 	uint8_t g;
 	uint8_t b;
 } rgb8;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* KN_COLOR_H */
 

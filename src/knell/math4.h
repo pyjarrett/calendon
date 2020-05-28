@@ -9,6 +9,10 @@
 
 #include <knell/kn.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * ROW vector.
  */
@@ -43,5 +47,9 @@ KN_TEST_API float4x4 float4x4_Multiply(float4x4 left, float4x4 right);
 #include <stdio.h>
 KN_TEST_API void float4_DebugPrint(FILE* stream, float4 v);
 KN_TEST_API void float4x4_DebugPrint(FILE* stream, float4x4 m);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* KN_MATH_H */

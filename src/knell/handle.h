@@ -7,6 +7,10 @@
 
 #include <knell/kn.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Declares a new handle type with its own initialization and create function.
  */
@@ -30,5 +34,9 @@
 		*t = next ## HandleName ## Id; \
 		return true; \
 	}
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* KN_HANDLE_H */

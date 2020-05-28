@@ -210,6 +210,7 @@ def cmd_export(ctx: ProjectContext, _args: argparse.Namespace) -> int:
     export_dir: str = ctx.export_dir()
     header_dir: str = os.path.join(ctx.export_dir(), 'knell')
     base_dir: str = ctx.source_dir()
+    print(f'Exporting from {ctx.build_dir()} to {export_dir}')
 
     if os.path.isdir(export_dir):
         print(f'Removing export directory: {export_dir}')
@@ -222,6 +223,7 @@ def cmd_export(ctx: ProjectContext, _args: argparse.Namespace) -> int:
     for lib in libraries:
         exported_lib: str = os.path.basename(lib)
         shutil.copyfile(lib, os.path.join(export_dir, exported_lib))
+        print(f'Exporting {exported_lib}')
 
     print(f'Exported Knell to: {export_dir}')
     return 0

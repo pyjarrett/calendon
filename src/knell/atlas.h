@@ -7,6 +7,10 @@
 #include <knell/math2.h>
 #include <knell/row_col.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * A texture atlas which assumes that all images are the same size.
  */
@@ -31,5 +35,9 @@ KN_TEST_API RowColu32 TextureAtlas_SubImageGrid(TextureAtlas* ta, uint32_t subIm
 KN_TEST_API uint32_t ImageRGBA8_offsetForRowCol(ImageRGBA8* image, RowColu32 rowCol, bool flip);
 KN_TEST_API uint32_t TextureAtlas_Insert(TextureAtlas* ta, ImageRGBA8* subImage);
 KN_TEST_API void TextureAtlas_TexCoordForSubImage(TextureAtlas* ta, float2* output, uint32_t subImageId);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* KN_ATLAS_H */

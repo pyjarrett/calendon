@@ -9,6 +9,10 @@
 
 #include <knell/kn.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef uint32_t AnimationStateIndex;
 
 /**
@@ -44,5 +48,9 @@ typedef struct {
 KN_API float AnimLoop_CalcAlpha(AnimationLoop* loop, AnimationLoopCursor* cursor);
 KN_API AnimationStateIndex AnimLoop_NextState(AnimationLoop* loop, uint64_t current);
 KN_API void AnimLoop_Tick(AnimationLoop* loop, AnimationLoopCursor* cursor, uint64_t dt);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* KN_ANIM_LOOP_H */

@@ -7,6 +7,10 @@
 #include <knell/memory.h>
 #include <knell/row_col.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Images are bulk groups of pixel data stored in memory and must be fed into
  * the renderer to create a texture to use for actual drawing.
@@ -32,5 +36,9 @@ KN_API void ImageRGBA8_Free(ImageRGBA8* image);
 KN_API void ImageRGBA8_Flip(ImageRGBA8* image);
 KN_API void ImageRGBA8_ClearRGBA(ImageRGBA8* image, uint8_t r, uint8_t b, uint8_t g, uint8_t a);
 KN_API uint32_t ImageRGBA8_GetPixelRowCol(ImageRGBA8* image, RowColu32 rowCol);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* KN_IMAGE_H */

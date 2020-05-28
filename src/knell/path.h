@@ -3,6 +3,10 @@
 
 #include <knell/kn.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Maximum path length varies by system, but assume a reasonable case.
  */
@@ -45,5 +49,9 @@ KN_API_DEPRECATED("alpha", "Use PathBuffer_Join instead", KN_API bool Path_Appen
 KN_API void PathBuffer_Clear(PathBuffer* path);
 KN_API bool PathBuffer_Set(PathBuffer* path, const char* initialPath);
 KN_API bool PathBuffer_Join(PathBuffer* root, const char* suffix);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* KN_PATH_H */

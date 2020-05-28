@@ -1,6 +1,10 @@
 #ifndef KN_H
 #define KN_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * This is the "standard" Knell header which most files should include to get
  * the basic types and base functionality and macros used in Knell code.
@@ -258,5 +262,9 @@ extern KN_API char fatalErrorBuffer[fatalErrorBufferLength];
  * Prevent mistakes of calculating array size by just making it a macro.
  */
 #define KN_ARRAY_SIZE(arr) (sizeof(arr)  / sizeof(arr[0]))
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* KN_H */

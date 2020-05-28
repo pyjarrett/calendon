@@ -29,6 +29,10 @@
 #include <knell/math2.h>
 #include <knell/render-resources.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 KN_API void R_Init(uint32_t width, uint32_t height);
 KN_API void R_Shutdown(void);
 KN_API void R_StartFrame(void);
@@ -49,5 +53,9 @@ KN_API void R_DrawDebugLineStrip(float2* points, uint32_t numPoints, rgb8 color)
 KN_API void R_DrawDebugFont(FontId id, float2 center, Dimension2f size);
 
 KN_API void R_OutlineCircle(float2 center, float radius, rgb8 color, uint32_t numSegments);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* KN_RENDER_HL_H */

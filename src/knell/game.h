@@ -15,6 +15,10 @@
 
 #include <knell/kn.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef bool (*Game_InitPROC)(void);
 typedef void (*Game_DrawPROC)(void);
 typedef void (*Game_TickPROC)(uint64_t);
@@ -30,5 +34,8 @@ KN_API Game_ShutdownPROC Game_ShutdownFn;
  */
 KN_API void Game_Load(const char* sharedLibraryName);
 
-#endif /* KN_GAME_H */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* KN_GAME_H */

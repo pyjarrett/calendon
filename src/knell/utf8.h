@@ -26,6 +26,10 @@
 
 #include <knell/kn.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * The maximum number of bytes to encode a UTF-8 code point is 4.
  */
@@ -85,6 +89,10 @@ KN_TEST_API bool Grapheme_AddCodePoint(Grapheme*, const uint8_t* codePoint);
 
 #if KN_DEBUG
 void Grapheme_Print(Grapheme* g, FILE* stream);
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* KN_FONT_UTF8_H */

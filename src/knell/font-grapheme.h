@@ -5,6 +5,10 @@
 
 #include <knell/utf8.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef uint32_t GlyphIndex;
 
 /**
@@ -36,5 +40,9 @@ KN_TEST_API void GraphemeMap_Clear(GraphemeMap* map);
 KN_TEST_API uint32_t GraphemeMap_GlyphForCodePoints(GraphemeMap* map, const uint8_t* codePoints, uint8_t numCodePoints);
 KN_TEST_API uint32_t GraphemeMap_GraphemeIndexForCodePoints(GraphemeMap* map, const uint8_t* codePoint, uint8_t numCodePoints);
 KN_TEST_API bool GraphemeMap_Map(GraphemeMap* map, const uint8_t* codePoints, uint8_t numCodePoints, GlyphIndex glyphIndex);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //KNELL_FONT_UTF8_GLYPH_H

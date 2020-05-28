@@ -9,6 +9,10 @@
 
 #include <knell/dimension.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
 	union {
 		struct {
@@ -50,5 +54,9 @@ KN_API float float2_DistanceSquared(float2 left, float2 right);
 KN_API float2 float2_Lerp(float2 from, float2 to, float alpha);
 
 KN_API PlanarAngle float2_DirectionBetween(float2 from, float2 to);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* KN_MATH2_H */

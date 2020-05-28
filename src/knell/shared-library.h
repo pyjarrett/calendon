@@ -1,6 +1,10 @@
 #ifndef KNELL_SHARED_LIBRARY_H
 #define KNELL_SHARED_LIBRARY_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Shared libraries (or DLLs) provide loading of code at runtime. The mechanism
  * for doing this and referencing libraries varies by platform, so provide a
@@ -23,5 +27,9 @@ typedef void* knSharedLibrary;
 void SharedLibrary_Release(knSharedLibrary library);
 knSharedLibrary SharedLibrary_Load(const char* sharedLibraryName);
 void* SharedLibrary_LookupFn(knSharedLibrary library, const char* fnName);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //KNELL_SHARED_LIBRARY_H

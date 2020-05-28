@@ -3,6 +3,10 @@
 
 #include <knell/kn.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * A single contiguous block of dynamically allocated memory.
  *
@@ -18,5 +22,9 @@ KN_API void Mem_Init(void);
 KN_API void Mem_Shutdown(void);
 KN_API void Mem_Allocate(DynamicBuffer* buffer, uint32_t size);
 KN_API void Mem_Free(DynamicBuffer* buffer);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* KN_MEMORY_H */

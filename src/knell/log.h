@@ -43,6 +43,10 @@
 
 #include "kn.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Maximum number of systems supported by the logging system.
  */
@@ -139,5 +143,8 @@ KN_API void Log_Init(void);
 KN_API void Log_Shutdown(void);
 KN_API void Log_RegisterSystem(LogHandle* system, const char* name, uint32_t verbosity);
 
-#endif /* KN_LOG_H */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* KN_LOG_H */

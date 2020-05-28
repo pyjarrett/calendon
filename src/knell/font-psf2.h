@@ -13,6 +13,10 @@
 #include <knell/font-grapheme.h>
 #include <knell/math2.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Describes the relationship between glyphs and code points.
  */
@@ -24,5 +28,9 @@ typedef struct {
 
 KN_API bool Font_PSF2Allocate(FontPSF2* font, const char* path);
 KN_API void Font_PSF2Free(FontPSF2* font);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // KN_FONT_PSF2_H

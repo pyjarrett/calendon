@@ -1,6 +1,10 @@
 #ifndef KN_ROW_COL_H
 #define KN_ROW_COL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Provide a separate (row, column) type to indicate position, which has a
  * different semantic ordering than 2D vectors with (x, y).  This prevents
@@ -10,5 +14,9 @@
 typedef struct {
 	uint32_t row, col;
 } RowColu32;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* KN_ROW_COL_H */

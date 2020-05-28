@@ -8,6 +8,10 @@
 #include <knell/kn.h>
 #include <knell/input.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 KN_API void UI_Init(uint32_t width, uint32_t height);
 KN_API void UI_Shutdown(void);
 
@@ -31,5 +35,9 @@ typedef struct {
  */
 KN_API Input* UI_InputPoll(void);
 
-#endif /* KN_UI_H */
 
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* KN_UI_H */
