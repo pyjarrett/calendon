@@ -57,6 +57,37 @@ Example:
 
     KN_FATAL_ERROR
 
+**ENUMS**
+
+Prefix enum values with ``KN`` (ALL CAPS).
+
+.. code-block::
+
+    KN_<ENUM_TYPE>_<VALUE>
+
+Example:
+
+.. code-block::
+
+    enum {
+        KN_LOG_ERROR,
+        KN_LOG_TRACE,
+        //...
+    };
+
+Prefix enum types with `Kn` (capitalize)
+
+.. code-block::
+
+    typedef enum {
+    } Kn<EnumName>;
+
+Example:
+
+.. code-block::
+
+    KnUtf8ByteValidity
+
 **Header Guards**
 
 Prefix header guards with ``KN_`` and use a ``_H`` suffix.
