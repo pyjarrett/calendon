@@ -1,31 +1,31 @@
-#include <knell/test.h>
+#include <calendon/test.h>
 
-#include <knell/kn.h>
-#include <knell/binary.h>
+#include <calendon/cn.h>
+#include <calendon/binary.h>
 
-KN_TEST_SUITE_BEGIN("binary")
-	KN_TEST_UNIT("0 is a power of two?") {
-		KN_TEST_ASSERT_TRUE(isPowerOfTwo(0));
+CN_TEST_SUITE_BEGIN("binary")
+	CN_TEST_UNIT("0 is a power of two?") {
+		CN_TEST_ASSERT_TRUE(cnIsPowerOfTwo(0));
 	}
 
-	KN_TEST_UNIT("1 is a power of two") {
-		KN_TEST_ASSERT_TRUE(isPowerOfTwo(1));
+	CN_TEST_UNIT("1 is a power of two") {
+		CN_TEST_ASSERT_TRUE(cnIsPowerOfTwo(1));
 	}
 
-	KN_TEST_UNIT("General cases of power of two") {
+	CN_TEST_UNIT("General cases of power of two") {
 		for (uint32_t i = 1; i < 31; ++i) {
-			KN_TEST_ASSERT_TRUE(isPowerOfTwo((uint32_t)1 << i));
+			CN_TEST_ASSERT_TRUE(cnIsPowerOfTwo((uint32_t) 1 << i));
 		}
 	}
 
-	KN_TEST_UNIT("Non powers of two") {
+	CN_TEST_UNIT("Non powers of two") {
 		uint32_t nonPowersOfTwo[] = {
 			3, 5, 7, 11, 17, 101, 65443, 65422, 4000000
 		};
 		const size_t valuesToTest = sizeof(nonPowersOfTwo) / sizeof(nonPowersOfTwo[0]);
 		for (uint32_t i = 0; i < valuesToTest; ++i) {
-			KN_TEST_ASSERT_FALSE(isPowerOfTwo(nonPowersOfTwo[i]));
+			CN_TEST_ASSERT_FALSE(cnIsPowerOfTwo(nonPowersOfTwo[i]));
 		}
 	}
 
-KN_TEST_SUITE_END
+CN_TEST_SUITE_END

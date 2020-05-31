@@ -23,7 +23,7 @@ Linux:
 
 Mac:
 
-- I don't have a Mac to test on so I don't know if Knell will even build on
+- I don't have a Mac to test on so I don't know if Calendon will even build on
   this platform.  If you're willing to help with Mac support, let me know!
 
 Building and running the demos
@@ -42,7 +42,7 @@ Windows, using powershell:
 
 .. code-block:: powershell
 
-    py/crank.py register cmake "C:/Program Files/CMake/bin/cmake.exe" 
+    py/crank.py register cmake "C:/Program Files/CMake/bin/cmake.exe"
 
 Linux:
 

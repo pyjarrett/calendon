@@ -4,97 +4,97 @@ Code Conventions
 Prefixing structs, macros and functions
 ---------------------------------------
 
-Knell uses prefixes to avoid namespace clashes like the Vulkan library.  Use
-the ``kn`` prefix but with different cases between different types.
+Calendon uses prefixes to avoid namespace clashes like the Vulkan library.  Use
+the ``cn`` prefix but with different cases between different types.
 
 **Structs**
 
-Prefix structs with ``Kn`` (capital).
+Prefix structs with ``Cn`` (capital).
 
 .. code-block::
 
-    Kn<StructNameInPascalCase>
+    Cn<StructNameInPascalCase>
 
 Example:
 
 .. code-block::
 
-    KnDriverConfig
+    CnDriverConfig
 
 **Functions**
 
-Prefix functions with ``kn`` (lower-case).
+Prefix functions with ``cn`` (lower-case).
 
 .. code-block::
 
-    kn<System>_ActionInPascalCase
+    cn<System>_ActionInPascalCase
 
-    kn<Type>_ActionInPascalCase
+    cn<Type>_ActionInPascalCase
 
 Example:
 
 .. code-block::
 
     // Driver Init(ialization)
-    knDriver_Init
+    cnDriver_Init
 
-    // float4x4 non-uniform scaling
-    knFloat4x4_NonUniformScale
+    // CnFloat4x4 non-uniform scaling
+    cnFloat4x4_NonUniformScale
 
 **Macros**
 
-Prefix macros with ``KN`` (ALL CAPS).
+Prefix macros with ``CN`` (ALL CAPS).
 
 .. code-block::
 
-    KN_<MACRO_NAME_IN_ALL_CAPS>
+    CN_<MACRO_NAME_IN_ALL_CAPS>
 
 Example:
 
 .. code-block::
 
-    KN_ASSERT
+    CN_ASSERT
 
-    KN_FATAL_ERROR
+    CN_FATAL_ERROR
 
 **ENUMS**
 
-Prefix enum values with ``KN`` (ALL CAPS).
+Prefix enum values with ``CN`` (ALL CAPS).
 
 .. code-block::
 
-    KN_<ENUM_TYPE>_<VALUE>
+    CN_<ENUM_TYPE>_<VALUE>
 
 Example:
 
 .. code-block::
 
     enum {
-        KN_LOG_ERROR,
-        KN_LOG_TRACE,
+        CN_LOG_ERROR,
+        CN_LOG_TRACE,
         //...
     };
 
-Prefix enum types with `Kn` (capitalize)
+Prefix enum types with `Cn` (capitalize)
 
 .. code-block::
 
     typedef enum {
-    } Kn<EnumName>;
+    } Cn<EnumName>;
 
 Example:
 
 .. code-block::
 
-    KnUtf8ByteValidity
+    CnUtf8ByteValidity
 
 **Header Guards**
 
-Prefix header guards with ``KN_`` and use a ``_H`` suffix.
+Prefix header guards with ``CN_`` and use a ``_H`` suffix.
 
 .. code-block::
 
-    KN_ENV_H
+    CN_ENV_H
 
 
 Function Naming
@@ -111,56 +111,56 @@ while retaining their original meaning.
 
 Example:
 
-.. doxygenfunction:: float2_Make
+.. doxygenfunction:: cnFloat2_Make
 
 **Creating one of a limited number of resource:**
 
 .. code-block::
 
-    bool <type>_Create*(<type>*, args...)
+    bool cn<type>_Create*(<type>*, args...)
 
 Resources created and used on the fly usually have additional tracking and
 limits on the number of outstanding resources.
 
 Example:
 
-.. doxygenfunction:: R_CreateSprite
+.. doxygenfunction:: cnR_CreateSprite
 
 **Setting values on a non-copyable type**
 
 .. code-block::
 
-    <type>_Set(<type>*, args...)
+    cn<type>_Set(<type>*, args...)
 
 Some resources cannot be copied, but do not making allocations.
 
 Example:
 
-.. doxygenfunction:: PathBuffer_Set
+.. doxygenfunction:: cnPathBuffer_Set
 
 **System initialization**
 
 .. code-block::
 
-    bool <SystemName>_Init(args...)
+    bool cn<SystemName>_Init(args...)
 
 Systems may fail initialization.
 
 Example:
 
-.. doxygenfunction:: Log_Init
+.. doxygenfunction:: cnLog_Init
 
 **System shutdown**
 
 .. code-block::
 
-    void <System>_Shutdown()
+    void cn<System>_Shutdown()
 
 Shutdown failures are not as important.
 
 Example:
 
-.. doxygenfunction:: Log_Shutdown
+.. doxygenfunction:: cnLog_Shutdown
 
 Return values
 ------------------------
@@ -201,9 +201,9 @@ Primitive Types
 
 - For source files, ``#include "myfile.h"`` should come first if a companion
   header exists.
-- ``#include <knell/kn.h>`` should come next before any other headers.
-- All Knell headers, except a companion header, should be referenced using
-  angled brackets: e.g. ``<knell/log.h>``.
+- ``#include <calendon/cn.h>`` should come next before any other headers.
+- All Calendon headers, except a companion header, should be referenced using
+  angled brackets: e.g. ``<calendon/log.h>``.
 
 Documentation and Comments
 --------------------------
@@ -222,6 +222,6 @@ be documented at their definition sites.
      * Errors are serious issues which must be addressed prior to shipping a product
      * and fixed as soon as possible when detected in release.
      */
-    #define KN_ERROR(system, msg, ...) \
-        KN_LOG(system, KN_LOG_ERROR, msg, ##__VA_ARGS__); \
-        KN_DEBUG_BREAK()
+    #define CN_ERROR(system, msg, ...) \
+        CN_LOG(system, CN_LOG_ERROR, msg, ##__VA_ARGS__); \
+        CN_DEBUG_BREAK()

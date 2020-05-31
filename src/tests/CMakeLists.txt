@@ -13,7 +13,7 @@ function(add_unit_test)
 	cmake_parse_arguments(UTEST "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
 	add_executable("${UTEST_NAME}" ${UTEST_SOURCES})
-	target_compile_definitions(${UTEST_NAME} PRIVATE KN_TESTING=1)
+	target_compile_definitions(${UTEST_NAME} PRIVATE CN_TESTING=1)
 
 	# Generate coverage data only under GCC
 	if(CMAKE_BUILD_TYPE MATCHES Debug AND CMAKE_COMPILER_IS_GNUCC)
@@ -24,7 +24,7 @@ function(add_unit_test)
 	target_link_libraries(${UTEST_NAME} ${UTEST_LIBS})
 	add_test(NAME "${UTEST_NAME}" COMMAND "${UTEST_NAME}" WORKING_DIRECTORY ${BINARY_DIR})
 	add_dependencies(testing ${UTEST_NAME})
-	remove_definitions(-DKN_TESTING)
+	remove_definitions(-DCN_TESTING)
 endfunction()
 
 add_subdirectory(unit)

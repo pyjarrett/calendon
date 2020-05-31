@@ -1,28 +1,28 @@
-#include <knell/test.h>
+#include <calendon/test.h>
 
-#include <knell/font-grapheme.h>
+#include <calendon/font-grapheme.h>
 
-KN_TEST_SUITE_BEGIN("font-utf8-grapheme")
-	printf("Size of GraphemeMap: %zu bytes\n", sizeof(GraphemeMap));
+CN_TEST_SUITE_BEGIN("font-utf8-grapheme")
+	printf("Size of CnGraphemeMap: %zu bytes\n", sizeof(CnGraphemeMap));
 
-	KN_TEST_UNIT("Unicode table creation") {
-		static GraphemeMap map;
-		GraphemeMap_Clear(&map);
+	CN_TEST_UNIT("Unicode table creation") {
+		static CnGraphemeMap map;
+		cnGraphemeMap_Clear(&map);
 	}
 
-	KN_TEST_UNIT("Grapheme mapping of ASCII to ASCII valued glyphs") {
-		static GraphemeMap map;
-		GraphemeMap_Clear(&map);
+	CN_TEST_UNIT("CnGrapheme mapping of ASCII to ASCII valued glyphs") {
+		static CnGraphemeMap map;
+		cnGraphemeMap_Clear(&map);
 
 		for (uint8_t i = 0; i < 128; ++i) {
 			const char asciiChar = (char)i;
-			GraphemeMap_Map(&map, &asciiChar, 1, i);
+			cnGraphemeMap_Map(&map, &asciiChar, 1, i);
 		}
 
 		for (uint8_t i = 0; i < 128; ++i) {
 			const char asciiChar = (char)i;
-			KN_TEST_ASSERT_EQ_U32((uint32_t)i, GraphemeMap_GlyphForCodePoints(&map, &asciiChar, 1));
+			CN_TEST_ASSERT_EQ_U32((uint32_t)i, cnGraphemeMap_GlyphForCodePoints(&map, &asciiChar, 1));
 		}
 	}
 
-KN_TEST_SUITE_END
+CN_TEST_SUITE_END

@@ -1,13 +1,13 @@
-#include <knell/test.h>
+#include <calendon/test.h>
 
-#include <knell/kn.h>
-#include <knell/image.h>
+#include <calendon/cn.h>
+#include <calendon/image.h>
 
-KN_TEST_SUITE_BEGIN("image")
-	KN_TEST_UNIT("Cannot create inappropriate texture atlases.") {
-		ImageRGBA8 image;
-		ImageRGBA8_AllocateSized(&image, (Dimension2u32) { 8, 16 });
-		ImageRGBA8_GetPixelRowCol(&image, (RowColu32) { .row = 0, .col = 0 });
+CN_TEST_SUITE_BEGIN("image")
+	CN_TEST_UNIT("Cannot create inappropriate texture atlases.") {
+		CnImageRGBA8 image;
+		cnImageRGBA8_AllocateSized(&image, (CnDimension2u32) { 8, 16 });
+		cnImageRGBA8_GetPixelRowCol(&image, (CnRowColu32) { .row = 0, .col = 0 });
 	}
 
-KN_TEST_SUITE_END
+CN_TEST_SUITE_END

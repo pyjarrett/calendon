@@ -1,22 +1,22 @@
 /*
  * Used to experiment with animation between discrete steps.
  */
-#include <knell/kn.h>
-#include <knell/input.h>
-#include <knell/log.h>
-#include <knell/math2.h>
-#include <knell/render.h>
-#include <knell/time.h>
-#include <knell/ui.h>
+#include <calendon/cn.h>
+#include <calendon/input.h>
+#include <calendon/log.h>
+#include <calendon/math2.h>
+#include <calendon/render.h>
+#include <calendon/time.h>
+#include <calendon/ui.h>
 
 #include <math.h>
 
-LogHandle LogSysSample;
+CnLogHandle LogSysSample;
 
 
 typedef struct {
 	// Current position.
-	float2 position;
+	CnFloat2 position;
 
 	bool transitioning;
 	float t;  // current interpolation value
@@ -24,21 +24,22 @@ typedef struct {
 
 	// Current state of the animation.
 	// need some sort of indication of which state being transitioned to.
-	float2* last, *next;
+	CnFloat2* last, *next;
 } BinaryAnimation;
 
 void anim_start(BinaryAnimation* anim)
 {
 	if (!anim->transitioning) {
 		// Move to the next state transition.
-		float2* temp = anim->last;
+		CnFloat2* temp = anim->last;
 		anim->last = anim->next;
 		anim->next = temp;
 
 		anim->transitioning = true;
 		anim->elapsed = (uint64_t) 0;
 		anim->t = 0.0f;
-		anim->position = float2_Add(float2_Multiply(*anim->last, 1.0f - anim->t), float2_Multiply(*anim->next, anim->t));
+		anim->position = cnFloat2_Add(cnFloat2_Multiply(*anim->last, 1.0f - anim->t),
+									  cnFloat2_Multiply(*anim->next, anim->t));
 	}
 }
 
@@ -49,9 +50,9 @@ void anim_update(BinaryAnimation* anim, uint64_t dt, uint64_t rate)
 		anim->elapsed = min(anim->elapsed, rate);
 		anim->t = (1.0f * anim->elapsed / rate); // puts t in [0, 1];
 		anim->t = min(1.0f, max(anim->t, 0.0f));
-		KN_ASSERT(0.0f <= anim->t && anim->t <= 1.0f, "Interpolation t is not in range [0, 1]");
-		anim->position = float2_Add(float2_Multiply(*anim->last, 1.0f - anim->t),
-									float2_Multiply(*anim->next, anim->t));
+		CN_ASSERT(0.0f <= anim->t && anim->t <= 1.0f, "Interpolation t is not in range [0, 1]");
+		anim->position = cnFloat2_Add(cnFloat2_Multiply(*anim->last, 1.0f - anim->t),
+									  cnFloat2_Multiply(*anim->next, anim->t));
 	}
 }
 
@@ -64,16 +65,16 @@ void anim_complete(BinaryAnimation* anim, uint64_t rate)
 	}
 }
 
-float2 left, right;
+CnFloat2 left, right;
 BinaryAnimation squareAnim;
 
-KN_GAME_API bool Plugin_Init(void)
+CN_GAME_API bool Plugin_Init(void)
 {
-	Log_RegisterSystem(&LogSysSample, "Sample", KN_LOG_TRACE);
-	KN_TRACE(LogSysSample, "Sample loaded");
+	cnLog_RegisterSystem(&LogSysSample, "Sample", CN_LOG_TRACE);
+	CN_TRACE(LogSysSample, "Sample loaded");
 
-	left = float2_Make(300, 300);
-	right = float2_Make(500, 300);
+	left = cnFloat2_Make(300, 300);
+	right = cnFloat2_Make(500, 300);
 
 	squareAnim.position = left;
 	squareAnim.t = 0.0f;
@@ -84,25 +85,25 @@ KN_GAME_API bool Plugin_Init(void)
 	return true;
 }
 
-KN_GAME_API void Plugin_Draw(void)
+CN_GAME_API void Plugin_Draw(void)
 {
-	R_StartFrame();
+	cnR_StartFrame();
 
-	Dimension2f rectSize = { 50, 50 };
-	rgb8 white = { 255, 255, 255 };
-	R_DrawDebugRect(squareAnim.position, rectSize, white);
+	CnDimension2f rectSize = { 50, 50 };
+	CnRGB8u white = { 255, 255, 255 };
+	cnR_DrawDebugRect(squareAnim.position, rectSize, white);
 
-	R_EndFrame();
+	cnR_EndFrame();
 }
 
-KN_GAME_API void Plugin_Tick(uint64_t dt)
+CN_GAME_API void Plugin_Tick(uint64_t dt)
 {
-	Input* input = UI_InputPoll();
-	KN_ASSERT(input, "Input poll provided a null pointer.");
+	CnInput* input = cnUI_InputPoll();
+	CN_ASSERT(input, "CnInput poll provided a null pointer.");
 
-	const uint64_t rate = Time_MsToNs(400);
+	const uint64_t rate = cnTime_MsToNs(400);
 	if (!squareAnim.transitioning) {
-		if (KeySet_Contains(&input->keySet.down, SDLK_SPACE)) {
+		if (cnKeySet_Contains(&input->keySet.down, SDLK_SPACE)) {
 			anim_start(&squareAnim);
 		}
 	}
@@ -119,6 +120,6 @@ KN_GAME_API void Plugin_Tick(uint64_t dt)
 	//t *= 0.5f; // convert to [0, 1]
 }
 
-KN_GAME_API void Plugin_Shutdown(void)
+CN_GAME_API void Plugin_Shutdown(void)
 {
 }

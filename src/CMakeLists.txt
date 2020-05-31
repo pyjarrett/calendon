@@ -1,7 +1,7 @@
-# The knell driver should depend on all demos to ensure that they are built
+# The calendon driver should depend on all demos to ensure that they are built
 # before running the driver to prevent problems where you're trying to
 # iterate but your shared lib isn't being built.
-set(KN_ALL_DEMOS "" CACHE INTERNAL "KN_ALL_DEMOS")
+set(CN_ALL_DEMOS "" CACHE INTERNAL "CN_ALL_DEMOS")
 
 # Use "feature test macro" to change POSIX support to allow use of
 # CLOCK_MONOTONIC.
@@ -9,13 +9,13 @@ set(KN_ALL_DEMOS "" CACHE INTERNAL "KN_ALL_DEMOS")
 add_definitions(-D_POSIX_C_SOURCE=199309L)
 
 include_directories(SYSTEM .)
-add_subdirectory(knell)
+add_subdirectory(calendon)
 add_subdirectory(demos)
 add_subdirectory(driver)
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT knell-driver)
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT calendon-driver)
 
-add_dependencies(knell-driver knell ${KN_ALL_DEMOS})
-message("Demos are ${KN_ALL_DEMOS}")
+add_dependencies(calendon-driver calendon ${CN_ALL_DEMOS})
+message("Demos are ${CN_ALL_DEMOS}")
 
 ###############################################################################
 # Testing
@@ -42,7 +42,7 @@ add_custom_target(check-iterate COMMAND ${CMAKE_CTEST_COMMAND} -V --rerun-failed
 
 add_dependencies(check testing)
 add_dependencies(check-iterate testing)
-add_dependencies(testing knell-testable)
+add_dependencies(testing calendon-testable)
 
 add_subdirectory(tests)
 
@@ -82,6 +82,6 @@ if (WIN32)
 	endif()
 
 	add_dependencies(testing windows-dll-copy)
-	add_dependencies(knell-driver windows-dll-copy)
+	add_dependencies(calendon-driver windows-dll-copy)
 
 endif (WIN32)

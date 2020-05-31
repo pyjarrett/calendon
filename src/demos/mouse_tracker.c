@@ -1,46 +1,46 @@
-#include <knell/kn.h>
-#include <knell/input.h>
-#include <knell/log.h>
-#include <knell/math2.h>
-#include <knell/render.h>
-#include <knell/time.h>
+#include <calendon/cn.h>
+#include <calendon/input.h>
+#include <calendon/log.h>
+#include <calendon/math2.h>
+#include <calendon/render.h>
+#include <calendon/time.h>
 
 #include <math.h>
-#include <knell/ui.h>
+#include <calendon/ui.h>
 
-LogHandle LogSysSample;
+CnLogHandle LogSysSample;
 
-float2 position;
+CnFloat2 position;
 
-KN_GAME_API bool Plugin_Init(void)
+CN_GAME_API bool Plugin_Init(void)
 {
-	Log_RegisterSystem(&LogSysSample, "Sample", KN_LOG_TRACE);
-	KN_TRACE(LogSysSample, "Sample loaded");
+	cnLog_RegisterSystem(&LogSysSample, "Sample", CN_LOG_TRACE);
+	CN_TRACE(LogSysSample, "Sample loaded");
 
-	position = float2_Make(300, 300);
+	position = cnFloat2_Make(300, 300);
 	return true;
 }
 
-KN_GAME_API void Plugin_Draw(void)
+CN_GAME_API void Plugin_Draw(void)
 {
-	R_StartFrame();
+	cnR_StartFrame();
 
-	Dimension2f rectSize = { 50, 50 };
-	rgb8 white = { 255, 255, 255};
-	R_DrawDebugRect(position, rectSize, white);
+	CnDimension2f rectSize = { 50, 50 };
+	CnRGB8u white = { 255, 255, 255};
+	cnR_DrawDebugRect(position, rectSize, white);
 
-	R_EndFrame();
+	cnR_EndFrame();
 }
 
-KN_GAME_API void Plugin_Tick(uint64_t dt)
+CN_GAME_API void Plugin_Tick(uint64_t dt)
 {
-	KN_UNUSED(dt);
-	Input* input = UI_InputPoll();
-	KN_ASSERT(input, "Input poll provided a null pointer.");
-	position = float2_Make((float)input->mouse.x, (float)input->mouse.y);
+	CN_UNUSED(dt);
+	CnInput* input = cnUI_InputPoll();
+	CN_ASSERT(input, "CnInput poll provided a null pointer.");
+	position = cnFloat2_Make((float) input->mouse.x, (float) input->mouse.y);
 
 }
 
-KN_GAME_API void Plugin_Shutdown(void)
+CN_GAME_API void Plugin_Shutdown(void)
 {
 }

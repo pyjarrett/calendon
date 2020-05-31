@@ -1,8 +1,8 @@
-file(GLOB_RECURSE KNELL_DRIVER_SRCS *.c)
-file(GLOB_RECURSE KNELL_DRIVER_HEADERS *.h)
+file(GLOB_RECURSE CALENDON_DRIVER_SRCS *.c)
+file(GLOB_RECURSE CALENDON_DRIVER_HEADERS *.h)
 
-remove_definitions(-DKN_LIBRARY)
-add_definitions(-DKN_LIBRARY=0)
+remove_definitions(-DCN_LIBRARY)
+add_definitions(-DCN_LIBRARY=0)
 
-add_executable(knell-driver ${KNELL_DRIVER_SRCS} ${KNELL_DRIVER_HEADERS})
-target_link_libraries(knell-driver knell)
+add_executable(calendon-driver ${CALENDON_DRIVER_SRCS} ${CALENDON_DRIVER_HEADERS})
+target_link_libraries(calendon-driver calendon)

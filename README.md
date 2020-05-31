@@ -1,4 +1,4 @@
-# Knell
+# Calendon
 
 A 2D single-threaded main loop C99 game engine for prototyping and learning.
 
@@ -33,9 +33,9 @@ A 2D single-threaded main loop C99 game engine for prototyping and learning.
 
 ## Overview
 
-The only code you write for Knell is a game module which gets loaded by a
-driver program at runtime.  Your game accesses Knell functionality using the
-same Knell library that the driver does.
+The only code you write for Calendon is a game module which gets loaded by a
+driver program at runtime.  Your game accesses Calendon functionality using the
+same Calendon library that the driver does.
 
 ![Runtime Structure](diagrams/runtime_structure.svg)
 
@@ -56,7 +56,7 @@ Linux:
 - **`ccache`** (optional, improves build speeds)
 
 Mac:
-- I don't have a Mac to test on so I don't know if Knell will even build on
+- I don't have a Mac to test on so I don't know if Calendon will even build on
   this platform.  If you're willing to help with Mac support, let me know!
 
 ### Building and running the demos
@@ -71,7 +71,7 @@ Your installation paths might be slightly different than those given here.
 
 Windows, using powershell:
 ```powershell
-py/crank.py register cmake "C:/Program Files/CMake/bin/cmake.exe" 
+py/crank.py register cmake "C:/CnProgram Files/CMake/bin/cmake.exe" 
 ```
 
 Linux:

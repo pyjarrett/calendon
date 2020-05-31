@@ -1,144 +1,144 @@
-#include <knell/test.h>
+#include <calendon/test.h>
 
-#include <knell/utf8.h>
+#include <calendon/utf8.h>
 
 #include <stdlib.h>
 #include <stdio.h>
 
-KN_TEST_SUITE_BEGIN("UTF-8")
+CN_TEST_SUITE_BEGIN("UTF-8")
 
-	KN_TEST_UNIT("Bytes in UTF-8 code point") {
-		KN_TEST_ASSERT_EQ_U8(Utf8_NumBytesInCodePoint('a'), 1);
-		KN_TEST_ASSERT_EQ_U8(Utf8_NumBytesInCodePoint('\xC2'), 2);
-		KN_TEST_ASSERT_EQ_U8(Utf8_NumBytesInCodePoint('\xE2'), 3);
+	CN_TEST_UNIT("Bytes in UTF-8 code point") {
+		CN_TEST_ASSERT_EQ_U8(cnUtf8_NumBytesInCodePoint('a'), 1);
+		CN_TEST_ASSERT_EQ_U8(cnUtf8_NumBytesInCodePoint('\xC2'), 2);
+		CN_TEST_ASSERT_EQ_U8(cnUtf8_NumBytesInCodePoint('\xE2'), 3);
 
-		KN_TEST_PRECONDITION(Utf8_NumBytesInCodePoint('\xC0'));
-		KN_TEST_PRECONDITION(Utf8_NumBytesInCodePoint('\xFE'));
-		KN_TEST_PRECONDITION(Utf8_NumBytesInCodePoint('\xFF'));
+		CN_TEST_PRECONDITION(cnUtf8_NumBytesInCodePoint('\xC0'));
+		CN_TEST_PRECONDITION(cnUtf8_NumBytesInCodePoint('\xFE'));
+		CN_TEST_PRECONDITION(cnUtf8_NumBytesInCodePoint('\xFF'));
 
 		// Continuation, but not leading bytes.
-		KN_TEST_PRECONDITION(Utf8_NumBytesInCodePoint('\x84'));
+		CN_TEST_PRECONDITION(cnUtf8_NumBytesInCodePoint('\x84'));
 	}
 
-	KN_TEST_UNIT("Identification of leading bytes") {
-		KN_TEST_ASSERT_TRUE(Utf8_IsLeadingByte('\0'));
-		KN_TEST_ASSERT_TRUE(Utf8_IsLeadingByte('\xEF'));
+	CN_TEST_UNIT("Identification of leading bytes") {
+		CN_TEST_ASSERT_TRUE(cnUtf8_IsLeadingByte('\0'));
+		CN_TEST_ASSERT_TRUE(cnUtf8_IsLeadingByte('\xEF'));
 
 		for (uint8_t b = 0x80; b <= 0xBF; ++b) {
-			KN_TEST_ASSERT_FALSE(Utf8_IsLeadingByte(b));
+			CN_TEST_ASSERT_FALSE(cnUtf8_IsLeadingByte(b));
 		}
 
-		KN_TEST_PRECONDITION(Utf8_IsLeadingByte('\xC0'));
-		KN_TEST_PRECONDITION(Utf8_IsLeadingByte('\xF5'));
+		CN_TEST_PRECONDITION(cnUtf8_IsLeadingByte('\xC0'));
+		CN_TEST_PRECONDITION(cnUtf8_IsLeadingByte('\xF5'));
 	}
 
-	KN_TEST_UNIT("Code points match happy case") {
-		KN_TEST_ASSERT_TRUE(Utf8_CodePointsMatch("b", "b"));
-		KN_TEST_ASSERT_TRUE(Utf8_CodePointsMatch("\xEF\xBF\xBE", "\xEF\xBF\xBE"));
+	CN_TEST_UNIT("Code points match happy case") {
+		CN_TEST_ASSERT_TRUE(cnUtf8_CodePointsMatch("b", "b"));
+		CN_TEST_ASSERT_TRUE(cnUtf8_CodePointsMatch("\xEF\xBF\xBE", "\xEF\xBF\xBE"));
 	}
 
-	KN_TEST_UNIT("Code points don't match") {
-		KN_TEST_PRECONDITION(Utf8_CodePointsMatch(NULL, "b"));
-		KN_TEST_PRECONDITION(Utf8_CodePointsMatch("a", NULL));
+	CN_TEST_UNIT("Code points don't match") {
+		CN_TEST_PRECONDITION(cnUtf8_CodePointsMatch(NULL, "b"));
+		CN_TEST_PRECONDITION(cnUtf8_CodePointsMatch("a", NULL));
 
-		KN_TEST_ASSERT_FALSE(Utf8_CodePointsMatch("a", "b"));
-		KN_TEST_ASSERT_FALSE(Utf8_CodePointsMatch("\xEF\xBF\xBE", "\xEF\xBF"));
+		CN_TEST_ASSERT_FALSE(cnUtf8_CodePointsMatch("a", "b"));
+		CN_TEST_ASSERT_FALSE(cnUtf8_CodePointsMatch("\xEF\xBF\xBE", "\xEF\xBF"));
 
 		// Invalid continuation byte
-		KN_TEST_ASSERT_FALSE(Utf8_CodePointsMatch("\xEF\xBF\xBE", "\xEF\0\xBF"));
+		CN_TEST_ASSERT_FALSE(cnUtf8_CodePointsMatch("\xEF\xBF\xBE", "\xEF\0\xBF"));
 	}
 
-	KN_TEST_UNIT("UTF-8 string length") {
-		KN_TEST_PRECONDITION(Utf8_StringLength(NULL));
+	CN_TEST_UNIT("UTF-8 string length") {
+		CN_TEST_PRECONDITION(cnUtf8_StringLength(NULL));
 
-		KN_TEST_ASSERT_EQ_SIZE_T(0, Utf8_StringLength(""));
-		KN_TEST_ASSERT_EQ_SIZE_T(4, Utf8_StringLength("test"));
-		KN_TEST_ASSERT_EQ_SIZE_T(21, Utf8_StringLength("«café, caffè» ™ © Â ←"));
+		CN_TEST_ASSERT_EQ_SIZE_T(0, cnUtf8_StringLength(""));
+		CN_TEST_ASSERT_EQ_SIZE_T(4, cnUtf8_StringLength("test"));
+		CN_TEST_ASSERT_EQ_SIZE_T(21, cnUtf8_StringLength("«café, caffè» ™ © Â ←"));
 	}
 
-	KN_TEST_UNIT("UTF-8 invalid string length") {
+	CN_TEST_UNIT("UTF-8 invalid string length") {
 		// String has a continuation byte, but not all expected bytes.
-		KN_TEST_PRECONDITION(Utf8_StringLength("\xEF"));
+		CN_TEST_PRECONDITION(cnUtf8_StringLength("\xEF"));
 	}
 
-	KN_TEST_UNIT("UTF-8 string validity") {
-		KN_TEST_ASSERT_TRUE(Utf8_IsStringValid(""));
+	CN_TEST_UNIT("UTF-8 string validity") {
+		CN_TEST_ASSERT_TRUE(cnUtf8_IsStringValid(""));
 
-		KN_TEST_ASSERT_TRUE(Utf8_IsStringValid("This is a test"));
-		KN_TEST_ASSERT_TRUE(Utf8_IsStringValid("«café, caffè» ™ © Â ←"));
+		CN_TEST_ASSERT_TRUE(cnUtf8_IsStringValid("This is a test"));
+		CN_TEST_ASSERT_TRUE(cnUtf8_IsStringValid("«café, caffè» ™ © Â ←"));
 
-		KN_TEST_ASSERT_FALSE(Utf8_IsStringValid("\xEF\xEF"));
-		KN_TEST_ASSERT_FALSE(Utf8_IsStringValid("\xBF\xBE"));
+		CN_TEST_ASSERT_FALSE(cnUtf8_IsStringValid("\xEF\xEF"));
+		CN_TEST_ASSERT_FALSE(cnUtf8_IsStringValid("\xBF\xBE"));
 	}
 
-	KN_TEST_UNIT("UTF-8 string equality") {
-		KN_TEST_ASSERT_TRUE(Utf8_StringEqual("«café, caffè» ™ © Â ←", "«café, caffè» ™ © Â ←"));
+	CN_TEST_UNIT("UTF-8 string equality") {
+		CN_TEST_ASSERT_TRUE(cnUtf8_StringEqual("«café, caffè» ™ © Â ←", "«café, caffè» ™ © Â ←"));
 	}
 
-	KN_TEST_UNIT("UTF-8 string inequality") {
-		KN_TEST_ASSERT_FALSE(Utf8_StringEqual("«café, caffè» ™ © Â ←", "«cafe, caffe» ™ © Â ←"));
+	CN_TEST_UNIT("UTF-8 string inequality") {
+		CN_TEST_ASSERT_FALSE(cnUtf8_StringEqual("«café, caffè» ™ © Â ←", "«cafe, caffe» ™ © Â ←"));
 
 		// Invalid continuation byte.
-		KN_TEST_PRECONDITION(Utf8_StringEqual("\xEF\xBF\xBE", "\xEF\xBF"));
-		KN_TEST_PRECONDITION(Utf8_StringEqual("\xEF\xBF", "\xEF\xBF\xBE"));
-		KN_TEST_PRECONDITION(Utf8_StringEqual("\xEF\0\xBF\xBE", "\xEF\0\xBF\xBE"));
-		KN_TEST_PRECONDITION(Utf8_StringEqual("\xEF\0\xBF\xBE", "\xEF\xBF\xBE"));
-		KN_TEST_PRECONDITION(Utf8_StringEqual("\xEF\xBF\xBE", "\xEF\0\xBF\xBE"));
+		CN_TEST_PRECONDITION(cnUtf8_StringEqual("\xEF\xBF\xBE", "\xEF\xBF"));
+		CN_TEST_PRECONDITION(cnUtf8_StringEqual("\xEF\xBF", "\xEF\xBF\xBE"));
+		CN_TEST_PRECONDITION(cnUtf8_StringEqual("\xEF\0\xBF\xBE", "\xEF\0\xBF\xBE"));
+		CN_TEST_PRECONDITION(cnUtf8_StringEqual("\xEF\0\xBF\xBE", "\xEF\xBF\xBE"));
+		CN_TEST_PRECONDITION(cnUtf8_StringEqual("\xEF\xBF\xBE", "\xEF\0\xBF\xBE"));
 	}
 
-	KN_TEST_UNIT("UTF-8 string next") {
-		KN_TEST_PRECONDITION(Utf8_StringNext(NULL));
+	CN_TEST_UNIT("UTF-8 string next") {
+		CN_TEST_PRECONDITION(cnUtf8_StringNext(NULL));
 	}
 
-	KN_TEST_UNIT("Grapheme equality") {
-		Grapheme a;
-		Grapheme_Set(&a, "a", 1);
-		KN_TEST_ASSERT_EQ_U8(a.byteLength, 1);
-		KN_TEST_ASSERT_EQ_U8(a.codePointLength, 1);
-		KN_TEST_ASSERT_TRUE(Grapheme_EqualsCodePoints(&a, "a", 1));
-		KN_TEST_ASSERT_FALSE(Grapheme_EqualsCodePoints(&a, "b", 1));
-		KN_TEST_ASSERT_FALSE(Grapheme_EqualsCodePoints(&a, "ba", 2));
-		KN_TEST_ASSERT_FALSE(Grapheme_EqualsCodePoints(&a, "ab", 2));
+	CN_TEST_UNIT("CnGrapheme equality") {
+		CnGrapheme a;
+		cnGrapheme_Set(&a, "a", 1);
+		CN_TEST_ASSERT_EQ_U8(a.byteLength, 1);
+		CN_TEST_ASSERT_EQ_U8(a.codePointLength, 1);
+		CN_TEST_ASSERT_TRUE(cnGrapheme_EqualsCodePoints(&a, "a", 1));
+		CN_TEST_ASSERT_FALSE(cnGrapheme_EqualsCodePoints(&a, "b", 1));
+		CN_TEST_ASSERT_FALSE(cnGrapheme_EqualsCodePoints(&a, "ba", 2));
+		CN_TEST_ASSERT_FALSE(cnGrapheme_EqualsCodePoints(&a, "ab", 2));
 
-		Grapheme b;
-		Grapheme_Set(&b, "b", 1);
-		KN_TEST_ASSERT_EQ_U8(b.byteLength, 1);
-		KN_TEST_ASSERT_EQ_U8(b.codePointLength, 1);
-		KN_TEST_ASSERT_TRUE(Grapheme_EqualsCodePoints(&b, "b", 1));
+		CnGrapheme b;
+		cnGrapheme_Set(&b, "b", 1);
+		CN_TEST_ASSERT_EQ_U8(b.byteLength, 1);
+		CN_TEST_ASSERT_EQ_U8(b.codePointLength, 1);
+		CN_TEST_ASSERT_TRUE(cnGrapheme_EqualsCodePoints(&b, "b", 1));
 
-		Grapheme extended;
-		Grapheme_Set(&extended, "\xe2\x80\xa2\xe2\x88\x99", 2);
-		KN_TEST_ASSERT_EQ_U8(extended.byteLength, 6);
-		KN_TEST_ASSERT_EQ_U8(extended.codePointLength, 2);
-		KN_TEST_ASSERT_TRUE(Grapheme_EqualsCodePoints(&extended, "\xe2\x80\xa2\xe2\x88\x99", 2));
-		KN_TEST_ASSERT_FALSE(Grapheme_EqualsCodePoints(&extended, "\xe2\x80\xa2\xe2\x88\x98", 2));
+		CnGrapheme extended;
+		cnGrapheme_Set(&extended, "\xe2\x80\xa2\xe2\x88\x99", 2);
+		CN_TEST_ASSERT_EQ_U8(extended.byteLength, 6);
+		CN_TEST_ASSERT_EQ_U8(extended.codePointLength, 2);
+		CN_TEST_ASSERT_TRUE(cnGrapheme_EqualsCodePoints(&extended, "\xe2\x80\xa2\xe2\x88\x99", 2));
+		CN_TEST_ASSERT_FALSE(cnGrapheme_EqualsCodePoints(&extended, "\xe2\x80\xa2\xe2\x88\x98", 2));
 	}
 
-	KN_TEST_UNIT("Grapheme equality") {
-		Grapheme a;
-		Grapheme_Set(&a, "a", 1);
-		KN_TEST_ASSERT_TRUE(Grapheme_EqualsGrapheme(&a, &a));
+	CN_TEST_UNIT("CnGrapheme equality") {
+		CnGrapheme a;
+		cnGrapheme_Set(&a, "a", 1);
+		CN_TEST_ASSERT_TRUE(cnGrapheme_EqualsGrapheme(&a, &a));
 
-		Grapheme abc;
-		Grapheme_Set(&abc, "abc", 3);
-		KN_TEST_ASSERT_TRUE(Grapheme_EqualsGrapheme(&abc, &abc));
+		CnGrapheme abc;
+		cnGrapheme_Set(&abc, "abc", 3);
+		CN_TEST_ASSERT_TRUE(cnGrapheme_EqualsGrapheme(&abc, &abc));
 
-		KN_TEST_ASSERT_FALSE(Grapheme_EqualsGrapheme(&a, &abc));
+		CN_TEST_ASSERT_FALSE(cnGrapheme_EqualsGrapheme(&a, &abc));
 
-		KN_TEST_PRECONDITION(Grapheme_EqualsGrapheme(NULL, &a));
-		KN_TEST_PRECONDITION(Grapheme_EqualsGrapheme(&a, NULL));
+		CN_TEST_PRECONDITION(cnGrapheme_EqualsGrapheme(NULL, &a));
+		CN_TEST_PRECONDITION(cnGrapheme_EqualsGrapheme(&a, NULL));
 	}
 
-	KN_TEST_UNIT("Building code point sequences") {
-		Grapheme a;
-		Grapheme_Begin(&a);
-		Grapheme_AddCodePoint(&a, "a");
-		Grapheme_AddCodePoint(&a, "b");
-		Grapheme_AddCodePoint(&a, "c");
+	CN_TEST_UNIT("Building code point sequences") {
+		CnGrapheme a;
+		cnGrapheme_Begin(&a);
+		cnGrapheme_AddCodePoint(&a, "a");
+		cnGrapheme_AddCodePoint(&a, "b");
+		cnGrapheme_AddCodePoint(&a, "c");
 
-		Grapheme abc;
-		Grapheme_Set(&abc, "abc", 3);
-		KN_TEST_ASSERT_TRUE(Grapheme_EqualsGrapheme(&a, &abc));
+		CnGrapheme abc;
+		cnGrapheme_Set(&abc, "abc", 3);
+		CN_TEST_ASSERT_TRUE(cnGrapheme_EqualsGrapheme(&a, &abc));
 	}
 
-KN_TEST_SUITE_END
+CN_TEST_SUITE_END

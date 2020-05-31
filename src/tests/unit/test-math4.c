@@ -1,17 +1,17 @@
-#include <knell/test.h>
+#include <calendon/test.h>
 
-#include <knell/kn.h>
-#include <knell/float.h>
+#include <calendon/cn.h>
+#include <calendon/float.h>
 
-#include <knell/math4.h>
+#include <calendon/math4.h>
 
-KN_TEST_SUITE_BEGIN("math4")
-	KN_TEST_UNIT("Vector add") {
-		const float4 origin = float4_Make(0.0f, 0.0f, 0.0f, 1.0f);
-		const float4x4 translation = float4x4_Translate(1.0f, 2.0f, 3.0f);
-		const float4 actual = float4_Multiply(origin, translation);
+CN_TEST_SUITE_BEGIN("math4")
+	CN_TEST_UNIT("Vector add") {
+		const CnFloat4 origin = cnFloat4_Make(0.0f, 0.0f, 0.0f, 1.0f);
+		const CnFloat4x4 translation = cnFloat4x4_Translate(1.0f, 2.0f, 3.0f);
+		const CnFloat4 actual = cnFloat4_Multiply(origin, translation);
 
-		const float4 expected = float4_Make(1.0f, 2.0f, 3.0f, 1.0f);
-		KN_TEST_ASSERT_CLOSE_F(float4_Distance(expected, actual), 0.0f, 0.5);
+		const CnFloat4 expected = cnFloat4_Make(1.0f, 2.0f, 3.0f, 1.0f);
+		CN_TEST_ASSERT_CLOSE_F(cnFloat4_Distance(expected, actual), 0.0f, 0.5);
 	}
-KN_TEST_SUITE_END
+CN_TEST_SUITE_END

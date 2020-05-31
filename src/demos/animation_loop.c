@@ -1,61 +1,61 @@
 /*
  * Working with animation loops.
  */
-#include <knell/kn.h>
-#include <knell/anim-loop.h>
-#include <knell/log.h>
-#include <knell/math2.h>
-#include <knell/render.h>
-#include <knell/time.h>
+#include <calendon/cn.h>
+#include <calendon/anim-loop.h>
+#include <calendon/log.h>
+#include <calendon/math2.h>
+#include <calendon/render.h>
+#include <calendon/time.h>
 
-LogHandle LogSysSample;
+CnLogHandle LogSysSample;
 
 #define SAMPLE_POINTS 4
-AnimationLoopCursor sampleCursor;
-AnimationLoop sampleLoop;
-float2 points[SAMPLE_POINTS];
+CnAnimationLoopCursor sampleCursor;
+CnAnimationLoop sampleLoop;
+CnFloat2 points[SAMPLE_POINTS];
 
-KN_GAME_API bool Plugin_Init(void)
+CN_GAME_API bool Plugin_Init(void)
 {
-	Log_RegisterSystem(&LogSysSample, "Sample", KN_LOG_TRACE);
-	KN_TRACE(LogSysSample, "Sample loaded");
+	cnLog_RegisterSystem(&LogSysSample, "Sample", CN_LOG_TRACE);
+	CN_TRACE(LogSysSample, "Sample loaded");
 
-	KN_TRACE(LogSysSample, "Animation loop size:        %zu bytes", sizeof(AnimationLoop));
-	KN_TRACE(LogSysSample, "Animation loop cursor size: %zu bytes", sizeof(AnimationLoopCursor));
+	CN_TRACE(LogSysSample, "Animation loop size:        %zu bytes", sizeof(CnAnimationLoop));
+	CN_TRACE(LogSysSample, "Animation loop cursor size: %zu bytes", sizeof(CnAnimationLoopCursor));
 
 	sampleLoop.numStates = SAMPLE_POINTS;
-	sampleLoop.elapsed[0] = Time_MsToNs(400);
-	sampleLoop.elapsed[1] = Time_MsToNs(1000);
-	sampleLoop.elapsed[2] = Time_MsToNs(2000);
-	sampleLoop.elapsed[3] = Time_MsToNs(500);
+	sampleLoop.elapsed[0] = cnTime_MsToNs(400);
+	sampleLoop.elapsed[1] = cnTime_MsToNs(1000);
+	sampleLoop.elapsed[2] = cnTime_MsToNs(2000);
+	sampleLoop.elapsed[3] = cnTime_MsToNs(500);
 
-	points[0] = float2_Make(200, 200);
-	points[1] = float2_Make(400, 200);
-	points[2] = float2_Make(400, 400);
-	points[3] = float2_Make(200, 400);
+	points[0] = cnFloat2_Make(200, 200);
+	points[1] = cnFloat2_Make(400, 200);
+	points[2] = cnFloat2_Make(400, 400);
+	points[3] = cnFloat2_Make(200, 400);
 	return true;
 }
 
-KN_GAME_API void Plugin_Draw(void)
+CN_GAME_API void Plugin_Draw(void)
 {
-	R_StartFrame();
+	cnR_StartFrame();
 
-	Dimension2f rectSize = { 50, 50 };
-	rgb8 white = { 255, 255, 255 };
+	CnDimension2f rectSize = { 50, 50 };
+	CnRGB8u white = { 255, 255, 255 };
 
-	float2 animatedPosition = float2_Lerp(points[sampleCursor.current],
-		points[AnimLoop_NextState(&sampleLoop, sampleCursor.current)],
-		AnimLoop_CalcAlpha(&sampleLoop, &sampleCursor));
-	R_DrawDebugRect(animatedPosition, rectSize, white);
+	CnFloat2 animatedPosition = cnFloat2_Lerp(points[sampleCursor.current],
+											  points[AnimLoop_NextState(&sampleLoop, sampleCursor.current)],
+											  cnAnimLoop_CalcAlpha(&sampleLoop, &sampleCursor));
+	cnR_DrawDebugRect(animatedPosition, rectSize, white);
 
-	R_EndFrame();
+	cnR_EndFrame();
 }
 
-KN_GAME_API void Plugin_Tick(uint64_t dt)
+CN_GAME_API void Plugin_Tick(uint64_t dt)
 {
-	AnimLoop_Tick(&sampleLoop, &sampleCursor, dt);
+	cnAnimLoop_Tick(&sampleLoop, &sampleCursor, dt);
 }
 
-KN_GAME_API void Plugin_Shutdown(void)
+CN_GAME_API void Plugin_Shutdown(void)
 {
 }

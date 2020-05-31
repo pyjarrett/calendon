@@ -1,39 +1,39 @@
 /*
  * Working with animation loops.
  */
-#include <knell/kn.h>
-#include <knell/anim-loop.h>
-#include <knell/assets.h>
-#include <knell/log.h>
-#include <knell/math2.h>
-#include <knell/path.h>
-#include <knell/render.h>
-#include <knell/time.h>
+#include <calendon/cn.h>
+#include <calendon/anim-loop.h>
+#include <calendon/assets.h>
+#include <calendon/log.h>
+#include <calendon/math2.h>
+#include <calendon/path.h>
+#include <calendon/render.h>
+#include <calendon/time.h>
 
-LogHandle LogSysSample;
+CnLogHandle LogSysSample;
 
-AnimationLoopCursor sampleCursor;
-AnimationLoop sampleLoop;
+CnAnimationLoopCursor sampleCursor;
+CnAnimationLoop sampleLoop;
 
 #define SPRITE_ANIMATION_FRAMES 3
-SpriteId spriteFrames[SPRITE_ANIMATION_FRAMES];
+CnSpriteId spriteFrames[SPRITE_ANIMATION_FRAMES];
 
-KN_GAME_API bool Plugin_Init(void)
+CN_GAME_API bool Plugin_Init(void)
 {
-	Log_RegisterSystem(&LogSysSample, "Sample", KN_LOG_TRACE);
-	KN_TRACE(LogSysSample, "Sample loaded");
+	cnLog_RegisterSystem(&LogSysSample, "Sample", CN_LOG_TRACE);
+	CN_TRACE(LogSysSample, "Sample loaded");
 
-	KN_TRACE(LogSysSample, "Animation loop size:        %zu bytes", sizeof(AnimationLoop));
-	KN_TRACE(LogSysSample, "Animation loop cursor size: %zu bytes", sizeof(AnimationLoopCursor));
+	CN_TRACE(LogSysSample, "Animation loop size:        %zu bytes", sizeof(CnAnimationLoop));
+	CN_TRACE(LogSysSample, "Animation loop cursor size: %zu bytes", sizeof(CnAnimationLoopCursor));
 
 	sampleLoop.numStates = SPRITE_ANIMATION_FRAMES;
-	sampleLoop.elapsed[0] = Time_MsToNs(150);
-	sampleLoop.elapsed[1] = Time_MsToNs(150);
-	sampleLoop.elapsed[2] = Time_MsToNs(150);
+	sampleLoop.elapsed[0] = cnTime_MsToNs(150);
+	sampleLoop.elapsed[1] = cnTime_MsToNs(150);
+	sampleLoop.elapsed[2] = cnTime_MsToNs(150);
 
-	R_CreateSprite(&spriteFrames[0]);
-	R_CreateSprite(&spriteFrames[1]);
-	R_CreateSprite(&spriteFrames[2]);
+	cnR_CreateSprite(&spriteFrames[0]);
+	cnR_CreateSprite(&spriteFrames[1]);
+	cnR_CreateSprite(&spriteFrames[2]);
 
 	const char* frameFilenames[] = {
 		"sprites/stick_person.png",
@@ -42,29 +42,29 @@ KN_GAME_API bool Plugin_Init(void)
 	};
 
 	for (uint32_t i = 0; i < 3; ++i) {
-		PathBuffer path;
-		Assets_PathBufferFor(frameFilenames[i], &path);
-		R_LoadSprite(spriteFrames[i], path.str);
+		CnPathBuffer path;
+		cnAssets_PathBufferFor(frameFilenames[i], &path);
+		cnR_LoadSprite(spriteFrames[i], path.str);
 	}
 	return true;
 }
 
-KN_GAME_API void Plugin_Draw(void)
+CN_GAME_API void Plugin_Draw(void)
 {
-	R_StartFrame();
+	cnR_StartFrame();
 
-	float2 position = float2_Make(300, 300);
-	Dimension2f size = { .width = 200.0f, .height = 200.0f };
-	R_DrawSprite(spriteFrames[sampleCursor.current], position, size);
+	CnFloat2 position = cnFloat2_Make(300, 300);
+	CnDimension2f size = { .width = 200.0f, .height = 200.0f };
+	cnR_DrawSprite(spriteFrames[sampleCursor.current], position, size);
 
-	R_EndFrame();
+	cnR_EndFrame();
 }
 
-KN_GAME_API void Plugin_Tick(uint64_t dt)
+CN_GAME_API void Plugin_Tick(uint64_t dt)
 {
-	AnimLoop_Tick(&sampleLoop, &sampleCursor, dt);
+	cnAnimLoop_Tick(&sampleLoop, &sampleCursor, dt);
 }
 
-KN_GAME_API void Plugin_Shutdown(void)
+CN_GAME_API void Plugin_Shutdown(void)
 {
 }

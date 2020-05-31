@@ -1,50 +1,50 @@
-#include <knell/kn.h>
-#include <knell/log.h>
-#include <knell/render.h>
+#include <calendon/cn.h>
+#include <calendon/log.h>
+#include <calendon/render.h>
 
 #include <math.h>
 
-LogHandle LogSysSample;
+CnLogHandle LogSysSample;
 
 #define NUM_CIRCLE_VERTICES 70
-float2 vertices[NUM_CIRCLE_VERTICES];
+CnFloat2 vertices[NUM_CIRCLE_VERTICES];
 
-KN_GAME_API bool Plugin_Init(void)
+CN_GAME_API bool Plugin_Init(void)
 {
-	Log_RegisterSystem(&LogSysSample, "Sample", KN_LOG_TRACE);
-	KN_TRACE(LogSysSample, "Sample loaded");
+	cnLog_RegisterSystem(&LogSysSample, "Sample", CN_LOG_TRACE);
+	CN_TRACE(LogSysSample, "Sample loaded");
 
 	const float radius = 50.0f;
 	const float arcSize = 2 * 3.14159f / (NUM_CIRCLE_VERTICES - 1);
 	for (uint32_t i=0; i < NUM_CIRCLE_VERTICES-1; ++i) {
-		vertices[i] = float2_Make(50 + radius * cosf(i*arcSize), 50 + radius * sinf(i*arcSize));
+		vertices[i] = cnFloat2_Make(50 + radius * cosf(i * arcSize), 50 + radius * sinf(i * arcSize));
 	}
 	vertices[NUM_CIRCLE_VERTICES-1] = vertices[0];
 	return true;
 }
 
-KN_GAME_API void Plugin_Draw(void)
+CN_GAME_API void Plugin_Draw(void)
 {
-	R_StartFrame();
+	cnR_StartFrame();
 
-    rgb8 white = { 255u, 255u, 255u };
-	R_DrawDebugLine(0, 0, 1024, 768, white);
+    CnRGB8u white = { 255u, 255u, 255u };
+	cnR_DrawDebugLine(0, 0, 1024, 768, white);
 
-    rgb8 blue = { 0u, 0u, 255u };
-	R_DrawDebugLine(100, 100, 100, 200, blue);
-	R_DrawDebugLine(100, 200, 200, 200, blue);
-	R_DrawDebugLine(200, 200, 200, 100, blue);
-	R_DrawDebugLine(100, 100, 200, 100, blue);
+    CnRGB8u blue = { 0u, 0u, 255u };
+	cnR_DrawDebugLine(100, 100, 100, 200, blue);
+	cnR_DrawDebugLine(100, 200, 200, 200, blue);
+	cnR_DrawDebugLine(200, 200, 200, 100, blue);
+	cnR_DrawDebugLine(100, 100, 200, 100, blue);
 
-	R_DrawDebugLineStrip(vertices, NUM_CIRCLE_VERTICES, white);
+	cnR_DrawDebugLineStrip(vertices, NUM_CIRCLE_VERTICES, white);
 
-	R_EndFrame();
+	cnR_EndFrame();
 }
 
-KN_GAME_API void Plugin_Tick(uint64_t dt)
+CN_GAME_API void Plugin_Tick(uint64_t dt)
 {
 }
 
-KN_GAME_API void Plugin_Shutdown(void)
+CN_GAME_API void Plugin_Shutdown(void)
 {
 }

@@ -1,4 +1,4 @@
 Testing
 =======
 
-.. doxygengroup:: KnellTest
+.. doxygengroup:: CalendonTest

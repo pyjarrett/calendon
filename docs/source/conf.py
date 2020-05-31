@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.abspath('../../py'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'Knell'
+project = 'Calendon'
 copyright = '2020, Paul Jarrett'
 author = 'Paul Jarrett'
 
@@ -34,8 +34,8 @@ extensions = [ 'breathe',
                ]
 
 # Breathe Configuration
-breathe_projects = { "Knell": "../generated/xml/"}
-breathe_default_project = "Knell"
+breathe_projects = { "Calendon": "../generated/xml/"}
+breathe_default_project = "Calendon"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
