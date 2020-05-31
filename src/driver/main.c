@@ -1,4 +1,6 @@
-/*
+/**
+ * @file main.c
+ *
  * The main driver for the engine.  This driver loads the game library (.so or
  * .dll) at runtime, allowing game and demo writers to focus on creating their
  * demo, and not on redoing boilerplate.  In addition to saving time, this
