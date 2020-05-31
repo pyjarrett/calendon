@@ -51,6 +51,7 @@ CN_API bool cnPathBuffer_Join(CnPathBuffer* root, const char* suffix);
 CN_API bool cnPathBuffer_Exists(CnPathBuffer* path);
 CN_API bool cnPathBuffer_IsDir(CnPathBuffer* path);
 CN_API bool cnPathBuffer_IsFile(CnPathBuffer* path);
+CN_API bool cnPathBuffer_CurrentWorkingDirectory(CnPathBuffer* path);
 
 #ifdef __cplusplus
 }

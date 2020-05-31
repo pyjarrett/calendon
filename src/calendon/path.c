@@ -1,5 +1,7 @@
 #include "path.h"
 
+#include <calendon/env.h>
+
 #include <string.h>
 #include <sys/stat.h>
 
@@ -100,4 +102,10 @@ bool cnPathBuffer_IsFile(CnPathBuffer* path)
 {
 	CN_ASSERT(path != NULL, "Cannot check to see if a null CnPathBuffer is a file.");
 	return cnPath_IsFile(path->str);
+}
+
+bool cnPathBuffer_CurrentWorkingDirectory(CnPathBuffer* path)
+{
+	CN_ASSERT(path != NULL, "Cannot put a current working directory into a null CnPathBuffer.");
+	return cnEnv_CurrentWorkingDirectory(path->str, CN_PATH_MAX);
 }

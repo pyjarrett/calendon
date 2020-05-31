@@ -43,7 +43,7 @@ void cnRLL_CreateCircle(CnFloat2* vertices, uint32_t numVertices, float radius)
 	vertices[numVertices - 1] = vertices[0];
 }
 
-CN_GAME_API bool Plugin_Init(void)
+CN_GAME_API bool CnPlugin_Init(void)
 {
 	cnLog_RegisterSystem(&LogSysSample, "Sample", CN_LOG_TRACE);
 	CN_TRACE(LogSysSample, "Sample loaded");
@@ -87,7 +87,7 @@ CN_GAME_API bool Plugin_Init(void)
 	return true;
 }
 
-CN_GAME_API void Plugin_Draw(void)
+CN_GAME_API void CnPlugin_Draw(void)
 {
 	cnR_StartFrame();
 
@@ -127,12 +127,12 @@ CN_GAME_API void Plugin_Draw(void)
 	cnR_EndFrame();
 }
 
-CN_GAME_API void Plugin_Tick(uint64_t dt)
+CN_GAME_API void CnPlugin_Tick(uint64_t dt)
 {
 	cnAnimLoop_Tick(&sampleLoop, &sampleCursor, dt);
 	lastDt = dt;
 }
 
-CN_GAME_API void Plugin_Shutdown(void)
+CN_GAME_API void CnPlugin_Shutdown(void)
 {
 }

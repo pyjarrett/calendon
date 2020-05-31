@@ -115,13 +115,12 @@ int32_t cnArgparse_TickLimit(int argc, char** argv, int index, CnDriverConfig* c
 		printf("Cannot step a negative number of ticks: %s\n", argv[index + 1]);
 		return CN_ARG_PARSE_ERROR;
 	}
-	config->tickLimit = parsedValue;
 
 	if (*readCursor != '\0' || errno == ERANGE) {
 		printf("Unable to parse tick limit: %s\n", argv[index + 1]);
 		return CN_ARG_PARSE_ERROR;
 	}
-	index += 2;
+	config->tickLimit = parsedValue;
 	return 2;
 }
 
@@ -272,7 +271,7 @@ bool cnMain_GenerateTick(uint64_t* outDt)
 bool cnDriver_ParseCommandLine(int argc, char* argv[], CnDriverConfig* config)
 {
 	CN_ASSERT(argc >= 1, "Argument count must at least include the executable.");
-	CN_ASSERT(argv, "Cannot parser null arguments.");
+	CN_ASSERT(argv, "Cannot parse null arguments.");
 	CN_ASSERT(config, "Cannot parse arguments to a null CnDriverConfig.");
 
 	cnPathBuffer_Clear(&config->gameLibPath);
@@ -292,14 +291,15 @@ bool cnDriver_ParseCommandLine(int argc, char* argv[], CnDriverConfig* config)
 					return false;
 				}
 				argIndex += argsParsed;
+				break;
 			}
 		}
-		if (argIndex != argc) {
-			printf("Unknown command line option\n");
-			printf("Only parsed %d of %d arguments\n", argIndex, argc);
-			cnMain_PrintUsage();
-			return false;
-		}
+	}
+	if (argIndex != argc) {
+		printf("Unknown command line option\n");
+		printf("Only parsed %d of %d arguments\n", argIndex, argc);
+		cnMain_PrintUsage();
+		return false;
 	}
 	return true;
 }

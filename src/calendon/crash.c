@@ -18,22 +18,23 @@
  */
 HANDLE cnCrash_OpenMiniDumpFile(DWORD processId)
 {
-	char miniDumpFilePath[MAX_PATH];
-	if (!cnEnv_CurrentWorkingDirectory(miniDumpFilePath, MAX_PATH)) {
+	CnPathBuffer miniDumpFilePath;
+	if (!cnPathBuffer_CurrentWorkingDirectory(&miniDumpFilePath)) {
 		// Logging will probably not work during a crash.  Try anyways.
-		CN_ERROR(LogSysMain, "Unable to find current working directory when"
+		CN_ERROR(LogSysMain, "Unable to get current working directory when "
 			"making MiniDump file.");
+		return INVALID_HANDLE_VALUE;
 	}
-	char miniDumpFileName[1024];
-	snprintf(miniDumpFileName, 1024, "core.%lu.dmp", processId);
-	//const char* miniDumpFileName = "core.dump";
-	if (!Path_Append(miniDumpFileName, miniDumpFilePath, MAX_PATH)) {
+
+	char miniDumpFileName[128];
+	snprintf(miniDumpFileName, 128, "core.%lu.dmp", processId);
+	if (!cnPathBuffer_Join(&miniDumpFilePath, miniDumpFileName)) {
 		CN_ERROR(LogSysMain, "Unable to build minidump file path");
 		return INVALID_HANDLE_VALUE;
 	}
-	CN_TRACE(LogSysMain, "MiniDumpFilePath is %s", miniDumpFilePath);
+	CN_TRACE(LogSysMain, "MiniDumpFilePath is %s", miniDumpFilePath.str);
 
-	HANDLE hFile = CreateFile(miniDumpFilePath, GENERIC_WRITE, FILE_SHARE_READ,
+	HANDLE hFile = CreateFile(miniDumpFilePath.str, GENERIC_WRITE, FILE_SHARE_READ,
 		0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
 	if (hFile == INVALID_HANDLE_VALUE) {
 		CN_ERROR(LogSysMain, "Unable to open file for minidump: %s", miniDumpFileName);

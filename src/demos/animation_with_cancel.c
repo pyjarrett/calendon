@@ -68,7 +68,7 @@ void anim_complete(BinaryAnimation* anim, uint64_t rate)
 CnFloat2 left, right;
 BinaryAnimation squareAnim;
 
-CN_GAME_API bool Plugin_Init(void)
+CN_GAME_API bool CnPlugin_Init(void)
 {
 	cnLog_RegisterSystem(&LogSysSample, "Sample", CN_LOG_TRACE);
 	CN_TRACE(LogSysSample, "Sample loaded");
@@ -85,7 +85,7 @@ CN_GAME_API bool Plugin_Init(void)
 	return true;
 }
 
-CN_GAME_API void Plugin_Draw(void)
+CN_GAME_API void CnPlugin_Draw(void)
 {
 	cnR_StartFrame();
 
@@ -96,7 +96,7 @@ CN_GAME_API void Plugin_Draw(void)
 	cnR_EndFrame();
 }
 
-CN_GAME_API void Plugin_Tick(uint64_t dt)
+CN_GAME_API void CnPlugin_Tick(uint64_t dt)
 {
 	CnInput* input = cnUI_InputPoll();
 	CN_ASSERT(input, "CnInput poll provided a null pointer.");
@@ -120,6 +120,6 @@ CN_GAME_API void Plugin_Tick(uint64_t dt)
 	//t *= 0.5f; // convert to [0, 1]
 }
 
-CN_GAME_API void Plugin_Shutdown(void)
+CN_GAME_API void CnPlugin_Shutdown(void)
 {
 }
