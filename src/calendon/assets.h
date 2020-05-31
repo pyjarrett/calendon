@@ -11,7 +11,6 @@ extern "C" {
 CN_API bool cnAssets_IsReady(void);
 CN_API void cnAssets_Init(const char* assetDir);
 CN_API void cnAssets_Shutdown(void);
-CN_API_DEPRECATED("alpha", "Use CnPathBuffer functions instead", CN_API bool cnAssets_PathFor(char* assetName, char* buffer, uint32_t bufferSize));
 CN_API bool cnAssets_PathBufferFor(const char* assetName, CnPathBuffer* path);
 
 #ifdef __cplusplus

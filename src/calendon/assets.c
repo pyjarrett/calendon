@@ -53,31 +53,6 @@ void cnAssets_Shutdown(void)
 	CN_ASSERT(!cnAssets_IsReady(), "Shutdown did not work on assets system.");
 }
 
-/**
- * Gets the path for accessing a specific resource within the assets system.
- */
-bool cnAssets_PathFor(const char* assetName, char* buffer, uint32_t bufferSize)
-{
-	CN_WARN_DEPRECATED("Use CnPathBuffer* functions instead");
-	if (assetsRootLength == 0) {
-		CN_ERROR(LogSysAssets, "Asset system not initialized, cannot get path for %s", assetName);
-		return false;
-	}
-
-	// Output buffer cannot hold root + '/' + assetName + '\0'.
-	if (assetsRootLength + 1 + strlen(assetName) + 1 >= bufferSize) {
-		return false;
-	}
-
-	memcpy(buffer, assetsRoot, assetsRootLength);
-	buffer[assetsRootLength] = '/';
-	strcpy(buffer + assetsRootLength + 1, assetName);
-
-	CN_TRACE(LogSysAssets, "Resolved asset path '%s' -> '%s'", assetName, buffer);
-
-	return true;
-}
-
 bool cnAssets_PathBufferFor(const char* assetName, CnPathBuffer* path)
 {
 	if (assetsRootLength == 0) {
