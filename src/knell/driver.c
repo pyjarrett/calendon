@@ -25,32 +25,32 @@
 static uint64_t lastTick;
 static Plugin Payload;
 
-int32_t parsePayload(int argc, char* argv[], int index, knDriverConfig* config);
-int32_t parseAssetDir(int argc, char* argv[], int index, knDriverConfig* config);
-int32_t parseTickLimit(int argc, char* argv[], int index, knDriverConfig* config);
+int32_t Argparse_Payload(int argc, char** argv, int index, knDriverConfig* config);
+int32_t Argparse_AssetDir(int argc, char** argv, int index, knDriverConfig* config);
+int32_t Argparse_TickLimit(int argc, char** argv, int index, knDriverConfig* config);
 
 CommandParser parsers[] = {
 	{
 		"-g,--game SHARED_LIB       Change the game/demo to boot.\n",
 		"-g",
 		"--game",
-		parsePayload
+		Argparse_Payload
 	},
 	{
 		"-a,--asset-dir DIR         Change the directory for assets.\n",
 		"-a",
 		"--asset-dir",
-		parseAssetDir
+		Argparse_AssetDir
 	},
 	{
 		"-t,--tick-limit NUM_TICKS  Limit the run to a specific number of ticks.\n",
 		"-t",
 		"--tick-limit",
-		parseTickLimit
+		Argparse_TickLimit
 	}
 };
 
-int32_t parsePayload(int argc, char* argv[], int index, knDriverConfig* config)
+int32_t Argparse_Payload(int argc, char** argv, int index, knDriverConfig* config)
 {
 	KN_ASSERT(config, "Cannot parse payload to a null knDriverConfig.");
 	KN_ASSERT(0 < index && index < argc, "Argument index out of bounds: %d, num arguments: %d.", index, argc);
@@ -77,7 +77,7 @@ int32_t parsePayload(int argc, char* argv[], int index, knDriverConfig* config)
 	}
 }
 
-int32_t parseAssetDir(int argc, char* argv[], int index, knDriverConfig* config)
+int32_t Argparse_AssetDir(int argc, char** argv, int index, knDriverConfig* config)
 {
 	KN_ASSERT(config, "Cannot parse asset dir to a null knDriverConfig.");
 	KN_ASSERT(0 < index && index < argc, "Argument index out of bounds: %d, num arguments: %d.", index, argc);
@@ -101,7 +101,7 @@ int32_t parseAssetDir(int argc, char* argv[], int index, knDriverConfig* config)
 	}
 }
 
-int32_t parseTickLimit(int argc, char* argv[], int index, knDriverConfig* config)
+int32_t Argparse_TickLimit(int argc, char** argv, int index, knDriverConfig* config)
 {
 	KN_ASSERT(config, "Cannot parse tick limit a null knDriverConfig.");
 	KN_ASSERT(0 < index && index < argc, "Argument index out of bounds: %d, num arguments: %d.", index, argc);
