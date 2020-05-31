@@ -17,8 +17,13 @@
 
 int main(int argc, char* argv[])
 {
-	knDriver_Init(argc, argv);
+	knDriverConfig config;
+	if (!knDriver_ParseCommandLine(argc, argv, &config)) {
+		return EXIT_FAILURE;
+	}
+
+	knDriver_Init(&config);
 	knDriver_MainLoop();
 	knDriver_Shutdown();
-	return 0;
+	return EXIT_SUCCESS;
 }

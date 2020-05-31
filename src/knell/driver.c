@@ -23,106 +23,115 @@
 #include <time.h>
 
 static uint64_t lastTick;
-
-typedef struct {
-	PathBuffer gameLibPath;
-	PathBuffer assetDirPath;
-} MainConfig;
-
-static MainConfig mainConfig;
 static Plugin Payload;
+
+int32_t parsePayload(int argc, char* argv[], int index, knDriverConfig* config);
+int32_t parseAssetDir(int argc, char* argv[], int index, knDriverConfig* config);
+int32_t parseTickLimit(int argc, char* argv[], int index, knDriverConfig* config);
+
+CommandParser parsers[] = {
+	{
+		"-g,--game SHARED_LIB       Change the game/demo to boot.\n",
+		"-g",
+		"--game",
+		parsePayload
+	},
+	{
+		"-a,--asset-dir DIR         Change the directory for assets.\n",
+		"-a",
+		"--asset-dir",
+		parseAssetDir
+	},
+	{
+		"-t,--tick-limit NUM_TICKS  Limit the run to a specific number of ticks.\n",
+		"-t",
+		"--tick-limit",
+		parseTickLimit
+	}
+};
+
+int32_t parsePayload(int argc, char* argv[], int index, knDriverConfig* config)
+{
+	KN_ASSERT(config, "Cannot parse payload to a null knDriverConfig.");
+	KN_ASSERT(0 < index && index < argc, "Argument index out of bounds: %d, num arguments: %d.", index, argc);
+	if (index + 1 >= argc) {
+		printf("Payload must be provided a shared library (or DLL) to load\n");
+		return KN_ARG_PARSE_ERROR;
+	}
+
+	if (strlen(argv[index + 1]) < KN_PATH_MAX) {
+		if (!Path_IsFile(argv[index + 1])) {
+			char cwd[KN_PATH_MAX + 1];
+			Env_CurrentWorkingDirectory(cwd, KN_PATH_MAX + 1);
+			printf("Current working directory is: %s\n", cwd);
+			printf("Game library %s does not exist.\n", argv[index + 1]);
+			return KN_ARG_PARSE_ERROR;
+		}
+		PathBuffer_Set(&config->gameLibPath, argv[index + 1]);
+		printf("Game library: '%s'\n", config->gameLibPath.str);
+		return 2;
+	}
+	else {
+		printf( "Length of name of game library is too long.");
+		return KN_ARG_PARSE_ERROR;
+	}
+}
+
+int32_t parseAssetDir(int argc, char* argv[], int index, knDriverConfig* config)
+{
+	KN_ASSERT(config, "Cannot parse asset dir to a null knDriverConfig.");
+	KN_ASSERT(0 < index && index < argc, "Argument index out of bounds: %d, num arguments: %d.", index, argc);
+	if (index + 1 >= argc) {
+		printf("Must provide an asset directory to use.");
+		return KN_ARG_PARSE_ERROR;
+	}
+
+	if (strlen(argv[index + 1]) < KN_PATH_MAX) {
+		if (!Path_IsDir(argv[index + 1])) {
+			printf("Asset directory %s does not exist\n", argv[index + 1]);
+			return KN_ARG_PARSE_ERROR;
+		}
+		PathBuffer_Set(&config->assetDirPath, argv[index + 1]);
+		printf("Asset path: '%s'\n", config->assetDirPath.str);
+		return 2;
+	}
+	else {
+		printf( "The asset path is too long.");
+		return KN_ARG_PARSE_ERROR;
+	}
+}
+
+int32_t parseTickLimit(int argc, char* argv[], int index, knDriverConfig* config)
+{
+	KN_ASSERT(config, "Cannot parse tick limit a null knDriverConfig.");
+	KN_ASSERT(0 < index && index < argc, "Argument index out of bounds: %d, num arguments: %d.", index, argc);
+	if (index + 1 >= argc) {
+		printf("Must provide the number of ticks for which to run the program.");
+		return KN_ARG_PARSE_ERROR;
+	}
+	char* readCursor;
+	int64_t parsedValue = strtoll(argv[index + 1], &readCursor, 10);
+	if (parsedValue < 0) {
+		printf("Cannot step a negative number of ticks: %s\n", argv[index + 1]);
+		return KN_ARG_PARSE_ERROR;
+	}
+	config->tickLimit = parsedValue;
+
+	if (*readCursor != '\0' || errno == ERANGE) {
+		printf("Unable to parse tick limit: %s\n", argv[index + 1]);
+		return KN_ARG_PARSE_ERROR;
+	}
+	index += 2;
+	return 2;
+}
 
 void Main_PrintUsage(void)
 {
 	printf("\nUsage: knell\n");
-	printf("  -a,--asset-dir DIR         Change the directory for assets.\n");
-	printf("  -g,--game SHARED_LIB       Change the game/demo to boot.\n");
-	printf("  -t,--tick-limit NUM_TICKS  Limit the run to a specific number of ticks.\n");
-	printf("\n");
-}
-
-void Main_ParseCommandLineArguments(int argc, char* argv[])
-{
-	PathBuffer_Clear(&mainConfig.gameLibPath);
-	PathBuffer_Clear(&mainConfig.assetDirPath);
-
-	// The log system is not initialized at this point, so using printf and
-	// printf for now.
-	int32_t i = 1;
-	while (i < argc) {
-		// Game library name parameter.
-		if (strcmp(argv[i], "-g") == 0 || strcmp(argv[i], "--game") == 0) {
-			if (i + 1 >= argc) {
-				printf("-g must be provided a shared library (or DLL) to load");
-				exit(EXIT_FAILURE);
-			}
-			else {
-				if (strlen(argv[i+1]) < KN_PATH_MAX) {
-					if (!Path_IsFile(argv[i+1])) {
-						char cwd[4096];
-						Env_CurrentWorkingDirectory(cwd, 4096);
-						printf("Current working directory is: %s\n", cwd);
-						printf("Game library %s does not exist\n", argv[i+1]);
-						exit(EXIT_FAILURE);
-					}
-					PathBuffer_Set(&mainConfig.gameLibPath, argv[i + 1]);
-					printf("Game library: '%s'\n", mainConfig.gameLibPath.str);
-					i += 2;
-				}
-				else {
-					printf( "Length of name of game library is too long");
-					exit(EXIT_FAILURE);
-				}
-			}
-		}
-			// Asset path name parameter
-		else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--asset-dir") == 0) {
-			if (i + 1 >= argc) {
-				printf("-a provide an asset directory to use");
-				exit(EXIT_FAILURE);
-			}
-			else {
-				if (strlen(argv[i+1]) < KN_PATH_MAX) {
-					if (!Path_IsDir(argv[i+1])) {
-						printf("Asset directory %s does not exist\n", argv[i+1]);
-						exit(EXIT_FAILURE);
-					}
-
-					PathBuffer_Set(&mainConfig.assetDirPath, argv[i + 1]);
-					printf("Asset path: '%s'\n", mainConfig.assetDirPath.str);
-					i += 2;
-				}
-				else {
-					printf( "The asset path is too long.");
-					exit(EXIT_FAILURE);
-				}
-			}
-		}
-		else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--tick-limit") == 0) {
-			if (i + 1 >= argc) {
-				printf("-t must provide the number of ticks for which to run the program");
-				exit(EXIT_FAILURE);
-			}
-			char* readCursor;
-			int64_t parsedValue = strtoll(argv[i + 1], &readCursor, 10);
-			if (parsedValue < 0) {
-				printf("Cannot step a negative number of ticks: %s\n", argv[i+1]);
-				exit(EXIT_FAILURE);
-			}
-			Main_SetTickLimit(parsedValue);
-
-			if (*readCursor != '\0' || errno == ERANGE) {
-				printf("Unable to parse tick limit: %s\n", argv[i+1]);
-				exit(EXIT_FAILURE);
-			}
-			i += 2;
-		}
-		else {
-			printf("Unknown command line option\n");
-			Main_PrintUsage();
-			exit(EXIT_FAILURE);
-		}
+	for (uint32_t i = 0; i < KN_ARRAY_SIZE(parsers); ++i) {
+		printf("%s", parsers[i].help);
 	}
+	printf("\n");
 }
 
 void Main_DescribeEnv(void)
@@ -169,15 +178,16 @@ void Main_LoadPayload(const char* sharedLibraryName)
 /**
  * Common initialization point for all global systems.
  */
-void Main_InitAllSystems(void)
+void Main_InitAllSystems(knDriverConfig* config)
 {
+	KN_ASSERT(config, "Cannot initialize using a null knDriverConfig.");
 	Log_Init();
 	Crash_Init();
 	Mem_Init();
 	Time_Init();
 
-	if (strlen(mainConfig.assetDirPath.str) != 0) {
-		Assets_Init(mainConfig.assetDirPath.str);
+	if (strlen(config->assetDirPath.str) != 0) {
+		Assets_Init(config->assetDirPath.str);
 	}
 	else {
 		// If no asset directory was provided, look for `$KNELL_HOME/assets`, or
@@ -192,8 +202,8 @@ void Main_InitAllSystems(void)
 		Assets_Init(defaultAssetDir.str);
 	}
 
-	if (!Path_IsFile(mainConfig.gameLibPath.str)) {
-		KN_FATAL_ERROR("Cannot load game. '%s' is not a game library.", mainConfig.gameLibPath.str);
+	if (!Path_IsFile(config->gameLibPath.str)) {
+		KN_FATAL_ERROR("Cannot load game. '%s' is not a game library.", config->gameLibPath.str);
 	}
 
 	const uint32_t width = 1024;
@@ -201,8 +211,9 @@ void Main_InitAllSystems(void)
 	UI_Init(width, height);
 	R_Init(width, height);
 
-	const char* gameLib = mainConfig.gameLibPath.str;
+	const char* gameLib = config->gameLibPath.str;
 	Main_LoadPayload(gameLib);
+	Main_SetTickLimit(config->tickLimit);
 
 	lastTick = Time_NowNs();
 
@@ -255,12 +266,49 @@ bool Main_GenerateTick(uint64_t* outDt)
 	return true;
 }
 
-
-void knDriver_Init(int argc, char** argv)
+/**
+ * Parses a set of arguments into a driver configuration.
+ */
+bool knDriver_ParseCommandLine(int argc, char* argv[], knDriverConfig* config)
 {
-	Main_ParseCommandLineArguments(argc, argv);
+	KN_ASSERT(argc >= 1, "Argument count must at least include the executable.");
+	KN_ASSERT(argv, "Cannot parser null arguments.");
+	KN_ASSERT(config, "Cannot parse arguments to a null knDriverConfig.");
+
+	PathBuffer_Clear(&config->gameLibPath);
+	PathBuffer_Clear(&config->assetDirPath);
+
+	// The log system is not initialized at this point, so using printf and
+	// printf for now.
+	int32_t argIndex = 1;
+	while (argIndex < argc) {
+		for (uint32_t parserIndex = 0; parserIndex < KN_ARRAY_SIZE(parsers); ++parserIndex) {
+			if ((parsers[parserIndex].shortOption && strcmp(argv[argIndex], parsers[parserIndex].shortOption) == 0)
+				|| (parsers[parserIndex].longOption && strcmp(argv[argIndex], parsers[parserIndex].longOption) == 0))
+			{
+				const int32_t argsParsed = parsers[parserIndex].parser(argc, argv, argIndex, config);
+				if (argsParsed == KN_ARG_PARSE_ERROR) {
+					Main_PrintUsage();
+					return false;
+				}
+				argIndex += argsParsed;
+			}
+		}
+		if (argIndex != argc) {
+			printf("Unknown command line option\n");
+			printf("Only parsed %d of %d arguments\n", argIndex, argc);
+			Main_PrintUsage();
+			return false;
+		}
+	}
+	return true;
+}
+
+void knDriver_Init(knDriverConfig* config)
+{
+	KN_ASSERT(config, "Cannot initialize a driver with a null knDriverConfig.");
 	Main_DescribeEnv();
-	Main_InitAllSystems();
+	Main_InitAllSystems(config);
 }
 
 /**
