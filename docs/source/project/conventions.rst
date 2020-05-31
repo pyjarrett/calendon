@@ -131,12 +131,41 @@ Example:
 
 .. doxygenfunction:: Log_Shutdown
 
-Return value conventions
+Return values
 ------------------------
 
 Returning ``true`` indicates success, returning ``false`` indicates failure.
 
-#include conventions
+Primitive Types
+---------------
+
+- Prefer ``NULL`` to ``0``
+- Prefer ``float`` over ``double``.
+- Used sized versions of integers and macro format specifiers:
+
++-------------------+-----------------+
+| Integer Types     |  Format         |
++===================+=================+
+| ``int8_t``        |  ``PRIi8``      |
++-------------------+-----------------+
+| ``int16_t``       |  ``PRIi16``     |
++-------------------+-----------------+
+| ``int32_t``       |  ``PRIi32``     |
++-------------------+-----------------+
+| ``int64_t``       |  ``PRIi64``     |
++-------------------+-----------------+
+| ``uint8_t``       |  ``PRIu8``      |
++-------------------+-----------------+
+| ``uint16_t``      |  ``PRIu16``     |
++-------------------+-----------------+
+| ``uint32_t``      |  ``PRIu32``     |
++-------------------+-----------------+
+| ``uint64_t``      |  ``PRIu64``     |
++-------------------+-----------------+
+
+- Use ``size_t`` for types which must deal with memory sizes or offsets.
+
+#include's
 -------------------
 
 - For source files, ``#include "myfile.h"`` should come first if a companion
