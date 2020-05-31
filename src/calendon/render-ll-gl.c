@@ -65,8 +65,8 @@ static GLuint debugDrawBuffer;
 static GLuint fullScreenQuadBuffer;
 static GLuint spriteBuffer;
 
-CN_DECLARE_HANDLE_TYPE(CnSpriteId, cnRLL_CreateSprite, Sprite, 8);
-CN_DECLARE_HANDLE_TYPE(CnFontId, RLL_, Font, 8);
+CN_DECLARE_HANDLE_TYPE(CnSpriteId, cnRLL_, Sprite, 8);
+CN_DECLARE_HANDLE_TYPE(CnFontId, cnRLL_, Font, 8);
 
 /**
  * Maps sprite IDs to their OpenGL textures.
@@ -782,8 +782,8 @@ void cnRLL_FillBuffers(void)
 
 void cnRLL_InitSprites(void)
 {
-	RLL_SpriteInit();
-	RLL_FontInit();
+	cnRLL_SpriteInit();
+	cnRLL_FontInit();
 }
 
 void cnRLL_LoadSimpleShader(const char* vertexShaderFileName,
@@ -1158,9 +1158,9 @@ void cnRLL_DrawSimpleText(CnFontId id, CnTextDrawParams* params, const char* tex
 	CnFontPSF2* font = &fonts[id];
 	// TODO: Check to ensure the id is valid.
 	CN_ASSERT(params != NULL, "Cannot draw with null parameters.");
-	CN_ASSERT(params->layout == LayoutHorizontal,
+	CN_ASSERT(params->layout == CnLayoutHorizontal,
 		"Only horizontal layouts are currently supported.");
-	CN_ASSERT(params->printDirection == PrintDirectionLeftToRight,
+	CN_ASSERT(params->printDirection == CnPrintDirectionLeftToRight,
 		"Only left-to-right print direction is currently supported.");
 	CN_ASSERT(text != NULL, "Cannot draw a null text");
 

@@ -20,7 +20,7 @@ void cnRLL_EndFrame(void);
 void cnRLL_Clear(CnRGBA8u color);
 
 CN_DEFINE_HANDLE_TYPE(CnSpriteId, cnRLL_, Sprite);
-CN_DEFINE_HANDLE_TYPE(CnFontId, RLL_, Font);
+CN_DEFINE_HANDLE_TYPE(CnFontId, cnRLL_, Font);
 
 bool cnRLL_LoadSprite(CnSpriteId id, const char* path);
 void cnRLL_DrawSprite(CnSpriteId id, CnFloat2 position, CnDimension2f size);

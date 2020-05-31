@@ -26,6 +26,11 @@
 
 #include <calendon/cn.h>
 
+#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wpointer-sign"
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -93,6 +98,10 @@ void CnGrapheme_Print(CnGrapheme* g, FILE* stream);
 
 #ifdef __cplusplus
 }
+#endif
+
+#if defined(__clang__)
+	#pragma clang diagnostic pop
 #endif
 
 #endif /* CN_FONT_UTF8_H */

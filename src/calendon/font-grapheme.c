@@ -4,14 +4,14 @@
 
 #include <string.h>
 
-CN_TEST_API void cnGraphemeMap_Clear(CnGraphemeMap* map)
+void cnGraphemeMap_Clear(CnGraphemeMap* map)
 {
 	CN_ASSERT(map != NULL, "Cannot create a null grapheme map.");
 	memset(map, 0, sizeof(CnGraphemeMap));
 	map->usedGraphemes = 0;
 }
 
-CN_TEST_API uint32_t cnGraphemeMap_GlyphForCodePoints(CnGraphemeMap* map,
+uint32_t cnGraphemeMap_GlyphForCodePoints(CnGraphemeMap* map,
 	const uint8_t* codePoint, uint8_t numCodePoints)
 {
 	CN_ASSERT(map != NULL, "Cannot map to glyphs with a null grapheme map.");
@@ -27,7 +27,7 @@ CN_TEST_API uint32_t cnGraphemeMap_GlyphForCodePoints(CnGraphemeMap* map,
 	return CN_GRAPHEME_INDEX_INVALID;
 }
 
-CN_TEST_API uint32_t cnGraphemeMap_GraphemeIndexForCodePoints(CnGraphemeMap* map,
+uint32_t cnGraphemeMap_GraphemeIndexForCodePoints(CnGraphemeMap* map,
 	const uint8_t* codePoint, uint8_t numCodePoints)
 {
 	CN_ASSERT(map != NULL, "Cannot map to glyphs with a null grapheme map.");
@@ -46,8 +46,8 @@ CN_TEST_API uint32_t cnGraphemeMap_GraphemeIndexForCodePoints(CnGraphemeMap* map
 /**
  * Creates a grapheme mapping for a sequence of code points.
  */
-CN_TEST_API bool cnGraphemeMap_Map(CnGraphemeMap* map, const uint8_t* codePoint,
-	int8_t numCodePoints, CnGlyphIndex glyphIndex)
+bool cnGraphemeMap_Map(CnGraphemeMap* map, const uint8_t* codePoint,
+	uint8_t numCodePoints, CnGlyphIndex glyphIndex)
 {
 	CN_ASSERT(map != NULL, "Cannot write a glyph to a null map.");
 	CN_ASSERT(numCodePoints < CN_MAX_CODE_POINTS_IN_GRAPHEME,

@@ -159,7 +159,7 @@ bool cnCrash_EnableCoreDump(void)
 	}
 }
 
-void Crash_Init(void)
+void cnCrash_Init(void)
 {
 #if CN_ENABLE_CORE_DUMPS
 	if (!cnCrash_EnableCoreDump()) {

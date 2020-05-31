@@ -1,5 +1,5 @@
 #if CN_TESTING
-#include <calendon/kn.h>
+#include <calendon/cn.h>
 #include <setjmp.h>
 CN_API jmp_buf cnTest_AssertJumpBuffer;
 CN_API jmp_buf cnTest_AssertUnexpectedJumpBuffer;

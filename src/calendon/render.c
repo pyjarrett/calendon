@@ -59,7 +59,7 @@ void cnR_DrawSprite(CnSpriteId id, CnFloat2 position, CnDimension2f size)
 
 bool cnR_CreateFont(CnFontId* id)
 {
-	return RLL_CreateFont(id);
+	return cnRLL_CreateFont(id);
 }
 
 bool cnR_LoadPSF2Font(CnFontId id, const char* path)

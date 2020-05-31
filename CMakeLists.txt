@@ -150,7 +150,9 @@ endif (UNIX)
 
 # https://interrupt.memfault.com/blog/best-and-worst-gcc-clang-compiler-flags
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CALENDON_COMMON_C_FLAGS} -Weverything -Wno-pointer-sign")
+	# TODO: It'd be nice to use -Weverything, but it generates pointer sign
+	# errors on uint8_t* <-> char* and I don't have time to investigate.
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CALENDON_COMMON_C_FLAGS}")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CALENDON_COMMON_C_FLAGS}")
 endif()

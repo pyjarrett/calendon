@@ -5,6 +5,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wpointer-sign"
+#endif
+
 CN_TEST_SUITE_BEGIN("UTF-8")
 
 	CN_TEST_UNIT("Bytes in UTF-8 code point") {
@@ -142,3 +147,8 @@ CN_TEST_SUITE_BEGIN("UTF-8")
 	}
 
 CN_TEST_SUITE_END
+
+#if defined(__clang__)
+	#pragma clang diagnostic pop
+#endif
+

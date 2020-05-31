@@ -349,7 +349,7 @@ CN_TEST_ASSERT_FN_DEFN(uint64_t, PRIu64)
  * @ingroup CalendonTest
  */
 #define CN_TEST_ASSERT_CLOSE_F(a, b, pct) \
-	if (float_RelativeDiff(a, b) > pct) { \
+	if (cnFloat_RelativeDiff(a, b) > pct) { \
 		cnTest_UnitAssertFailed(&unitReport); \
 		printf("%s:%i  \"" #a " is not within %f%% of " #b "\" (%f != %f)\n", \
 			__FILE__, __LINE__, (10.0f * (float)pct), ((float)(a)), ((float)(b))); \

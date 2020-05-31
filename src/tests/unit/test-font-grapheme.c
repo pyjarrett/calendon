@@ -2,6 +2,11 @@
 
 #include <calendon/font-grapheme.h>
 
+#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wpointer-sign"
+#endif
+
 CN_TEST_SUITE_BEGIN("font-utf8-grapheme")
 	printf("Size of CnGraphemeMap: %zu bytes\n", sizeof(CnGraphemeMap));
 
@@ -26,3 +31,8 @@ CN_TEST_SUITE_BEGIN("font-utf8-grapheme")
 	}
 
 CN_TEST_SUITE_END
+
+#if defined(__clang__)
+	#pragma clang diagnostic pop
+#endif
+
