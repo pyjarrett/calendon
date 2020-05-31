@@ -1,6 +1,71 @@
 Code Conventions
 ========================
 
+Prefixing structs, macros and functions
+---------------------------------------
+
+Knell uses prefixes to avoid namespace clashes like the Vulkan library.  Use
+the ``kn`` prefix but with different cases between different types.
+
+**Structs**
+
+Prefix structs with ``Kn`` (capital).
+
+.. code-block::
+
+    Kn<StructNameInPascalCase>
+
+Example:
+
+.. code-block::
+
+    KnDriverConfig
+
+**Functions**
+
+Prefix functions with ``kn`` (lower-case).
+
+.. code-block::
+
+    kn<System>_ActionInPascalCase
+
+    kn<Type>_ActionInPascalCase
+
+Example:
+
+.. code-block::
+
+    // Driver Init(ialization)
+    knDriver_Init
+
+    // float4x4 non-uniform scaling
+    knFloat4x4_NonUniformScale
+
+**Macros**
+
+Prefix macros with ``KN`` (ALL CAPS).
+
+.. code-block::
+
+    KN_<MACRO_NAME_IN_ALL_CAPS>
+
+Example:
+
+.. code-block::
+
+    KN_ASSERT
+
+    KN_FATAL_ERROR
+
+**Header Guards**
+
+Prefix header guards with ``KN_`` and use a ``_H`` suffix.
+
+.. code-block::
+
+    KN_ENV_H
+
+
 Function Naming
 ---------------
 
@@ -10,7 +75,8 @@ Function Naming
 
     <type> <type>_Make(args...)
 
-Use this for types which have no pointers and whose bits can be copied around.
+Use this for types which have no pointers and whose bits can be copied around
+while retaining their original meaning.
 
 Example:
 
@@ -70,7 +136,7 @@ Return value conventions
 
 Returning ``true`` indicates success, returning ``false`` indicates failure.
 
-Include conventions
+#include conventions
 -------------------
 
 - For source files, ``#include "myfile.h"`` should come first if a companion
@@ -79,13 +145,23 @@ Include conventions
 - All Knell headers, except a companion header, should be referenced using
   angled brackets: e.g. ``<knell/log.h>``.
 
-Comments
---------
+Documentation and Comments
+--------------------------
 
 Comment should be terminated by a period (.) to indicate that it is a complete
 thought and not accidentally cut off.
 
-Use Javadoc style ``/** */`` for documentation.
+Use Javadoc style ``/** */`` for documentation with "space-star-space" on
+intermediate lines.  Functions should be documented in source (``.c``) files to
+keep their documentation close to the code.  Macros, structs, and typedef must
+be documented at their definition sites.
 
 .. code-block::
 
+    /**
+     * Errors are serious issues which must be addressed prior to shipping a product
+     * and fixed as soon as possible when detected in release.
+     */
+    #define KN_ERROR(system, msg, ...) \
+        KN_LOG(system, KN_LOG_ERROR, msg, ##__VA_ARGS__); \
+        KN_DEBUG_BREAK()
