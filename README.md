@@ -37,7 +37,7 @@ The only code you write for Calendon is a game module which gets loaded by a
 driver program at runtime.  Your game accesses Calendon functionality using the
 same Calendon library that the driver does.
 
-![Runtime Structure](diagrams/runtime_structure.svg)
+![Runtime Structure](docs/source/images/runtime_structure.svg)
 
 ## How to Build
 

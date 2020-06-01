@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="11cm" height="12cm" viewBox="184 107 203 232" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g>
+    <rect style="fill: #ffffff" x="185.762" y="108.1" width="200.3" height="70"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="185.762" y="108.1" width="200.3" height="70"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:Arial;font-style:normal;font-weight:normal" x="285.912" y="138.7">
+      <tspan x="285.912" y="138.7">your</tspan>
+      <tspan x="285.912" y="154.7">executable</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="208.512" y="268.6" width="154.8" height="69"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="208.512" y="268.6" width="154.8" height="69"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:Arial;font-style:normal;font-weight:normal" x="285.912" y="306.7">
+      <tspan x="285.912" y="306.7">calendon library</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="285.912" y1="178.1" x2="285.912" y2="258.864"/>
+    <polygon style="fill: #000000" points="285.912,266.364 280.912,256.364 285.912,258.864 290.912,256.364 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="285.912,266.364 280.912,256.364 285.912,258.864 290.912,256.364 "/>
+  </g>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="251.4" y="228.6">
+    <tspan x="251.4" y="228.6">Uses</tspan>
+  </text>
+</svg>

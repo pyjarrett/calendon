@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="22cm" height="18cm" viewBox="98 158 432 352" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g>
+    <rect style="fill: #ffffff" x="100" y="160" width="149.025" height="69"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="100" y="160" width="149.025" height="69"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:Arial;font-style:normal;font-weight:normal" x="174.513" y="198.1">
+      <tspan x="174.513" y="198.1">calendon-driver</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="100" y="440" width="154.8" height="69"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="100" y="440" width="154.8" height="69"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:Arial;font-style:normal;font-weight:normal" x="177.4" y="478.1">
+      <tspan x="177.4" y="478.1">calendon library</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="240" y="280" width="149.025" height="69"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="240" y="280" width="149.025" height="69"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:Arial;font-style:normal;font-weight:normal" x="314.513" y="310.1">
+      <tspan x="314.513" y="310.1">Payload</tspan>
+      <tspan x="314.513" y="326.1">(game or demo)</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="174.513" y1="229" x2="177.267" y2="430.265"/>
+    <polygon style="fill: #000000" points="177.369,437.764 172.233,427.833 177.267,430.265 182.232,427.697 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="177.369,437.764 172.233,427.833 177.267,430.265 182.232,427.697 "/>
+  </g>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="400" y="300">
+    <tspan x="400" y="300">cnPlugin_Init</tspan>
+    <tspan x="400" y="316">cnPlugin_Tick</tspan>
+    <tspan x="400" y="332">cnPlugin_Draw</tspan>
+    <tspan x="400" y="348">cnPlugin_Shutdown</tspan>
+  </text>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="140" y="420">
+    <tspan x="140" y="420">Uses</tspan>
+  </text>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="320" y="240">
+    <tspan x="320" y="240">Loads</tspan>
+  </text>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="314.512,349 314.512,400 177.4,400 177.4,430.264 "/>
+    <polygon style="fill: #000000" points="177.4,437.764 172.4,427.764 177.4,430.264 182.4,427.764 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="177.4,437.764 172.4,427.764 177.4,430.264 182.4,427.764 "/>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="249.025,194.5 314.513,194.5 314.513,270.264 "/>
+    <polygon style="fill: #000000" points="314.513,277.764 309.513,267.764 314.513,270.264 319.513,267.764 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="314.513,277.764 309.513,267.764 314.513,270.264 319.513,267.764 "/>
+  </g>
+</svg>

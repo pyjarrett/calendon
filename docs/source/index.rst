@@ -13,6 +13,7 @@ Hello, world!
    :caption: Contents:
 
    project/setup
+   project/using
    project/conventions
    project/crank
    project/testing
