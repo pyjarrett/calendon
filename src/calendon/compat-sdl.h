@@ -1,8 +1,8 @@
 /*
  * Compatability header to simplify inclusion of SDL.
  */
-#ifndef COMPAT_SDL_H
-#define COMPAT_SDL_H
+#ifndef CN_COMPAT_SDL_H
+#define CN_COMPAT_SDL_H
 
 #ifdef _WIN32
 	#include <SDL.h>
@@ -12,4 +12,4 @@
 	#include <SDL2/SDL_rect.h>
 #endif
 
-#endif /* COMPAT_SDL_H */
+#endif /* CN_COMPAT_SDL_H */

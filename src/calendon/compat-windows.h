@@ -1,5 +1,5 @@
-#ifndef COMPAT_WINDOWS_H
-#define COMPAT_WINDOWS_H
+#ifndef CN_COMPAT_WINDOWS_H
+#define CN_COMPAT_WINDOWS_H
 
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
@@ -7,4 +7,4 @@
 #undef near
 #undef far
 
-#endif /* COMPAT_WINDOWS_H */
+#endif /* CN_COMPAT_WINDOWS_H */

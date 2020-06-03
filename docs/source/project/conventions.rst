@@ -205,6 +205,55 @@ Primitive Types
 - All Calendon headers, except a companion header, should be referenced using
   angled brackets: e.g. ``<calendon/log.h>``.
 
+File Organization
+-----------------
+
+Header file:
+
+.. code-block::
+
+    #ifndef CN_<FILENAME>_H
+    #define CN_<FILENAME>_H
+
+    /**
+     * @file <FILENAME>
+     *
+     * What is the purpose of this file?
+     */
+
+    #ifdef __cplusplus
+    extern "C" {
+    #endif
+
+    // structs, enums, and typedefs
+
+    /**
+     * Tell me about the struct.
+     */
+    typedef struct {
+    } MyStruct;
+
+    // function declarations
+
+    #ifdef __cplusplus
+    }
+    #endif
+
+    #endif /* CN_<FILENAME>_H */
+
+Source file:
+
+.. code-block::
+
+    #include "<FILENAME>.h"
+
+    #include <calendon/cn.h>
+
+    // static variables
+
+    // functions
+
+
 Documentation and Comments
 --------------------------
 

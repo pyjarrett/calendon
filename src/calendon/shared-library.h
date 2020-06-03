@@ -1,5 +1,5 @@
-#ifndef CALENDON_SHARED_LIBRARY_H
-#define CALENDON_SHARED_LIBRARY_H
+#ifndef CN_SHARED_LIBRARY_H
+#define CN_SHARED_LIBRARY_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,4 +32,4 @@ void* cnSharedLibrary_LookupFn(cnSharedLibrary library, const char* fnName);
 }
 #endif
 
-#endif //CALENDON_SHARED_LIBRARY_H
+#endif /* CN_SHARED_LIBRARY_H */

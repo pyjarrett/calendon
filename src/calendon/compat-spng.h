@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CN_COMPAT_SPNG_H
+#define CN_COMPAT_SPNG_H
 
 #ifdef __GNUC__
 	#pragma GCC diagnostic push
@@ -33,3 +34,4 @@
 	#pragma warning(pop)
 #endif
 
+#endif /* CN_COMPAT_SPNG_H */

@@ -1,5 +1,5 @@
-#ifndef CALENDON_DRIVER_H
-#define CALENDON_DRIVER_H
+#ifndef CN_DRIVER_H
+#define CN_DRIVER_H
 
 #include <calendon/cn.h>
 
