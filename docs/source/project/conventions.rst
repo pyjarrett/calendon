@@ -19,7 +19,7 @@ Example:
 
 .. code-block::
 
-    CnDriverConfig
+    CnMainConfig
 
 **Functions**
 
@@ -35,8 +35,8 @@ Example:
 
 .. code-block::
 
-    // Driver Init(ialization)
-    cnDriver_Init
+    // Main Init(ialization)
+    cnMain_Init
 
     // CnFloat4x4 non-uniform scaling
     cnFloat4x4_NonUniformScale

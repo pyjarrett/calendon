@@ -15,17 +15,18 @@
  * The game uses `Main_*` functions in `control_*` to ask the driver to
  * shutdown.
  */
-#include <calendon/driver.h>
+#include <calendon/main.h>
+#include <calendon/main-config.h>
 
 int main(int argc, char* argv[])
 {
-	CnDriverConfig config;
-	if (!cnDriverConfig_ParseCommandLine(&config, argc, argv)) {
+	CnMainConfig config;
+	if (!cnMainConfig_ParseCommandLine(&config, argc, argv)) {
 		return EXIT_FAILURE;
 	}
 
-	cnDriver_Init(&config);
-	cnDriver_MainLoop();
-	cnDriver_Shutdown();
+	cnMain_Init(&config);
+	cnMain_Loop();
+	cnMain_Shutdown();
 	return EXIT_SUCCESS;
 }

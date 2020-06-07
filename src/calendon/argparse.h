@@ -1,10 +1,6 @@
 #ifndef CN_ARGPARSE_H
 #define CN_ARGPARSE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /**
  * @file argparse.h
  *
@@ -12,24 +8,21 @@ extern "C" {
  */
 
 #include <calendon/cn.h>
+
+#include <calendon/main-config.h>
 #include <calendon/path.h>
 #include <calendon/plugin.h>
 
-typedef struct {
-	CnPlugin payload;
-
-	CnPathBuffer gameLibPath;
-	CnPathBuffer assetDirPath;
-
-	int64_t tickLimit;
-} CnDriverConfig;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * A parser function which returns the number of arguments parsed.
  *
  * Should return `CN_ARG_PARSE_ERROR` if fails.
  */
-typedef int32_t(*CnOptionParserFn)(int argc, char** argv, int i, CnDriverConfig* config);
+typedef int32_t(*CnOptionParserFn)(int argc, char** argv, int i, CnMainConfig* config);
 
 typedef struct {
 	const char* help;
@@ -37,6 +30,10 @@ typedef struct {
 	const char* longOption;
 	CnOptionParserFn parser;
 } CnCommandParser;
+
+extern CnCommandParser parsers[3];
+
+void cnArgparse_PrintUsage(void);
 
 /**
  * Return value if a parsing error occurred.
