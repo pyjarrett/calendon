@@ -20,7 +20,7 @@
 int main(int argc, char* argv[])
 {
 	CnDriverConfig config;
-	if (!cnDriver_ParseCommandLine(argc, argv, &config)) {
+	if (!cnDriverConfig_ParseCommandLine(&config, argc, argv)) {
 		return EXIT_FAILURE;
 	}
 

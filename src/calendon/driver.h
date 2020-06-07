@@ -10,7 +10,9 @@
 extern "C" {
 #endif
 
-CN_API bool cnDriver_ParseCommandLine(int argc, char* argv[], CnDriverConfig* driverConfig);
+CN_API bool cnDriverConfig_ParseCommandLine(CnDriverConfig* driverConfig, int argc, char* argv[]);
+CN_API void cnDriverConfig_Freestanding(CnDriverConfig* config, CnPlugin_InitFn init, CnPlugin_TickFn tick, CnPlugin_DrawFn draw, CnPlugin_ShutdownFn shutdown);
+
 CN_API void cnDriver_Init(CnDriverConfig* config);
 CN_API void cnDriver_MainLoop(void);
 CN_API void cnDriver_Shutdown(void);

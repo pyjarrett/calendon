@@ -25,6 +25,11 @@
 static uint64_t lastTick;
 static CnPlugin Payload;
 
+static CnPlugin_InitFn cnMain_Init;
+static CnPlugin_TickFn cnMain_Tick;
+static CnPlugin_DrawFn cnMain_Draw;
+static CnPlugin_ShutdownFn cnMain_Shutdown;
+
 int32_t cnArgparse_Payload(int argc, char** argv, int index, CnDriverConfig* config);
 int32_t cnArgparse_AssetDir(int argc, char** argv, int index, CnDriverConfig* config);
 int32_t cnArgparse_TickLimit(int argc, char** argv, int index, CnDriverConfig* config);
@@ -124,6 +129,15 @@ int32_t cnArgparse_TickLimit(int argc, char** argv, int index, CnDriverConfig* c
 	return 2;
 }
 
+bool cnDriverConfig_IsHosted(CnDriverConfig* config)
+{
+	CN_ASSERT(config, "Cannot determine if null config is hosted.");
+	return config->payload.init
+		&& config->payload.tick
+		&& config->payload.draw
+		&& config->payload.shutdown;
+}
+
 void cnMain_PrintUsage(void)
 {
 	printf("\nUsage: calendon\n");
@@ -140,6 +154,21 @@ void cnMain_DescribeEnv(void)
 	CN_TRACE(LogSysMain, "CWD: '%s'", buffer);
 }
 
+void cnMain_RegisterPayload(CnPlugin* payload)
+{
+	CN_ASSERT(payload, "Cannot register a null payload.");
+
+	if (!payload->init) CN_FATAL_ERROR("CnPlugin_Init function missing in payload.");
+	if (!payload->draw) CN_FATAL_ERROR("CnPlugin_DrawFn function missing in payload.");
+	if (!payload->tick) CN_FATAL_ERROR("CnPlugin_TickFn function missing in payload.");
+	if (!payload->shutdown) CN_FATAL_ERROR("CnPlugin_ShutdownFn function missing in payload.");
+
+	cnMain_Init = payload->init;
+	cnMain_Tick = payload->tick;
+	cnMain_Draw = payload->draw;
+	cnMain_Shutdown = payload->shutdown;
+}
+
 void cnMain_LoadPayload(const char* sharedLibraryName)
 {
 	CN_ASSERT(sharedLibraryName, "Cannot use a null shared library name to load a payload.");
@@ -153,8 +182,8 @@ void cnMain_LoadPayload(const char* sharedLibraryName)
 	strftime(timeBuffer, sizeof(timeBuffer), "%c", lt);
 	CN_TRACE(LogSysMain, "Last modified time: %s", timeBuffer);
 
-	if (Payload.shutdown) {
-		Payload.shutdown();
+	if (cnMain_Shutdown) {
+		cnMain_Shutdown();
 	}
 
 	cnSharedLibrary_Release(Payload.sharedLibrary);
@@ -164,10 +193,7 @@ void cnMain_LoadPayload(const char* sharedLibraryName)
 		CN_FATAL_ERROR("Unable to load game module: %s", sharedLibraryName);
 	}
 
-	if (!Payload.init) CN_FATAL_ERROR("Plugin_Init function missing in %s", sharedLibraryName);
-	if (!Payload.draw) CN_FATAL_ERROR("CnPlugin_DrawFn function missing in %s", sharedLibraryName);
-	if (!Payload.tick) CN_FATAL_ERROR("CnPlugin_TickFn function missing in %s", sharedLibraryName);
-	if (!Payload.shutdown) CN_FATAL_ERROR("CnPlugin_ShutdownFn function missing in %s", sharedLibraryName);
+	cnMain_RegisterPayload(&Payload);
 
 	if (!Payload.init()) {
 		CN_FATAL_ERROR("%s failed to initialize", sharedLibraryName);
@@ -201,17 +227,28 @@ void cnMain_InitAllSystems(CnDriverConfig* config)
 		cnAssets_Init(defaultAssetDir.str);
 	}
 
-	if (!cnPath_IsFile(config->gameLibPath.str)) {
-		CN_FATAL_ERROR("Cannot load game. '%s' is not a game library.", config->gameLibPath.str);
-	}
-
 	const uint32_t width = 1024;
 	const uint32_t height = 768;
 	cnUI_Init(width, height);
 	cnR_Init(width, height);
 
-	const char* gameLib = config->gameLibPath.str;
-	cnMain_LoadPayload(gameLib);
+	if (!cnDriverConfig_IsHosted(config)) {
+		if (!cnPath_IsFile(config->gameLibPath.str)) {
+			CN_FATAL_ERROR("Cannot load game. '%s' is not a game library.", config->gameLibPath.str);
+		}
+
+		const char* gameLib = config->gameLibPath.str;
+		if (gameLib) {
+			cnMain_LoadPayload(gameLib);
+		}
+	}
+
+	if (cnMain_Init) {
+		cnMain_Init();
+	}
+	if (!cnMain_Draw) CN_FATAL_ERROR("Draw function missing. Write a cnMain_Draw(void) function.");
+	if (!cnMain_Tick) CN_FATAL_ERROR("Update function missing. Write a cnMain_Tick(void) function.");
+
 	cnMain_SetTickLimit(config->tickLimit);
 
 	lastTick = cnTime_NowNs();
@@ -268,7 +305,7 @@ bool cnMain_GenerateTick(uint64_t* outDt)
 /**
  * Parses a set of arguments into a driver configuration.
  */
-bool cnDriver_ParseCommandLine(int argc, char* argv[], CnDriverConfig* config)
+bool cnDriverConfig_ParseCommandLine(CnDriverConfig* config, int argc, char* argv[])
 {
 	CN_ASSERT(argc >= 1, "Argument count must at least include the executable.");
 	CN_ASSERT(argv, "Cannot parse null arguments.");
@@ -276,6 +313,9 @@ bool cnDriver_ParseCommandLine(int argc, char* argv[], CnDriverConfig* config)
 
 	cnPathBuffer_Clear(&config->gameLibPath);
 	cnPathBuffer_Clear(&config->assetDirPath);
+
+	memset(&config->payload, 0, sizeof(config->payload));
+	config->tickLimit = 0;
 
 	// The log system is not initialized at this point, so using printf and
 	// printf for now.
@@ -304,6 +344,24 @@ bool cnDriver_ParseCommandLine(int argc, char* argv[], CnDriverConfig* config)
 	return true;
 }
 
+void cnDriverConfig_Freestanding(CnDriverConfig* config, CnPlugin_InitFn init,
+	CnPlugin_TickFn tick, CnPlugin_DrawFn draw, CnPlugin_ShutdownFn shutdown)
+{
+	CN_ASSERT(config, "Cannot create a freestanding implementation from a null config.");
+
+	config->payload.init = init;
+	config->payload.tick = tick;
+	config->payload.draw = draw;
+	config->payload.shutdown = shutdown;
+	config->payload.sharedLibrary = NULL;
+
+	if (!cnDriverConfig_IsHosted(config)) {
+		CN_FATAL_ERROR("Improperly hosted config.");
+	}
+
+	cnMain_RegisterPayload(&config->payload);
+}
+
 void cnDriver_Init(CnDriverConfig* config)
 {
 	CN_ASSERT(config, "Cannot initialize a driver with a null CnDriverConfig.");
@@ -317,6 +375,9 @@ void cnDriver_Init(CnDriverConfig* config)
  */
 void cnDriver_MainLoop(void)
 {
+	CN_ASSERT(cnMain_Tick, "Tick function not defined.");
+	CN_ASSERT(cnMain_Draw, "Draw function not defined.");
+
 	while (cnMain_IsRunning() && !cnMain_IsTickLimitReached())
 	{
 		// Event checking should be quick.  Always processing events prevents
@@ -325,16 +386,17 @@ void cnDriver_MainLoop(void)
 
 		uint64_t dt;
 		if (cnMain_GenerateTick(&dt)) {
-			Payload.tick(dt);
+			cnMain_Tick(dt);
 			cnMain_TickCompleted();
 		}
-		Payload.draw();
+		cnMain_Draw();
 	}
 }
 
 void cnDriver_Shutdown(void)
 {
-	Payload.shutdown();
+	if (cnMain_Shutdown) cnMain_Shutdown();
+
 	cnR_Shutdown();
 	cnUI_Shutdown();
 	cnAssets_Shutdown();

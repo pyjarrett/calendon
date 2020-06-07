@@ -33,7 +33,8 @@ typedef struct {
 	CnPlugin_ShutdownFn shutdown;
 
 	/**
-	 * The library from which this plugin was loaded.
+	 * The library from which this plugin was loaded.  If not loaded from a
+	 * shared library, this might be NULL.
 	 */
 	cnSharedLibrary sharedLibrary;
 } CnPlugin;

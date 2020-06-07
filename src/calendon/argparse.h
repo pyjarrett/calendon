@@ -13,10 +13,14 @@ extern "C" {
 
 #include <calendon/cn.h>
 #include <calendon/path.h>
+#include <calendon/plugin.h>
 
 typedef struct {
+	CnPlugin payload;
+
 	CnPathBuffer gameLibPath;
 	CnPathBuffer assetDirPath;
+
 	int64_t tickLimit;
 } CnDriverConfig;
 
