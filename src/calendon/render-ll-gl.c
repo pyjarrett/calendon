@@ -1177,7 +1177,7 @@ void cnRLL_DrawSimpleText(CnFontId id, CnTextDrawParams* params, const char* tex
 	const size_t textLengthInBytes = strlen(text);
 	const char* textAfterLastByte = text + textLengthInBytes;
 
-	while (cursor < textAfterLastByte) {
+	while (cursor < (const uint8_t*)textAfterLastByte) {
 		// The next grapheme might be longer than a single code point.  We don't
 		// know how long the grapheme is until we match it.
 		uint32_t graphemeByteSize = cnUtf8_NumBytesInCodePoint(*cursor);

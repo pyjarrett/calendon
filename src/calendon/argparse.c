@@ -3,6 +3,9 @@
 #include <calendon/cn.h>
 #include <calendon/env.h>
 
+#include <errno.h>
+#include <string.h>
+
 int32_t cnArgparse_Payload(int argc, char** argv, int index, CnMainConfig* config);
 int32_t cnArgparse_AssetDir(int argc, char** argv, int index, CnMainConfig* config);
 int32_t cnArgparse_TickLimit(int argc, char** argv, int index, CnMainConfig* config);

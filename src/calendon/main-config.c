@@ -1,8 +1,10 @@
 #include "main-config.h"
 
 #include <calendon/cn.h>
-
 #include <calendon/argparse.h>
+
+#include <string.h>
+
 
 bool cnMainConfig_IsHosted(CnMainConfig* config)
 {

@@ -47,9 +47,9 @@ void anim_update(BinaryAnimation* anim, uint64_t dt, uint64_t rate)
 {
 	if (anim->transitioning) {
 		anim->elapsed += dt;
-		anim->elapsed = min(anim->elapsed, rate);
+		anim->elapsed = anim->elapsed < rate ? anim->elapsed : rate;
 		anim->t = (1.0f * anim->elapsed / rate); // puts t in [0, 1];
-		anim->t = min(1.0f, max(anim->t, 0.0f));
+		anim->t = fmin(1.0f, fmax(anim->t, 0.0f));
 		CN_ASSERT(0.0f <= anim->t && anim->t <= 1.0f, "Interpolation t is not in range [0, 1]");
 		anim->position = cnFloat2_Add(cnFloat2_Multiply(*anim->last, 1.0f - anim->t),
 									  cnFloat2_Multiply(*anim->next, anim->t));
