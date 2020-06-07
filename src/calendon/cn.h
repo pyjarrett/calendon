@@ -220,14 +220,16 @@ extern CN_API char fatalErrorBuffer[fatalErrorBufferLength];
 	#include <debugapi.h>
 	#define CN_FATAL_ERROR(error_message, ...) \
 	    do { \
-            if (IsDebuggerPresent()) { \
-                CN_DEBUG_BREAK(); \
-                abort(); \
-            } else { \
-                snprintf(fatalErrorBuffer, fatalErrorBufferLength, "%s:%i\n" error_message, __FILE__, __LINE__, ##__VA_ARGS__); \
-                MessageBox(NULL, fatalErrorBuffer, "Fatal Error", MB_OK); abort(); \
-            } \
-        } while (0)
+			if (IsDebuggerPresent()) { \
+				printf(error_message, ##__VA_ARGS__); \
+				fflush(stdout); \
+				CN_DEBUG_BREAK(); \
+				abort(); \
+			} else { \
+				snprintf(fatalErrorBuffer, fatalErrorBufferLength, "%s:%i\n" error_message, __FILE__, __LINE__, ##__VA_ARGS__); \
+				MessageBox(NULL, fatalErrorBuffer, "Fatal Error", MB_OK); abort(); \
+			} \
+		} while (0)
 #else
 	#define CN_FATAL_ERROR(error_message, ...) \
 		do { \
