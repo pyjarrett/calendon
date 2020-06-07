@@ -140,6 +140,8 @@ def parser_demo(parser) -> argparse.ArgumentParser:
 
 
 def parser_export(parser) -> argparse.ArgumentParser:
+    parser.add_argument('--output-dir',
+                        help='Location to place the exported contents.')
     return parser
 
 

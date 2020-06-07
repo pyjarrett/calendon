@@ -205,10 +205,15 @@ def cmd_demo(ctx: ProjectContext, _args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_export(ctx: ProjectContext, _args: argparse.Namespace) -> int:
+def cmd_export(ctx: ProjectContext, args: argparse.Namespace) -> int:
     """Exports the currently built shared libraries and headers."""
-    export_dir: str = ctx.export_dir()
-    header_dir: str = os.path.join(ctx.export_dir(), 'calendon')
+    top_level_dir_name: str = 'calendon-0.0.1'
+    if args.output_dir:
+        export_dir: str = os.path.join(args.output_dir, top_level_dir_name)
+    else:
+        export_dir: str = os.path.join(ctx.export_dir(), top_level_dir_name)
+
+    header_dir: str = os.path.join(export_dir, 'include', 'calendon')
     base_dir: str = ctx.source_dir()
     print(f'Exporting from {ctx.build_dir()} to {export_dir}')
 
@@ -217,13 +222,20 @@ def cmd_export(ctx: ProjectContext, _args: argparse.Namespace) -> int:
         shutil.rmtree(export_dir)
 
     shutil.copytree(base_dir, header_dir, ignore=shutil.ignore_patterns('*.c', 'CMakeLists.txt'))
+    print('Exported Headers:')
+    print(f' - {header_dir}')
+
+    # TODO: Allow export as other architectures other than x64.
+    lib_dir = os.path.join(export_dir, 'lib', 'x64')
+    os.makedirs(lib_dir, exist_ok=True)
 
     libraries = glob.glob(os.path.join(ctx.build_dir(), mp.shared_lib_glob()))
     libraries.extend(glob.glob(os.path.join(ctx.build_dir(), mp.static_lib_glob())))
+    print('Exporting Libraries:')
     for lib in libraries:
         exported_lib: str = os.path.basename(lib)
-        shutil.copyfile(lib, os.path.join(export_dir, exported_lib))
-        print(f'Exporting {exported_lib}')
+        shutil.copyfile(lib, os.path.join(lib_dir, exported_lib))
+        print(f'- {exported_lib}')
 
     print(f'Exported Calendon to: {export_dir}')
     return 0

@@ -118,7 +118,7 @@ class ProjectContext:
         return os.path.abspath(os.path.join(self._calendon_home, self._build_flavor.build_dir))
 
     def export_dir(self) -> str:
-        return os.path.join(self.build_dir(), 'exported', 'calendon')
+        return os.path.join(self.build_dir(), 'exported')
 
     def source_dir(self) -> str:
         """The primary directory for Calendon library source."""
