@@ -36,7 +36,7 @@ typedef struct {
 	 * The library from which this plugin was loaded.  If not loaded from a
 	 * shared library, this might be NULL.
 	 */
-	cnSharedLibrary sharedLibrary;
+	CnSharedLibrary sharedLibrary;
 } CnPlugin;
 
 bool cnPlugin_LoadFromFile(CnPlugin* plugin, const char* sharedLibraryName);

@@ -4,20 +4,20 @@
 
 #ifdef _WIN32
 
-void cnSharedLibrary_Release(cnSharedLibrary library)
+void cnSharedLibrary_Release(CnSharedLibrary library)
 {
 	if (library) {
 		FreeLibrary(library);
 	}
 }
 
-cnSharedLibrary cnSharedLibrary_Load(const char* sharedLibraryName)
+CnSharedLibrary cnSharedLibrary_Load(const char* sharedLibraryName)
 {
 	CN_ASSERT(sharedLibraryName, "Cannot load a shared library with no name.");
 	return LoadLibrary(sharedLibraryName);
 }
 
-void* cnSharedLibrary_LookupFn(cnSharedLibrary library, const char* fnName)
+void* cnSharedLibrary_LookupFn(CnSharedLibrary library, const char* fnName)
 {
 	CN_ASSERT(library, "Cannot load functions from a null shared library.");
 	CN_ASSERT(fnName, "Cannot load a null function name from a shared library.");
@@ -28,20 +28,20 @@ void* cnSharedLibrary_LookupFn(cnSharedLibrary library, const char* fnName)
 
 #ifdef __linux__
 
-void cnSharedLibrary_Release(cnSharedLibrary library)
+void cnSharedLibrary_Release(CnSharedLibrary library)
 {
 	if (library) {
 		dlclose(library);
 	}
 }
 
-cnSharedLibrary cnSharedLibrary_Load(const char* sharedLibraryName)
+CnSharedLibrary cnSharedLibrary_Load(const char* sharedLibraryName)
 {
 	CN_ASSERT(sharedLibraryName, "Cannot load a shared library with no name.");
 	return dlopen(sharedLibraryName,  RTLD_NOW);
 }
 
-void* cnSharedLibrary_LookupFn(cnSharedLibrary library, const char* fnName)
+void* cnSharedLibrary_LookupFn(CnSharedLibrary library, const char* fnName)
 {
 	CN_ASSERT(library, "Cannot load functions from a null shared library.");
 	CN_ASSERT(fnName, "Cannot load a null function name from a shared library.");
