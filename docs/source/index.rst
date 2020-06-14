@@ -17,6 +17,7 @@ Hello, world!
    project/conventions
    project/crank
    project/testing
+   project/glossary
 
 
 Indices and tables
