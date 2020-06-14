@@ -13,6 +13,8 @@ extern "C" {
 
 CN_API float cnFloat_RelativeDiff(float a, float b);
 
+CN_API float cnFloat_Clamp(const float value, const float min, const float max);
+
 #ifdef __cplusplus
 }
 #endif

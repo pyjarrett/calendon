@@ -2,6 +2,8 @@
  * Used to experiment with animation between discrete steps.
  */
 #include <calendon/cn.h>
+
+#include <calendon/float.h>
 #include <calendon/input-keyset.h>
 #include <calendon/log.h>
 #include <calendon/math2.h>
@@ -49,7 +51,7 @@ void anim_update(BinaryAnimation* anim, uint64_t dt, uint64_t rate)
 		anim->elapsed += dt;
 		anim->elapsed = anim->elapsed < rate ? anim->elapsed : rate;
 		anim->t = (1.0f * anim->elapsed / rate); // puts t in [0, 1];
-		anim->t = fmin(1.0f, fmax(anim->t, 0.0f));
+		anim->t = cnFloat_Clamp(anim->t, 0.0f, 1.0f);
 		CN_ASSERT(0.0f <= anim->t && anim->t <= 1.0f, "Interpolation t is not in range [0, 1]");
 		anim->position = cnFloat2_Add(cnFloat2_Multiply(*anim->last, 1.0f - anim->t),
 									  cnFloat2_Multiply(*anim->next, anim->t));

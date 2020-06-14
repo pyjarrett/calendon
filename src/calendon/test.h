@@ -357,6 +357,18 @@ CN_TEST_ASSERT_FN_DEFN(uint64_t, PRIu64)
 	}
 
 /**
+ * Verifies that two floats are **exactly** the same.  This is typically not
+ * the comparison function you want.
+ */
+#define CN_TEST_ASSERT_EXACT_F(a, b) \
+	if (a != b) { \
+		cnTest_UnitAssertFailed(&unitReport); \
+		printf("%s:%i  \"" #a " is exactly equal to " #b "\" (%f != %f)\n", \
+			__FILE__, __LINE__, ((float)(a)), ((float)(b))); \
+		break; \
+	}
+
+/**
  * Assertion macro for testing null-terminated string equality.
  *
  * @ingroup CalendonTest
