@@ -1,5 +1,5 @@
 #include <calendon/cn.h>
-#include <calendon/input.h>
+#include <calendon/input-keyset.h>
 #include <calendon/log.h>
 #include <calendon/math2.h>
 #include <calendon/render.h>

@@ -1,7 +1,6 @@
 #include "ui.h"
 
 #include <calendon/control.h>
-#include <calendon/input.h>
 
 SDL_Window* window;
 static uint32_t width, height;

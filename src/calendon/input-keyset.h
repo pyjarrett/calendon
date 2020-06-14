@@ -1,5 +1,5 @@
-#ifndef CN_INPUT_H
-#define CN_INPUT_H
+#ifndef CN_INPUT_KEYSET_H
+#define CN_INPUT_KEYSET_H
 
 #include <calendon/cn.h>
 
@@ -27,21 +27,13 @@ typedef struct {
 	CnKeySet up;
 } CnKeyInputs;
 
-typedef struct {
-	int x, y;
-	int dx, dy;
-} CnMouse;
-
 CN_API void cnKeySet_Reset(CnKeySet* list);
 CN_API bool cnKeySet_Add(CnKeySet* list, SDL_Keycode key);
 CN_API void cnKeySet_Remove(CnKeySet* list, SDL_Keycode key);
 CN_API bool cnKeySet_Contains(CnKeySet* list, SDL_Keycode key);
 
-void cnMouse_Still(CnMouse* m);
-void cnMouse_Move(CnMouse* m, int32_t x, int32_t y, int32_t dx, int32_t dy);
-
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* CN_INPUT */
+#endif /* CN_INPUT_KEYSET_H */

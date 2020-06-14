@@ -5,7 +5,6 @@
 #include <calendon/control.h>
 #include <calendon/crash.h>
 #include <calendon/env.h>
-#include <calendon/input.h>
 #include <calendon/log.h>
 #include <calendon/main-config.h>
 #include <calendon/memory.h>

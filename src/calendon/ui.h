@@ -6,7 +6,8 @@
 #define CN_UI_H
 
 #include <calendon/cn.h>
-#include <calendon/input.h>
+#include <calendon/input-keyset.h>
+#include <calendon/input-mouse.h>
 
 #ifdef __cplusplus
 extern "C" {
