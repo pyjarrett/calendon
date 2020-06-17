@@ -17,6 +17,8 @@ CN_API uint64_t cnTime_MsToNs(uint64_t ms);
 CN_API uint64_t cnTime_NsToMs(uint64_t ns);
 CN_API uint64_t cnTime_SecToNs(uint64_t sec);
 
+CN_API uint64_t cnTime_MonotonicSubtract(uint64_t left, uint64_t right);
+
 #ifdef __cplusplus
 }
 #endif

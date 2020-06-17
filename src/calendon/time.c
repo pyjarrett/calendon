@@ -61,3 +61,9 @@ uint64_t cnTime_SecToNs(uint64_t sec)
 {
 	return cnTime_MsToNs(sec * 1000);
 }
+
+uint64_t cnTime_MonotonicSubtract(uint64_t left, uint64_t right)
+{
+	if (left < right) return 0;
+	return left - right;
+}

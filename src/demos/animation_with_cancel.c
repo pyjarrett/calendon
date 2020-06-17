@@ -3,7 +3,10 @@
  */
 #include <calendon/cn.h>
 
+#include <calendon/action.h>
 #include <calendon/float.h>
+#include <calendon/input-button-mapping.h>
+#include <calendon/input-digital-button.h>
 #include <calendon/input-keyset.h>
 #include <calendon/log.h>
 #include <calendon/math2.h>
@@ -14,6 +17,9 @@
 #include <math.h>
 
 CnLogHandle LogSysSample;
+CnButtonMapping buttonMapping;
+CnDigitalButton startButton;
+CnAction changeAction;
 
 
 typedef struct {
@@ -70,6 +76,47 @@ void anim_complete(BinaryAnimation* anim, uint64_t rate)
 CnFloat2 left, right;
 BinaryAnimation squareAnim;
 
+void applyButtonMapping(const CnInput* input, CnButtonMapping* mapping)
+{
+	CN_ASSERT_NOT_NULL(input);
+	CN_ASSERT_NOT_NULL(mapping);
+
+	for (uint32_t i = 0; i < input->keySet.down.size; ++i) {
+		const CnPhysicalButtonId buttonId = input->keySet.down.keys[i];
+		if (cnButtonMapping_IsMapped(mapping, buttonId)) {
+			CnDigitalButton* button = cnButtonMapping_LookUp(mapping, buttonId);
+			CN_ASSERT_NOT_NULL(button);
+			cnDigitalButton_Press(button);
+		}
+	}
+
+	for (uint32_t i = 0; i < input->keySet.up.size; ++i) {
+		const CnPhysicalButtonId buttonId = input->keySet.up.keys[i];
+		if (cnButtonMapping_IsMapped(mapping, buttonId)) {
+			CnDigitalButton* button = cnButtonMapping_LookUp(mapping, buttonId);
+			CN_ASSERT_NOT_NULL(button);
+			cnDigitalButton_Release(button);
+		}
+	}
+}
+
+void applyInputs(const CnInput* input, const uint64_t dt)
+{
+	CN_ASSERT_NOT_NULL(input);
+
+	// Apply the tick before applying inputs.
+	cnAction_Tick(&changeAction, dt);
+
+	applyButtonMapping(input, &buttonMapping);
+
+	if (cnDigitalButton_IsDown(&startButton)) {
+		cnAction_Start(&changeAction);
+	}
+	else {
+		cnAction_Cancel(&changeAction);
+	}
+}
+
 CN_GAME_API bool CnPlugin_Init(void)
 {
 	cnLog_RegisterSystem(&LogSysSample, "Sample", CN_LOG_TRACE);
@@ -84,6 +131,13 @@ CN_GAME_API bool CnPlugin_Init(void)
 	squareAnim.last = &right;
 	squareAnim.next = &left;
 	squareAnim.transitioning = false;
+
+	cnDigitalButton_Set(&startButton, CnDigitalButtonStateUp);
+	cnButtonMapping_Clear(&buttonMapping);
+	cnButtonMapping_Map(&buttonMapping, SDLK_SPACE, &startButton);
+
+	cnAction_Set(&changeAction, cnTime_MsToNs(1000), 1, 0);
+	cnAction_Reset(&changeAction);
 	return true;
 }
 
@@ -101,25 +155,20 @@ CN_GAME_API void CnPlugin_Draw(void)
 CN_GAME_API void CnPlugin_Tick(uint64_t dt)
 {
 	CnInput* input = cnUI_InputPoll();
-	CN_ASSERT(input, "CnInput poll provided a null pointer.");
+	CN_ASSERT_NOT_NULL(input);
+
+	applyInputs(input, dt);
 
 	const uint64_t rate = cnTime_MsToNs(400);
 	if (!squareAnim.transitioning) {
-		if (cnKeySet_Contains(&input->keySet.down, SDLK_SPACE)) {
+		if (changeAction.state == CnActionStateInProgress) {
 			anim_start(&squareAnim);
 		}
 	}
 	else {
 		anim_update(&squareAnim, dt, rate);
 	}
-
 	anim_complete(&squareAnim, rate);
-
-	//const float pi = 3.14159f;
-	//t *= (2.0f * pi); // convert to [0, 2*pi]
-	//t = sinf(t);  // convert to [-1, 1]
-	//t += 1; // convert to [0, 2]
-	//t *= 0.5f; // convert to [0, 1]
 }
 
 CN_GAME_API void CnPlugin_Shutdown(void)
