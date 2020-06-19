@@ -4,12 +4,14 @@
 #include <calendon/cn.h>
 
 #include <calendon/action.h>
+#include <calendon/assets.h>
 #include <calendon/float.h>
 #include <calendon/input-button-mapping.h>
 #include <calendon/input-digital-button.h>
 #include <calendon/input-keyset.h>
 #include <calendon/log.h>
 #include <calendon/math2.h>
+#include <calendon/path.h>
 #include <calendon/render.h>
 #include <calendon/time.h>
 #include <calendon/ui.h>
@@ -20,7 +22,8 @@ CnLogHandle LogSysSample;
 CnButtonMapping buttonMapping;
 CnDigitalButton startButton;
 CnAction changeAction;
-
+CnFontId font;
+static uint64_t animationRate;
 
 typedef struct {
 	// Current position.
@@ -51,12 +54,12 @@ void anim_start(BinaryAnimation* anim)
 	}
 }
 
-void anim_update(BinaryAnimation* anim, uint64_t dt, uint64_t rate)
+void anim_update(BinaryAnimation* anim, uint64_t dt, uint64_t animationRate)
 {
 	if (anim->transitioning) {
 		anim->elapsed += dt;
-		anim->elapsed = anim->elapsed < rate ? anim->elapsed : rate;
-		anim->t = (1.0f * anim->elapsed / rate); // puts t in [0, 1];
+		anim->elapsed = anim->elapsed < animationRate ? anim->elapsed : animationRate;
+		anim->t = (1.0f * anim->elapsed / animationRate); // puts t in [0, 1];
 		anim->t = cnFloat_Clamp(anim->t, 0.0f, 1.0f);
 		CN_ASSERT(0.0f <= anim->t && anim->t <= 1.0f, "Interpolation t is not in range [0, 1]");
 		anim->position = cnFloat2_Add(cnFloat2_Multiply(*anim->last, 1.0f - anim->t),
@@ -64,11 +67,11 @@ void anim_update(BinaryAnimation* anim, uint64_t dt, uint64_t rate)
 	}
 }
 
-void anim_complete(BinaryAnimation* anim, uint64_t rate)
+void anim_complete(BinaryAnimation* anim, uint64_t animationRate)
 {
-	if (anim->transitioning && anim->elapsed >= rate) {
-		anim->elapsed = rate;
-		anim->t = (1.0f * anim->elapsed / rate); // puts t in [0, 1];
+	if (anim->transitioning && anim->elapsed >= animationRate) {
+		anim->elapsed = animationRate;
+		anim->t = (1.0f * anim->elapsed / animationRate); // puts t in [0, 1];
 		anim->transitioning = false;
 	}
 }
@@ -122,6 +125,14 @@ CN_GAME_API bool CnPlugin_Init(void)
 	cnLog_RegisterSystem(&LogSysSample, "Sample", CN_LOG_TRACE);
 	CN_TRACE(LogSysSample, "Sample loaded");
 
+	CnPathBuffer fontPath;
+	cnAssets_PathBufferFor("fonts/bizcat.psf", &fontPath);
+
+	cnR_CreateFont(&font);
+	if (!cnR_LoadPSF2Font(font, fontPath.str))	{
+		CN_FATAL_ERROR("Unable to load font: %s", fontPath.str);
+	}
+
 	left = cnFloat2_Make(300, 300);
 	right = cnFloat2_Make(500, 300);
 
@@ -131,14 +142,40 @@ CN_GAME_API bool CnPlugin_Init(void)
 	squareAnim.last = &right;
 	squareAnim.next = &left;
 	squareAnim.transitioning = false;
+	animationRate = cnTime_MsToNs(2000);
 
 	cnDigitalButton_Set(&startButton, CnDigitalButtonStateUp);
 	cnButtonMapping_Clear(&buttonMapping);
 	cnButtonMapping_Map(&buttonMapping, SDLK_SPACE, &startButton);
 
-	cnAction_Set(&changeAction, cnTime_MsToNs(1000), 1, 0);
+	cnAction_Set(&changeAction,
+	cnTime_MsToNs(1000),
+	animationRate,
+	cnTime_MsToNs(2000));
 	cnAction_Reset(&changeAction);
 	return true;
+}
+
+void drawUI(void)
+{
+	CnFloat2 statusLocation = cnFloat2_Make(50, 50);
+	char buffer[1024];
+	switch (changeAction.state) {
+		case CnActionStateReady:
+			sprintf(buffer, "Ready: Press Space");
+			break;
+		case CnActionStateInProgress:
+			sprintf(buffer, "In Progress: %" PRIu64, changeAction.executionTimeLeft);
+			break;
+		case CnActionStateCoolingDown:
+			sprintf(buffer, "Cooling Down: %" PRIu64, changeAction.coolDownLeft);
+			break;
+		case CnActionStateWindingUp:
+			sprintf(buffer, "Winding Up: %" PRIu64, changeAction.windUpLeft);
+			break;
+		default: CN_ASSERT(false, "Unknown action state");
+	}
+	cnR_DrawSimpleText(font, statusLocation, buffer);
 }
 
 CN_GAME_API void CnPlugin_Draw(void)
@@ -148,6 +185,8 @@ CN_GAME_API void CnPlugin_Draw(void)
 	CnDimension2f rectSize = { 50, 50 };
 	CnRGB8u white = { 255, 255, 255 };
 	cnR_DrawDebugRect(squareAnim.position, rectSize, white);
+
+	drawUI();
 
 	cnR_EndFrame();
 }
@@ -159,16 +198,15 @@ CN_GAME_API void CnPlugin_Tick(uint64_t dt)
 
 	applyInputs(input, dt);
 
-	const uint64_t rate = cnTime_MsToNs(400);
 	if (!squareAnim.transitioning) {
 		if (changeAction.state == CnActionStateInProgress) {
 			anim_start(&squareAnim);
 		}
 	}
 	else {
-		anim_update(&squareAnim, dt, rate);
+		anim_update(&squareAnim, dt, animationRate);
 	}
-	anim_complete(&squareAnim, rate);
+	anim_complete(&squareAnim, animationRate);
 }
 
 CN_GAME_API void CnPlugin_Shutdown(void)
