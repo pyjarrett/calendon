@@ -1,6 +1,10 @@
 #ifndef CN_ACTION_H
 #define CN_ACTION_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <calendon/cn.h>
 #include <calendon/log.h>
 
@@ -50,5 +54,9 @@ CN_API void cnAction_Tick(CnAction* action, uint64_t dt);
 CN_API void cnAction_Reset(CnAction* action);
 
 CN_API void cnAction_Log(CnAction* action, CnLogHandle log);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* CN_ACTION_H */
