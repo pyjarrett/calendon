@@ -190,6 +190,27 @@ Primitive Types
 
 - Use ``size_t`` for types which must deal with memory sizes or offsets.
 
+Value Types
+-----------
+
+Calendon wraps types with units inside structs to prevent incorrect usage.
+
+**Creating value types in a particular unit form**
+
+.. code-block::
+
+    <ValueType> <ValueType>_In<Unit>
+
+.. doxygenfunction:: cnPlanarAngle_InDegrees
+
+**Converting value types to a usable primitive type**
+
+.. code-block::
+
+    <PrimitiveType> <ValueType>_To<Unit>
+
+.. doxygenfunction:: cnPlanarAngle_ToRadians
+
 #include's
 -------------------
 
