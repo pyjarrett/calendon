@@ -1,6 +1,10 @@
 #ifndef CN_INPUT_BUTTON_MAPPING_H
 #define CN_INPUT_BUTTON_MAPPING_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <calendon/cn.h>
 
 #include <calendon/input-digital-button.h>
@@ -34,5 +38,9 @@ CN_API void cnButtonMapping_Clear(CnButtonMapping* mapping);
 CN_API bool cnButtonMapping_IsMapped(CnButtonMapping* mapping, CnPhysicalButtonId buttonId);
 CN_API void cnButtonMapping_Map(CnButtonMapping* mapping, CnPhysicalButtonId source, CnDigitalButton* button);
 CN_API CnDigitalButton* cnButtonMapping_LookUp(CnButtonMapping* mapping, CnPhysicalButtonId buttonId);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* CN_INPUT_BUTTON_MAPPING_H */

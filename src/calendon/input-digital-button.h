@@ -1,6 +1,10 @@
 #ifndef CN_INPUT_DIGITAL_BUTTON_H
 #define CN_INPUT_DIGITAL_BUTTON_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <calendon/cn.h>
 
 typedef enum {
@@ -25,5 +29,9 @@ CN_API bool cnDigitalButton_IsUp(CnDigitalButton* button);
 
 CN_API void cnDigitalButton_Press(CnDigitalButton* button);
 CN_API void cnDigitalButton_Release(CnDigitalButton* button);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* CN_INPUT_DIGITAL_BUTTON_H */

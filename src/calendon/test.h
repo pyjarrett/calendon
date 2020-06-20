@@ -53,6 +53,11 @@
  * documentation of function preconditions while also verifying them.
  *
  */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <calendon/cn.h>
 #include <calendon/float.h>
 
@@ -404,3 +409,7 @@ CN_TEST_ASSERT_FN_DEFN(uint64_t, PRIu64)
 			break; \
 		} \
 	}
+
+#ifdef __cplusplus
+}
+#endif
