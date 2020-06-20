@@ -252,6 +252,12 @@ extern CN_API char fatalErrorBuffer[fatalErrorBufferLength];
  */
 #define CN_UNUSED(value) (void)(value)
 
+/**
+ * Recommends that a function be copied to the call site instead of called
+ * (inlined).  Use sparingly and primarily for short functions.
+ */
+#define CN_INLINE inline
+
 /*
  * Macro to be used while writing code to indicate that this code should never
  * be submitted for real.  Define to something meaningless in production to
