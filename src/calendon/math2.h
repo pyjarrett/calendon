@@ -32,26 +32,29 @@ typedef struct {
 	float degrees;
 } CnPlanarAngle;
 
-CN_API float cnAngle_ToDegrees(CnPlanarAngle a);
-CN_API float cnAngle_ToRadians(CnPlanarAngle a);
-CN_API CnPlanarAngle cnAngle_InDegrees(float d);
-CN_API CnPlanarAngle cnAngle_InRadians(float d);
-CN_API CnPlanarAngle cnAngle_Add(CnPlanarAngle left, CnPlanarAngle right);
-CN_API CnPlanarAngle cnAngle_Sub(CnPlanarAngle left, CnPlanarAngle right);
+CN_API float         cnPlanarAngle_ToDegrees(CnPlanarAngle a);
+CN_API float         cnPlanarAngle_ToRadians(CnPlanarAngle a);
+CN_API CnPlanarAngle cnPlanarAngle_InDegrees(float d);
+CN_API CnPlanarAngle cnPlanarAngle_InRadians(float r);
+CN_API CnPlanarAngle cnPlanarAngle_Add(CnPlanarAngle left, CnPlanarAngle right);
+CN_API CnPlanarAngle cnPlanarAngle_Sub(CnPlanarAngle left, CnPlanarAngle right);
 
-CN_API CnFloat2 cnFloat2_Make(float x, float y);
-CN_API CnFloat2 cnFloat2_FromPolar(float radius, CnPlanarAngle theta);
-CN_API CnFloat2 cnFloat2_Add(CnFloat2 left, CnFloat2 right);
-CN_API CnFloat2 cnFloat2_Sub(CnFloat2 left, CnFloat2 right);
-CN_API CnFloat2 cnFloat2_Multiply(CnFloat2 v, float s);
-CN_API CnFloat2 cnFloat2_Divide(CnFloat2 v, float s);
-CN_API float cnFloat2_Length(CnFloat2 v);
-CN_API float cnFloat2_LengthSquared(CnFloat2 v);
-CN_API CnFloat2 cnFloat2_Normalize(CnFloat2 v);
-CN_API CnFloat2 cnFloat2_Midpoint(CnFloat2 left, CnFloat2 right);
-CN_API float cnFloat2_DistanceSquared(CnFloat2 left, CnFloat2 right);
+CN_API CnFloat2      cnFloat2_Make(float x, float y);
+CN_API CnFloat2      cnFloat2_FromPolar(float radius, CnPlanarAngle theta);
 
-CN_API CnFloat2 cnFloat2_Lerp(CnFloat2 from, CnFloat2 to, float alpha);
+CN_API CnFloat2      cnFloat2_Add(CnFloat2 left, CnFloat2 right);
+CN_API CnFloat2      cnFloat2_Sub(CnFloat2 left, CnFloat2 right);
+CN_API CnFloat2      cnFloat2_Multiply(CnFloat2 v, float s);
+CN_API CnFloat2      cnFloat2_Divide(CnFloat2 v, float s);
+
+CN_API float         cnFloat2_Length(CnFloat2 v);
+CN_API float         cnFloat2_LengthSquared(CnFloat2 v);
+CN_API CnFloat2      cnFloat2_Normalize(CnFloat2 v);
+
+CN_API CnFloat2      cnFloat2_Midpoint(CnFloat2 left, CnFloat2 right);
+CN_API float         cnFloat2_DistanceSquared(CnFloat2 left, CnFloat2 right);
+
+CN_API CnFloat2      cnFloat2_Lerp(CnFloat2 from, CnFloat2 to, float alpha);
 
 CN_API CnPlanarAngle cnFloat2_DirectionBetween(CnFloat2 from, CnFloat2 to);
 

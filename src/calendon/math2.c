@@ -5,32 +5,32 @@
 
 static const float pi = 3.14159265f;
 
-float cnAngle_ToDegrees(CnPlanarAngle a)
+float cnPlanarAngle_ToDegrees(CnPlanarAngle a)
 {
 	return a.degrees;
 }
 
-float cnAngle_ToRadians(CnPlanarAngle a)
+float cnPlanarAngle_ToRadians(CnPlanarAngle a)
 {
 	return a.degrees * pi / 180.0f;
 }
 
-CnPlanarAngle cnAngle_InDegrees(float d)
+CnPlanarAngle cnPlanarAngle_InDegrees(float d)
 {
 	return (CnPlanarAngle) { d };
 }
 
-CnPlanarAngle cnAngle_InRadians(float r)
+CnPlanarAngle cnPlanarAngle_InRadians(float r)
 {
 	return (CnPlanarAngle) { r * 180.0f / pi };
 }
 
-CnPlanarAngle cnAngle_Add(CnPlanarAngle left, CnPlanarAngle right)
+CnPlanarAngle cnPlanarAngle_Add(CnPlanarAngle left, CnPlanarAngle right)
 {
 	return (CnPlanarAngle) { left.degrees + right.degrees };
 }
 
-CnPlanarAngle cnAngle_Sub(CnPlanarAngle left, CnPlanarAngle right)
+CnPlanarAngle cnPlanarAngle_Sub(CnPlanarAngle left, CnPlanarAngle right)
 {
 	return (CnPlanarAngle) { left.degrees - right.degrees };
 }
@@ -42,8 +42,8 @@ CnFloat2 cnFloat2_Make(float x, float y)
 
 CnFloat2 cnFloat2_FromPolar(float radius, CnPlanarAngle theta)
 {
-	return (CnFloat2) { radius * cosf(cnAngle_ToRadians(theta)),
-		radius * sinf(cnAngle_ToRadians(theta)) };
+	return (CnFloat2) { radius * cosf(cnPlanarAngle_ToRadians(theta)),
+		radius * sinf(cnPlanarAngle_ToRadians(theta)) };
 }
 
 CnFloat2 cnFloat2_Add(CnFloat2 left, CnFloat2 right)
@@ -101,5 +101,5 @@ CnFloat2 cnFloat2_Lerp(CnFloat2 from, CnFloat2 to, float alpha)
 
 CnPlanarAngle cnFloat2_DirectionBetween(CnFloat2 from, CnFloat2 to)
 {
-	return cnAngle_InRadians(atan2f(to.y - from.y, to.x - from.x));
+	return cnPlanarAngle_InRadians(atan2f(to.y - from.y, to.x - from.x));
 }
