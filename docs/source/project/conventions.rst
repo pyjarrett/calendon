@@ -1,6 +1,14 @@
 Code Conventions
 ========================
 
+General code conventions
+------------------------
+
+- Use tabs for indentation and spaces for alignment.
+- Wrap headers with ``extern "C" {"`` for C++ compatibility.
+- Prefer stack-based and statically allocated storage to dynamic allocations.
+
+
 Prefixing structs, macros and functions
 ---------------------------------------
 
@@ -80,6 +88,8 @@ Prefix enum types with `Cn` (capitalize)
 .. code-block::
 
     typedef enum {
+        Cn<EnumName><ValueName1>,
+        Cn<EnumName><ValueName2>
     } Cn<EnumName>;
 
 Example:
@@ -221,9 +231,14 @@ Header file:
      * What is the purpose of this file?
      */
 
+    // extern "C" here to also included headers.
     #ifdef __cplusplus
     extern "C" {
     #endif
+
+    // includes
+    // cn.h first and separate from the other header files.
+    #include <calendon/cn.h>
 
     // structs, enums, and typedefs
 
