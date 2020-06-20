@@ -28,7 +28,7 @@ CelestialBody bodies[NUM_PLANETS];
 
 CN_GAME_API bool CnPlugin_Init(void)
 {
-	cnLog_RegisterSystem(&LogSysSample, "Sample", CN_LOG_TRACE);
+	cnLog_RegisterSystem(&LogSysSample, "Sample", CnLogVerbosityTrace);
 	CN_TRACE(LogSysSample, "Sample loaded");
 
 	CnPathBuffer fontPath;

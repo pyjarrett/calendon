@@ -104,9 +104,9 @@ enum {
 	CnProgramIndexSprite = 0,
 	CnProgramIndexFullScreen,
 	CnProgramIndexSolidPolygon,
-	ProgramIndexMax
+	CnProgramIndexMax
 };
-static CnProgram programs[ProgramIndexMax];
+static CnProgram programs[CnProgramIndexMax];
 
 /**
  * The total number of glyphs which can be drawn at once.
@@ -145,9 +145,9 @@ typedef struct {
 } CnSemanticMapping;
 
 enum {
-	AttributeSemanticNamePosition = 0,
+	CnAttributeSemanticNamePosition = 0,
 	CnAttributeSemanticNamePosition2 = 0,
-	AttributeSemanticNamePosition3 = 0,
+	CnAttributeSemanticNamePosition3 = 0,
 	CnAttributeSemanticNamePosition4 = 0,
 	CnAttributeSemanticNameTexCoord2 = 1,
 	CnAttributeSemanticNameTypes = 5,
@@ -159,9 +159,9 @@ enum {
  * based on a mapping of shader inputs to semantic names.
  */
 static CnSemanticMapping attributeSemanticNames[] = {
-	{ "Position",  AttributeSemanticNamePosition,    GL_FLOAT, 4 },
+	{ "Position",  CnAttributeSemanticNamePosition,  GL_FLOAT, 4 },
 	{ "Position2", CnAttributeSemanticNamePosition2, GL_FLOAT, 2 },
-	{ "Position3", AttributeSemanticNamePosition3,   GL_FLOAT, 3 },
+	{ "Position3", CnAttributeSemanticNamePosition3, GL_FLOAT, 3 },
 	{ "Position4", CnAttributeSemanticNamePosition4, GL_FLOAT, 4 },
 	{ "TexCoord2", CnAttributeSemanticNameTexCoord2, GL_FLOAT, 2 }
 };
@@ -286,7 +286,7 @@ void cnRLL_ApplyUniform(CnUniform* u, CnUniformStorage storage)
 void cnRLL_RegisterProgram(uint32_t index, GLuint program)
 {
 	CN_ASSERT_NO_GL_ERROR();
-	CN_ASSERT(index <= ProgramIndexMax, "Trying to register a program %" PRIu32
+	CN_ASSERT(index <= CnProgramIndexMax, "Trying to register a program %" PRIu32
 		"outside of the valid range of programs %" PRIu32, index, program);
 	CN_TRACE(LogSysRender, " programRegistering: %u to global program index %" PRIu32, program, index);
 	CnProgram* p = &programs[index];
@@ -581,7 +581,7 @@ static bool cnRLL_CreateShader(GLuint* shader, const char* source, const uint32_
 
 void cnRLL_InitGL(void)
 {
-	cnLog_RegisterSystem(&LogSysRender, "Render", CN_LOG_TRACE);
+	cnLog_RegisterSystem(&LogSysRender, "Render", CnLogVerbosityTrace);
 
 	// TODO: Settle on an appropriate OpenGL version to use.
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -805,7 +805,7 @@ void cnRLL_LoadSimpleShader(const char* vertexShaderFileName,
 			fragmentShaderPath.str);
 	}
 
-	if (!cnAssets_ReadFile(fragmentShaderPath.str, CN_FILE_TYPE_TEXT, &fragmentShaderBuffer)) {
+	if (!cnAssets_ReadFile(fragmentShaderPath.str, CnFileTypeText, &fragmentShaderBuffer)) {
 		CN_ERROR(LogSysRender, "Unable to read fragment shader text");
 	}
 
@@ -820,7 +820,7 @@ void cnRLL_LoadSimpleShader(const char* vertexShaderFileName,
 			vertexShaderPath.str);
 	}
 
-	if (!cnAssets_ReadFile(vertexShaderPath.str, CN_FILE_TYPE_TEXT, &vertexShaderBuffer)) {
+	if (!cnAssets_ReadFile(vertexShaderPath.str, CnFileTypeText, &vertexShaderBuffer)) {
 		CN_ERROR(LogSysRender, "Unable to read vertex shader text");
 	}
 

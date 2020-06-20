@@ -72,32 +72,32 @@ extern CN_API const char* LogSystemsRegistered[CN_LOG_MAX_SYSTEMS];
  * Log verbosity settings in increasing order of logging.  Using a higher
  * setting enables logging from all systems below it.
  */
-enum {
+typedef enum {
 	// Since unsigned ints are used, GCC generates lots of compiler warnings
 	// relating to (verbosity <= 0) since verbosity is unsigned and cannot be
 	// less than 0.  This "always on" error mode hides that error.
-	CN_LOG_FATAL = 0,
+	CnLogVerbosityFatal = 0,
 
 	/** Very serious issues requiring attention. */
-	CN_LOG_ERROR = 1,
+	CnLogVerbosityError = 1,
 
 	/**
 	 * Warnings to be fixed before shipping.  The program can continue
 	 * executing, but it is in an abnormal or reduced state.
 	 */
-	CN_LOG_WARN = 2,
+	CnLogVerbosityWarn = 2,
 
 	/** Messages for tracing program flow. */
-	CN_LOG_TRACE = 3,
+	CnLogVerbosityTrace = 3,
 
 	/** Total number of verbosity settings. */
-	CN_LOG_NUM_TYPES
-};
+	CnLogVerbosityNum
+} CnLogVerbosity;
 
 /**
  * Characters printed in the line to represent the type of log entry.
  */
-extern CN_API char LogVerbosityChar[CN_LOG_NUM_TYPES];
+extern CN_API char LogVerbosityChar[CnLogVerbosityNum];
 
 /**
  * Per-system verbosity settings given by values in `CN_LOG_*`.  Every system
@@ -125,18 +125,18 @@ extern CN_API uint32_t LogSystemsVerbosity[CN_LOG_MAX_SYSTEMS];
  * and fixed as soon as possible when detected in release.
  */
 #define CN_ERROR(system, msg, ...) \
-	CN_LOG(system, CN_LOG_ERROR, msg, ##__VA_ARGS__); \
+	CN_LOG(system, CnLogVerbosityError, msg, ##__VA_ARGS__); \
 	CN_DEBUG_BREAK()
 
 /**
  * A program should never give warnings in a regular run of the program.
  */
-#define CN_WARN(system, msg, ...) CN_LOG(system, CN_LOG_WARN, msg, ##__VA_ARGS__)
+#define CN_WARN(system, msg, ...) CN_LOG(system, CnLogVerbosityWarn, msg, ##__VA_ARGS__)
 
 /**
  * Trace is a level used for debugging.
  */
-#define CN_TRACE(system, msg, ...) CN_LOG(system, CN_LOG_TRACE, msg, ##__VA_ARGS__)
+#define CN_TRACE(system, msg, ...) CN_LOG(system, CnLogVerbosityTrace, msg, ##__VA_ARGS__)
 
 CN_API bool cnLog_IsReady(void);
 CN_API void cnLog_Init(void);

@@ -60,7 +60,7 @@ bool cnImageRGBA8_Allocate(CnImageRGBA8* image, const char* fileName)
 	CN_ASSERT(fileName != NULL, "Cannot load an image with a null file name.");
 	CnDynamicBuffer fileBuffer;
 
-	if (!cnAssets_ReadFile(fileName, CN_FILE_TYPE_BINARY, &fileBuffer)) {
+	if (!cnAssets_ReadFile(fileName, CnFileTypeBinary, &fileBuffer)) {
 		CN_WARN(LogSysAssets, "Unable to load image from %s", fileName);
 		return false;
 	}

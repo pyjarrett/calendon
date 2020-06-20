@@ -10,7 +10,7 @@ static uint32_t LogSysMemory;
 void cnMem_Init(void)
 {
 	MemOutstandingAllocations = 0;
-	cnLog_RegisterSystem(&LogSysMemory, "Memory", CN_LOG_TRACE);
+	cnLog_RegisterSystem(&LogSysMemory, "Memory", CnLogVerbosityTrace);
 }
 
 void cnMem_Allocate(CnDynamicBuffer* buffer, uint32_t size)

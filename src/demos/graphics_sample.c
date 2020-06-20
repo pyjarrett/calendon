@@ -45,7 +45,7 @@ void cnRLL_CreateCircle(CnFloat2* vertices, uint32_t numVertices, float radius)
 
 CN_GAME_API bool CnPlugin_Init(void)
 {
-	cnLog_RegisterSystem(&LogSysSample, "Sample", CN_LOG_TRACE);
+	cnLog_RegisterSystem(&LogSysSample, "Sample", CnLogVerbosityTrace);
 	CN_TRACE(LogSysSample, "Sample loaded");
 
 	CN_TRACE(LogSysSample, "Animation loop size:        %zu bytes", sizeof(CnAnimationLoop));

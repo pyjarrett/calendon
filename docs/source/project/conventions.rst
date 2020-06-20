@@ -67,22 +67,6 @@ Example:
 
 **ENUMS**
 
-Prefix enum values with ``CN`` (ALL CAPS).
-
-.. code-block::
-
-    CN_<ENUM_TYPE>_<VALUE>
-
-Example:
-
-.. code-block::
-
-    enum {
-        CN_LOG_ERROR,
-        CN_LOG_TRACE,
-        //...
-    };
-
 Prefix enum types with `Cn` (capitalize)
 
 .. code-block::
@@ -287,5 +271,5 @@ be documented at their definition sites.
      * and fixed as soon as possible when detected in release.
      */
     #define CN_ERROR(system, msg, ...) \
-        CN_LOG(system, CN_LOG_ERROR, msg, ##__VA_ARGS__); \
+        CN_LOG(system, CnLogVerbosityError, msg, ##__VA_ARGS__); \
         CN_DEBUG_BREAK()

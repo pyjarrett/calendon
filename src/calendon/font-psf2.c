@@ -185,7 +185,7 @@ static void cnFont_PSF2ReadAndAllocateTextureAtlas(const CnPSF2Header* header, C
 bool cnFont_PSF2Allocate(CnFontPSF2* font, const char* path)
 {
 	CnDynamicBuffer fileBuffer;
-	if (!cnAssets_ReadFile(path, CN_FILE_TYPE_BINARY, &fileBuffer)) {
+	if (!cnAssets_ReadFile(path, CnFileTypeBinary, &fileBuffer)) {
 		CN_FATAL_ERROR("Unable to load font from %s", path);
 	}
 

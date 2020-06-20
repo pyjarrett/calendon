@@ -14,11 +14,11 @@ extern CnLogHandle LogSysAssets;
  * work correctly.
  *
  * @param filename some valid, null-terminated path
- * @param format `CN_FILE_TYPE_BINARY` or `CN_FILE_TYPE_TEXT`
+ * @param format `CnFileTypeBinary` or `CnFileTypeText`
  * @param buffer where the file data will be written to
  * @return true if succeeded, false otherwise
  *
- * @see CN_FILE_TYPE_BINARY, CN_FILE_TYPE_TEXT
+ * @see CnFileTypeBinary, CnFileTypeText
  */
 bool cnAssets_ReadFile(const char *filename, uint32_t format, CnDynamicBuffer *buffer)
 {
@@ -32,13 +32,13 @@ bool cnAssets_ReadFile(const char *filename, uint32_t format, CnDynamicBuffer *b
 		return false;
 	}
 
-	if (format != CN_FILE_TYPE_BINARY && format != CN_FILE_TYPE_TEXT) {
+	if (format != CnFileTypeBinary && format != CnFileTypeText) {
 		CN_ERROR(LogSysAssets, "Invalid file type constant. "
-			"Must be CN_FILE_TYPE_BINARY or CN_FILE_TYPE_TEXT");
+			"Must be CnFileTypeBinary or CnFileTypeText");
 		return false;
 	}
 
-	const char* readMode = format == CN_FILE_TYPE_TEXT ? "r" : "rb";
+	const char* readMode = format == CnFileTypeText ? "r" : "rb";
 	FILE* file = fopen(filename, readMode);
 	if (!file) {
 		CN_ERROR(LogSysAssets, "Cannot open file: %s", filename);
@@ -52,7 +52,7 @@ bool cnAssets_ReadFile(const char *filename, uint32_t format, CnDynamicBuffer *b
 			filename, fileLength / 1024L);
 		return false;
 	}
-	if (format == CN_FILE_TYPE_TEXT) {
+	if (format == CnFileTypeText) {
 		fileLength += 1;
 	}
 	cnMem_Allocate(buffer, (uint32_t) fileLength);
@@ -69,7 +69,7 @@ bool cnAssets_ReadFile(const char *filename, uint32_t format, CnDynamicBuffer *b
 	}
 	fclose(file);
 
-	if (format == CN_FILE_TYPE_TEXT) {
+	if (format == CnFileTypeText) {
 		buffer->contents[fileLength - 1] = '\0';
 	}
 

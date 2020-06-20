@@ -40,7 +40,7 @@ void cnAssets_Init(const char* assetDir)
 		CN_FATAL_ERROR("Assets root directory doesn't exist: %s.  CWD: %s", assetsRoot, cwd.str);
 	}
 
-	cnLog_RegisterSystem(&LogSysAssets, "Assets", CN_LOG_TRACE);
+	cnLog_RegisterSystem(&LogSysAssets, "Assets", CnLogVerbosityTrace);
 
 	CN_TRACE(LogSysAssets, "Assets initialized with root at: '%s'", assetsRoot);
 	assetsInitialized = true;

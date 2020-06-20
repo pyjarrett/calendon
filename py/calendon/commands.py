@@ -271,7 +271,7 @@ CnLogHandle LogSysSample;
 
 CN_GAME_API bool Game_Init(void)
 {{
-    cnLog_RegisterSystem(&LogSysSample, "{realname}", CN_LOG_TRACE);
+    cnLog_RegisterSystem(&LogSysSample, "{realname}", CnLogVerbosityTrace);
     CN_TRACE(LogSysSample, "{realname} loaded");
     return true;
 }}

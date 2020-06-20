@@ -9,10 +9,10 @@
 extern "C" {
 #endif
 
-enum {
-	CN_FILE_TYPE_BINARY,
-	CN_FILE_TYPE_TEXT
-};
+typedef enum {
+	CnFileTypeBinary,
+	CnFileTypeText
+} CnFileType;
 
 CN_API bool cnAssets_ReadFile(const char *filename, uint32_t format, CnDynamicBuffer *buffer);
 CN_API bool cnAssets_LastModifiedTime(const char* filename, uint64_t* lastModifiedTime);

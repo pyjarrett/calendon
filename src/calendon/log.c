@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 static bool initialized = false;
-CN_API char LogVerbosityChar[CN_LOG_NUM_TYPES];
+CN_API char LogVerbosityChar[CnLogVerbosityNum];
 CN_API uint32_t LogSystemsVerbosity[CN_LOG_MAX_SYSTEMS];
 CN_API const char* LogSystemsRegistered[CN_LOG_MAX_SYSTEMS];
 CN_API uint32_t LogSystemsNumRegistered;
@@ -29,13 +29,13 @@ void cnLog_Init(void)
 		LogSystemsRegistered[i] = NULL;
 	}
 
-	LogVerbosityChar[CN_LOG_ERROR] = 'E';
-	LogVerbosityChar[CN_LOG_WARN] = 'W';
-	LogVerbosityChar[CN_LOG_TRACE] = 'T';
+	LogVerbosityChar[CnLogVerbosityError] = 'E';
+	LogVerbosityChar[CnLogVerbosityWarn] = 'W';
+	LogVerbosityChar[CnLogVerbosityTrace] = 'T';
 
 	initialized = true;
 
-	cnLog_RegisterSystem(&LogSysMain, "Main", CN_LOG_TRACE);
+	cnLog_RegisterSystem(&LogSysMain, "Main", CnLogVerbosityTrace);
 	CN_TRACE(LogSysMain, "Log system initialized.");
 }
 
