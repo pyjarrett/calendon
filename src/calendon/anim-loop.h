@@ -9,6 +9,8 @@
 
 #include <calendon/cn.h>
 
+#include <calendon/time.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -31,7 +33,7 @@ typedef uint32_t CnAnimationStateIndex;
  */
 typedef struct {
 	CnAnimationStateIndex current;
-	uint64_t elapsed;
+	CnTime elapsed;
 } CnAnimationLoopCursor;
 
 /**
@@ -41,13 +43,13 @@ typedef struct {
  */
 typedef struct {
 	// elapsed[i] is the amount of time spent in "i" before transitioning
-	uint64_t elapsed[CN_MAX_ANIMATION_STATES];
+	CnTime elapsed[CN_MAX_ANIMATION_STATES];
 	CnAnimationStateIndex numStates;
 } CnAnimationLoop;
 
 CN_API float cnAnimLoop_CalcAlpha(CnAnimationLoop* loop, CnAnimationLoopCursor* cursor);
-CN_API CnAnimationStateIndex AnimLoop_NextState(CnAnimationLoop* loop, uint64_t current);
-CN_API void cnAnimLoop_Tick(CnAnimationLoop* loop, CnAnimationLoopCursor* cursor, uint64_t dt);
+CN_API CnAnimationStateIndex AnimLoop_NextState(CnAnimationLoop* loop, CnAnimationStateIndex current);
+CN_API void cnAnimLoop_Tick(CnAnimationLoop* loop, CnAnimationLoopCursor* cursor, CnTime dt);
 
 #ifdef __cplusplus
 }

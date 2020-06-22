@@ -7,6 +7,7 @@ extern "C" {
 
 #include <calendon/cn.h>
 #include <calendon/log.h>
+#include <calendon/time.h>
 
 typedef enum {
 	/**
@@ -39,18 +40,18 @@ CN_API const char* CnActionState_AsString(CnActionState state);
 typedef struct {
 	CnActionState state;
 
-	uint64_t windUp, windUpLeft;
-	uint64_t executionTime, executionTimeLeft;
-	uint64_t coolDown, coolDownLeft;
+	CnTime windUp, windUpLeft;
+	CnTime executionTime, executionTimeLeft;
+	CnTime coolDown, coolDownLeft;
 
 	/** Requires a manual reset after cooling down. */
 	bool requireManualRequest;
 } CnAction;
 
-CN_API void cnAction_Set(CnAction* action, uint64_t windUp, uint64_t executionTime, uint64_t coolDown);
+CN_API void cnAction_Set(CnAction* action, CnTime windUp, CnTime executionTime, CnTime coolDown);
 CN_API void cnAction_Start(CnAction* action);
 CN_API void cnAction_Cancel(CnAction* action);
-CN_API void cnAction_Tick(CnAction* action, uint64_t dt);
+CN_API void cnAction_Tick(CnAction* action, CnTime dt);
 CN_API void cnAction_Reset(CnAction* action);
 
 CN_API void cnAction_Log(CnAction* action, CnLogHandle log);

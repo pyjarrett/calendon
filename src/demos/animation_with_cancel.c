@@ -23,7 +23,7 @@ CnButtonMapping buttonMapping;
 CnDigitalButton startButton;
 CnAction changeAction;
 CnFontId font;
-static uint64_t animationRate;
+static CnTime animationRate;
 
 typedef struct {
 	// Current position.
@@ -31,7 +31,7 @@ typedef struct {
 
 	bool transitioning;
 	float t;  // current interpolation value
-	uint64_t elapsed; // elapsed time, used to determine t
+	CnTime elapsed; // elapsed time, used to determine t
 
 	// Current state of the animation.
 	// need some sort of indication of which state being transitioned to.
@@ -47,31 +47,30 @@ void anim_start(BinaryAnimation* anim)
 		anim->next = temp;
 
 		anim->transitioning = true;
-		anim->elapsed = (uint64_t) 0;
+		anim->elapsed = cnTime_MakeZero();
 		anim->t = 0.0f;
 		anim->position = cnFloat2_Add(cnFloat2_Multiply(*anim->last, 1.0f - anim->t),
 									  cnFloat2_Multiply(*anim->next, anim->t));
 	}
 }
 
-void anim_update(BinaryAnimation* anim, uint64_t dt, uint64_t animationRate)
+void anim_update(BinaryAnimation* anim, CnTime dt, CnTime animationRate)
 {
 	if (anim->transitioning) {
-		anim->elapsed += dt;
-		anim->elapsed = anim->elapsed < animationRate ? anim->elapsed : animationRate;
-		anim->t = (1.0f * anim->elapsed / animationRate); // puts t in [0, 1];
-		anim->t = cnFloat_Clamp(anim->t, 0.0f, 1.0f);
+		anim->elapsed = cnTime_Add(anim->elapsed, dt);
+		anim->elapsed = cnTime_Min(anim->elapsed, animationRate);
+		anim->t = cnTime_Lerp(anim->elapsed, animationRate);
 		CN_ASSERT(0.0f <= anim->t && anim->t <= 1.0f, "Interpolation t is not in range [0, 1]");
 		anim->position = cnFloat2_Add(cnFloat2_Multiply(*anim->last, 1.0f - anim->t),
 									  cnFloat2_Multiply(*anim->next, anim->t));
 	}
 }
 
-void anim_complete(BinaryAnimation* anim, uint64_t animationRate)
+void anim_complete(BinaryAnimation* anim, CnTime animationRate)
 {
-	if (anim->transitioning && anim->elapsed >= animationRate) {
+	if (anim->transitioning && !cnTime_LessThan(anim->elapsed, animationRate)) {
 		anim->elapsed = animationRate;
-		anim->t = (1.0f * anim->elapsed / animationRate); // puts t in [0, 1];
+		anim->t = cnTime_Lerp(anim->elapsed, animationRate);
 		anim->transitioning = false;
 	}
 }
@@ -103,7 +102,7 @@ void applyButtonMapping(const CnInput* input, CnButtonMapping* mapping)
 	}
 }
 
-void applyInputs(const CnInput* input, const uint64_t dt)
+void applyInputs(const CnInput* input, const CnTime dt)
 {
 	CN_ASSERT_NOT_NULL(input);
 
@@ -138,20 +137,20 @@ CN_GAME_API bool CnPlugin_Init(void)
 
 	squareAnim.position = left;
 	squareAnim.t = 0.0f;
-	squareAnim.elapsed = 0;
+	squareAnim.elapsed = cnTime_MakeZero();
 	squareAnim.last = &right;
 	squareAnim.next = &left;
 	squareAnim.transitioning = false;
-	animationRate = cnTime_MsToNs(2000);
+	animationRate = cnTime_MakeMilli(2000);
 
 	cnDigitalButton_Set(&startButton, CnDigitalButtonStateUp);
 	cnButtonMapping_Clear(&buttonMapping);
 	cnButtonMapping_Map(&buttonMapping, SDLK_SPACE, &startButton);
 
 	cnAction_Set(&changeAction,
-	cnTime_MsToNs(1000),
+		cnTime_MakeMilli(1000),
 	animationRate,
-	cnTime_MsToNs(2000));
+		cnTime_MakeMilli(2000));
 	cnAction_Reset(&changeAction);
 	return true;
 }
@@ -165,13 +164,13 @@ void drawUI(void)
 			sprintf(buffer, "Ready: Press Space");
 			break;
 		case CnActionStateInProgress:
-			sprintf(buffer, "In Progress: %" PRIu64, changeAction.executionTimeLeft);
+			sprintf(buffer, "In Progress: %" PRIu64, cnTime_Milli(changeAction.executionTimeLeft));
 			break;
 		case CnActionStateCoolingDown:
-			sprintf(buffer, "Cooling Down: %" PRIu64, changeAction.coolDownLeft);
+			sprintf(buffer, "Cooling Down: %" PRIu64, cnTime_Milli(changeAction.coolDownLeft));
 			break;
 		case CnActionStateWindingUp:
-			sprintf(buffer, "Winding Up: %" PRIu64, changeAction.windUpLeft);
+			sprintf(buffer, "Winding Up: %" PRIu64, cnTime_Milli(changeAction.windUpLeft));
 			break;
 		default: CN_ASSERT(false, "Unknown action state");
 	}
@@ -191,7 +190,7 @@ CN_GAME_API void CnPlugin_Draw(void)
 	cnR_EndFrame();
 }
 
-CN_GAME_API void CnPlugin_Tick(uint64_t dt)
+CN_GAME_API void CnPlugin_Tick(CnTime dt)
 {
 	CnInput* input = cnUI_InputPoll();
 	CN_ASSERT_NOT_NULL(input);

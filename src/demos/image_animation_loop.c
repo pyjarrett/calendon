@@ -27,9 +27,9 @@ CN_GAME_API bool CnPlugin_Init(void)
 	CN_TRACE(LogSysSample, "Animation loop cursor size: %zu bytes", sizeof(CnAnimationLoopCursor));
 
 	sampleLoop.numStates = SPRITE_ANIMATION_FRAMES;
-	sampleLoop.elapsed[0] = cnTime_MsToNs(150);
-	sampleLoop.elapsed[1] = cnTime_MsToNs(150);
-	sampleLoop.elapsed[2] = cnTime_MsToNs(150);
+	sampleLoop.elapsed[0] = cnTime_MakeMilli(150);
+	sampleLoop.elapsed[1] = cnTime_MakeMilli(150);
+	sampleLoop.elapsed[2] = cnTime_MakeMilli(150);
 
 	cnR_CreateSprite(&spriteFrames[0]);
 	cnR_CreateSprite(&spriteFrames[1]);
@@ -60,7 +60,7 @@ CN_GAME_API void CnPlugin_Draw(void)
 	cnR_EndFrame();
 }
 
-CN_GAME_API void CnPlugin_Tick(uint64_t dt)
+CN_GAME_API void CnPlugin_Tick(CnTime dt)
 {
 	cnAnimLoop_Tick(&sampleLoop, &sampleCursor, dt);
 }

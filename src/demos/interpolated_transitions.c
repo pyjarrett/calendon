@@ -26,10 +26,10 @@ typedef struct {
 	bool transitioning;
 
 	// elapsed time, used to determine t, based on the animation rate
-	uint64_t elapsed;
+	CnTime elapsed;
 
 	// The time it takes to change states.
-	uint64_t rate;
+	CnTime rate;
 
 	// current interpolation value
 	float t;
@@ -49,8 +49,8 @@ void Anim_Start(BinaryAnimation* anim)
 		anim->next = temp;
 
 		anim->transitioning = true;
-		anim->elapsed = (uint64_t)0;
-		anim->rate = cnTime_MsToNs(2000);
+		anim->elapsed = cnTime_MakeZero();
+		anim->rate = cnTime_MakeMilli(2000);
 		anim->t = 0.0f;
 		anim->position = cnFloat2_Add(cnFloat2_Multiply(*anim->last, 1.0f - anim->t),
 									  cnFloat2_Multiply(*anim->next, anim->t));
@@ -69,7 +69,7 @@ void Anim_Reverse(BinaryAnimation* anim)
 	anim->next = temp;
 
 	anim->t = 1.0f - anim->t;
-	anim->elapsed = anim->rate - anim->elapsed;
+	anim->elapsed = cnTime_MonotonicSubtract(anim->rate, anim->elapsed);
 
 	// Position should remain the same for this frame.
 }
@@ -84,20 +84,19 @@ void Anim_Recalculate(BinaryAnimation *anim)
 
 void Anim_Complete(BinaryAnimation* anim)
 {
-	if (anim->transitioning && anim->elapsed >= anim->rate) {
+	if (anim->transitioning && !cnTime_LessThan(anim->elapsed, anim->rate)) {
 		anim->elapsed = anim->rate;
-		anim->t = (1.0f * anim->elapsed / anim->rate); // puts t in [0, 1];
+		anim->t = cnTime_Lerp(anim->elapsed, anim->rate);
 		anim->transitioning = false;
 	}
 }
 
-void Anim_Update(BinaryAnimation* anim, uint64_t dt)
+void Anim_Update(BinaryAnimation* anim, CnTime dt)
 {
 	if (anim->transitioning) {
-		anim->elapsed += dt;
-		anim->elapsed = (uint64_t)fminf((float)anim->elapsed, (float)anim->rate);
-		anim->t = (1.0f * (float)anim->elapsed / (float)anim->rate); // puts t in [0, 1];
-		anim->t = fminf(1.0f, fmaxf(anim->t, 0.0f));
+		anim->elapsed = cnTime_Add(anim->elapsed, dt);
+		anim->elapsed = cnTime_Min(anim->elapsed, anim->rate);
+		anim->t = cnTime_Lerp(anim->elapsed, anim->rate);
 		CN_ASSERT(0.0f <= anim->t && anim->t <= 1.0f, "Interpolation t is not in range [0, 1]");
 		Anim_Recalculate(anim);
 		Anim_Complete(anim);
@@ -117,7 +116,7 @@ CN_GAME_API bool CnPlugin_Init(void)
 
 	squareAnim.position = left;
 	squareAnim.t = 0.0f;
-	squareAnim.elapsed = 0;
+	squareAnim.elapsed = cnTime_MakeZero();
 	squareAnim.last = &right;
 	squareAnim.next = &left;
 	squareAnim.transitioning = false;
@@ -135,7 +134,7 @@ CN_GAME_API void CnPlugin_Draw(void)
 	cnR_EndFrame();
 }
 
-CN_GAME_API void CnPlugin_Tick(uint64_t dt)
+CN_GAME_API void CnPlugin_Tick(CnTime dt)
 {
 	CnInput* input = cnUI_InputPoll();
 	CN_ASSERT(input, "CnInput poll provided a null pointer.");

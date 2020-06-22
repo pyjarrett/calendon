@@ -16,6 +16,7 @@
 #include <calendon/cn.h>
 
 #include <calendon/shared-library.h>
+#include <calendon/time.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,7 +24,7 @@ extern "C" {
 
 typedef bool (*CnPlugin_InitFn)(void);
 typedef void (*CnPlugin_DrawFn)(void);
-typedef void (*CnPlugin_TickFn)(uint64_t);
+typedef void (*CnPlugin_TickFn)(CnTime);
 typedef void (*CnPlugin_ShutdownFn)(void);
 
 typedef struct {

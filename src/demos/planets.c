@@ -13,7 +13,7 @@
 CnLogHandle LogSysSample;
 
 CnFontId font;
-static uint64_t lastDt;
+static CnTime lastDt;
 
 typedef struct {
 	CnFloat2 position;
@@ -72,11 +72,11 @@ CN_GAME_API void CnPlugin_Draw(void)
 	}
 
 	static char frameTime[100] = "";
-	lastDt = lastDt == 0 ? 1 : lastDt;
+	lastDt = cnTime_Max(cnTime_MakeMilli(1), lastDt);
 	static int fpsTick = 0;
 	if (++fpsTick % 10 == 0) {
 		fpsTick = 0;
-		sprintf(frameTime, "FPS: %.1f", 1000000000.0f / lastDt);
+		sprintf(frameTime, "FPS: %.1f", 1000.0f / cnTime_Milli(lastDt));
 	}
 
 	cnR_DrawSimpleText(font, cnFloat2_Make(0, 0), "Planets demo");
@@ -84,11 +84,11 @@ CN_GAME_API void CnPlugin_Draw(void)
 	cnR_EndFrame();
 }
 
-CN_GAME_API void CnPlugin_Tick(uint64_t dt)
+CN_GAME_API void CnPlugin_Tick(CnTime dt)
 {
 	lastDt = dt;
 
-	const uint64_t ms = cnTime_NsToMs(dt);
+	const uint64_t ms = cnTime_Milli(dt);
 
 	const float gravitationalConstant = 0.0005f;
 	const float minGravityApplication = 2.0f;

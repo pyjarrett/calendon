@@ -12,24 +12,40 @@ extern "C" {
  * same units being used for time.
  */
 CN_API void cnTime_Init(void);
-CN_API uint64_t cnTime_NowNs(void);
+
+CN_API_DEPRECATED("0.0.1", "Use time functions with units.", CN_API uint64_t cnTime_NowNs(void));
+
+/*
+ * Time conversion functions.
+ */
 CN_API uint64_t cnTime_MsToNs(uint64_t ms);
 CN_API uint64_t cnTime_NsToMs(uint64_t ns);
 CN_API uint64_t cnTime_SecToNs(uint64_t sec);
 
 /**
- * A native representation of time ticks.  This could be machine cycles or
+ * A native representation of time.  This could be machine cycles or
  * nanoseconds.  Use the conversion functions to time in a meaningful format.
  */
-typedef struct { uint64_t ticks; } CnTimeTicks;
-typedef struct { uint64_t milli; } CnTimeMilli;
-typedef struct { uint64_t micro; } CnTimeMicro;
-typedef struct { uint64_t nano;  } CnTimeNano;
+typedef struct { uint64_t native; } CnTime;
 
-CN_API CnTimeTicks cnTimeTicks_Now();
-CN_API CnTimeMilli cnTimeTicks_ToMilli();
+CN_API CnTime cnTime_MakeNow();
+CN_API CnTime cnTime_MakeZero();
+CN_API CnTime cnTime_MakeMilli(uint64_t millis);
 
-CN_API uint64_t cnTime_MonotonicSubtract(uint64_t left, uint64_t right);
+CN_API uint64_t cnTime_Milli(CnTime t);
+CN_API bool cnTime_IsZero(CnTime t);
+
+CN_API CnTime cnTime_Add(CnTime left, CnTime right);
+CN_API CnTime cnTime_MonotonicSubtract(CnTime left, CnTime right);
+
+CN_API bool cnTime_LessThan(CnTime left, CnTime right);
+
+CN_API float cnTime_Lerp(CnTime currentDuration, CnTime totalDuration);
+
+CN_API CnTime cnTime_Min(CnTime left, CnTime right);
+CN_API CnTime cnTime_Max(CnTime left, CnTime right);
+
+CN_API uint64_t cnUInt64_MonotonicSubtract(uint64_t left, uint64_t right);
 
 #ifdef __cplusplus
 }

@@ -24,10 +24,10 @@ CN_GAME_API bool CnPlugin_Init(void)
 	CN_TRACE(LogSysSample, "Animation loop cursor size: %zu bytes", sizeof(CnAnimationLoopCursor));
 
 	sampleLoop.numStates = SAMPLE_POINTS;
-	sampleLoop.elapsed[0] = cnTime_MsToNs(400);
-	sampleLoop.elapsed[1] = cnTime_MsToNs(1000);
-	sampleLoop.elapsed[2] = cnTime_MsToNs(2000);
-	sampleLoop.elapsed[3] = cnTime_MsToNs(500);
+	sampleLoop.elapsed[0] = cnTime_MakeMilli(400);
+	sampleLoop.elapsed[1] = cnTime_MakeMilli(1000);
+	sampleLoop.elapsed[2] = cnTime_MakeMilli(2000);
+	sampleLoop.elapsed[3] = cnTime_MakeMilli(500);
 
 	points[0] = cnFloat2_Make(200, 200);
 	points[1] = cnFloat2_Make(400, 200);
@@ -44,14 +44,14 @@ CN_GAME_API void CnPlugin_Draw(void)
 	CnRGB8u white = { 255, 255, 255 };
 
 	CnFloat2 animatedPosition = cnFloat2_Lerp(points[sampleCursor.current],
-											  points[AnimLoop_NextState(&sampleLoop, sampleCursor.current)],
-											  cnAnimLoop_CalcAlpha(&sampleLoop, &sampleCursor));
+		points[AnimLoop_NextState(&sampleLoop, sampleCursor.current)],
+		cnAnimLoop_CalcAlpha(&sampleLoop, &sampleCursor));
 	cnR_DrawDebugRect(animatedPosition, rectSize, white);
 
 	cnR_EndFrame();
 }
 
-CN_GAME_API void CnPlugin_Tick(uint64_t dt)
+CN_GAME_API void CnPlugin_Tick(CnTime dt)
 {
 	cnAnimLoop_Tick(&sampleLoop, &sampleCursor, dt);
 }

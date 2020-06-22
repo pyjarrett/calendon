@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <time.h>
 
-static uint64_t lastTick;
+static CnTime lastTick;
 static CnPlugin Payload;
 
 static CnPlugin_InitFn Main_Init;
@@ -137,7 +137,7 @@ void cnMain_InitAllSystems(CnMainConfig* config)
 
 	cnMain_SetTickLimit(config->tickLimit);
 
-	lastTick = cnTime_NowNs();
+	lastTick = cnTime_MakeNow();
 
 	CN_TRACE(LogSysMain, "Systems initialized.");
 
@@ -156,12 +156,9 @@ void cnMain_InitAllSystems(CnMainConfig* config)
  * @param[out] outDt delta time if a tick is generated (returns true), not set otherwise
  * @return true if a tick should occur
  */
-bool cnMain_GenerateTick(uint64_t* outDt)
+bool cnMain_GenerateTick(CnTime* outDt)
 {
-	const uint64_t current = cnTime_NowNs();
-	if (lastTick > current) {
-		CN_FATAL_ERROR("Time went backwards");
-	}
+	const CnTime current = cnTime_Max(lastTick, cnTime_MakeNow());
 
 	// Prevent updating too rapidly.  Maintaining a relatively consistent
 	// timestep limits stored state and prevents precision errors due to
@@ -169,18 +166,18 @@ bool cnMain_GenerateTick(uint64_t* outDt)
 	//
 	// Since Calendon is single-threaded, VSync will probably ensure that the
 	// minimum tick size is never missed.
-	const uint64_t minTickSize = cnTime_MsToNs(8);
-	const uint64_t dt = current - lastTick;
-	if (dt < minTickSize) {
+	const CnTime minTickSize = cnTime_MakeMilli(8);
+	const CnTime dt = cnTime_MonotonicSubtract(current, lastTick);
+	if (cnTime_LessThan(dt, minTickSize)) {
 		return false;
 	}
 
 	lastTick = current;
 
 	// Ignore huge ticks, such as when resuming in the debugger.
-	const uint64_t maxTickSize = cnTime_SecToNs(5);
-	if (dt > maxTickSize) {
-		CN_TRACE(LogSysMain, "Skipping large tick: %" PRIu64, *outDt);
+	const CnTime maxTickSize = cnTime_MakeMilli(5000);
+	if (cnTime_LessThan(maxTickSize, dt)) {
+		CN_TRACE(LogSysMain, "Skipping large tick: %" PRIu64 " ms", cnTime_Milli(dt));
 		return false;
 	}
 
@@ -210,7 +207,7 @@ void cnMain_Loop(void)
 		// slowness due to bursts.
 		cnUI_ProcessWindowEvents();
 
-		uint64_t dt;
+		CnTime dt;
 		if (cnMain_GenerateTick(&dt)) {
 			Main_Tick(dt);
 			cnMain_TickCompleted();

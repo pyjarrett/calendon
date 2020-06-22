@@ -14,7 +14,8 @@ const char* CnActionState_AsString(CnActionState state)
 	}
 }
 
-void cnAction_Set(CnAction* action, uint64_t windUp, uint64_t executionTime, uint64_t coolDown)
+void cnAction_Set(CnAction* action, CnTime windUp,
+	CnTime executionTime, CnTime coolDown)
 {
 	CN_ASSERT_NOT_NULL(action);
 	action->windUp = windUp;
@@ -34,7 +35,7 @@ static void cnAction_Enter(CnAction* action, CnActionState state)
 			action->state = CnActionStateReady;
 			break;
 		case CnActionStateWindingUp:
-			if (action->windUp > 0) {
+			if (!cnTime_IsZero(action->windUp)) {
 				action->windUpLeft = action->windUp;
 				action->state = CnActionStateWindingUp;
 			}
@@ -43,7 +44,7 @@ static void cnAction_Enter(CnAction* action, CnActionState state)
 			}
 			break;
 		case CnActionStateInProgress:
-			if (action->executionTime > 0) {
+			if (!cnTime_IsZero(action->executionTime)) {
 				action->executionTimeLeft = action->executionTime;
 				action->state = CnActionStateInProgress;
 			}
@@ -52,7 +53,7 @@ static void cnAction_Enter(CnAction* action, CnActionState state)
 			}
 			break;
 		case CnActionStateCoolingDown:
-			if (action->requireManualRequest || action->coolDown > 0) {
+			if (!cnTime_IsZero(action->coolDown) || action->requireManualRequest) {
 				action->coolDownLeft = action->coolDown;
 				action->state = CnActionStateCoolingDown;
 			}
@@ -101,7 +102,7 @@ void cnAction_Cancel(CnAction* action)
 	}
 }
 
-void cnAction_Tick(CnAction* action, uint64_t dt)
+void cnAction_Tick(CnAction* action, CnTime dt)
 {
 	CN_ASSERT_NOT_NULL(action);
 	switch (action->state) {
@@ -109,19 +110,19 @@ void cnAction_Tick(CnAction* action, uint64_t dt)
 			break;
 		case CnActionStateWindingUp:
 			action->windUpLeft = cnTime_MonotonicSubtract(action->windUpLeft, dt);
-			if (action->windUpLeft == 0) {
+			if (cnTime_IsZero(action->windUpLeft)) {
 				cnAction_Enter(action, CnActionStateInProgress);
 			}
 			break;
 		case CnActionStateInProgress:
 			action->executionTimeLeft = cnTime_MonotonicSubtract(action->executionTimeLeft, dt);
-			if (action->executionTimeLeft == 0) {
+			if (cnTime_IsZero(action->executionTimeLeft)) {
 				cnAction_Enter(action, CnActionStateCoolingDown);
 			}
 			break;
 		case CnActionStateCoolingDown:
 			action->coolDownLeft = cnTime_MonotonicSubtract(action->coolDownLeft, dt);
-			if (action->coolDownLeft == 0 && !action->requireManualRequest) {
+			if (cnTime_IsZero(action->coolDownLeft) && !action->requireManualRequest) {
 				cnAction_Enter(action, CnActionStateReady);
 			}
 			break;
@@ -156,8 +157,11 @@ void cnAction_Log(CnAction* action, CnLogHandle log)
 			" %" PRIu64 "/%" PRIu64
 			" %s",
 		CnActionState_AsString(action->state),
-		action->windUpLeft, action->windUp,
-		action->executionTimeLeft, action->executionTime,
-		action->coolDownLeft, action->coolDown,
+		cnTime_Milli(action->windUpLeft),
+		cnTime_Milli(action->windUp),
+		cnTime_Milli(action->executionTimeLeft),
+		cnTime_Milli(action->executionTime),
+		cnTime_Milli(action->coolDownLeft),
+		cnTime_Milli(action->coolDown),
 		action->requireManualRequest ? "manual" : "auto");
 }

@@ -9,8 +9,8 @@
 CnLogHandle LogSysSample;
 
 uint32_t numCurrentPoints = 0;
-uint64_t timeBeforeStep;
-uint64_t currentTime;
+CnTime timeBeforeStep;
+CnTime currentTime;
 
 #define MAX_POINTS 128
 CnFloat2 points[2][MAX_POINTS];
@@ -73,8 +73,8 @@ CN_GAME_API bool CnPlugin_Init(void)
 	CN_TRACE(LogSysSample, "Sample loaded");
 
 	reset();
-    timeBeforeStep = cnTime_SecToNs(3);
-    currentTime = 0;
+    timeBeforeStep = cnTime_MakeMilli(3000);
+    currentTime = cnTime_MakeZero();
     return true;
 }
 
@@ -86,12 +86,12 @@ CN_GAME_API void CnPlugin_Draw(void)
 	cnR_EndFrame();
 }
 
-CN_GAME_API void CnPlugin_Tick(uint64_t dt)
+CN_GAME_API void CnPlugin_Tick(CnTime dt)
 {
-	currentTime += dt;
-	if (currentTime > timeBeforeStep) {
+	currentTime = cnTime_Add(currentTime, dt);
+	if (cnTime_LessThan(timeBeforeStep, currentTime)) {
 		step();
-		currentTime -= timeBeforeStep;
+		currentTime = cnTime_MonotonicSubtract(currentTime, timeBeforeStep);
 	}
 }
 

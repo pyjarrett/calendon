@@ -26,7 +26,7 @@ CnFloat2 circleOrigin;
 CnFloat2 circleVertices[NUM_CIRCLE_VERTICES];
 
 CnFontId font;
-static uint64_t lastDt;
+static CnTime lastDt;
 
 /**
  * Creates a line of points to form circle in a counter clockwise winding.
@@ -52,9 +52,9 @@ CN_GAME_API bool CnPlugin_Init(void)
 	CN_TRACE(LogSysSample, "Animation loop cursor size: %zu bytes", sizeof(CnAnimationLoopCursor));
 
 	sampleLoop.numStates = SPRITE_ANIMATION_FRAMES;
-	sampleLoop.elapsed[0] = cnTime_MsToNs(150);
-	sampleLoop.elapsed[1] = cnTime_MsToNs(150);
-	sampleLoop.elapsed[2] = cnTime_MsToNs(150);
+	sampleLoop.elapsed[0] = cnTime_MakeMilli(150);
+	sampleLoop.elapsed[1] = cnTime_MakeMilli(150);
+	sampleLoop.elapsed[2] = cnTime_MakeMilli(150);
 
 	cnR_CreateSprite(&spriteFrames[0]);
 	cnR_CreateSprite(&spriteFrames[1]);
@@ -116,18 +116,18 @@ CN_GAME_API void CnPlugin_Draw(void)
 	cnR_DrawSimpleText(font, cnFloat2_Make(100, 500), "«café, caffè» ™ © Â ←");
 
 	static char frameTime[100] = "";
-	lastDt = lastDt == 0 ? 1 : lastDt;
+	lastDt = cnTime_Max(cnTime_MakeMilli(1), lastDt);
 	static int fpsTick = 0;
 	if (++fpsTick % 10 == 0) {
 		fpsTick = 0;
-		sprintf(frameTime, "FPS: %.1f", 1000000000.0f / lastDt);
+		sprintf(frameTime, "FPS: %.1f", 1000.0f / cnTime_Milli(lastDt));
 	}
 
 	cnR_DrawSimpleText(font, cnFloat2_Make(0, 600), frameTime);
 	cnR_EndFrame();
 }
 
-CN_GAME_API void CnPlugin_Tick(uint64_t dt)
+CN_GAME_API void CnPlugin_Tick(CnTime dt)
 {
 	cnAnimLoop_Tick(&sampleLoop, &sampleCursor, dt);
 	lastDt = dt;

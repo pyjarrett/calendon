@@ -32,7 +32,7 @@ CN_GAME_API void CnPlugin_Draw(void)
 	cnR_EndFrame();
 }
 
-CN_GAME_API void CnPlugin_Tick(uint64_t dt)
+CN_GAME_API void CnPlugin_Tick(CnTime dt)
 {
 	CN_UNUSED(dt);
 	CnInput* input = cnUI_InputPoll();
