@@ -32,10 +32,10 @@ typedef struct {
 	float degrees;
 } CnPlanarAngle;
 
-CN_API float         cnPlanarAngle_ToDegrees(CnPlanarAngle a);
-CN_API float         cnPlanarAngle_ToRadians(CnPlanarAngle a);
-CN_API CnPlanarAngle cnPlanarAngle_InDegrees(float d);
-CN_API CnPlanarAngle cnPlanarAngle_InRadians(float r);
+CN_API CnPlanarAngle cnPlanarAngle_MakeDegrees(float d);
+CN_API CnPlanarAngle cnPlanarAngle_MakeRadians(float r);
+CN_API float         cnPlanarAngle_Degrees(CnPlanarAngle a);
+CN_API float         cnPlanarAngle_Radians(CnPlanarAngle a);
 CN_API CnPlanarAngle cnPlanarAngle_Add(CnPlanarAngle left, CnPlanarAngle right);
 CN_API CnPlanarAngle cnPlanarAngle_Sub(CnPlanarAngle left, CnPlanarAngle right);
 

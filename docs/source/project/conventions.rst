@@ -199,17 +199,22 @@ Calendon wraps types with units inside structs to prevent incorrect usage.
 
 .. code-block::
 
-    <ValueType> <ValueType>_In<Unit>
+    <ValueType> <ValueType>_Make<Unit>
 
-.. doxygenfunction:: cnPlanarAngle_InDegrees
+.. doxygenfunction:: cnPlanarAngle_MakeDegrees
+
+.. doxygenfunction:: cnTime_MakeMilli
 
 **Converting value types to a usable primitive type**
 
 .. code-block::
 
-    <PrimitiveType> <ValueType>_To<Unit>
+    <PrimitiveType> <ValueType>_<Unit>
 
-.. doxygenfunction:: cnPlanarAngle_ToRadians
+.. doxygenfunction:: cnPlanarAngle_Degrees
+
+.. doxygenfunction:: cnTime_Milli
+
 
 #include's
 -------------------

@@ -47,7 +47,7 @@ void step(void)
 			const CnFloat2 second = cnFloat2_Add(cnFloat2_Midpoint(start, end),
 												 cnFloat2_FromPolar(sqrtf(3.0f) * distance / 3.0f / 2.0f,
 													 cnPlanarAngle_Add(
-														 cnPlanarAngle_InDegrees(90.0f),
+														 cnPlanarAngle_MakeDegrees(90.0f),
 														 lToR)));
 			const CnFloat2 third = cnFloat2_Add(start, cnFloat2_FromPolar(distance * 2.0f / 3.0f, lToR));
 
