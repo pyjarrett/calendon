@@ -91,7 +91,7 @@ CN_GAME_API void CnPlugin_Tick(CnTime dt)
 	currentTime = cnTime_Add(currentTime, dt);
 	if (cnTime_LessThan(timeBeforeStep, currentTime)) {
 		step();
-		currentTime = cnTime_MonotonicSubtract(currentTime, timeBeforeStep);
+		currentTime = cnTime_SubtractMonotonic(currentTime, timeBeforeStep);
 	}
 }
 

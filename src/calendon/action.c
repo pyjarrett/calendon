@@ -109,19 +109,19 @@ void cnAction_Tick(CnAction* action, CnTime dt)
 		case CnActionStateReady:
 			break;
 		case CnActionStateWindingUp:
-			action->windUpLeft = cnTime_MonotonicSubtract(action->windUpLeft, dt);
+			action->windUpLeft = cnTime_SubtractMonotonic(action->windUpLeft, dt);
 			if (cnTime_IsZero(action->windUpLeft)) {
 				cnAction_Enter(action, CnActionStateInProgress);
 			}
 			break;
 		case CnActionStateInProgress:
-			action->executionTimeLeft = cnTime_MonotonicSubtract(action->executionTimeLeft, dt);
+			action->executionTimeLeft = cnTime_SubtractMonotonic(action->executionTimeLeft, dt);
 			if (cnTime_IsZero(action->executionTimeLeft)) {
 				cnAction_Enter(action, CnActionStateCoolingDown);
 			}
 			break;
 		case CnActionStateCoolingDown:
-			action->coolDownLeft = cnTime_MonotonicSubtract(action->coolDownLeft, dt);
+			action->coolDownLeft = cnTime_SubtractMonotonic(action->coolDownLeft, dt);
 			if (cnTime_IsZero(action->coolDownLeft) && !action->requireManualRequest) {
 				cnAction_Enter(action, CnActionStateReady);
 			}

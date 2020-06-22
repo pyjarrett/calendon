@@ -167,7 +167,7 @@ bool cnMain_GenerateTick(CnTime* outDt)
 	// Since Calendon is single-threaded, VSync will probably ensure that the
 	// minimum tick size is never missed.
 	const CnTime minTickSize = cnTime_MakeMilli(8);
-	const CnTime dt = cnTime_MonotonicSubtract(current, lastTick);
+	const CnTime dt = cnTime_SubtractMonotonic(current, lastTick);
 	if (cnTime_LessThan(dt, minTickSize)) {
 		return false;
 	}

@@ -28,24 +28,24 @@ CN_API uint64_t cnTime_SecToNs(uint64_t sec);
  */
 typedef struct { uint64_t native; } CnTime;
 
-CN_API CnTime cnTime_MakeNow();
-CN_API CnTime cnTime_MakeZero();
-CN_API CnTime cnTime_MakeMilli(uint64_t millis);
+CN_API CnTime   cnTime_MakeNow();
+CN_API CnTime   cnTime_MakeZero();
+CN_API CnTime   cnTime_MakeMilli(uint64_t millis);
 
 CN_API uint64_t cnTime_Milli(CnTime t);
-CN_API bool cnTime_IsZero(CnTime t);
+CN_API bool     cnTime_IsZero(CnTime t);
 
-CN_API CnTime cnTime_Add(CnTime left, CnTime right);
-CN_API CnTime cnTime_MonotonicSubtract(CnTime left, CnTime right);
+CN_API CnTime   cnTime_Add(CnTime left, CnTime right);
+CN_API CnTime   cnTime_SubtractMonotonic(CnTime left, CnTime right);
 
-CN_API bool cnTime_LessThan(CnTime left, CnTime right);
+CN_API bool     cnTime_LessThan(CnTime left, CnTime right);
 
-CN_API float cnTime_Lerp(CnTime currentDuration, CnTime totalDuration);
+CN_API float    cnTime_Lerp(CnTime currentDuration, CnTime totalDuration);
 
-CN_API CnTime cnTime_Min(CnTime left, CnTime right);
-CN_API CnTime cnTime_Max(CnTime left, CnTime right);
+CN_API CnTime   cnTime_Min(CnTime left, CnTime right);
+CN_API CnTime   cnTime_Max(CnTime left, CnTime right);
 
-CN_API uint64_t cnUInt64_MonotonicSubtract(uint64_t left, uint64_t right);
+CN_API uint64_t cnUInt64_SubtractMonotonic(uint64_t left, uint64_t right);
 
 #ifdef __cplusplus
 }

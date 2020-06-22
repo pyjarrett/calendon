@@ -64,7 +64,7 @@ uint64_t cnTime_SecToNs(uint64_t sec)
 	return cnTime_MsToNs(sec * 1000);
 }
 
-uint64_t cnUInt64_MonotonicSubtract(uint64_t left, uint64_t right)
+uint64_t cnUInt64_SubtractMonotonic(uint64_t left, uint64_t right)
 {
 	if (left < right) return 0;
 	return left - right;
@@ -100,9 +100,9 @@ CnTime cnTime_Add(CnTime left, CnTime right)
 	return (CnTime) { left.native + right.native };
 }
 
-CnTime cnTime_MonotonicSubtract(CnTime left, CnTime right)
+CnTime cnTime_SubtractMonotonic(CnTime left, CnTime right)
 {
-	return (CnTime) { cnUInt64_MonotonicSubtract(left.native, right.native) };
+	return (CnTime) { cnUInt64_SubtractMonotonic(left.native, right.native) };
 }
 
 float cnTime_Lerp(CnTime currentDuration, CnTime totalDuration)

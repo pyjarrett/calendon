@@ -69,7 +69,7 @@ void Anim_Reverse(BinaryAnimation* anim)
 	anim->next = temp;
 
 	anim->t = 1.0f - anim->t;
-	anim->elapsed = cnTime_MonotonicSubtract(anim->rate, anim->elapsed);
+	anim->elapsed = cnTime_SubtractMonotonic(anim->rate, anim->elapsed);
 
 	// Position should remain the same for this frame.
 }
