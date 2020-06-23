@@ -36,7 +36,7 @@ typedef struct {
 /**
  * Reads data out of the input system.
  */
-CN_API CnInput* cnUI_InputPoll(void);
+CN_API CnInput* cnInput_Poll(void);
 
 CN_API void cnInput_ApplyButtonMapping(const CnInput* input, CnButtonMapping* mapping);
 

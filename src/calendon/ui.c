@@ -77,7 +77,7 @@ void cnUI_ProcessWindowEvents(void)
 	}
 }
 
-CnInput* cnUI_InputPoll(void)
+CnInput* cnInput_Poll(void)
 {
 	// TODO: Not the preferred the way to do this since it doesn't indicate
 	// how long the pointer lasts;

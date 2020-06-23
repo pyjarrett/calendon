@@ -4,11 +4,14 @@
 #include <calendon/cn.h>
 #include <calendon/anim-loop.h>
 #include <calendon/assets.h>
+#include <calendon/input-button-mapping.h>
+#include <calendon/input-digital-button.h>
 #include <calendon/log.h>
 #include <calendon/math2.h>
 #include <calendon/path.h>
 #include <calendon/render.h>
 #include <calendon/time.h>
+#include <calendon/ui.h>
 
 CnLogHandle LogSysSample;
 
@@ -17,6 +20,11 @@ CnAnimationLoop sampleLoop;
 
 #define SPRITE_ANIMATION_FRAMES 3
 CnSpriteId spriteFrames[SPRITE_ANIMATION_FRAMES];
+
+CnDigitalButton rightButton, leftButton;
+CnButtonMapping buttonMapping;
+
+CnFloat2 position;
 
 CN_GAME_API bool CnPlugin_Init(void)
 {
@@ -46,6 +54,15 @@ CN_GAME_API bool CnPlugin_Init(void)
 		cnAssets_PathBufferFor(frameFilenames[i], &path);
 		cnR_LoadSprite(spriteFrames[i], path.str);
 	}
+
+	cnButtonMapping_Map(&buttonMapping, SDLK_LEFT, &leftButton);
+	cnButtonMapping_Map(&buttonMapping, SDLK_RIGHT, &rightButton);
+
+	cnDigitalButton_Set(&rightButton, CnDigitalButtonStateUp);
+	cnDigitalButton_Set(&leftButton, CnDigitalButtonStateUp);
+
+	position = cnFloat2_Make(300, 300);
+
 	return true;
 }
 
@@ -53,16 +70,32 @@ CN_GAME_API void CnPlugin_Draw(void)
 {
 	cnR_StartFrame();
 
-	CnFloat2 position = cnFloat2_Make(300, 300);
 	CnDimension2f size = { .width = 200.0f, .height = 200.0f };
 	cnR_DrawSprite(spriteFrames[sampleCursor.current], position, size);
 
 	cnR_EndFrame();
 }
 
+void applyInputs(CnTime dt)
+{
+	cnInput_ApplyButtonMapping(cnInput_Poll(), &buttonMapping);
+	const bool leftDown = cnDigitalButton_IsDown(&leftButton);
+	const bool rightDown = cnDigitalButton_IsDown(&rightButton);
+	const float moveRate = 0.30f;
+	if (leftDown && !rightDown) {
+		CnFloat2 left = cnFloat2_Make(-moveRate, 0.0f);
+		position = cnFloat2_Add(position, cnFloat2_Multiply(left, (float)cnTime_Milli(dt)));
+		cnAnimLoop_Tick(&sampleLoop, &sampleCursor, dt);
+	} else if (rightDown && !leftDown) {
+		CnFloat2 right = cnFloat2_Make(moveRate, 0.0f);
+		position = cnFloat2_Add(position, cnFloat2_Multiply(right, (float)cnTime_Milli(dt)));
+		cnAnimLoop_Tick(&sampleLoop, &sampleCursor, dt);
+	}
+}
+
 CN_GAME_API void CnPlugin_Tick(CnTime dt)
 {
-	cnAnimLoop_Tick(&sampleLoop, &sampleCursor, dt);
+	applyInputs(dt);
 }
 
 CN_GAME_API void CnPlugin_Shutdown(void)

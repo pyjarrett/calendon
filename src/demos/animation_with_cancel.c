@@ -167,7 +167,7 @@ CN_GAME_API void CnPlugin_Draw(void)
 
 CN_GAME_API void CnPlugin_Tick(CnTime dt)
 {
-	CnInput* input = cnUI_InputPoll();
+	CnInput* input = cnInput_Poll();
 	CN_ASSERT_NOT_NULL(input);
 
 	applyInputs(input, dt);

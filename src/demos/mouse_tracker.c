@@ -35,7 +35,7 @@ CN_GAME_API void CnPlugin_Draw(void)
 CN_GAME_API void CnPlugin_Tick(CnTime dt)
 {
 	CN_UNUSED(dt);
-	CnInput* input = cnUI_InputPoll();
+	CnInput* input = cnInput_Poll();
 	CN_ASSERT(input, "CnInput poll provided a null pointer.");
 	position = cnFloat2_Make((float) input->mouse.x, (float) input->mouse.y);
 

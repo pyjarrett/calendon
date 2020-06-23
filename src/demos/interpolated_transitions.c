@@ -136,7 +136,7 @@ CN_GAME_API void CnPlugin_Draw(void)
 
 CN_GAME_API void CnPlugin_Tick(CnTime dt)
 {
-	CnInput* input = cnUI_InputPoll();
+	CnInput* input = cnInput_Poll();
 	CN_ASSERT(input, "CnInput poll provided a null pointer.");
 
 	// TODO: Add to CnInput detecting "un-reset" keys.
