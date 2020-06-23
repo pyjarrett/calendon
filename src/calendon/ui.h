@@ -6,6 +6,8 @@
 #define CN_UI_H
 
 #include <calendon/cn.h>
+
+#include <calendon/input-button-mapping.h>
 #include <calendon/input-keyset.h>
 #include <calendon/input-mouse.h>
 
@@ -36,6 +38,7 @@ typedef struct {
  */
 CN_API CnInput* cnUI_InputPoll(void);
 
+CN_API void cnInput_ApplyButtonMapping(const CnInput* input, CnButtonMapping* mapping);
 
 #ifdef __cplusplus
 }

@@ -78,38 +78,13 @@ void anim_complete(BinaryAnimation* anim, CnTime animationRate)
 CnFloat2 left, right;
 BinaryAnimation squareAnim;
 
-void applyButtonMapping(const CnInput* input, CnButtonMapping* mapping)
-{
-	CN_ASSERT_NOT_NULL(input);
-	CN_ASSERT_NOT_NULL(mapping);
-
-	for (uint32_t i = 0; i < input->keySet.down.size; ++i) {
-		const CnPhysicalButtonId buttonId = input->keySet.down.keys[i];
-		if (cnButtonMapping_IsMapped(mapping, buttonId)) {
-			CnDigitalButton* button = cnButtonMapping_LookUp(mapping, buttonId);
-			CN_ASSERT_NOT_NULL(button);
-			cnDigitalButton_Press(button);
-		}
-	}
-
-	for (uint32_t i = 0; i < input->keySet.up.size; ++i) {
-		const CnPhysicalButtonId buttonId = input->keySet.up.keys[i];
-		if (cnButtonMapping_IsMapped(mapping, buttonId)) {
-			CnDigitalButton* button = cnButtonMapping_LookUp(mapping, buttonId);
-			CN_ASSERT_NOT_NULL(button);
-			cnDigitalButton_Release(button);
-		}
-	}
-}
-
 void applyInputs(const CnInput* input, const CnTime dt)
 {
 	CN_ASSERT_NOT_NULL(input);
 
 	// Apply the tick before applying inputs.
 	cnAction_Tick(&changeAction, dt);
-
-	applyButtonMapping(input, &buttonMapping);
+	cnInput_ApplyButtonMapping(input, &buttonMapping);
 
 	if (cnDigitalButton_IsDown(&startButton)) {
 		cnAction_Start(&changeAction);
