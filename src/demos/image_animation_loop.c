@@ -70,7 +70,7 @@ CN_GAME_API void CnPlugin_Draw(void)
 {
 	cnR_StartFrame();
 
-	CnDimension2f size = { .width = 200.0f, .height = 200.0f };
+	CnDimension2f size = { .width = 100.0f, .height = 100.0f };
 	cnR_DrawSprite(spriteFrames[sampleCursor.current], position, size);
 
 	cnR_EndFrame();
