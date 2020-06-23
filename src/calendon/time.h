@@ -1,11 +1,24 @@
 #ifndef CN_TIME_H
 #define CN_TIME_H
 
-#include <calendon/cn.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <calendon/cn.h>
+
+/**
+ * @file time.h
+ *
+ * An abstract representation of time, which can be extracted as a known period
+ * or duration in a specific set of units.
+ *
+ * Many problems appear when dealing with time as a raw integer without typing
+ * information:
+ * - underflow due to subtraction
+ * - using an integer in one unit type as another unit type
+ * - difficulties understanding the units of a time integer being passed
+ */
 
 /*
  * Functions for getting the current time and converting other units to the
@@ -28,8 +41,8 @@ CN_API uint64_t cnTime_SecToNs(uint64_t sec);
  */
 typedef struct { uint64_t native; } CnTime;
 
-CN_API CnTime   cnTime_MakeNow();
-CN_API CnTime   cnTime_MakeZero();
+CN_API CnTime   cnTime_MakeNow(void);
+CN_API CnTime   cnTime_MakeZero(void);
 CN_API CnTime   cnTime_MakeMilli(uint64_t millis);
 
 CN_API uint64_t cnTime_Milli(CnTime t);

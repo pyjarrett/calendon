@@ -70,7 +70,7 @@ uint64_t cnUInt64_SubtractMonotonic(uint64_t left, uint64_t right)
 	return left - right;
 }
 
-CnTime cnTime_MakeNow()
+CnTime cnTime_MakeNow(void)
 {
 	return (CnTime) { .native = cnTime_NowNs() };
 }
@@ -80,7 +80,7 @@ CnTime cnTime_MakeMilli(uint64_t millis)
 	return (CnTime) { .native = cnTime_MsToNs(millis) };
 }
 
-CnTime cnTime_MakeZero()
+CnTime cnTime_MakeZero(void)
 {
 	return (CnTime) { .native = 0ULL };
 }
@@ -100,11 +100,18 @@ CnTime cnTime_Add(CnTime left, CnTime right)
 	return (CnTime) { left.native + right.native };
 }
 
+/**
+ * Subtract, but do not underflow.  If underflow would occur, return a time
+ * of zero.
+ */
 CnTime cnTime_SubtractMonotonic(CnTime left, CnTime right)
 {
 	return (CnTime) { cnUInt64_SubtractMonotonic(left.native, right.native) };
 }
 
+/**
+ * Linearly interpolates from 0 to 1, when going from zero to a given duration.
+ */
 float cnTime_Lerp(CnTime currentDuration, CnTime totalDuration)
 {
 	CN_ASSERT(!cnTime_IsZero(totalDuration), "Cannot LERP against a zero total time.");
