@@ -188,21 +188,12 @@ extern "C" {
 #define CN_ASSERT_NOT_NULL(value) CN_ASSERT(value, #value " is null.")
 #define CN_ASSERT_FINITE_F32(value) CN_ASSERT(isfinite(value), #value " is not finite: %f", value)
 
-/*
- * The two different glue macros here allow for `__LINE__` to provide an
- * accurate line value.
- */
-#define CN_GLUE(a, b) a ## b
-#define CN_GLUE_(a, b) CN_GLUE(a, b)
-
 /**
  * Implement a local version of static assert since `static_assert` is part of
  * C11.
  */
 #define CN_STATIC_ASSERT(expr, message) \
-	enum { \
-		CN_GLUE_(g_static_assert_fail, __LINE__) = 1 / (int)(!!(expr)) \
-	}
+	int static_assert_fn(int condition[!!(expr) ? 1 : -1])
 
 /*
  * Reserve space statically to write a fatal error message when things go wrong.
