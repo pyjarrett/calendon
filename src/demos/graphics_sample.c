@@ -18,6 +18,8 @@ CnLogHandle LogSysSample;
 CnAnimationLoopCursor sampleCursor;
 CnAnimationLoop sampleLoop;
 
+CnTransform2 rotate;
+
 #define SPRITE_ANIMATION_FRAMES 3
 CnSpriteId spriteFrames[SPRITE_ANIMATION_FRAMES];
 
@@ -72,6 +74,8 @@ CN_GAME_API bool CnPlugin_Init(void)
 		cnR_LoadSprite(spriteFrames[i], path.str);
 	}
 
+	rotate = cnTransform2_MakeIdentity();
+
 	circleOrigin = cnFloat2_Make(400.0f, 400.0f);
 	cnRLL_CreateCircle(circleVertices, NUM_CIRCLE_VERTICES, 50.0f);
 	for (uint32_t i = 0; i < NUM_CIRCLE_VERTICES; ++i) {
@@ -107,6 +111,12 @@ CN_GAME_API void CnPlugin_Draw(void)
 	if (step < 0) step = NUM_CIRCLE_VERTICES - 2;
 	cnR_DrawDebugLine(circleOrigin.x, circleOrigin.y, circleVertices[step].x,
 					  circleVertices[step].y, green);
+
+	CnTransform2 smallRotate = cnTransform2_MakeRotation(cnPlanarAngle_MakeDegrees(1));
+	rotate = cnTransform2_Combine(rotate, smallRotate);
+	const CnTransform2 transform = cnTransform2_Combine(cnTransform2_MakeTranslateXY(800, 600), rotate);
+
+	cnR_DrawRect(cnFloat2_Make(0, 0), (CnDimension2f) { .width = 200.0f, .height = 300.0f}, red, transform);
 
 	CnFloat2 rectPosition = cnFloat2_Make(200, 100);
 	CnDimension2f rectSize = { .width = 100.0f, .height = 100.0f };

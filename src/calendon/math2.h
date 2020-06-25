@@ -32,6 +32,15 @@ typedef struct {
 	float degrees;
 } CnPlanarAngle;
 
+/**
+ * A row-major matrix for transforming 2D points and vectors.
+ */
+typedef union {
+	float m[3][3];
+} CnTransform2;
+
+CN_STATIC_ASSERT(sizeof(CnTransform2) == 9 * sizeof(float), "Padding present in CnTransform2");
+
 CN_API CnPlanarAngle cnPlanarAngle_MakeDegrees(float d);
 CN_API CnPlanarAngle cnPlanarAngle_MakeRadians(float r);
 CN_API float         cnPlanarAngle_Degrees(CnPlanarAngle a);
@@ -57,6 +66,15 @@ CN_API float         cnFloat2_DistanceSquared(CnFloat2 left, CnFloat2 right);
 CN_API CnFloat2      cnFloat2_Lerp(CnFloat2 from, CnFloat2 to, float alpha);
 
 CN_API CnPlanarAngle cnFloat2_DirectionBetween(CnFloat2 from, CnFloat2 to);
+
+CN_API CnTransform2  cnTransform2_MakeIdentity(void);
+CN_API CnTransform2  cnTransform2_MakeTranslateXY(float x, float y);
+CN_API CnTransform2  cnTransform2_MakeUniformScale(float scale);
+CN_API CnTransform2  cnTransform2_MakeRotation(CnPlanarAngle angle);
+CN_API CnTransform2  cnTransform2_Combine(CnTransform2 first, CnTransform2 second);
+
+CN_API CnFloat2      cnMath2_TransformPoint(CnFloat2 point, CnTransform2 transform);
+CN_API CnFloat2      cnMath2_TransformVector(CnFloat2 point, CnTransform2 transform);
 
 #ifdef __cplusplus
 }

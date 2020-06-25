@@ -38,6 +38,7 @@ CN_TEST_API CnFloat4 cnFloat4_Make(float x, float y, float z, float w);
 CN_TEST_API CnFloat4 cnFloat4_Multiply(CnFloat4 v, CnFloat4x4 m);
 CN_TEST_API float cnFloat4_Distance(CnFloat4 a, CnFloat4 b);
 
+CN_TEST_API CnFloat4x4 cnFloat4x4_Make(float* values);
 CN_TEST_API CnFloat4x4 cnFloat4x4_Identity(void);
 CN_TEST_API CnFloat4x4 cnFloat4x4_NonUniformScale(float x, float y, float z);
 CN_TEST_API CnFloat4x4 cnFloat4x4_Translate(float x, float y, float z);

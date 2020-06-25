@@ -22,6 +22,8 @@ void cnRLL_Clear(CnRGBA8u color);
 CN_DEFINE_HANDLE_TYPE(CnSpriteId, cnRLL_, Sprite);
 CN_DEFINE_HANDLE_TYPE(CnFontId, cnRLL_, Font);
 
+CnFloat4x4 cnRLL_MatrixFromTransform(CnTransform2 transform);
+
 bool cnRLL_LoadSprite(CnSpriteId id, const char* path);
 void cnRLL_DrawSprite(CnSpriteId id, CnFloat2 position, CnDimension2f size);
 
@@ -33,6 +35,8 @@ void cnRLL_DrawDebugFullScreenRect(void);
 void cnRLL_DrawDebugRect(CnFloat2 center, CnDimension2f dimensions, CnFloat4 color);
 void cnRLL_DrawDebugLine(float x1, float y1, float x2, float y2, CnRGB8u color);
 void cnRLL_DrawDebugLineStrip(CnFloat2* points, uint32_t numPoints, CnRGB8u color);
+
+void cnRLL_DrawRect(CnFloat2 center, CnDimension2f dimensions, CnFloat4 color, CnFloat4x4 transform);
 
 void cnRLL_OutlineCircle(CnFloat2 center, float radius, CnRGB8u color, uint32_t numSegments);
 

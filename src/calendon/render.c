@@ -103,6 +103,13 @@ void cnR_DrawDebugFont(CnFontId id, CnFloat2 center, CnDimension2f size)
 	cnRLL_DrawDebugFont(id, center, size);
 }
 
+void cnR_DrawRect(CnFloat2 center, CnDimension2f dimensions, CnRGB8u color, CnTransform2 transform)
+{
+	cnRLL_DrawRect(center, dimensions,
+		cnFloat4_Make((float) color.r / 255.0f, (float) color.g / 255.0f, (float) color.b / 255.0f, 1.0f),
+		cnRLL_MatrixFromTransform(transform));
+}
+
 void cnR_OutlineCircle(CnFloat2 center, float radius, CnRGB8u color, uint32_t numSegments)
 {
 	cnRLL_OutlineCircle(center, radius, color, numSegments);

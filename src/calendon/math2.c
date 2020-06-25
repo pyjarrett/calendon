@@ -103,3 +103,81 @@ CnPlanarAngle cnFloat2_DirectionBetween(CnFloat2 from, CnFloat2 to)
 {
 	return cnPlanarAngle_MakeRadians(atan2f(to.y - from.y, to.x - from.x));
 }
+
+CnTransform2 cnTransform2_MakeIdentity(void)
+{
+	return (CnTransform2) {{
+		{ 1.0f, 0.0f, 0.0f },
+		{ 0.0f, 1.0f, 0.0f },
+		{ 0.0f, 0.0f, 1.0f }
+	}};
+}
+
+CnTransform2 cnTransform2_MakeTranslateXY(float x, float y)
+{
+	CN_ASSERT_FINITE_F32(x);
+	CN_ASSERT_FINITE_F32(y);
+
+	return (CnTransform2) {{
+		{ 1.0f, 0.0f, 0.0f },
+		{ 0.0f, 1.0f, 0.0f },
+		{    x,    y, 1.0f }
+	}};
+}
+
+CnTransform2 cnTransform2_MakeUniformScale(float scale)
+{
+	CN_ASSERT_FINITE_F32(scale);
+	return (CnTransform2) {{
+		{ scale, 0.0f, 0.0f },
+		{ 0.0f, scale, 0.0f },
+		{ 0.0f, 0.0f, scale }
+	}};
+}
+
+CnTransform2 cnTransform2_MakeRotation(CnPlanarAngle angle)
+{
+	const float theta = cnPlanarAngle_Radians(angle);
+	CN_ASSERT_FINITE_F32(theta);
+
+	return (CnTransform2) {{
+		{  cosf(theta), sinf(theta), 0.0f },
+		{ -sinf(theta), cosf(theta), 0.0f },
+		{         0.0f,        0.0f, 1.0f }
+	}};
+}
+
+CnTransform2 cnTransform2_Combine(CnTransform2 first, CnTransform2 second)
+{
+	CnTransform2 result;
+	// Loop over all positions in `result`.
+	// TODO: This should be done with SIMD.
+	for (uint32_t i = 0; i < 3; ++i) {
+		for (uint32_t j = 0; j < 3; ++j) {
+			// Multiply to find result[i][j].
+			// Use a row from `first`, and a column from `second`.
+			result.m[i][j] = 0.0f;
+			for (uint32_t k = 0; k < 3; ++k) {
+				result.m[i][j] += (first.m[k][j] * second.m[i][k]);
+			}
+			CN_ASSERT_FINITE_F32(result.m[i][j]);
+		}
+	}
+	return result;
+}
+
+CnFloat2 cnMath2_TransformPoint(CnFloat2 point, CnTransform2 transform)
+{
+	return cnFloat2_Make(
+		point.x * transform.m[0][0] + point.y * transform.m[1][0] + 1.0f * transform.m[2][0],
+		point.x * transform.m[0][1] + point.y * transform.m[1][1] + 1.0f * transform.m[2][1]
+	);
+}
+
+CnFloat2 cnMath2_TransformVector(CnFloat2 point, CnTransform2 transform)
+{
+	return cnFloat2_Make(
+		point.x * transform.m[0][0] + point.y * transform.m[1][0],
+		point.x * transform.m[0][1] + point.y * transform.m[1][1]
+	);
+}

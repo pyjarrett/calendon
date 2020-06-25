@@ -52,6 +52,8 @@ CN_API void cnR_DrawDebugLine(float x1, float y1, float x2, float y2, CnRGB8u co
 CN_API void cnR_DrawDebugLineStrip(CnFloat2* points, uint32_t numPoints, CnRGB8u color);
 CN_API void cnR_DrawDebugFont(CnFontId id, CnFloat2 center, CnDimension2f size);
 
+CN_API void cnR_DrawRect(CnFloat2 center, CnDimension2f dimensions, CnRGB8u color, CnTransform2 transform);
+
 CN_API void cnR_OutlineCircle(CnFloat2 center, float radius, CnRGB8u color, uint32_t numSegments);
 
 #ifdef __cplusplus

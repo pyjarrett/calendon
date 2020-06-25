@@ -34,6 +34,16 @@ float cnFloat4_Distance(CnFloat4 a, CnFloat4 b)
 	return sqrtf(dx*dx + dy*dy + dz*dz);
 }
 
+/**
+ * Makes a matrix from 16 floating point values.
+ */
+CnFloat4x4 cnFloat4x4_Make(float* values)
+{
+	CnFloat4x4 result;
+	memcpy(result.m, values, 16 * sizeof(float));
+	return result;
+}
+
 CnFloat4x4 cnFloat4x4_Identity(void)
 {
 	return (CnFloat4x4) { {

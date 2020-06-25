@@ -961,6 +961,16 @@ void cnRLL_SetFullScreenViewport(void)
 	glViewport(0, 0, windowWidth, windowHeight);
 }
 
+CnFloat4x4 cnRLL_MatrixFromTransform(CnTransform2 transform)
+{
+	return cnFloat4x4_Make((float[]) {
+		transform.m[0][0], transform.m[0][1], 0.0f, transform.m[0][2],
+		transform.m[1][0], transform.m[1][1], 0.0f, transform.m[1][2],
+		             0.0f,              0.0f, 1.0f,              0.0f,
+		transform.m[2][0], transform.m[2][1], 0.0f,              1.0f
+	});
+}
+
 bool cnRLL_LoadSprite(CnSpriteId id, const char* path)
 {
 	CN_ASSERT_NO_GL_ERROR();
@@ -1321,6 +1331,38 @@ void cnRLL_DrawDebugFont(CnFontId id, CnFloat2 center, CnDimension2f size)
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 	cnRLL_DisableProgram(CnProgramIndexSprite);
+
+	CN_ASSERT_NO_GL_ERROR();
+}
+
+void cnRLL_DrawRect(CnFloat2 center, CnDimension2f dimensions, CnFloat4 color, CnFloat4x4 transform)
+{
+	CN_ASSERT_NO_GL_ERROR();
+
+	cnRLL_SetFullScreenViewport();
+
+	glBindBuffer(GL_ARRAY_BUFFER, debugDrawBuffer);
+
+	uniformStorage[CnUniformNameViewModel].f44 = transform;
+	uniformStorage[CnUniformNamePolygonColor].f4 = color;
+
+	cnRLL_EnableProgramForVertexFormat(CnProgramIndexSolidPolygon, &vertexFormats[CnVertexFormatP2]);
+
+	CnFloat2 vertices[4];
+	vertices[0] = cnFloat2_Make(-dimensions.width / 2.0f, -dimensions.height / 2.0f);
+	vertices[1] = cnFloat2_Make(dimensions.width / 2.0f, -dimensions.height / 2.0f);
+	vertices[2] = cnFloat2_Make(-dimensions.width / 2.0f, dimensions.height / 2.0f);
+	vertices[3] = cnFloat2_Make(dimensions.width / 2.0f, dimensions.height / 2.0f);
+
+	for (uint32_t i = 0; i < 4; ++i) {
+		vertices[i].x += center.x;
+		vertices[i].y += center.y;
+	}
+
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+	cnRLL_DisableProgram(CnProgramIndexSolidPolygon);
 
 	CN_ASSERT_NO_GL_ERROR();
 }
