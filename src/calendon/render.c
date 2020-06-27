@@ -72,8 +72,8 @@ void cnR_DrawSimpleText(CnFontId id, CnFloat2 position, const char* text)
 	CnTextDrawParams params;
 	params.position = position;
 	params.color = (CnRGBA8u) { .red = 255, .green = 255, .blue = 255, .alpha = 255 };
-	params.layout = CnLayoutHorizontal;
-	params.printDirection = CnPrintDirectionLeftToRight;
+	params.layout = CnLayoutDirectionHorizontal;
+	params.printDirection = CnTextDirectionLeftToRight;
 	cnRLL_DrawSimpleText(id, &params, text);
 }
 

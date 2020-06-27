@@ -1168,9 +1168,9 @@ void cnRLL_DrawSimpleText(CnFontId id, CnTextDrawParams* params, const char* tex
 	CnFontPSF2* font = &fonts[id];
 	// TODO: Check to ensure the id is valid.
 	CN_ASSERT(params != NULL, "Cannot draw with null parameters.");
-	CN_ASSERT(params->layout == CnLayoutHorizontal,
+	CN_ASSERT(params->layout == CnLayoutDirectionHorizontal,
 		"Only horizontal layouts are currently supported.");
-	CN_ASSERT(params->printDirection == CnPrintDirectionLeftToRight,
+	CN_ASSERT(params->printDirection == CnTextDirectionLeftToRight,
 		"Only left-to-right print direction is currently supported.");
 	CN_ASSERT(text != NULL, "Cannot draw a null text");
 
