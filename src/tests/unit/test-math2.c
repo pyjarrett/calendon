@@ -85,4 +85,44 @@ CN_TEST_SUITE_BEGIN("math2")
 				cnMath2_TransformVector(float2, ccw315), expected) < 0.1f);
 		}
 	}
+
+	CN_TEST_UNIT("Transform translation extraction") {
+		{
+			const CnTransform2 identity = cnTransform2_MakeIdentity();
+			CN_TEST_ASSERT_TRUE(cnFloat2_DistanceSquared(
+				cnTransform2_Translation(identity), cnFloat2_Make(0.0f, 0.0f)) < 0.1f);
+		}
+
+		{
+			const CnTransform2 translation = cnTransform2_MakeTranslateXY(-10.0f, 8.0f);
+			CN_TEST_ASSERT_TRUE(cnFloat2_DistanceSquared(
+				cnTransform2_Translation(translation), cnFloat2_Make(-10.0f, 8.0f)) < 0.1f);
+		}
+
+		{
+			const CnTransform2 rotation = cnTransform2_MakeRotation(cnPlanarAngle_MakeDegrees(45.0f));
+			CN_TEST_ASSERT_TRUE(cnFloat2_DistanceSquared(
+				cnTransform2_Translation(rotation), cnFloat2_Make(0.0f, 0.0f)) < 0.1f);
+		}
+	}
+
+	CN_TEST_UNIT("Transform scale extraction") {
+		{
+			const CnTransform2 identity = cnTransform2_MakeIdentity();
+			CN_TEST_ASSERT_TRUE(cnFloat2_DistanceSquared(
+				cnTransform2_Scale(identity), cnFloat2_Make(1.f, 1.0f)) < 0.1f);
+		}
+
+		{
+			const CnTransform2 upscale = cnTransform2_MakeUniformScale(5.0f);
+			CN_TEST_ASSERT_TRUE(cnFloat2_DistanceSquared(
+				cnTransform2_Scale(upscale), cnFloat2_Make(5.0f, 5.0f)) < 0.1f);
+		}
+
+		{
+			const CnTransform2 downscale = cnTransform2_MakeUniformScale(0.25);
+			CN_TEST_ASSERT_TRUE(cnFloat2_DistanceSquared(
+				cnTransform2_Scale(downscale), cnFloat2_Make(0.25f, 0.25f)) < 0.1f);
+		}
+	}
 CN_TEST_SUITE_END

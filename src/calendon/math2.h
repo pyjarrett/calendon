@@ -72,6 +72,8 @@ CN_API CnTransform2  cnTransform2_MakeTranslateXY(float x, float y);
 CN_API CnTransform2  cnTransform2_MakeUniformScale(float scale);
 CN_API CnTransform2  cnTransform2_MakeRotation(CnPlanarAngle angle);
 CN_API CnTransform2  cnTransform2_Combine(CnTransform2 first, CnTransform2 second);
+CN_API CnFloat2      cnTransform2_Translation(CnTransform2 transform);
+CN_API CnFloat2      cnTransform2_Scale(CnTransform2 transform);
 
 CN_API CnFloat2      cnMath2_TransformPoint(CnFloat2 point, CnTransform2 transform);
 CN_API CnFloat2      cnMath2_TransformVector(CnFloat2 point, CnTransform2 transform);

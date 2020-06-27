@@ -166,6 +166,23 @@ CnTransform2 cnTransform2_Combine(CnTransform2 first, CnTransform2 second)
 	return result;
 }
 
+/**
+ * Extracts the translation from a transform.
+ */
+CnFloat2 cnTransform2_Translation(CnTransform2 transform)
+{
+	return cnFloat2_Make(transform.m[2][0], transform.m[2][1]);
+}
+
+CnFloat2 cnTransform2_Scale(CnTransform2 transform)
+{
+	const float x1 = transform.m[0][0];
+	const float x2 = transform.m[0][1];
+	const float y1 = transform.m[1][0];
+	const float y2 = transform.m[1][1];
+	return cnFloat2_Make(sqrtf(x1*x1 + x2*x2), sqrtf(y1*y1 + y2*y2));
+}
+
 CnFloat2 cnMath2_TransformPoint(CnFloat2 point, CnTransform2 transform)
 {
 	return cnFloat2_Make(
