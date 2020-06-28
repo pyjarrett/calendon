@@ -918,7 +918,7 @@ bool cnRLL_CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint* pro
 	return linkResult == GL_TRUE;
 }
 
-void cnRLL_Init(uint32_t width, uint32_t height)
+void cnRLL_Init(CnDimension2u32 resolution)
 {
 	cnRLL_InitGL();
 	cnRLL_ConfigureVSync();
@@ -928,9 +928,10 @@ void cnRLL_Init(uint32_t width, uint32_t height)
 	cnRLL_InitSprites();
 	cnRLL_LoadShaders();
 
-	windowWidth = (GLsizei)width;
-	windowHeight = (GLsizei)height;
-	uniformStorage[CnUniformNameProjection].f44 = cnRLL_OrthoProjection(width, height);
+	windowWidth = (GLsizei)resolution.width;
+	windowHeight = (GLsizei)resolution.height;
+	uniformStorage[CnUniformNameProjection].f44
+		= cnRLL_OrthoProjection(resolution.width, resolution.height);
 }
 
 void cnRLL_Shutdown(void)

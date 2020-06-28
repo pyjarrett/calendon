@@ -33,7 +33,7 @@
 extern "C" {
 #endif
 
-CN_API void cnR_Init(uint32_t width, uint32_t height);
+CN_API void cnR_Init(CnDimension2u32 resolution);
 CN_API void cnR_Shutdown(void);
 CN_API void cnR_StartFrame(void);
 CN_API void cnR_EndFrame(void);

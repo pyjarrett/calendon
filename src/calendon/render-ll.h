@@ -13,7 +13,7 @@
 #include <calendon/math4.h>
 #include <calendon/render-resources.h>
 
-void cnRLL_Init(uint32_t width, uint32_t height);
+void cnRLL_Init(CnDimension2u32 resolution);
 void cnRLL_Shutdown(void);
 void cnRLL_StartFrame(void);
 void cnRLL_EndFrame(void);

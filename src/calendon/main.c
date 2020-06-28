@@ -110,10 +110,13 @@ void cnMain_InitAllSystems(CnMainConfig* config)
 		cnAssets_Init(defaultAssetDir.str);
 	}
 
+	// TODO: Resolution should be read from config or as a a configuration option.
 	const uint32_t width = 1024;
 	const uint32_t height = 768;
-	cnUI_Init(width, height);
-	cnR_Init(width, height);
+
+	const CnDimension2u32 resolution = (CnDimension2u32) { .width = width, .height = height };
+	cnUI_Init(resolution);
+	cnR_Init(resolution);
 
 	if (!cnMainConfig_IsHosted(config)) {
 		if (!cnPath_IsFile(config->gameLibPath.str)) {

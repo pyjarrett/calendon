@@ -7,6 +7,7 @@
 
 #include <calendon/cn.h>
 
+#include <calendon/dimension.h>
 #include <calendon/input-button-mapping.h>
 #include <calendon/input-keyset.h>
 #include <calendon/input-mouse.h>
@@ -15,7 +16,7 @@
 extern "C" {
 #endif
 
-CN_API void cnUI_Init(uint32_t width, uint32_t height);
+CN_API void cnUI_Init(CnDimension2u32 resolution);
 CN_API void cnUI_Shutdown(void);
 
 /**

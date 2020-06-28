@@ -7,9 +7,9 @@
  * Initialize the rendering system assuming a rectangular region of the given
  * drawing dimensions.
  */
-void cnR_Init(uint32_t width, uint32_t height)
+void cnR_Init(CnDimension2u32 resolution)
 {
-	cnRLL_Init(width, height);
+	cnRLL_Init(resolution);
 }
 
 void cnR_Shutdown(void)
