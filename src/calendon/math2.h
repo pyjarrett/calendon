@@ -75,8 +75,9 @@ CN_API CnTransform2  cnTransform2_Combine(CnTransform2 first, CnTransform2 secon
 CN_API CnFloat2      cnTransform2_Translation(CnTransform2 transform);
 CN_API CnFloat2      cnTransform2_Scale(CnTransform2 transform);
 
-CN_API CnFloat2      cnMath2_TransformPoint(CnFloat2 point, CnTransform2 transform);
-CN_API CnFloat2      cnMath2_TransformVector(CnFloat2 point, CnTransform2 transform);
+CN_API CnFloat2        cnMath2_TransformPoint(CnFloat2 point, CnTransform2 transform);
+CN_API CnFloat2        cnMath2_TransformVector(CnFloat2 point, CnTransform2 transform);
+CN_API CnDimension2u32 cnMath2_TransformDimension2u32(CnDimension2u32 dimension, CnTransform2 transform);
 
 #ifdef __cplusplus
 }

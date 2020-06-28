@@ -131,7 +131,7 @@ CnTransform2 cnTransform2_MakeUniformScale(float scale)
 	return (CnTransform2) {{
 		{ scale, 0.0f, 0.0f },
 		{ 0.0f, scale, 0.0f },
-		{ 0.0f, 0.0f, scale }
+		{ 0.0f, 0.0f, 1.0f }
 	}};
 }
 
@@ -197,4 +197,13 @@ CnFloat2 cnMath2_TransformVector(CnFloat2 point, CnTransform2 transform)
 		point.x * transform.m[0][0] + point.y * transform.m[1][0],
 		point.x * transform.m[0][1] + point.y * transform.m[1][1]
 	);
+}
+
+CnDimension2u32 cnMath2_TransformDimension2u32(CnDimension2u32 dimension,
+	CnTransform2 transform)
+{
+	const CnFloat2 scale = cnTransform2_Scale(transform);
+	return (CnDimension2u32) {
+		roundf(dimension.width * scale.x),
+		roundf(dimension.height * scale.y) };
 }
