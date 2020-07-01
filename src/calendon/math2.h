@@ -39,6 +39,13 @@ typedef union {
 	float m[3][3];
 } CnTransform2;
 
+/**
+ * An axis-aligned bounding box in 2D.
+ */
+typedef struct {
+	CnFloat2 min, max;
+} CnAABB2;
+
 CN_STATIC_ASSERT(sizeof(CnTransform2) == 9 * sizeof(float), "Padding present in CnTransform2");
 
 CN_API CnPlanarAngle cnPlanarAngle_MakeDegrees(float d);
@@ -74,6 +81,9 @@ CN_API CnTransform2  cnTransform2_MakeRotation(CnPlanarAngle angle);
 CN_API CnTransform2  cnTransform2_Combine(CnTransform2 first, CnTransform2 second);
 CN_API CnFloat2      cnTransform2_Translation(CnTransform2 transform);
 CN_API CnFloat2      cnTransform2_Scale(CnTransform2 transform);
+
+CN_API CnAABB2 cnAABB2_MakeMinMax(CnFloat2 min, CnFloat2 max);
+CN_API bool    cnAABB2_FullyContainsAABB2(CnAABB2 a, CnAABB2 b, float tolerance);
 
 CN_API CnFloat2        cnMath2_TransformPoint(CnFloat2 point, CnTransform2 transform);
 CN_API CnFloat2        cnMath2_TransformVector(CnFloat2 point, CnTransform2 transform);

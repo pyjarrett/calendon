@@ -5,6 +5,8 @@
 
 #include <calendon/math2.h>
 
+#include <math.h>
+
 CN_TEST_SUITE_BEGIN("math2")
 	CN_TEST_UNIT("Identity") {
 		const CnFloat2 float2 = cnFloat2_Make(3.0f, 5.0f);
@@ -123,6 +125,54 @@ CN_TEST_SUITE_BEGIN("math2")
 			const CnTransform2 downscale = cnTransform2_MakeUniformScale(0.25);
 			CN_TEST_ASSERT_TRUE(cnFloat2_DistanceSquared(
 				cnTransform2_Scale(downscale), cnFloat2_Make(0.25f, 0.25f)) < 0.1f);
+		}
+	}
+
+	CN_TEST_UNIT("AABB2 Creation") {
+		CN_TEST_PRECONDITION(cnAABB2_MakeMinMax(cnFloat2_Make(0.0f, 0.0f), cnFloat2_Make(-1.0f, -2.0f)));
+	}
+
+	CN_TEST_UNIT("AABB2 containment") {
+
+		// An AABB2 fully contains itself.
+		{
+			const CnAABB2 a = cnAABB2_MakeMinMax(cnFloat2_Make(0.0f, 0.0f), cnFloat2_Make(10.0f, 10.0f));
+			const CnAABB2 b = cnAABB2_MakeMinMax(cnFloat2_Make(0.0f, 0.0f), cnFloat2_Make(10.0f, 10.0f));
+			CN_TEST_ASSERT_TRUE(cnAABB2_FullyContainsAABB2(a, b, 0.0f));
+
+			// Tolerance validity checks.
+			CN_TEST_PRECONDITION(cnAABB2_FullyContainsAABB2(a, b, INFINITY));
+			CN_TEST_PRECONDITION(cnAABB2_FullyContainsAABB2(a, b, -INFINITY));
+			CN_TEST_PRECONDITION(cnAABB2_FullyContainsAABB2(a, b, NAN));
+		}
+
+		// Fully contained AABB2.
+		{
+			const CnAABB2 a = cnAABB2_MakeMinMax(cnFloat2_Make(0.0f, 0.0f), cnFloat2_Make(10.0f, 10.0f));
+			const CnAABB2 b = cnAABB2_MakeMinMax(cnFloat2_Make(5.0f, 5.0f), cnFloat2_Make(8.0f, 8.0f));
+			CN_TEST_ASSERT_TRUE(cnAABB2_FullyContainsAABB2(a, b, 0.0f));
+		}
+
+		// Partially contained AABB2.
+		{
+			const CnAABB2 a = cnAABB2_MakeMinMax(cnFloat2_Make(0.0f, 0.0f), cnFloat2_Make(10.0f, 10.0f));
+			const CnAABB2 b = cnAABB2_MakeMinMax(cnFloat2_Make(-2.0f, 0.0f), cnFloat2_Make(10.0f, 10.0f));
+			CN_TEST_ASSERT_FALSE(cnAABB2_FullyContainsAABB2(a, b, 0.0f));
+		}
+
+		// Partially contained AABB.
+		{
+			const CnAABB2 a = cnAABB2_MakeMinMax(cnFloat2_Make(0.0f, 0.0f), cnFloat2_Make(10.0f, 10.0f));
+			const CnAABB2 b = cnAABB2_MakeMinMax(cnFloat2_Make(4.0f, 2.0f), cnFloat2_Make(5.0f, 12.0f));
+			CN_TEST_ASSERT_FALSE(cnAABB2_FullyContainsAABB2(a, b, 0.0f));
+		}
+
+		// Contained within tolerance.
+		{
+			const CnAABB2 a = cnAABB2_MakeMinMax(cnFloat2_Make(0.0f, 0.0f), cnFloat2_Make(10.0f, 10.0f));
+			const CnAABB2 b = cnAABB2_MakeMinMax(cnFloat2_Make(4.0f, -2.0f), cnFloat2_Make(5.0f, 12.0f));
+			CN_TEST_ASSERT_FALSE(cnAABB2_FullyContainsAABB2(a, b, 0.0f));
+			CN_TEST_ASSERT_TRUE(cnAABB2_FullyContainsAABB2(a, b, 2.0f));
 		}
 	}
 CN_TEST_SUITE_END

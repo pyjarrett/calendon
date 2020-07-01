@@ -183,6 +183,23 @@ CnFloat2 cnTransform2_Scale(CnTransform2 transform)
 	return cnFloat2_Make(sqrtf(x1*x1 + x2*x2), sqrtf(y1*y1 + y2*y2));
 }
 
+CnAABB2 cnAABB2_MakeMinMax(CnFloat2 min, CnFloat2 max)
+{
+	CN_ASSERT(min.x <= max.x, "AABB2 invalid bounds: X min: %f > X max: %f", min.x, max.y);
+	CN_ASSERT(min.y <= max.y, "AABB2 invalid bounds: Y min: %f > Y max: %f", min.y, max.y);
+	return (CnAABB2) { min, max };
+}
+
+bool cnAABB2_FullyContainsAABB2(CnAABB2 area, CnAABB2 object, float tolerance)
+{
+	CN_ASSERT_FINITE_F32(tolerance);
+
+	return area.min.x <= object.min.x + tolerance
+		&& area.min.y <= object.min.y + tolerance
+		&& area.max.x >= object.max.x - tolerance
+		&& area.max.y >= object.max.y - tolerance;
+}
+
 CnFloat2 cnMath2_TransformPoint(CnFloat2 point, CnTransform2 transform)
 {
 	return cnFloat2_Make(
