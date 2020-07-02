@@ -95,12 +95,12 @@ extern "C" {
  * - excessive frame time
 */
 #if CN_DEBUG
-	#if defined(_MSC_VER)
+	#if defined(_WIN32)
 		#include <intrin.h>
 		#define CN_DEBUG_BREAK() __debugbreak();
 	#endif
 
-	#if defined(__GNUC__) || defined(__clang__)
+	#if !defined(_WIN32)
 		#include <signal.h>
 		/**
 		 * Use to force the debugger to stop at a specific line.
