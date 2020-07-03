@@ -35,8 +35,15 @@ extern "C" {
 
 CN_API void cnR_Init(CnDimension2u32 resolution);
 CN_API void cnR_Shutdown(void);
+
 CN_API void cnR_StartFrame(void);
 CN_API void cnR_EndFrame(void);
+
+CN_API CnDimension2u32 cnR_Resolution(void);
+
+CN_API CnAABB2 cnR_BackingCanvasArea(void);
+CN_API CnAABB2 cnR_CurrentCanvasArea(void);
+CN_API bool cnR_SetCurrentCanvasArea(CnAABB2 area);
 
 CN_API bool cnR_CreateSprite(CnSpriteId* id);
 CN_API bool cnR_LoadSprite(CnSpriteId id, const char* path);
@@ -53,7 +60,7 @@ CN_API void cnR_DrawDebugLineStrip(CnFloat2* points, uint32_t numPoints, CnRGB8u
 CN_API void cnR_DrawDebugFont(CnFontId id, CnFloat2 center, CnDimension2f size);
 
 CN_API void cnR_DrawRect(CnFloat2 center, CnDimension2f dimensions, CnRGB8u color, CnTransform2 transform);
-
+CN_API void cnR_OutlineRect(CnFloat2 center, CnDimension2f dimensions, CnRGB8u color, CnTransform2 transform);
 CN_API void cnR_OutlineCircle(CnFloat2 center, float radius, CnRGB8u color, uint32_t numSegments);
 
 #ifdef __cplusplus

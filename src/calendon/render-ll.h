@@ -19,6 +19,12 @@ void cnRLL_StartFrame(void);
 void cnRLL_EndFrame(void);
 void cnRLL_Clear(CnRGBA8u color);
 
+CnDimension2u32 cnRLL_Resolution(void);
+
+CnAABB2 cnRLL_BackingCanvasArea(void);
+CnAABB2 cnRLL_CurrentCanvasArea(void);
+bool cnRLL_SetCurrentCanvasArea(CnAABB2 area);
+
 CN_DEFINE_HANDLE_TYPE(CnSpriteId, cnRLL_, Sprite);
 CN_DEFINE_HANDLE_TYPE(CnFontId, cnRLL_, Font);
 
@@ -37,8 +43,8 @@ void cnRLL_DrawDebugLine(float x1, float y1, float x2, float y2, CnRGB8u color);
 void cnRLL_DrawDebugLineStrip(CnFloat2* points, uint32_t numPoints, CnRGB8u color);
 
 void cnRLL_DrawRect(CnFloat2 center, CnDimension2f dimensions, CnFloat4 color, CnFloat4x4 transform);
+void cnRLL_OutlineRect(CnFloat2 center, CnDimension2f dimensions, CnFloat4 color, CnFloat4x4 transform);
 
 void cnRLL_OutlineCircle(CnFloat2 center, float radius, CnRGB8u color, uint32_t numSegments);
 
 #endif /* CN_RENDER_LL_H */
-

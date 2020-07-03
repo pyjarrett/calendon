@@ -29,6 +29,8 @@ void cnR_StartFrame(void)
 {
 	cnRLL_StartFrame();
 
+	cnRLL_SetCurrentCanvasArea(cnR_BackingCanvasArea());
+
 	const CnRGBA8u black = { 0, 0, 0, 0 };
 	cnRLL_Clear(black);
 }
@@ -39,6 +41,31 @@ void cnR_StartFrame(void)
 void cnR_EndFrame(void)
 {
 	cnRLL_EndFrame();
+}
+
+CnDimension2u32 cnR_Resolution(void)
+{
+	return cnRLL_Resolution();
+}
+
+CnAABB2 cnR_BackingCanvasArea(void)
+{
+	return cnRLL_BackingCanvasArea();
+}
+
+CnAABB2 cnR_CurrentCanvasArea(void)
+{
+	return cnRLL_CurrentCanvasArea();
+}
+
+bool cnR_SetCurrentCanvasArea(CnAABB2 area)
+{
+	if (!cnAABB2_FullyContainsAABB2(cnR_BackingCanvasArea(), area, 0.0f)) {
+		return false;
+	}
+
+	cnRLL_SetCurrentCanvasArea(area);
+	return true;
 }
 
 bool cnR_CreateSprite(CnSpriteId* id)
@@ -106,6 +133,13 @@ void cnR_DrawDebugFont(CnFontId id, CnFloat2 center, CnDimension2f size)
 void cnR_DrawRect(CnFloat2 center, CnDimension2f dimensions, CnRGB8u color, CnTransform2 transform)
 {
 	cnRLL_DrawRect(center, dimensions,
+		cnFloat4_Make((float) color.r / 255.0f, (float) color.g / 255.0f, (float) color.b / 255.0f, 1.0f),
+		cnRLL_MatrixFromTransform(transform));
+}
+
+void cnR_OutlineRect(CnFloat2 center, CnDimension2f dimensions, CnRGB8u color, CnTransform2 transform)
+{
+	cnRLL_OutlineRect(center, dimensions,
 		cnFloat4_Make((float) color.r / 255.0f, (float) color.g / 255.0f, (float) color.b / 255.0f, 1.0f),
 		cnRLL_MatrixFromTransform(transform));
 }

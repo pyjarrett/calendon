@@ -76,7 +76,7 @@ CN_GAME_API bool CnPlugin_Init(void)
 
 	rotate = cnTransform2_MakeIdentity();
 
-	circleOrigin = cnFloat2_Make(400.0f, 400.0f);
+	circleOrigin = cnFloat2_Make(200.0f, 300.0f);
 	cnRLL_CreateCircle(circleVertices, NUM_CIRCLE_VERTICES, 50.0f);
 	for (uint32_t i = 0; i < NUM_CIRCLE_VERTICES; ++i) {
 		circleVertices[i] = cnFloat2_Add(circleVertices[i], circleOrigin);
@@ -109,21 +109,24 @@ CN_GAME_API void CnPlugin_Draw(void)
 	static int step = 0;
 	--step;
 	if (step < 0) step = NUM_CIRCLE_VERTICES - 2;
-	cnR_DrawDebugLine(circleOrigin.x, circleOrigin.y, circleVertices[step].x,
-					  circleVertices[step].y, green);
+	cnR_DrawDebugLine(circleOrigin.x, circleOrigin.y, circleVertices[step].x, circleVertices[step].y, green);
 
 	CnTransform2 smallRotate = cnTransform2_MakeRotation(cnPlanarAngle_MakeDegrees(1));
 	rotate = cnTransform2_Combine(rotate, smallRotate);
-	const CnTransform2 transform = cnTransform2_Combine(cnTransform2_MakeTranslateXY(800, 600), rotate);
+	const CnTransform2 translate = cnTransform2_MakeTranslateXY(600, 300);
+	const CnTransform2 transform = cnTransform2_Combine(translate, rotate);
 
-	cnR_DrawRect(cnFloat2_Make(0, 0), (CnDimension2f) { .width = 200.0f, .height = 300.0f}, red, transform);
+	const CnDimension2f dimensions = (CnDimension2f) { .width = 200.0f, .height = 300.0f};
+	cnR_OutlineRect(cnFloat2_Make(0, 0), dimensions, blue, transform);
 
-	CnFloat2 rectPosition = cnFloat2_Make(200, 100);
-	CnDimension2f rectSize = { .width = 100.0f, .height = 100.0f };
-	cnR_DrawDebugRect(rectPosition, rectSize, green);
+	const CnAABB2 aabb = cnAABB2_MakeMinMax(
+		cnFloat2_Make(-dimensions.width / 2.0f, -dimensions.height / 2.0f),
+		cnFloat2_Make(dimensions.width / 2.0f, dimensions.height / 2.0f));
+	CnAABB2 box = cnMath2_TransformAABB2(aabb, rotate);
+	cnR_OutlineRect(cnAABB2_Center(box), (CnDimension2f) { box.max.x - box.min.x, box.max.y - box.min.y }, red, translate);
 
-	cnR_DrawSimpleText(font, cnFloat2_Make(300, 100), "Hello, Paul!\xe2\x86\x93→\xe2\x86\x92");
-	cnR_DrawSimpleText(font, cnFloat2_Make(100, 500), "«café, caffè» ™ © Â ←");
+	cnR_DrawSimpleText(font, cnFloat2_Make(000, 500), "Hello, Paul!\xe2\x86\x93→\xe2\x86\x92");
+	cnR_DrawSimpleText(font, cnFloat2_Make(000, 600), "«café, caffè» ™ © Â ←");
 
 	static char frameTime[100] = "";
 	lastDt = cnTime_Max(cnTime_MakeMilli(1), lastDt);
@@ -133,7 +136,7 @@ CN_GAME_API void CnPlugin_Draw(void)
 		sprintf(frameTime, "FPS: %.1f", 1000.0f / cnTime_Milli(lastDt));
 	}
 
-	cnR_DrawSimpleText(font, cnFloat2_Make(0, 600), frameTime);
+	cnR_DrawSimpleText(font, cnFloat2_Make(0, 700), frameTime);
 	cnR_EndFrame();
 }
 

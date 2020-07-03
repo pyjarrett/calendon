@@ -44,6 +44,7 @@ void cnRLL_PrintGLVersion(void);
  */
 extern struct SDL_Window* window;
 static GLsizei windowWidth, windowHeight;
+static CnAABB2 currentCanvasArea;
 
 /**
  * The render system must carry around the OpenGL context to be used to draw to
@@ -936,7 +937,6 @@ void cnRLL_Init(CnDimension2u32 resolution)
 
 void cnRLL_Shutdown(void)
 {
-
 }
 
 void cnRLL_StartFrame(void)
@@ -950,6 +950,33 @@ void cnRLL_EndFrame(void)
 	CN_ASSERT_NO_GL_ERROR();
 	SDL_GL_SwapWindow(window);
 }
+
+CnDimension2u32 cnRLL_Resolution(void)
+{
+	return (CnDimension2u32) { .width = windowWidth, .height = windowHeight };
+}
+
+CnAABB2 cnRLL_BackingCanvasArea(void)
+{
+	return cnAABB2_MakeMinMax(cnFloat2_Make(0.0f, 0.0f), cnFloat2_Make(windowWidth, windowHeight));
+}
+
+CnAABB2 cnRLL_CurrentCanvasArea(void)
+{
+	return currentCanvasArea;
+}
+
+bool cnRLL_SetCurrentCanvasArea(CnAABB2 area)
+{
+	CN_ASSERT(cnAABB2_FullyContainsAABB2(cnRLL_BackingCanvasArea(), area, 0.0f),
+		"Attempting to draw an area not contained on the backing canvas.");
+	currentCanvasArea = area;
+
+	glViewport(currentCanvasArea.min.x, currentCanvasArea.min.y,
+		cnAABB2_Width(currentCanvasArea), cnAABB2_Height(currentCanvasArea));
+	return true;
+}
+
 
 void cnRLL_Clear(CnRGBA8u color)
 {
@@ -1014,8 +1041,6 @@ bool cnRLL_LoadSprite(CnSpriteId id, const char* path)
 void cnRLL_DrawSprite(CnSpriteId id, CnFloat2 position, CnDimension2f size)
 {
 	CN_ASSERT_NO_GL_ERROR();
-
-	cnRLL_SetFullScreenViewport();
 
 	GLuint texture = spriteTextures[id];
 	CN_ASSERT(glIsTexture(texture), "Sprite %" PRIu32 " does not have a valid"
@@ -1134,7 +1159,6 @@ static void cnRLL_AppendGlyph(CnFontId id, CnFloat2 position, CnGlyphIndex glyph
 static void cnRLL_DrawGlyphs(CnFontId id)
 {
 	CN_ASSERT_NO_GL_ERROR();
-	cnRLL_SetFullScreenViewport();
 	const GLuint texture = fontTextures[id];
 	CN_ASSERT(glIsTexture(texture), "Sprite %" PRIu32 " does not have a valid"
 		"texture", texture);
@@ -1216,8 +1240,6 @@ void cnRLL_DrawDebugFullScreenRect(void)
 {
 	CN_ASSERT_NO_GL_ERROR();
 
-	cnRLL_SetFullScreenViewport();
-
 	glBindBuffer(GL_ARRAY_BUFFER, fullScreenQuadBuffer);
 
 	cnRLL_EnableProgramForVertexFormat(CnProgramIndexFullScreen, &vertexFormats[CnVertexFormatP2]);
@@ -1234,8 +1256,6 @@ void cnRLL_DrawDebugFullScreenRect(void)
  */
 void cnRLL_DrawDebugRect(CnFloat2 center, CnDimension2f dimensions, CnFloat4 color)
 {
-	cnRLL_SetFullScreenViewport();
-
 	glBindBuffer(GL_ARRAY_BUFFER, debugDrawBuffer);
 
 	uniformStorage[CnUniformNameViewModel].f44 = cnFloat4x4_Identity();
@@ -1264,9 +1284,6 @@ void cnRLL_DrawDebugRect(CnFloat2 center, CnDimension2f dimensions, CnFloat4 col
 
 void cnRLL_DrawDebugLine(float x1, float y1, float x2, float y2, CnRGB8u color)
 {
-	// TODO: Probably shouldn't reset viewport.
-	cnRLL_SetFullScreenViewport();
-
 	glBindBuffer(GL_ARRAY_BUFFER, debugDrawBuffer);
 
 	uniformStorage[CnUniformNameViewModel].f44 = cnFloat4x4_Identity();
@@ -1291,9 +1308,6 @@ void cnRLL_DrawDebugLineStrip(CnFloat2* points, uint32_t numPoints, CnRGB8u colo
 	CN_ASSERT(numPoints < RLL_MAX_DEBUG_POINTS, "Exceeded number of debug points "
 		"to draw: %" PRIu32 " (%" PRIu32 " max)", numPoints, RLL_MAX_DEBUG_POINTS);
 
-	// TODO: Probably shouldn't reset viewport.
-	cnRLL_SetFullScreenViewport();
-
 	glBindBuffer(GL_ARRAY_BUFFER, debugDrawBuffer);
 
 	uniformStorage[CnUniformNameViewModel].f44 = cnFloat4x4_Identity();
@@ -1313,8 +1327,6 @@ void cnRLL_DrawDebugLineStrip(CnFloat2* points, uint32_t numPoints, CnRGB8u colo
 void cnRLL_DrawDebugFont(CnFontId id, CnFloat2 center, CnDimension2f size)
 {
 	CN_ASSERT_NO_GL_ERROR();
-
-	cnRLL_SetFullScreenViewport();
 
 	const GLuint texture = fontTextures[id];
 	CN_ASSERT(glIsTexture(texture), "Font %" PRIu32 " does not have a valid"
@@ -1339,8 +1351,6 @@ void cnRLL_DrawDebugFont(CnFontId id, CnFloat2 center, CnDimension2f size)
 void cnRLL_DrawRect(CnFloat2 center, CnDimension2f dimensions, CnFloat4 color, CnFloat4x4 transform)
 {
 	CN_ASSERT_NO_GL_ERROR();
-
-	cnRLL_SetFullScreenViewport();
 
 	glBindBuffer(GL_ARRAY_BUFFER, debugDrawBuffer);
 
@@ -1368,6 +1378,37 @@ void cnRLL_DrawRect(CnFloat2 center, CnDimension2f dimensions, CnFloat4 color, C
 	CN_ASSERT_NO_GL_ERROR();
 }
 
+void cnRLL_OutlineRect(CnFloat2 center, CnDimension2f dimensions, CnFloat4 color, CnFloat4x4 transform)
+{
+	CN_ASSERT_NO_GL_ERROR();
+
+	glBindBuffer(GL_ARRAY_BUFFER, debugDrawBuffer);
+
+	uniformStorage[CnUniformNameViewModel].f44 = transform;
+	uniformStorage[CnUniformNamePolygonColor].f4 = color;
+
+	cnRLL_EnableProgramForVertexFormat(CnProgramIndexSolidPolygon, &vertexFormats[CnVertexFormatP2]);
+
+	CnFloat2 vertices[4];
+	vertices[0] = cnFloat2_Make(-dimensions.width / 2.0f, -dimensions.height / 2.0f);
+	vertices[1] = cnFloat2_Make(dimensions.width / 2.0f, -dimensions.height / 2.0f);
+	vertices[2] = cnFloat2_Make(dimensions.width / 2.0f, dimensions.height / 2.0f);
+	vertices[3] = cnFloat2_Make(-dimensions.width / 2.0f, dimensions.height / 2.0f);
+
+	for (uint32_t i = 0; i < 4; ++i) {
+		vertices[i].x += center.x;
+		vertices[i].y += center.y;
+	}
+
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+	glDrawArrays(GL_LINE_LOOP, 0, 4);
+
+	cnRLL_DisableProgram(CnProgramIndexSolidPolygon);
+
+	CN_ASSERT_NO_GL_ERROR();
+}
+
+
 /**
  * Creates a line of points to form circle in a counter clockwise winding.
  */
@@ -1392,7 +1433,6 @@ void cnRLL_OutlineCircle(CnFloat2 center, float radius, CnRGB8u color, uint32_t 
 		"draw points: %" PRIu32 " of %" PRIu32, numSegments - 1, numPoints);
 
 	static CnFloat2 points[RLL_MAX_CIRCLE_POINTS];
-	cnRLL_SetFullScreenViewport();
 
 	glBindBuffer(GL_ARRAY_BUFFER, debugDrawBuffer);
 
