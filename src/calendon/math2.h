@@ -82,12 +82,18 @@ CN_API CnTransform2  cnTransform2_Combine(CnTransform2 first, CnTransform2 secon
 CN_API CnFloat2      cnTransform2_Translation(CnTransform2 transform);
 CN_API CnFloat2      cnTransform2_Scale(CnTransform2 transform);
 
-CN_API CnAABB2 cnAABB2_MakeMinMax(CnFloat2 min, CnFloat2 max);
-CN_API bool    cnAABB2_FullyContainsAABB2(CnAABB2 a, CnAABB2 b, float tolerance);
+CN_API CnAABB2   cnAABB2_MakeMinMax(CnFloat2 min, CnFloat2 max);
+CN_API CnFloat2  cnAABB2_Center(CnAABB2 aabb);
+CN_API float     cnAABB2_Width(CnAABB2 aabb);
+CN_API float     cnAABB2_Height(CnAABB2 aabb);
+CN_API CnAABB2   cnAABB2_IncludePoint(CnAABB2 aabb, CnFloat2 point);
+CN_API void      cnAABB2_Corners(CnAABB2 aabb, CnFloat2 point[4]);
+CN_API bool      cnAABB2_FullyContainsAABB2(CnAABB2 a, CnAABB2 b, float tolerance);
 
 CN_API CnFloat2        cnMath2_TransformPoint(CnFloat2 point, CnTransform2 transform);
 CN_API CnFloat2        cnMath2_TransformVector(CnFloat2 point, CnTransform2 transform);
 CN_API CnDimension2u32 cnMath2_TransformDimension2u32(CnDimension2u32 dimension, CnTransform2 transform);
+CN_API CnAABB2         cnMath2_TransformAABB2(CnAABB2, CnTransform2 transform);
 
 #ifdef __cplusplus
 }

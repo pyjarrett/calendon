@@ -190,6 +190,37 @@ CnAABB2 cnAABB2_MakeMinMax(CnFloat2 min, CnFloat2 max)
 	return (CnAABB2) { min, max };
 }
 
+CnFloat2 cnAABB2_Center(CnAABB2 aabb)
+{
+	return cnFloat2_Midpoint(aabb.min, aabb.max);
+}
+
+float cnAABB2_Width(CnAABB2 aabb)
+{
+	return aabb.max.x - aabb.min.x;
+}
+
+float cnAABB2_Height(CnAABB2 aabb)
+{
+	return aabb.max.y - aabb.min.y;
+}
+
+CnAABB2 cnAABB2_IncludePoint(CnAABB2 aabb, CnFloat2 point)
+{
+	return cnAABB2_MakeMinMax(
+		cnFloat2_Make(fminf(aabb.min.x, point.x), fminf(aabb.min.y, point.y)),
+		cnFloat2_Make(fmaxf(aabb.max.x, point.x), fmaxf(aabb.max.y, point.y))
+	);
+}
+
+void cnAABB2_Corners(CnAABB2 aabb, CnFloat2 point[4])
+{
+	point[0] = aabb.min;
+	point[1] = cnFloat2_Make(aabb.max.x, aabb.min.y);
+	point[2] = cnFloat2_Make(aabb.min.x, aabb.max.y);
+	point[3] = aabb.max;
+}
+
 bool cnAABB2_FullyContainsAABB2(CnAABB2 area, CnAABB2 object, float tolerance)
 {
 	CN_ASSERT_FINITE_F32(tolerance);
@@ -223,4 +254,19 @@ CnDimension2u32 cnMath2_TransformDimension2u32(CnDimension2u32 dimension,
 	return (CnDimension2u32) {
 		roundf(dimension.width * scale.x),
 		roundf(dimension.height * scale.y) };
+}
+
+CnAABB2 cnMath2_TransformAABB2(CnAABB2 aabb, CnTransform2 transform)
+{
+	CnFloat2 points[4];
+	cnAABB2_Corners(aabb, points);
+
+	for (uint32_t i = 0; i < 4; ++i) {
+		points[i] = cnMath2_TransformPoint(points[i], transform);
+	}
+
+	CnAABB2 result = cnAABB2_MakeMinMax(points[0], points[0]);
+	result = cnAABB2_IncludePoint(result, points[1]);
+	result = cnAABB2_IncludePoint(result, points[2]);
+	return cnAABB2_IncludePoint(result, points[3]);
 }
