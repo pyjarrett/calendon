@@ -22,8 +22,9 @@ void cnRLL_Clear(CnRGBA8u color);
 CnDimension2u32 cnRLL_Resolution(void);
 
 CnAABB2 cnRLL_BackingCanvasArea(void);
-CnAABB2 cnRLL_CurrentCanvasArea(void);
-bool cnRLL_SetCurrentCanvasArea(CnAABB2 area);
+CnAABB2 cnRLL_Viewport(void);
+void cnRLL_SetViewport(CnAABB2 viewport);
+void cnRLL_SetCameraAABB2(CnAABB2 mapSlice);
 
 CN_DEFINE_HANDLE_TYPE(CnSpriteId, cnRLL_, Sprite);
 CN_DEFINE_HANDLE_TYPE(CnFontId, cnRLL_, Font);

@@ -42,8 +42,9 @@ CN_API void cnR_EndFrame(void);
 CN_API CnDimension2u32 cnR_Resolution(void);
 
 CN_API CnAABB2 cnR_BackingCanvasArea(void);
-CN_API CnAABB2 cnR_CurrentCanvasArea(void);
-CN_API bool cnR_SetCurrentCanvasArea(CnAABB2 area);
+CN_API CnAABB2 cnR_Viewport(void);
+CN_API void cnR_SetViewport(CnAABB2 viewport);
+CN_API void cnR_SetCameraAABB2(CnAABB2 mapSlice);
 
 CN_API bool cnR_CreateSprite(CnSpriteId* id);
 CN_API bool cnR_LoadSprite(CnSpriteId id, const char* path);

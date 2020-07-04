@@ -45,6 +45,51 @@ void cnRLL_CreateCircle(CnFloat2* vertices, uint32_t numVertices, float radius)
 	vertices[numVertices - 1] = vertices[0];
 }
 
+static void drawScene(void)
+{
+	cnR_DrawDebugFullScreenRect();
+
+	CnFloat2 position = cnFloat2_Make(100, 100);
+	CnDimension2f size = { .width = 100.0f, .height = 100.0f };
+	cnR_DrawSprite(spriteFrames[sampleCursor.current], position, size);
+
+	CnRGB8u red = { .r = 255, .g = 0, .b = 0 };
+	CnRGB8u green = { .r = 0, .g = 255, .b = 0 };
+	CnRGB8u blue = { .r = 0, .g = 0, .b = 255 };
+
+	cnR_DrawDebugLineStrip(circleVertices, NUM_CIRCLE_VERTICES, red);
+	static int step = 0;
+	--step;
+	if (step < 0) step = NUM_CIRCLE_VERTICES - 2;
+	cnR_DrawDebugLine(circleOrigin.x, circleOrigin.y, circleVertices[step].x, circleVertices[step].y, green);
+
+	CnTransform2 smallRotate = cnTransform2_MakeRotation(cnPlanarAngle_MakeDegrees(1));
+	rotate = cnTransform2_Combine(rotate, smallRotate);
+	const CnTransform2 translate = cnTransform2_MakeTranslateXY(600, 300);
+	const CnTransform2 transform = cnTransform2_Combine(translate, rotate);
+
+	const CnDimension2f dimensions = (CnDimension2f) { .width = 200.0f, .height = 300.0f};
+	cnR_OutlineRect(cnFloat2_Make(0, 0), dimensions, blue, transform);
+
+	const CnAABB2 aabb = cnAABB2_MakeMinMax(
+		cnFloat2_Make(-dimensions.width / 2.0f, -dimensions.height / 2.0f),
+		cnFloat2_Make(dimensions.width / 2.0f, dimensions.height / 2.0f));
+	CnAABB2 box = cnMath2_TransformAABB2(aabb, rotate);
+	cnR_OutlineRect(cnAABB2_Center(box), (CnDimension2f) { box.max.x - box.min.x, box.max.y - box.min.y }, red, translate);
+
+	cnR_DrawSimpleText(font, cnFloat2_Make(000, 500), "Hello, Paul!\xe2\x86\x93→\xe2\x86\x92");
+	cnR_DrawSimpleText(font, cnFloat2_Make(000, 600), "«café, caffè» ™ © Â ←");
+
+	static char frameTime[100] = "";
+	lastDt = cnTime_Max(cnTime_MakeMilli(1), lastDt);
+	static int fpsTick = 0;
+	if (++fpsTick % 10 == 0) {
+		fpsTick = 0;
+		sprintf(frameTime, "FPS: %.1f", 1000.0f / cnTime_Milli(lastDt));
+	}
+	cnR_DrawSimpleText(font, cnFloat2_Make(0, 700), frameTime);
+}
+
 CN_GAME_API bool CnPlugin_Init(void)
 {
 	cnLog_RegisterSystem(&LogSysSample, "Sample", CnLogVerbosityTrace);
@@ -95,48 +140,28 @@ CN_GAME_API void CnPlugin_Draw(void)
 {
 	cnR_StartFrame();
 
-	cnR_DrawDebugFullScreenRect();
+	const CnAABB2 backingArea = cnR_BackingCanvasArea();
+	const CnFloat2 center = cnAABB2_Center(backingArea);
 
-	CnFloat2 position = cnFloat2_Make(100, 100);
-	CnDimension2f size = { .width = 100.0f, .height = 100.0f };
-	cnR_DrawSprite(spriteFrames[sampleCursor.current], position, size);
+	const CnAABB2 bottomLeft = cnAABB2_MakeMinMax(cnFloat2_Make(0.0f, 0.0f), center);
+	cnR_SetViewport(bottomLeft);
+	cnR_SetCameraAABB2(bottomLeft);
+	drawScene();
 
-	CnRGB8u red = { .r = 255, .g = 0, .b = 0 };
-	CnRGB8u green = { .r = 0, .g = 255, .b = 0 };
-	CnRGB8u blue = { .r = 0, .g = 0, .b = 255 };
+	const CnAABB2 topRight = cnAABB2_MakeMinMax(center, backingArea.max);
+	cnR_SetViewport(topRight);
+	cnR_SetCameraAABB2(topRight);
+	drawScene();
 
-	cnR_DrawDebugLineStrip(circleVertices, NUM_CIRCLE_VERTICES, red);
-	static int step = 0;
-	--step;
-	if (step < 0) step = NUM_CIRCLE_VERTICES - 2;
-	cnR_DrawDebugLine(circleOrigin.x, circleOrigin.y, circleVertices[step].x, circleVertices[step].y, green);
+	cnR_SetCameraAABB2(cnR_BackingCanvasArea());
+	const CnAABB2 topLeft = cnAABB2_MakeMinMax(cnFloat2_Make(0.0f, center.y), cnFloat2_Make(center.x, backingArea.max.y));
+	cnR_SetViewport(topLeft);
+	drawScene();
 
-	CnTransform2 smallRotate = cnTransform2_MakeRotation(cnPlanarAngle_MakeDegrees(1));
-	rotate = cnTransform2_Combine(rotate, smallRotate);
-	const CnTransform2 translate = cnTransform2_MakeTranslateXY(600, 300);
-	const CnTransform2 transform = cnTransform2_Combine(translate, rotate);
+	const CnAABB2 bottomRight = cnAABB2_MakeMinMax(cnFloat2_Make(center.x, 0.0f), cnFloat2_Make(backingArea.max.x, center.y));
+	cnR_SetViewport(bottomRight);
+	drawScene();
 
-	const CnDimension2f dimensions = (CnDimension2f) { .width = 200.0f, .height = 300.0f};
-	cnR_OutlineRect(cnFloat2_Make(0, 0), dimensions, blue, transform);
-
-	const CnAABB2 aabb = cnAABB2_MakeMinMax(
-		cnFloat2_Make(-dimensions.width / 2.0f, -dimensions.height / 2.0f),
-		cnFloat2_Make(dimensions.width / 2.0f, dimensions.height / 2.0f));
-	CnAABB2 box = cnMath2_TransformAABB2(aabb, rotate);
-	cnR_OutlineRect(cnAABB2_Center(box), (CnDimension2f) { box.max.x - box.min.x, box.max.y - box.min.y }, red, translate);
-
-	cnR_DrawSimpleText(font, cnFloat2_Make(000, 500), "Hello, Paul!\xe2\x86\x93→\xe2\x86\x92");
-	cnR_DrawSimpleText(font, cnFloat2_Make(000, 600), "«café, caffè» ™ © Â ←");
-
-	static char frameTime[100] = "";
-	lastDt = cnTime_Max(cnTime_MakeMilli(1), lastDt);
-	static int fpsTick = 0;
-	if (++fpsTick % 10 == 0) {
-		fpsTick = 0;
-		sprintf(frameTime, "FPS: %.1f", 1000.0f / cnTime_Milli(lastDt));
-	}
-
-	cnR_DrawSimpleText(font, cnFloat2_Make(0, 700), frameTime);
 	cnR_EndFrame();
 }
 

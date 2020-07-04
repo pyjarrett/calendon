@@ -29,7 +29,7 @@ void cnR_StartFrame(void)
 {
 	cnRLL_StartFrame();
 
-	cnRLL_SetCurrentCanvasArea(cnR_BackingCanvasArea());
+	cnRLL_SetViewport(cnR_BackingCanvasArea());
 
 	const CnRGBA8u black = { 0, 0, 0, 0 };
 	cnRLL_Clear(black);
@@ -53,19 +53,21 @@ CnAABB2 cnR_BackingCanvasArea(void)
 	return cnRLL_BackingCanvasArea();
 }
 
-CnAABB2 cnR_CurrentCanvasArea(void)
+CnAABB2 cnR_Viewport(void)
 {
-	return cnRLL_CurrentCanvasArea();
+	return cnRLL_Viewport();
 }
 
-bool cnR_SetCurrentCanvasArea(CnAABB2 area)
+void cnR_SetViewport(CnAABB2 viewport)
 {
-	if (!cnAABB2_FullyContainsAABB2(cnR_BackingCanvasArea(), area, 0.0f)) {
-		return false;
-	}
+	CN_ASSERT(cnAABB2_FullyContainsAABB2(cnR_BackingCanvasArea(), viewport, 0.0f),
+		"Viewport is not fully contained by the backing canvas.");
+	cnRLL_SetViewport(viewport);
+}
 
-	cnRLL_SetCurrentCanvasArea(area);
-	return true;
+void cnR_SetCameraAABB2(CnAABB2 mapSlice)
+{
+	cnRLL_SetCameraAABB2(mapSlice);
 }
 
 bool cnR_CreateSprite(CnSpriteId* id)

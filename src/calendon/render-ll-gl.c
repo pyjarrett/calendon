@@ -44,7 +44,7 @@ void cnRLL_PrintGLVersion(void);
  */
 extern struct SDL_Window* window;
 static GLsizei windowWidth, windowHeight;
-static CnAABB2 currentCanvasArea;
+static CnAABB2 viewport;
 
 /**
  * The render system must carry around the OpenGL context to be used to draw to
@@ -541,14 +541,15 @@ void cnRLL_PrintGLVersion(void)
  * size.  Scaling based on the same aspect ratio but big enough to see might be
  * a better option.
  */
-static CnFloat4x4 cnRLL_OrthoProjection(const uint32_t width, const uint32_t height)
+static CnFloat4x4 cnRLL_OrthoProjection(CnAABB2 bounds)
 {
 	const float far = -100;
 	const float near = 100;
-	const float w = (float)width;
-	const float h = (float)height;
+	const float w = (float)cnAABB2_Width(bounds);
+	const float h = (float)cnAABB2_Height(bounds);
+	const CnFloat2 center = cnAABB2_Center(bounds);
 	const CnFloat4x4 scale = cnFloat4x4_NonUniformScale(2.0f / w, 2.0f / h, 2.0f / (far - near));
-	const CnFloat4x4 trans = cnFloat4x4_Translate(-w / 2.0f, -h / 2.0f, -(far + near) / 2.0f);
+	const CnFloat4x4 trans = cnFloat4x4_Translate(-center.x, -center.y, -(far + near) / 2.0f);
 	return cnFloat4x4_Multiply(trans, scale);
 }
 
@@ -932,7 +933,7 @@ void cnRLL_Init(CnDimension2u32 resolution)
 	windowWidth = (GLsizei)resolution.width;
 	windowHeight = (GLsizei)resolution.height;
 	uniformStorage[CnUniformNameProjection].f44
-		= cnRLL_OrthoProjection(resolution.width, resolution.height);
+		= cnRLL_OrthoProjection(cnRLL_BackingCanvasArea());
 }
 
 void cnRLL_Shutdown(void)
@@ -961,20 +962,25 @@ CnAABB2 cnRLL_BackingCanvasArea(void)
 	return cnAABB2_MakeMinMax(cnFloat2_Make(0.0f, 0.0f), cnFloat2_Make(windowWidth, windowHeight));
 }
 
-CnAABB2 cnRLL_CurrentCanvasArea(void)
+CnAABB2 cnRLL_Viewport(void)
 {
-	return currentCanvasArea;
+	return viewport;
 }
 
-bool cnRLL_SetCurrentCanvasArea(CnAABB2 area)
+void cnRLL_SetViewport(CnAABB2 viewport)
 {
-	CN_ASSERT(cnAABB2_FullyContainsAABB2(cnRLL_BackingCanvasArea(), area, 0.0f),
-		"Attempting to draw an area not contained on the backing canvas.");
-	currentCanvasArea = area;
+	CN_ASSERT(cnAABB2_FullyContainsAABB2(cnRLL_BackingCanvasArea(), viewport, 0.0f),
+		"Attempting to draw a viewport not contained on the backing canvas.");
+	viewport = viewport;
 
-	glViewport(currentCanvasArea.min.x, currentCanvasArea.min.y,
-		cnAABB2_Width(currentCanvasArea), cnAABB2_Height(currentCanvasArea));
-	return true;
+	glViewport(viewport.min.x, viewport.min.y,
+		cnAABB2_Width(viewport), cnAABB2_Height(viewport));
+}
+
+void cnRLL_SetCameraAABB2(CnAABB2 mapSlice)
+{
+	uniformStorage[CnUniformNameProjection].f44
+		= cnRLL_OrthoProjection(mapSlice);
 }
 
 
