@@ -29,14 +29,14 @@ void cnR_StartFrame(void)
 {
 	cnRLL_StartFrame();
 
-	cnRLL_SetViewport(cnR_BackingCanvasArea());
+	cnRLL_SetViewport(cnR_BackingCanvasAABB2());
 
 	const CnRGBA8u black = { 0, 0, 0, 0 };
 	cnRLL_Clear(black);
 }
 
 /**
- * The frame is now done and should be submitted for drawing.bookmarks
+ * The frame is now done and should be submitted for drawing.
  */
 void cnR_EndFrame(void)
 {
@@ -48,7 +48,7 @@ CnDimension2u32 cnR_Resolution(void)
 	return cnRLL_Resolution();
 }
 
-CnAABB2 cnR_BackingCanvasArea(void)
+CnAABB2 cnR_BackingCanvasAABB2(void)
 {
 	return cnRLL_BackingCanvasArea();
 }
@@ -58,16 +58,34 @@ CnAABB2 cnR_Viewport(void)
 	return cnRLL_Viewport();
 }
 
+/**
+ * Sets the area for drawing on the screen which acts like a "viewport" into the
+ * world being drawn.  The viewport must be given in units of the underlying
+ * resolution.
+ *
+ * The viewport must be contained entirely within the backing canvas area,
+ * otherwise you'd be drawing off the screen which is likely an error.
+ *
+ * @see cnR_BackingCanvasAABB2
+ */
 void cnR_SetViewport(CnAABB2 viewport)
 {
-	CN_ASSERT(cnAABB2_FullyContainsAABB2(cnR_BackingCanvasArea(), viewport, 0.0f),
+	CN_ASSERT(cnAABB2_FullyContainsAABB2(cnR_BackingCanvasAABB2(), viewport, 0.0f),
 		"Viewport is not fully contained by the backing canvas.");
 	cnRLL_SetViewport(viewport);
 }
 
-void cnR_SetCameraAABB2(CnAABB2 mapSlice)
+/**
+ * Sets the camera to draw a specified area of the coordinate system being
+ * rendered.  The center of the area will be at the center of the drawn
+ * viewport.
+ *
+ * Differences between the aspect ratio of the area being drawn and the viewport
+ * will result in distortion (squishing or stretching) or the image.
+ */
+void cnR_SetCameraAABB2(CnAABB2 area)
 {
-	cnRLL_SetCameraAABB2(mapSlice);
+	cnRLL_SetCameraAABB2(area);
 }
 
 bool cnR_CreateSprite(CnSpriteId* id)

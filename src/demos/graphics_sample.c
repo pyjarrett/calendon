@@ -140,7 +140,7 @@ CN_GAME_API void CnPlugin_Draw(void)
 {
 	cnR_StartFrame();
 
-	const CnAABB2 backingArea = cnR_BackingCanvasArea();
+	const CnAABB2 backingArea = cnR_BackingCanvasAABB2();
 	const CnFloat2 center = cnAABB2_Center(backingArea);
 
 	const CnAABB2 bottomLeft = cnAABB2_MakeMinMax(cnFloat2_Make(0.0f, 0.0f), center);
@@ -153,7 +153,7 @@ CN_GAME_API void CnPlugin_Draw(void)
 	cnR_SetCameraAABB2(topRight);
 	drawScene();
 
-	cnR_SetCameraAABB2(cnR_BackingCanvasArea());
+	cnR_SetCameraAABB2(cnR_BackingCanvasAABB2());
 	const CnAABB2 topLeft = cnAABB2_MakeMinMax(cnFloat2_Make(0.0f, center.y), cnFloat2_Make(center.x, backingArea.max.y));
 	cnR_SetViewport(topLeft);
 	drawScene();
