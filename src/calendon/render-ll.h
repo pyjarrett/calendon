@@ -39,13 +39,13 @@ void cnRLL_DrawSimpleText(CnFontId id, CnTextDrawParams* params, const char* tex
 void cnRLL_DrawDebugFont(CnFontId id, CnFloat2 center, CnDimension2f size);
 
 void cnRLL_DrawDebugFullScreenRect(void);
-void cnRLL_DrawDebugRect(CnFloat2 center, CnDimension2f dimensions, CnFloat4 color);
-void cnRLL_DrawDebugLine(float x1, float y1, float x2, float y2, CnRGB8u color);
-void cnRLL_DrawDebugLineStrip(CnFloat2* points, uint32_t numPoints, CnRGB8u color);
+void cnRLL_DrawDebugRect(CnFloat2 center, CnDimension2f dimensions, CnOpaqueColor color);
+void cnRLL_DrawDebugLine(float x1, float y1, float x2, float y2, CnOpaqueColor color);
+void cnRLL_DrawDebugLineStrip(CnFloat2* points, uint32_t numPoints, CnOpaqueColor color);
 
-void cnRLL_DrawRect(CnFloat2 center, CnDimension2f dimensions, CnFloat4 color, CnFloat4x4 transform);
-void cnRLL_OutlineRect(CnFloat2 center, CnDimension2f dimensions, CnFloat4 color, CnFloat4x4 transform);
+void cnRLL_DrawRect(CnFloat2 center, CnDimension2f dimensions, CnOpaqueColor color, CnFloat4x4 transform);
+void cnRLL_OutlineRect(CnFloat2 center, CnDimension2f dimensions, CnOpaqueColor color, CnFloat4x4 transform);
 
-void cnRLL_OutlineCircle(CnFloat2 center, float radius, CnRGB8u color, uint32_t numSegments);
+void cnRLL_OutlineCircle(CnFloat2 center, float radius, CnOpaqueColor color, uint32_t numSegments);
 
 #endif /* CN_RENDER_LL_H */

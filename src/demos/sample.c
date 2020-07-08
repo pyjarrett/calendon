@@ -28,10 +28,10 @@ CN_GAME_API void CnPlugin_Draw(void)
 {
 	cnR_StartFrame();
 
-    CnRGB8u white = { 255u, 255u, 255u };
+    const CnOpaqueColor white = cnOpaqueColor_MakeRGBu8(255, 255, 255);
 	cnR_DrawDebugLine(0, 0, 1024, 768, white);
 
-    CnRGB8u blue = { 0u, 0u, 255u };
+    const CnOpaqueColor blue = cnOpaqueColor_MakeRGBu8(0, 0, 255);
 	cnR_DrawDebugLine(100, 100, 100, 200, blue);
 	cnR_DrawDebugLine(100, 200, 200, 200, blue);
 	cnR_DrawDebugLine(200, 200, 200, 100, blue);

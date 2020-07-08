@@ -1288,13 +1288,12 @@ void cnRLL_DrawDebugRect(CnFloat2 center, CnDimension2f dimensions, CnFloat4 col
 	CN_ASSERT_NO_GL_ERROR();
 }
 
-void cnRLL_DrawDebugLine(float x1, float y1, float x2, float y2, CnRGB8u color)
+void cnRLL_DrawDebugLine(float x1, float y1, float x2, float y2, CnOpaqueColor color)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, debugDrawBuffer);
 
 	uniformStorage[CnUniformNameViewModel].f44 = cnFloat4x4_Identity();
-	uniformStorage[CnUniformNamePolygonColor].f4 = cnFloat4_Make(
-		(float) color.r / 255.0f, (float) color.g / 255.0f, (float) color.b / 255.0f, 1.0f);
+	uniformStorage[CnUniformNamePolygonColor].f4 = cnFloat4_Make(color.red, color.green, color.blue, 1.0f);
 
 	cnRLL_EnableProgramForVertexFormat(CnProgramIndexSolidPolygon, &vertexFormats[CnVertexFormatP2]);
 
@@ -1309,7 +1308,7 @@ void cnRLL_DrawDebugLine(float x1, float y1, float x2, float y2, CnRGB8u color)
 	CN_ASSERT_NO_GL_ERROR();
 }
 
-void cnRLL_DrawDebugLineStrip(CnFloat2* points, uint32_t numPoints, CnRGB8u color)
+void cnRLL_DrawDebugLineStrip(CnFloat2* points, uint32_t numPoints, CnOpaqueColor color)
 {
 	CN_ASSERT(numPoints < RLL_MAX_DEBUG_POINTS, "Exceeded number of debug points "
 		"to draw: %" PRIu32 " (%" PRIu32 " max)", numPoints, RLL_MAX_DEBUG_POINTS);
@@ -1317,8 +1316,7 @@ void cnRLL_DrawDebugLineStrip(CnFloat2* points, uint32_t numPoints, CnRGB8u colo
 	glBindBuffer(GL_ARRAY_BUFFER, debugDrawBuffer);
 
 	uniformStorage[CnUniformNameViewModel].f44 = cnFloat4x4_Identity();
-	uniformStorage[CnUniformNamePolygonColor].f4 = cnFloat4_Make(
-		(float) color.r / 255.0f, (float) color.g / 255.0f, (float) color.b / 255.0f, 1.0f);
+	uniformStorage[CnUniformNamePolygonColor].f4 = cnFloat4_Make(color.red, color.green, color.blue, 1.0f);
 
 	cnRLL_EnableProgramForVertexFormat(CnProgramIndexSolidPolygon, &vertexFormats[CnVertexFormatP2]);
 
@@ -1354,14 +1352,14 @@ void cnRLL_DrawDebugFont(CnFontId id, CnFloat2 center, CnDimension2f size)
 	CN_ASSERT_NO_GL_ERROR();
 }
 
-void cnRLL_DrawRect(CnFloat2 center, CnDimension2f dimensions, CnFloat4 color, CnFloat4x4 transform)
+void cnRLL_DrawRect(CnFloat2 center, CnDimension2f dimensions, CnOpaqueColor color, CnFloat4x4 transform)
 {
 	CN_ASSERT_NO_GL_ERROR();
 
 	glBindBuffer(GL_ARRAY_BUFFER, debugDrawBuffer);
 
 	uniformStorage[CnUniformNameViewModel].f44 = transform;
-	uniformStorage[CnUniformNamePolygonColor].f4 = color;
+	uniformStorage[CnUniformNamePolygonColor].f4 = cnFloat4_Make(color.red, color.green, color.blue, 1.0f);
 
 	cnRLL_EnableProgramForVertexFormat(CnProgramIndexSolidPolygon, &vertexFormats[CnVertexFormatP2]);
 
@@ -1384,14 +1382,14 @@ void cnRLL_DrawRect(CnFloat2 center, CnDimension2f dimensions, CnFloat4 color, C
 	CN_ASSERT_NO_GL_ERROR();
 }
 
-void cnRLL_OutlineRect(CnFloat2 center, CnDimension2f dimensions, CnFloat4 color, CnFloat4x4 transform)
+void cnRLL_OutlineRect(CnFloat2 center, CnDimension2f dimensions, CnOpaqueColor color, CnFloat4x4 transform)
 {
 	CN_ASSERT_NO_GL_ERROR();
 
 	glBindBuffer(GL_ARRAY_BUFFER, debugDrawBuffer);
 
 	uniformStorage[CnUniformNameViewModel].f44 = transform;
-	uniformStorage[CnUniformNamePolygonColor].f4 = color;
+	uniformStorage[CnUniformNamePolygonColor].f4 = cnFloat4_Make(color.red, color.green, color.blue, 1.0f);
 
 	cnRLL_EnableProgramForVertexFormat(CnProgramIndexSolidPolygon, &vertexFormats[CnVertexFormatP2]);
 
@@ -1432,7 +1430,7 @@ static void cnRLL_CreateCircle(CnFloat2* vertices, uint32_t numVertices, float r
 
 #define RLL_MAX_CIRCLE_POINTS 30
 
-void cnRLL_OutlineCircle(CnFloat2 center, float radius, CnRGB8u color, uint32_t numSegments)
+void cnRLL_OutlineCircle(CnFloat2 center, float radius, CnOpaqueColor color, uint32_t numSegments)
 {
 	const uint32_t numPoints = numSegments + 1;
 	CN_ASSERT(numSegments < RLL_MAX_CIRCLE_POINTS, "Exceeded maximum number of circle"
@@ -1443,8 +1441,7 @@ void cnRLL_OutlineCircle(CnFloat2 center, float radius, CnRGB8u color, uint32_t 
 	glBindBuffer(GL_ARRAY_BUFFER, debugDrawBuffer);
 
 	uniformStorage[CnUniformNameViewModel].f44 = cnFloat4x4_Translate(center.x, center.y, 0.0f);
-	uniformStorage[CnUniformNamePolygonColor].f4 = cnFloat4_Make(
-		(float) color.r / 255.0f, (float) color.g / 255.0f, (float) color.b / 255.0f, 1.0f);
+	uniformStorage[CnUniformNamePolygonColor].f4 = cnFloat4_Make(color.red, color.green, color.blue, 1.0f);
 
 	cnRLL_EnableProgramForVertexFormat(CnProgramIndexSolidPolygon, &vertexFormats[CnVertexFormatP2]);
 

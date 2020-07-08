@@ -26,7 +26,7 @@ CN_GAME_API void CnPlugin_Draw(void)
 	cnR_StartFrame();
 
 	CnDimension2f rectSize = { 50, 50 };
-	CnRGB8u white = { 255, 255, 255};
+	const CnOpaqueColor white = cnOpaqueColor_MakeRGBu8(255, 255, 255);
 	cnR_DrawDebugRect(position, rectSize, white);
 
 	cnR_EndFrame();

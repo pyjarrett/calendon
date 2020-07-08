@@ -53,9 +53,9 @@ static void drawScene(void)
 	CnDimension2f size = { .width = 100.0f, .height = 100.0f };
 	cnR_DrawSprite(spriteFrames[sampleCursor.current], position, size);
 
-	CnRGB8u red = { .r = 255, .g = 0, .b = 0 };
-	CnRGB8u green = { .r = 0, .g = 255, .b = 0 };
-	CnRGB8u blue = { .r = 0, .g = 0, .b = 255 };
+	CnOpaqueColor red = cnOpaqueColor_MakeRGBu8(255, 0, 0);
+	CnOpaqueColor green = cnOpaqueColor_MakeRGBu8(0, 255, 0);
+	CnOpaqueColor blue = cnOpaqueColor_MakeRGBu8(0, 0, 255);
 
 	cnR_DrawDebugLineStrip(circleVertices, NUM_CIRCLE_VERTICES, red);
 	static int step = 0;

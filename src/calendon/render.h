@@ -55,14 +55,14 @@ CN_API bool cnR_LoadPSF2Font(CnFontId id, const char* path);
 CN_API void cnR_DrawSimpleText(CnFontId id, CnFloat2 position, const char* text);
 
 CN_API void cnR_DrawDebugFullScreenRect(void);
-CN_API void cnR_DrawDebugRect(CnFloat2 center, CnDimension2f dimensions, CnRGB8u color);
-CN_API void cnR_DrawDebugLine(float x1, float y1, float x2, float y2, CnRGB8u color);
-CN_API void cnR_DrawDebugLineStrip(CnFloat2* points, uint32_t numPoints, CnRGB8u color);
+CN_API void cnR_DrawDebugRect(CnFloat2 center, CnDimension2f dimensions, CnOpaqueColor color);
+CN_API void cnR_DrawDebugLine(float x1, float y1, float x2, float y2, CnOpaqueColor color);
+CN_API void cnR_DrawDebugLineStrip(CnFloat2* points, uint32_t numPoints, CnOpaqueColor color);
 CN_API void cnR_DrawDebugFont(CnFontId id, CnFloat2 center, CnDimension2f size);
 
-CN_API void cnR_DrawRect(CnFloat2 center, CnDimension2f dimensions, CnRGB8u color, CnTransform2 transform);
-CN_API void cnR_OutlineRect(CnFloat2 center, CnDimension2f dimensions, CnRGB8u color, CnTransform2 transform);
-CN_API void cnR_OutlineCircle(CnFloat2 center, float radius, CnRGB8u color, uint32_t numSegments);
+CN_API void cnR_DrawRect(CnFloat2 center, CnDimension2f dimensions, CnOpaqueColor color, CnTransform2 transform);
+CN_API void cnR_OutlineRect(CnFloat2 center, CnDimension2f dimensions, CnOpaqueColor color, CnTransform2 transform);
+CN_API void cnR_OutlineCircle(CnFloat2 center, float radius, CnOpaqueColor color, uint32_t numSegments);
 
 #ifdef __cplusplus
 }

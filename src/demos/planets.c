@@ -20,7 +20,7 @@ typedef struct {
 	CnFloat2 velocity;
 	float mass;
 	float radius;
-	CnRGB8u color;
+	CnOpaqueColor color;
 } CelestialBody;
 
 #define NUM_PLANETS 4
@@ -38,24 +38,24 @@ CN_GAME_API bool CnPlugin_Init(void)
 		CN_FATAL_ERROR("Unable to load font: %s", fontPath.str);
 	}
 
-	bodies[0].color = (CnRGB8u){ .r = 255, .g = 0, .b = 0 };
+	bodies[0].color = cnOpaqueColor_MakeRGBu8(255, 0, 0);
 	bodies[0].position = cnFloat2_Make(500, 400);
 	bodies[0].mass = 5000.0f;
 	bodies[0].radius = 20.0f;
 
-	bodies[1].color = (CnRGB8u){ .r = 0, .g = 255, .b = 0 };
+	bodies[1].color = cnOpaqueColor_MakeRGBu8(0, 255, 0);
 	bodies[1].position = cnFloat2_Make(550, 400);
 	bodies[1].mass = 5.0f;
 	bodies[1].velocity = cnFloat2_Make(0.0f, 0.3f);
 	bodies[1].radius = 5.0f;
 
-	bodies[2].color = (CnRGB8u){ .r = 150, .g = 150, .b = 255 };
+	bodies[2].color = cnOpaqueColor_MakeRGBu8(150, 150, 255);
 	bodies[2].position = cnFloat2_Make(600, 400);
 	bodies[2].mass = 5.0f;
 	bodies[2].velocity = cnFloat2_Make(0.0f, 0.18f);
 	bodies[2].radius = 5.0f;
 
-	bodies[3].color = (CnRGB8u){ .r = 150, .g = 150, .b = 150 };
+	bodies[3].color = cnOpaqueColor_MakeRGBu8(150, 150, 150);
 	bodies[3].position = cnFloat2_Make(650, 400);
 	bodies[3].mass = 5.0f;
 	bodies[3].velocity = cnFloat2_Make(0.0f, 0.13f);

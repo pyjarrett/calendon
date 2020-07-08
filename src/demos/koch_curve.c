@@ -81,7 +81,7 @@ CN_GAME_API bool CnPlugin_Init(void)
 CN_GAME_API void CnPlugin_Draw(void)
 {
 	cnR_StartFrame();
-	CnRGB8u white = { 255u, 255u, 255u };
+	const CnOpaqueColor white = cnOpaqueColor_MakeRGBu8(255, 255, 255);
 	cnR_DrawDebugLineStrip(points[currentBuffer], numCurrentPoints, white);
 	cnR_EndFrame();
 }

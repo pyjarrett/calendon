@@ -129,18 +129,17 @@ void cnR_DrawDebugFullScreenRect(void)
 	cnRLL_DrawDebugFullScreenRect();
 }
 
-void cnR_DrawDebugRect(CnFloat2 center, CnDimension2f dimensions, CnRGB8u color)
+void cnR_DrawDebugRect(CnFloat2 center, CnDimension2f dimensions, CnOpaqueColor color)
 {
-	cnRLL_DrawDebugRect(center, dimensions, cnFloat4_Make((float) color.r / 255.0f,
-		(float) color.g / 255.0f, (float) color.b / 255.0f, 1.0f));
+	cnRLL_DrawDebugRect(center, dimensions, color);
 }
 
-void cnR_DrawDebugLine(float x1, float y1, float x2, float y2, CnRGB8u color)
+void cnR_DrawDebugLine(float x1, float y1, float x2, float y2, CnOpaqueColor color)
 {
 	cnRLL_DrawDebugLine(x1, y1, x2, y2, color);
 }
 
-void cnR_DrawDebugLineStrip(CnFloat2* points, uint32_t numPoints, CnRGB8u color)
+void cnR_DrawDebugLineStrip(CnFloat2* points, uint32_t numPoints, CnOpaqueColor color)
 {
 	cnRLL_DrawDebugLineStrip(points, numPoints, color);
 }
@@ -150,21 +149,17 @@ void cnR_DrawDebugFont(CnFontId id, CnFloat2 center, CnDimension2f size)
 	cnRLL_DrawDebugFont(id, center, size);
 }
 
-void cnR_DrawRect(CnFloat2 center, CnDimension2f dimensions, CnRGB8u color, CnTransform2 transform)
+void cnR_DrawRect(CnFloat2 center, CnDimension2f dimensions, CnOpaqueColor color, CnTransform2 transform)
 {
-	cnRLL_DrawRect(center, dimensions,
-		cnFloat4_Make((float) color.r / 255.0f, (float) color.g / 255.0f, (float) color.b / 255.0f, 1.0f),
-		cnRLL_MatrixFromTransform(transform));
+	cnRLL_DrawRect(center, dimensions, color, cnRLL_MatrixFromTransform(transform));
 }
 
-void cnR_OutlineRect(CnFloat2 center, CnDimension2f dimensions, CnRGB8u color, CnTransform2 transform)
+void cnR_OutlineRect(CnFloat2 center, CnDimension2f dimensions, CnOpaqueColor color, CnTransform2 transform)
 {
-	cnRLL_OutlineRect(center, dimensions,
-		cnFloat4_Make((float) color.r / 255.0f, (float) color.g / 255.0f, (float) color.b / 255.0f, 1.0f),
-		cnRLL_MatrixFromTransform(transform));
+	cnRLL_OutlineRect(center, dimensions, color, cnRLL_MatrixFromTransform(transform));
 }
 
-void cnR_OutlineCircle(CnFloat2 center, float radius, CnRGB8u color, uint32_t numSegments)
+void cnR_OutlineCircle(CnFloat2 center, float radius, CnOpaqueColor color, uint32_t numSegments)
 {
 	cnRLL_OutlineCircle(center, radius, color, numSegments);
 }

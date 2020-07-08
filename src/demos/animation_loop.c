@@ -40,10 +40,10 @@ CN_GAME_API void CnPlugin_Draw(void)
 {
 	cnR_StartFrame();
 
-	CnDimension2f rectSize = { 50, 50 };
-	CnRGB8u white = { 255, 255, 255 };
+	const CnDimension2f rectSize = { 50, 50 };
+	const CnOpaqueColor white = cnOpaqueColor_MakeRGBu8(255, 255, 255);
 
-	CnFloat2 animatedPosition = cnFloat2_Lerp(points[sampleCursor.current],
+	const CnFloat2 animatedPosition = cnFloat2_Lerp(points[sampleCursor.current],
 		points[AnimLoop_NextState(&sampleLoop, sampleCursor.current)],
 		cnAnimLoop_CalcAlpha(&sampleLoop, &sampleCursor));
 	cnR_DrawDebugRect(animatedPosition, rectSize, white);
