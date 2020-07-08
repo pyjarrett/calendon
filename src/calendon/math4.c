@@ -1,6 +1,7 @@
 #include "math4.h"
 
 #include <math.h>
+#include <string.h>
 
 CnFloat4 cnFloat4_Make(float x, float y, float z, float w)
 {

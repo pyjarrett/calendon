@@ -1260,12 +1260,12 @@ void cnRLL_DrawDebugFullScreenRect(void)
 /**
  * Draws a rectangle at a given center point with known dimensions.
  */
-void cnRLL_DrawDebugRect(CnFloat2 center, CnDimension2f dimensions, CnFloat4 color)
+void cnRLL_DrawDebugRect(CnFloat2 center, CnDimension2f dimensions, CnOpaqueColor color)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, debugDrawBuffer);
 
 	uniformStorage[CnUniformNameViewModel].f44 = cnFloat4x4_Identity();
-	uniformStorage[CnUniformNamePolygonColor].f4 = color;
+	uniformStorage[CnUniformNamePolygonColor].f4 = cnFloat4_Make(color.red, color.green, color.blue, 1.0f);
 
 	cnRLL_EnableProgramForVertexFormat(CnProgramIndexSolidPolygon, &vertexFormats[CnVertexFormatP2]);
 
