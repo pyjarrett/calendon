@@ -1,11 +1,14 @@
-/*
- * Two-dimension mathematics primitives.  This includes both dimensions,
- * vectors, planar angles, and transforms for manipulating these elements.
- */
 #ifndef CN_MATH2_H
 #define CN_MATH2_H
 
-#include "cn.h"
+/**
+ * @file math.h
+ *
+ * Two-dimension mathematics primitives.  This includes both dimensions,
+ * vectors, planar angles, and transforms for manipulating these elements.
+ */
+
+#include <calendon/cn.h>
 
 #include <calendon/dimension.h>
 
@@ -13,6 +16,9 @@
 extern "C" {
 #endif
 
+/**
+ * A 2D point or vector.
+ */
 typedef struct {
 	union {
 		struct {
@@ -26,21 +32,24 @@ typedef struct {
  * An angle in 2D, named to differentiate it from a solid angle (3D).
  *
  * Getting degrees/radians swapped leads to all sorts of bugs, so define a type
- * here and use interfaces which rely on that type.
+ * to contain units for angles and make interfaces rely on that type.
  */
 typedef struct {
 	float degrees;
 } CnPlanarAngle;
 
 /**
- * A row-major matrix for transforming 2D points and vectors.
+ * 2D affine transformation for points and vectors.  Affine transforms
+ * preserve parallelism, but may not preserve lengths and angles.
  */
 typedef union {
 	float m[3][3];
 } CnTransform2;
 
 /**
- * An axis-aligned bounding box in 2D.
+ * An axis-aligned bounding box (AABB) in 2D, with lower-left corner at `min`
+ * and top-right corner at `max`.  The top and bottom edges are parallel to
+ * the X-axis, and the left and right edges are parallel to the Y-axis.
  */
 typedef struct {
 	CnFloat2 min, max;

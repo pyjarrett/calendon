@@ -135,6 +135,9 @@ CnTransform2 cnTransform2_MakeUniformScale(float scale)
 	}};
 }
 
+/**
+ * Creates a transform to represent a counter-clockwise rotation.
+ */
 CnTransform2 cnTransform2_MakeRotation(CnPlanarAngle angle)
 {
 	const float theta = cnPlanarAngle_Radians(angle);
@@ -174,6 +177,9 @@ CnFloat2 cnTransform2_Translation(CnTransform2 transform)
 	return cnFloat2_Make(transform.m[2][0], transform.m[2][1]);
 }
 
+/**
+ * Extracts the scale from a transform.
+ */
 CnFloat2 cnTransform2_Scale(CnTransform2 transform)
 {
 	const float x1 = transform.m[0][0];
@@ -205,6 +211,9 @@ float cnAABB2_Height(CnAABB2 aabb)
 	return aabb.max.y - aabb.min.y;
 }
 
+/**
+ * Creates an expanded AABB to include the given point.
+ */
 CnAABB2 cnAABB2_IncludePoint(CnAABB2 aabb, CnFloat2 point)
 {
 	return cnAABB2_MakeMinMax(
@@ -231,6 +240,10 @@ bool cnAABB2_FullyContainsAABB2(CnAABB2 area, CnAABB2 object, float tolerance)
 		&& area.max.y >= object.max.y - tolerance;
 }
 
+/**
+ * Transforming a point applies the rotation, scale and translation of the
+ * transform.
+ */
 CnFloat2 cnMath2_TransformPoint(CnFloat2 point, CnTransform2 transform)
 {
 	return cnFloat2_Make(
@@ -239,6 +252,10 @@ CnFloat2 cnMath2_TransformPoint(CnFloat2 point, CnTransform2 transform)
 	);
 }
 
+/**
+ * Transforming a vector can rotate an scale the vector.  Vectors do not have
+ * a position, so they cannot be translated.
+ */
 CnFloat2 cnMath2_TransformVector(CnFloat2 point, CnTransform2 transform)
 {
 	return cnFloat2_Make(
@@ -247,6 +264,9 @@ CnFloat2 cnMath2_TransformVector(CnFloat2 point, CnTransform2 transform)
 	);
 }
 
+/**
+ * Applies the scaling factors of a transform to a dimenion.
+ */
 CnDimension2u32 cnMath2_TransformDimension2u32(CnDimension2u32 dimension,
 	CnTransform2 transform)
 {
@@ -256,6 +276,14 @@ CnDimension2u32 cnMath2_TransformDimension2u32(CnDimension2u32 dimension,
 		roundf(dimension.height * scale.y) };
 }
 
+/**
+ * Applies a transformation to the four corners of an AABB, and then generate
+ * a new AABB from those points.
+ *
+ * Note that applying a rotation to an AABB will result in a AABB which contains
+ * the rotated corners of the original AABB, since an AABB by definition always
+ * has two sides parallel and two sides perpendicular to each axis.
+ */
 CnAABB2 cnMath2_TransformAABB2(CnAABB2 aabb, CnTransform2 transform)
 {
 	CnFloat2 points[4];
