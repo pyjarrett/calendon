@@ -18,6 +18,7 @@ Hello, world!
    project/crank
    project/testing
    project/glossary
+   project/reference
 
 
 Indices and tables
