@@ -97,7 +97,7 @@ extern "C" {
 #if CN_DEBUG
 	#if defined(_WIN32)
 		#include <intrin.h>
-		#define CN_DEBUG_BREAK() __debugbreak();
+		#define CN_DEBUG_BREAK() __debugbreak()
 	#endif
 
 	#if !defined(_WIN32)
