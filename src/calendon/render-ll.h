@@ -1,11 +1,17 @@
-/*
+#ifndef CN_RENDER_LL_H
+#define CN_RENDER_LL_H
+
+/**
+ * @file render-ll.h
+ * 
  * Low-level render control.
+ *
+ * Any sort of rendering backend should be able to implement the functions
+ * defined here and be able to render the scene appropriately.
  *
  * The low level renderer performs the draw calls and resource management which
  * allow drawing for the game.
  */
-#ifndef CN_RENDER_LL_H
-#define CN_RENDER_LL_H
 
 #include <calendon/color.h>
 #include <calendon/handle.h>

@@ -1,4 +1,10 @@
-/*
+#ifndef CN_RENDER_H
+#define CN_RENDER_H
+
+/**
+ *
+ * @file render.h
+ *
  * High-level render control.
  *
  * High-level control is the actual goals to accomplish during rendering, such
@@ -7,9 +13,6 @@
  * happening is hidden from the game itself since the high-level control hides
  * the details of how these details occur.  Rendering occurs only to a single
  * rectangular window.
- *
- * Any sort of rendering backend should be able to implement the functions
- * defined here and be able to render the scene appropriately.
  *
  * This engine supports 2D graphics only.  This includes sprites, lines,
  * text, and polygons.
@@ -20,8 +23,6 @@
  * intention is to allow for cases where the interface provided to game clients
  * requires conversion to appropriate 3D functions to operate the back-end.
  */
-#ifndef CN_RENDER_HL_H
-#define CN_RENDER_HL_H
 
 #include <calendon/cn.h>
 
@@ -68,4 +69,4 @@ CN_API void cnR_OutlineCircle(CnFloat2 center, float radius, CnOpaqueColor color
 }
 #endif
 
-#endif /* CN_RENDER_HL_H */
+#endif /* CN_RENDER_H */
