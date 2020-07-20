@@ -45,6 +45,7 @@ void cnRLL_PrintGLVersion(void);
 extern struct SDL_Window* window;
 static GLsizei windowWidth, windowHeight;
 static CnAABB2 viewport;
+static CnAABB2 cameraAABB2;
 
 /**
  * The render system must carry around the OpenGL context to be used to draw to
@@ -932,8 +933,8 @@ void cnRLL_Init(CnDimension2u32 resolution)
 
 	windowWidth = (GLsizei)resolution.width;
 	windowHeight = (GLsizei)resolution.height;
-	uniformStorage[CnUniformNameProjection].f44
-		= cnRLL_OrthoProjection(cnRLL_BackingCanvasArea());
+
+	cnRLL_SetCameraAABB2(cnRLL_BackingCanvasArea());
 }
 
 void cnRLL_Shutdown(void)
@@ -977,10 +978,16 @@ void cnRLL_SetViewport(CnAABB2 viewport)
 		cnAABB2_Width(viewport), cnAABB2_Height(viewport));
 }
 
-void cnRLL_SetCameraAABB2(CnAABB2 mapSlice)
+void cnRLL_SetCameraAABB2(const CnAABB2 mapSlice)
 {
+	cameraAABB2 = mapSlice;
 	uniformStorage[CnUniformNameProjection].f44
 		= cnRLL_OrthoProjection(mapSlice);
+}
+
+CnAABB2 cnRLL_CameraAABB2(void)
+{
+	return cameraAABB2;
 }
 
 
@@ -1448,6 +1455,44 @@ void cnRLL_OutlineCircle(CnFloat2 center, float radius, CnOpaqueColor color, uin
 	cnRLL_CreateCircle(&points[0], numPoints, radius);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(CnFloat2) * numPoints, points);
 	glDrawArrays(GL_LINE_LOOP, 0, (GLsizei)numPoints);
+
+	cnRLL_DisableProgram(CnProgramIndexSolidPolygon);
+
+	CN_ASSERT_NO_GL_ERROR();
+}
+
+/**
+ * Fills the currently selected draw area with a specific color.
+ *
+ * `glClear` clears the entire surface, not just the targeted viewport.
+ */
+void cnRLL_FillScreen(CnOpaqueColor color)
+{
+	CN_ASSERT_NO_GL_ERROR();
+
+	uniformStorage[CnUniformNameViewModel].f44 = cnFloat4x4_Identity();
+	uniformStorage[CnUniformNamePolygonColor].f4 = cnFloat4_Make(color.red, color.green, color.blue, 1.0f);
+
+	glBindBuffer(GL_ARRAY_BUFFER, debugDrawBuffer);
+	cnRLL_EnableProgramForVertexFormat(CnProgramIndexSolidPolygon, &vertexFormats[CnVertexFormatP2]);
+
+	const float width = cnAABB2_Width(cameraAABB2);
+	const float height = cnAABB2_Height(cameraAABB2);
+
+	CnFloat2 vertices[4];
+	vertices[0] = cnFloat2_Make(-width / 2.0f, -height / 2.0f);
+	vertices[1] = cnFloat2_Make(width / 2.0f, -height / 2.0f);
+	vertices[2] = cnFloat2_Make(-width / 2.0f, height / 2.0f);
+	vertices[3] = cnFloat2_Make(width / 2.0f, height / 2.0f);
+
+	const CnFloat2 center = cnAABB2_Center(cameraAABB2);
+	for (uint32_t i = 0; i < 4; ++i) {
+		vertices[i].x += center.x;
+		vertices[i].y += center.y;
+	}
+
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 	cnRLL_DisableProgram(CnProgramIndexSolidPolygon);
 

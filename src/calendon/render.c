@@ -163,3 +163,11 @@ void cnR_OutlineCircle(CnFloat2 center, float radius, CnOpaqueColor color, uint3
 {
 	cnRLL_OutlineCircle(center, radius, color, numSegments);
 }
+
+/**
+ * Fills the current drawable rectangle with a color.
+ */
+void cnR_FillScreen(CnOpaqueColor color)
+{
+	cnRLL_FillScreen(color);
+}

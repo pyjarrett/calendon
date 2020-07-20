@@ -43,8 +43,11 @@ CN_API void cnR_EndFrame(void);
 CN_API CnDimension2u32 cnR_Resolution(void);
 
 CN_API CnAABB2 cnR_BackingCanvasAABB2(void);
+
 CN_API CnAABB2 cnR_Viewport(void);
 CN_API void cnR_SetViewport(CnAABB2 viewport);
+
+CN_API CnAABB2 cnR_CameraAABB2(void);
 CN_API void cnR_SetCameraAABB2(CnAABB2 area);
 
 CN_API bool cnR_CreateSprite(CnSpriteId* id);
@@ -64,6 +67,8 @@ CN_API void cnR_DrawDebugFont(CnFontId id, CnFloat2 center, CnDimension2f size);
 CN_API void cnR_DrawRect(CnFloat2 center, CnDimension2f dimensions, CnOpaqueColor color, CnTransform2 transform);
 CN_API void cnR_OutlineRect(CnFloat2 center, CnDimension2f dimensions, CnOpaqueColor color, CnTransform2 transform);
 CN_API void cnR_OutlineCircle(CnFloat2 center, float radius, CnOpaqueColor color, uint32_t numSegments);
+
+CN_API void cnR_FillScreen(CnOpaqueColor color);
 
 #ifdef __cplusplus
 }

@@ -3,7 +3,7 @@
 
 /**
  * @file render-ll.h
- * 
+ *
  * Low-level render control.
  *
  * Any sort of rendering backend should be able to implement the functions
@@ -28,9 +28,12 @@ void cnRLL_Clear(CnRGBA8u color);
 CnDimension2u32 cnRLL_Resolution(void);
 
 CnAABB2 cnRLL_BackingCanvasArea(void);
+
 CnAABB2 cnRLL_Viewport(void);
 void cnRLL_SetViewport(CnAABB2 viewport);
-void cnRLL_SetCameraAABB2(CnAABB2 mapSlice);
+
+CnAABB2 cnRLL_CameraAABB2(void);
+void cnRLL_SetCameraAABB2(const CnAABB2 mapSlice);
 
 CN_DEFINE_HANDLE_TYPE(CnSpriteId, cnRLL_, Sprite);
 CN_DEFINE_HANDLE_TYPE(CnFontId, cnRLL_, Font);
@@ -53,5 +56,7 @@ void cnRLL_DrawRect(CnFloat2 center, CnDimension2f dimensions, CnOpaqueColor col
 void cnRLL_OutlineRect(CnFloat2 center, CnDimension2f dimensions, CnOpaqueColor color, CnFloat4x4 transform);
 
 void cnRLL_OutlineCircle(CnFloat2 center, float radius, CnOpaqueColor color, uint32_t numSegments);
+
+void cnRLL_FillScreen(CnOpaqueColor color);
 
 #endif /* CN_RENDER_LL_H */
