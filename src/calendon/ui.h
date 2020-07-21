@@ -16,7 +16,11 @@
 extern "C" {
 #endif
 
-CN_API void cnUI_Init(CnDimension2u32 resolution);
+typedef struct {
+	CnDimension2u32 resolution;
+} CnUIInitParams;
+
+CN_API void cnUI_Init(CnUIInitParams* params);
 CN_API void cnUI_Shutdown(void);
 
 /**

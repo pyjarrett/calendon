@@ -114,9 +114,11 @@ void cnMain_InitAllSystems(CnMainConfig* config)
 	const uint32_t width = 1024;
 	const uint32_t height = 768;
 
-	const CnDimension2u32 resolution = (CnDimension2u32) { .width = width, .height = height };
-	cnUI_Init(resolution);
-	cnR_Init(resolution);
+	CnUIInitParams uiInitParams;
+	uiInitParams.resolution = (CnDimension2u32) { .width = width, .height = height };
+
+	cnUI_Init(&uiInitParams);
+	cnR_Init(uiInitParams.resolution);
 
 	if (!cnMainConfig_IsHosted(config)) {
 		if (!cnPath_IsFile(config->gameLibPath.str)) {

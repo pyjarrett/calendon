@@ -21,11 +21,15 @@ static void cnUI_CreateWindow(const uint32_t w, const uint32_t h)
 	}
 }
 
-void cnUI_Init(CnDimension2u32 resolution)
+void cnUI_Init(CnUIInitParams* params)
 {
+	CN_ASSERT_NOT_NULL(params);
+
 	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
 		CN_FATAL_ERROR("Unable to init SDL");
 	}
+
+	CnDimension2u32 resolution = params->resolution;
 	cnUI_CreateWindow(resolution.width, resolution.height);
 	width = resolution.width;
 	height = resolution.height;
