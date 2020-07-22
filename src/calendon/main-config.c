@@ -9,10 +9,7 @@
 bool cnMainConfig_IsHosted(CnMainConfig* config)
 {
 	CN_ASSERT(config, "Cannot determine if null config is hosted.");
-	return config->payload.init
-		   && config->payload.tick
-		   && config->payload.draw
-		   && config->payload.shutdown;
+	return cnPlugin_IsComplete(&config->payload);
 }
 
 /**

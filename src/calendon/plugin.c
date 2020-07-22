@@ -23,3 +23,15 @@ bool cnPlugin_LoadFromFile(CnPlugin* plugin, const char* sharedLibraryName)
 	plugin->shutdown = (CnPlugin_ShutdownFn) cnSharedLibrary_LookupFn(plugin->sharedLibrary, "CnPlugin_Shutdown");
 	return true;
 }
+
+/**
+ * A complete plugin has all plugin function pointers assigned.
+ */
+bool cnPlugin_IsComplete(CnPlugin* plugin)
+{
+	CN_ASSERT_NOT_NULL(plugin);
+	return plugin->init
+		&& plugin->shutdown
+		&& plugin->draw
+		&& plugin->tick;
+}

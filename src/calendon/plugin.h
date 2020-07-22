@@ -41,6 +41,7 @@ typedef struct {
 } CnPlugin;
 
 bool cnPlugin_LoadFromFile(CnPlugin* plugin, const char* sharedLibraryName);
+bool cnPlugin_IsComplete(CnPlugin* plugin);
 
 #ifdef __cplusplus
 }
