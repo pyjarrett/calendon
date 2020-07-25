@@ -27,26 +27,36 @@ bool cnMainConfig_ParseCommandLine(CnMainConfig* config, int argc, char** argv)
 	memset(&config->payload, 0, sizeof(config->payload));
 	config->tickLimit = 0;
 
-	// The log system is not initialized at this point, so using printf and
-	// printf for now.
-	int32_t argIndex = 1;
-	while (argIndex < argc) {
+	CnCommandLineParse commandLineParse = cnCommandLineParse_Make(argc, argv);
+
+	// The log system is not initialized at this point, so use printf.
+	while (cnCommandLineParse_ShouldContinue(&commandLineParse)) {
+		bool parseAdvanced = false;
 		for (uint32_t parserIndex = 0; parserIndex < CN_ARRAY_SIZE(parsers); ++parserIndex) {
-			if (cnCommandLineOption_Matches(&parsers[parserIndex], argc, argv, argIndex)) {
-				const int32_t argsParsed = parsers[parserIndex].parser(argc, argv, argIndex, config);
+			if (cnCommandLineOption_Matches(&parsers[parserIndex], &commandLineParse)) {
+				const int32_t argsParsed = parsers[parserIndex].parser(&commandLineParse, config);
 				if (argsParsed == CN_ARG_PARSE_ERROR) {
-					cnArgparse_PrintUsage();
+					cnArgparse_PrintUsage(argc, argv);
 					return false;
 				}
-				argIndex += argsParsed;
+				cnCommandLineParse_Advance(&commandLineParse, argsParsed);
+				parseAdvanced = true;
 				break;
 			}
 		}
+		if (!parseAdvanced) {
+			printf("Unable to parse argument: \"%s\" at index %d\n",
+				cnCommandLineParse_LookAhead(&commandLineParse, 1),
+				cnCommandLineParse_LookAheadIndex(&commandLineParse, 1));
+			break;
+		}
 	}
-	if (argIndex != argc) {
+	if (!cnCommandLineParse_IsComplete(&commandLineParse)) {
 		printf("Unknown command line option\n");
-		printf("Only parsed %d of %d arguments\n", argIndex, argc);
-		cnArgparse_PrintUsage();
+		printf("Only parsed %d of %d arguments\n",
+			cnCommandLineParse_LookAheadIndex(&commandLineParse, 1),
+			argc);
+		cnArgparse_PrintUsage(argc, argv);
 		return false;
 	}
 	return true;

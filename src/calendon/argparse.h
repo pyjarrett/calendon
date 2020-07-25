@@ -18,11 +18,28 @@ extern "C" {
 #endif
 
 /**
+ * The current state of parsing command line arguments.
+ */
+typedef struct {
+	int argc;
+	char** argv;
+	int nextArgIndex;
+} CnCommandLineParse;
+
+CnCommandLineParse cnCommandLineParse_Make(int argc, char** argv);
+bool cnCommandLineParse_ShouldContinue(const CnCommandLineParse* parse);
+bool cnCommandLineParse_IsComplete(const CnCommandLineParse* parse);
+bool cnCommandLineParse_HasLookAhead(const CnCommandLineParse* parse, int amount);
+const char* cnCommandLineParse_LookAhead(const CnCommandLineParse* parse, int amount);
+int cnCommandLineParse_LookAheadIndex(const CnCommandLineParse* parse, int amount);
+void cnCommandLineParse_Advance(CnCommandLineParse* parse, int argsParsed);
+
+/**
  * A parser function which returns the number of arguments parsed.
  *
  * Should return `CN_ARG_PARSE_ERROR` if fails.
  */
-typedef int32_t(*CnOptionParserFn)(int argc, char** argv, int i, CnMainConfig* config);
+typedef int32_t(*CnOptionParserFn)(const CnCommandLineParse* parse, CnMainConfig* config);
 
 /**
  * An option, what it is, and how it should be parsed.
@@ -34,11 +51,11 @@ typedef struct {
 	CnOptionParserFn parser;
 } CnCommandLineOption;
 
-bool cnCommandLineOption_Matches(CnCommandLineOption* option, int argc, char** argv, int i);
+bool cnCommandLineOption_Matches(const CnCommandLineOption* option, const CnCommandLineParse* parse);
 
 extern CnCommandLineOption parsers[3];
 
-void cnArgparse_PrintUsage(void);
+void cnArgparse_PrintUsage(int argc, char** argv);
 
 /**
  * Return value if a parsing error occurred.
