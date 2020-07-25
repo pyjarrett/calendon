@@ -32,9 +32,7 @@ bool cnMainConfig_ParseCommandLine(CnMainConfig* config, int argc, char** argv)
 	int32_t argIndex = 1;
 	while (argIndex < argc) {
 		for (uint32_t parserIndex = 0; parserIndex < CN_ARRAY_SIZE(parsers); ++parserIndex) {
-			if ((parsers[parserIndex].shortOption && strcmp(argv[argIndex], parsers[parserIndex].shortOption) == 0)
-				|| (parsers[parserIndex].longOption && strcmp(argv[argIndex], parsers[parserIndex].longOption) == 0))
-			{
+			if (cnCommandLineOption_Matches(&parsers[parserIndex], argc, argv, argIndex)) {
 				const int32_t argsParsed = parsers[parserIndex].parser(argc, argv, argIndex, config);
 				if (argsParsed == CN_ARG_PARSE_ERROR) {
 					cnArgparse_PrintUsage();

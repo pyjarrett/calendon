@@ -10,7 +10,7 @@ int32_t cnArgparse_Payload(int argc, char** argv, int index, CnMainConfig* confi
 int32_t cnArgparse_AssetDir(int argc, char** argv, int index, CnMainConfig* config);
 int32_t cnArgparse_TickLimit(int argc, char** argv, int index, CnMainConfig* config);
 
-CnCommandParser parsers[] = {
+CnCommandLineOption parsers[] = {
 	{
 		"-g,--game SHARED_LIB       Change the game/demo to boot.\n",
 		"-g",
@@ -103,6 +103,15 @@ int32_t cnArgparse_TickLimit(int argc, char** argv, int index, CnMainConfig* con
 	}
 	config->tickLimit = parsedValue;
 	return 2;
+}
+
+bool cnCommandLineOption_Matches(CnCommandLineOption* option, int argc, char** argv, int i)
+{
+	CN_ASSERT_NOT_NULL(option);
+	CN_ASSERT_NOT_NULL(argv);
+	CN_ASSERT(i < argc, "Index %d out of argument bounds: %d", i, argc);
+	return (option->shortOption && (strcmp(argv[i], option->shortOption) == 0)
+		|| (option->longOption && strcmp(argv[i], option->longOption) == 0));
 }
 
 void cnArgparse_PrintUsage(void)

@@ -24,14 +24,19 @@ extern "C" {
  */
 typedef int32_t(*CnOptionParserFn)(int argc, char** argv, int i, CnMainConfig* config);
 
+/**
+ * An option, what it is, and how it should be parsed.
+ */
 typedef struct {
 	const char* help;
 	const char* shortOption;
 	const char* longOption;
 	CnOptionParserFn parser;
-} CnCommandParser;
+} CnCommandLineOption;
 
-extern CnCommandParser parsers[3];
+bool cnCommandLineOption_Matches(CnCommandLineOption* option, int argc, char** argv, int i);
+
+extern CnCommandLineOption parsers[3];
 
 void cnArgparse_PrintUsage(void);
 
