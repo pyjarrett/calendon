@@ -36,7 +36,7 @@ void cnAssets_Init(const char* assetDir)
 
 	if (!cnPath_IsDir(assetsRoot)) {
 		CnPathBuffer cwd;
-		cnEnv_CurrentWorkingDirectory(cwd.str, CN_PATH_MAX);
+		cnEnv_CurrentWorkingDirectory(cwd.str, CN_MAX_TERMINATED_PATH);
 		CN_FATAL_ERROR("Assets root directory doesn't exist: %s.  CWD: %s", assetsRoot, cwd.str);
 	}
 
@@ -61,7 +61,7 @@ bool cnAssets_PathBufferFor(const char* assetName, CnPathBuffer* path)
 	}
 
 	// Output buffer cannot hold root + '/' + assetName + '\0'.
-	if (assetsRootLength + 1 + strlen(assetName) + 1 >= CN_PATH_MAX) {
+	if (assetsRootLength + 1 + strlen(assetName) + 1 >= CN_MAX_TERMINATED_PATH) {
 		return false;
 	}
 

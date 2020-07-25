@@ -1,6 +1,7 @@
 #include "path.h"
 
 #include <calendon/env.h>
+#include <calendon/string.h>
 
 #include <string.h>
 #include <sys/stat.h>
@@ -64,7 +65,7 @@ bool cnPath_Append(const char* toAdd, char* current, uint32_t length)
 void cnPathBuffer_Clear(CnPathBuffer* path)
 {
 	CN_ASSERT(path != NULL, "Cannot clear a null CnPathBuffer.");
-	memset(path->str, 0, CN_PATH_MAX + 1);
+	memset(path->str, 0, CN_MAX_TERMINATED_PATH);
 }
 
 bool cnPathBuffer_Set(CnPathBuffer* path, const char* initialPath)
@@ -72,7 +73,7 @@ bool cnPathBuffer_Set(CnPathBuffer* path, const char* initialPath)
 	CN_ASSERT(path != NULL, "Cannot assign to a null CnPathBuffer");
 	CN_ASSERT(initialPath != NULL, "Cannot assign a null initial path to a CnPathBuffer");
 	const size_t initialPathLength = strlen(initialPath);
-	if (initialPathLength < CN_PATH_MAX + 1) {
+	if (cnString_TerminatedFitsIn(initialPath, CN_MAX_TERMINATED_PATH)) {
 		strcpy(path->str, initialPath);
 		return true;
 	}
@@ -83,7 +84,7 @@ bool cnPathBuffer_Join(CnPathBuffer* root, const char* suffix)
 {
 	CN_ASSERT(root != NULL, "Cannot append to a null root path");
 	CN_ASSERT(suffix != NULL, "Trying to append a null path");
-	return cnPath_Append(suffix, root->str, CN_PATH_MAX);
+	return cnPath_Append(suffix, root->str, CN_MAX_TERMINATED_PATH);
 }
 
 bool cnPathBuffer_Exists(CnPathBuffer* path)
@@ -107,5 +108,5 @@ bool cnPathBuffer_IsFile(CnPathBuffer* path)
 bool cnPathBuffer_CurrentWorkingDirectory(CnPathBuffer* path)
 {
 	CN_ASSERT(path != NULL, "Cannot put a current working directory into a null CnPathBuffer.");
-	return cnEnv_CurrentWorkingDirectory(path->str, CN_PATH_MAX);
+	return cnEnv_CurrentWorkingDirectory(path->str, CN_MAX_TERMINATED_PATH);
 }

@@ -31,5 +31,5 @@ bool cnEnv_DefaultCalendonHome(CnPathBuffer* path)
         return true;
     }
 
-    return cnEnv_CurrentWorkingDirectory(path->str, CN_PATH_MAX);
+    return cnEnv_CurrentWorkingDirectory(path->str, CN_MAX_TERMINATED_PATH);
 }

@@ -2,6 +2,7 @@
 
 #include <calendon/cn.h>
 #include <calendon/env.h>
+#include <calendon/string.h>
 
 #include <errno.h>
 #include <string.h>
@@ -42,10 +43,10 @@ int32_t cnArgparse_Payload(const CnCommandLineParse* parse, CnMainConfig* config
 	}
 
 	const char* gamePath = cnCommandLineParse_LookAhead(parse, 2);
-	if (strlen(gamePath) < CN_PATH_MAX) {
+	if (cnString_TerminatedFitsIn(gamePath, CN_MAX_TERMINATED_PATH)) {
 		if (!cnPath_IsFile(gamePath)) {
-			char cwd[CN_PATH_MAX + 1];
-			cnEnv_CurrentWorkingDirectory(cwd, CN_PATH_MAX + 1);
+			char cwd[CN_MAX_TERMINATED_PATH];
+			cnEnv_CurrentWorkingDirectory(cwd, CN_MAX_TERMINATED_PATH);
 			printf("Current working directory is: %s\n", cwd);
 			printf("Game library %s does not exist.\n", gamePath);
 			return CnArgParseError;
@@ -71,7 +72,7 @@ int32_t cnArgparse_AssetDir(const CnCommandLineParse* parse, CnMainConfig* confi
 	}
 
 	const char* assetDir = cnCommandLineParse_LookAhead(parse, 2);
-	if (strlen(assetDir) < CN_PATH_MAX) {
+	if (cnString_TerminatedFitsIn(assetDir, CN_MAX_TERMINATED_PATH)) {
 		if (!cnPath_IsDir(assetDir)) {
 			printf("Asset directory %s does not exist\n", assetDir);
 			return CnArgParseError;

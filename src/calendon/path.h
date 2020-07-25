@@ -8,22 +8,27 @@ extern "C" {
 #endif
 
 /**
+ * The maximum number of bytes in the path, including the null terminator.
  * Maximum path length varies by system, but assume a reasonable case.
  */
-#define CN_PATH_MAX 254
+#define CN_MAX_TERMINATED_PATH 255
 
 /*
  * Verify the path length assumption against the OS.
  */
 #ifdef __linux__
 #include <linux/limits.h>
-	CN_STATIC_ASSERT(CN_PATH_MAX <= PATH_MAX,
+	CN_STATIC_ASSERT(CN_MAX_TERMINATED_PATH <= PATH_MAX,
 		"Calendon allows larger path sizes than the OS");
 #endif
 
 #ifdef _WIN32
 	#include <minwindef.h>
-	CN_STATIC_ASSERT(CN_PATH_MAX <= MAX_PATH,
+	// https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file
+	// > A local path is structured in the following order: drive letter, colon,
+	// > backslash, name components separated by backslashes, and a terminating
+	// > null character.
+	CN_STATIC_ASSERT(CN_MAX_TERMINATED_PATH <= MAX_PATH,
 		"Calendon allows larger path sizes than the OS");
 #endif
 
@@ -35,11 +40,8 @@ extern "C" {
  */
 typedef struct {
 	// Adds 1 byte for null terminator to maximum path length.
-	char str[CN_PATH_MAX + 1];
+	char str[CN_MAX_TERMINATED_PATH];
 } CnPathBuffer;
-
-CN_STATIC_ASSERT(CN_PATH_MAX <= sizeof(CnPathBuffer),
-				 "CnPathBuffer is not big enough");
 
 CN_API bool cnPath_Exists(const char* path);
 CN_API bool cnPath_IsDir(const char* path);
