@@ -38,7 +38,7 @@ int32_t cnArgparse_Payload(const CnCommandLineParse* parse, CnMainConfig* config
 
 	if (!cnCommandLineParse_HasLookAhead(parse, 2)) {
 		printf("Payload must be provided a shared library (or DLL) to load\n");
-		return CN_ARG_PARSE_ERROR;
+		return CnArgParseError;
 	}
 
 	const char* gamePath = cnCommandLineParse_LookAhead(parse, 2);
@@ -48,7 +48,7 @@ int32_t cnArgparse_Payload(const CnCommandLineParse* parse, CnMainConfig* config
 			cnEnv_CurrentWorkingDirectory(cwd, CN_PATH_MAX + 1);
 			printf("Current working directory is: %s\n", cwd);
 			printf("Game library %s does not exist.\n", gamePath);
-			return CN_ARG_PARSE_ERROR;
+			return CnArgParseError;
 		}
 		cnPathBuffer_Set(&config->gameLibPath, gamePath);
 		printf("Game library: '%s'\n", config->gameLibPath.str);
@@ -56,7 +56,7 @@ int32_t cnArgparse_Payload(const CnCommandLineParse* parse, CnMainConfig* config
 	}
 	else {
 		printf( "Length of name of game library is too long.");
-		return CN_ARG_PARSE_ERROR;
+		return CnArgParseError;
 	}
 }
 
@@ -67,14 +67,14 @@ int32_t cnArgparse_AssetDir(const CnCommandLineParse* parse, CnMainConfig* confi
 
 	if (!cnCommandLineParse_HasLookAhead(parse, 2)) {
 		printf("Must provide an asset directory to use.\n");
-		return CN_ARG_PARSE_ERROR;
+		return CnArgParseError;
 	}
 
 	const char* assetDir = cnCommandLineParse_LookAhead(parse, 2);
 	if (strlen(assetDir) < CN_PATH_MAX) {
 		if (!cnPath_IsDir(assetDir)) {
 			printf("Asset directory %s does not exist\n", assetDir);
-			return CN_ARG_PARSE_ERROR;
+			return CnArgParseError;
 		}
 		cnPathBuffer_Set(&config->assetDirPath, assetDir);
 		printf("Asset path: '%s'\n", config->assetDirPath.str);
@@ -82,7 +82,7 @@ int32_t cnArgparse_AssetDir(const CnCommandLineParse* parse, CnMainConfig* confi
 	}
 	else {
 		printf( "The asset path is too long.");
-		return CN_ARG_PARSE_ERROR;
+		return CnArgParseError;
 	}
 }
 
@@ -93,7 +93,7 @@ int32_t cnArgparse_TickLimit(const CnCommandLineParse* parse, CnMainConfig* conf
 
 	if (!cnCommandLineParse_HasLookAhead(parse, 2)) {
 		printf("Must provide the number of ticks for which to run the program.\n");
-		return CN_ARG_PARSE_ERROR;
+		return CnArgParseError;
 	}
 
 	const char* tickString = cnCommandLineParse_LookAhead(parse, 2);
@@ -101,12 +101,12 @@ int32_t cnArgparse_TickLimit(const CnCommandLineParse* parse, CnMainConfig* conf
 	const int64_t parsedValue = strtoll(tickString, &readCursor, 10);
 	if (parsedValue < 0) {
 		printf("Cannot step a negative number of ticks: %s\n", tickString);
-		return CN_ARG_PARSE_ERROR;
+		return CnArgParseError;
 	}
 
 	if (*readCursor != '\0' || errno == ERANGE) {
 		printf("Unable to parse tick limit: %s\n", tickString);
-		return CN_ARG_PARSE_ERROR;
+		return CnArgParseError;
 	}
 	config->tickLimit = parsedValue;
 	return 2;

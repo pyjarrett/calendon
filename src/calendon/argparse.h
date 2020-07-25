@@ -37,7 +37,7 @@ void cnCommandLineParse_Advance(CnCommandLineParse* parse, int argsParsed);
 /**
  * A parser function which returns the number of arguments parsed.
  *
- * Should return `CN_ARG_PARSE_ERROR` if fails.
+ * Should return `CnArgParseError` if fails.
  */
 typedef int32_t(*CnOptionParserFn)(const CnCommandLineParse* parse, CnMainConfig* config);
 
@@ -60,7 +60,7 @@ void cnArgparse_PrintUsage(int argc, char** argv);
 /**
  * Return value if a parsing error occurred.
  */
-#define CN_ARG_PARSE_ERROR -1
+enum { CnArgParseError = -1 };
 
 #ifdef __cplusplus
 }
