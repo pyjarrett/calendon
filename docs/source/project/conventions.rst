@@ -5,7 +5,7 @@ General code conventions
 ------------------------
 
 - Use tabs for indentation and spaces for alignment.
-- Wrap headers with ``extern "C" {"`` for C++ compatibility.
+- Wrap headers with ``extern "C" {`` for C++ compatibility.
 - Prefer stack-based and statically allocated storage to dynamic allocations.
 
 
@@ -35,9 +35,9 @@ Prefix functions with ``cn`` (lower-case).
 
 .. code-block::
 
-    cn<System>_ActionInPascalCase
+    cn<System>_<ActionInPascalCase>
 
-    cn<Type>_ActionInPascalCase
+    cn<Type>_<ActionInPascalCase>
 
 Example:
 
@@ -48,6 +48,22 @@ Example:
 
     // CnFloat4x4 non-uniform scaling
     cnFloat4x4_NonUniformScale
+
+**Function Pointers**
+
+Prefix function pointers with ``Cn`` (capitalized) and suffix with ``Fn``.
+
+.. code-block::
+
+    Cn<System>_<ActionInPascalCase>Fn
+
+    Cn<Type>_<ActionInPascalCase>Fn
+
+Example:
+
+.. code-block::
+
+    CnPlugin_InitFn
 
 **Macros**
 
@@ -67,7 +83,7 @@ Example:
 
 **ENUMS**
 
-Prefix enum types with `Cn` (capitalize)
+Prefix enum types with ``Cn`` (capitalize)
 
 .. code-block::
 

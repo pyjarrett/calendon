@@ -6,8 +6,6 @@
 Welcome to Calendon's documentation!
 =================================
 
-Hello, world!
-
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
