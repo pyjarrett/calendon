@@ -1,9 +1,5 @@
 #include "plugin.h"
 
-#include <calendon/cn.h>
-
-#include <calendon/shared-library.h>
-
 /**
  * Loads a plugin's shared library and assigns its functions from a file.
  * Does not initialize the plugin.

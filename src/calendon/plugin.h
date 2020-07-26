@@ -16,7 +16,6 @@
 #include <calendon/cn.h>
 
 #include <calendon/shared-library.h>
-#include <calendon/time.h>
 
 #ifdef __cplusplus
 extern "C" {
