@@ -22,6 +22,12 @@ extern "C" {
 #include <stdio.h>
 #include <stdlib.h>
 
+/**
+ * A native representation of time.  This could be machine cycles or
+ * nanoseconds.  Use the conversion functions to time in a meaningful format.
+ */
+typedef struct { uint64_t native; } CnTime;
+
 /*
  * Features switches change behavior at compile time to improve debugging,
  * or expose additional behavior:

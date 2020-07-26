@@ -35,12 +35,6 @@ CN_API uint64_t cnTime_MsToNs(uint64_t ms);
 CN_API uint64_t cnTime_NsToMs(uint64_t ns);
 CN_API uint64_t cnTime_SecToNs(uint64_t sec);
 
-/**
- * A native representation of time.  This could be machine cycles or
- * nanoseconds.  Use the conversion functions to time in a meaningful format.
- */
-typedef struct { uint64_t native; } CnTime;
-
 CN_API CnTime   cnTime_MakeNow(void);
 CN_API CnTime   cnTime_MakeZero(void);
 CN_API CnTime   cnTime_MakeMilli(uint64_t millis);
