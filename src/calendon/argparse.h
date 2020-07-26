@@ -9,6 +9,7 @@
 
 #include <calendon/cn.h>
 
+#include <calendon/command-line-parse.h>
 #include <calendon/main-config.h>
 #include <calendon/path.h>
 #include <calendon/plugin.h>
@@ -18,26 +19,14 @@ extern "C" {
 #endif
 
 /**
- * The current state of parsing command line arguments.
+ * Return value if a parsing error occurred.
  */
-typedef struct {
-	int argc;
-	char** argv;
-	int nextArgIndex;
-} CnCommandLineParse;
-
-CnCommandLineParse cnCommandLineParse_Make(int argc, char** argv);
-bool cnCommandLineParse_ShouldContinue(const CnCommandLineParse* parse);
-bool cnCommandLineParse_IsComplete(const CnCommandLineParse* parse);
-bool cnCommandLineParse_HasLookAhead(const CnCommandLineParse* parse, int amount);
-const char* cnCommandLineParse_LookAhead(const CnCommandLineParse* parse, int amount);
-int cnCommandLineParse_LookAheadIndex(const CnCommandLineParse* parse, int amount);
-void cnCommandLineParse_Advance(CnCommandLineParse* parse, int argsParsed);
+enum { CnOptionParseError = -1 };
 
 /**
  * A parser function which returns the number of arguments parsed.
  *
- * Should return `CnArgParseError` if fails.
+ * Should return `CnOptionParseError` if fails.
  */
 typedef int32_t(*CnOptionParserFn)(const CnCommandLineParse* parse, CnMainConfig* config);
 
@@ -56,11 +45,6 @@ bool cnCommandLineOption_Matches(const CnCommandLineOption* option, const CnComm
 extern CnCommandLineOption parsers[3];
 
 void cnArgparse_PrintUsage(int argc, char** argv);
-
-/**
- * Return value if a parsing error occurred.
- */
-enum { CnArgParseError = -1 };
 
 #ifdef __cplusplus
 }

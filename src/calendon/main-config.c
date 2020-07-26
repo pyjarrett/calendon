@@ -35,7 +35,7 @@ bool cnMainConfig_ParseCommandLine(CnMainConfig* config, int argc, char** argv)
 		for (uint32_t parserIndex = 0; parserIndex < CN_ARRAY_SIZE(parsers); ++parserIndex) {
 			if (cnCommandLineOption_Matches(&parsers[parserIndex], &commandLineParse)) {
 				const int32_t argsParsed = parsers[parserIndex].parser(&commandLineParse, config);
-				if (argsParsed == CnArgParseError) {
+				if (argsParsed == CnOptionParseError) {
 					cnArgparse_PrintUsage(argc, argv);
 					return false;
 				}
