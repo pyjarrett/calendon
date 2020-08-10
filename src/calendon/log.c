@@ -50,22 +50,23 @@ void cnLog_SetDefaultConfig(void* config)
 }
 
 CnPlugin cnLog_Plugin(void) {
-	CnPlugin plugin;
-	plugin.init = cnLog_Init;
-	plugin.shutdown = cnLog_Shutdown;
-	plugin.tick = NULL;
-	plugin.draw = NULL;
-	return plugin;
+	return (CnPlugin) {
+		.init = cnLog_Init,
+		.shutdown = cnLog_Shutdown,
+		.tick = NULL,
+		.draw = NULL,
+		.sharedLibrary = NULL
+	};
 }
 
 CnSystem cnLog_System(void)
 {
-	CnSystem system;
-	system.options = cnLog_CommandLineOptionList;
-	system.config = cnLog_Config;
-	system.setDefaultConfig = cnLog_SetDefaultConfig;
-	system.plugin = cnLog_Plugin;
-	return system;
+	return (CnSystem) {
+		.options = cnLog_CommandLineOptionList,
+		.config = cnLog_Config,
+		.setDefaultConfig = cnLog_SetDefaultConfig,
+		.plugin = cnLog_Plugin
+	};
 }
 
 bool cnLog_IsReady(void)
