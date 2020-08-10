@@ -91,6 +91,7 @@ bool cnCrash_Init(void)
 		CN_WARN(LogSysMain, "Unable to enable core dumps");
 	}
 #endif
+	return true;
 }
 #endif
 
@@ -168,6 +169,7 @@ bool cnCrash_Init(void)
 	}
 	cnCrash_PrintCoreDumpPattern();
 #endif
+	return true;
 }
 
 #endif
