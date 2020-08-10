@@ -46,12 +46,13 @@ void cnMain_AddCoreSystem(CnSystem system)
 bool cnMain_Init(void) { return true; }
 
 CnPlugin cnMain_Plugin(void) {
-	CnPlugin plugin;
-	plugin.init = cnMain_Init;
-	plugin.shutdown = NULL;
-	plugin.tick = NULL;
-	plugin.draw = NULL;
-	return plugin;
+	return (CnPlugin) {
+		.init = cnMain_Init,
+		.shutdown = NULL,
+		.tick = NULL,
+		.draw = NULL,
+		.sharedLibrary = NULL
+	};
 }
 
 CnMainConfig s_config;
@@ -115,25 +116,23 @@ CnCommandLineOptionList cnMain_CommandLineOptionList(void)
 
 CnSystem cnMain_System(void)
 {
-	CnSystem system;
-	system.name = "Main";
-	system.options = cnMain_CommandLineOptionList;
-	system.config = cnMain_Config;
-	system.setDefaultConfig = cnMain_SetDefaultConfig;
-	system.plugin = cnMain_Plugin;
-	return system;
+	return (CnSystem) {
+		.name = "Main",
+		.options = cnMain_CommandLineOptionList,
+		.config = cnMain_Config,
+		.setDefaultConfig = cnMain_SetDefaultConfig,
+		.plugin = cnMain_Plugin
+	};
 }
 
 static void cnMain_BuildCoreSystemList(void)
 {
 	cnMain_AddCoreSystem(cnMain_System());
 	cnMain_AddCoreSystem(cnLog_System());
-	cnMain_AddCoreSystem(cnAssets_System());
-
-//		cnMain_AddCoreSystem(cnLog_System());
-//		cnMain_AddCoreSystem(cnCrash_System());
-//		cnMain_AddCoreSystem(cnMem_System());
+	cnMain_AddCoreSystem(cnCrash_System());
+	cnMain_AddCoreSystem(cnMem_System());
 	cnMain_AddCoreSystem(cnTime_System());
+	cnMain_AddCoreSystem(cnAssets_System());
 }
 
 void cnMain_DescribeEnv(void)
@@ -248,7 +247,6 @@ bool cnMain_ParseCommandLine(int argc, char** argv)
  */
 void cnMain_InitAllSystems(int argc, char** argv)
 {
-	// Build the list of core systems.
 	cnMain_BuildCoreSystemList();
 
 	if (!cnMain_ParseCommandLine(argc, argv)) {
@@ -280,28 +278,6 @@ void cnMain_InitAllSystems(int argc, char** argv)
 		system->Configure();
 	}
 #endif
-/*
-	cnLog_Init();
-	cnCrash_Init();
-	cnMem_Init();
-	cnTime_Init();
- */
-	
-//	if (strlen(config->assetDirPath.str) != 0) {
-//		cnAssets_Init(config->assetDirPath.str);
-//	}
-//	else {
-//		// If no asset directory was provided, look for `$CALENDON_HOME/assets`, or
-//		// for an `assets/` directory in the working directory.
-//		CnPathBuffer defaultAssetDir;
-//		if (!cnEnv_DefaultCalendonHome(&defaultAssetDir)) {
-//			CN_FATAL_ERROR("Unable to determine the current Calendon home directory.");
-//		}
-//		if (!cnPathBuffer_Join(&defaultAssetDir, "assets")) {
-//			CN_FATAL_ERROR("Unable to assemble a default asset directory name.");
-//		}
-//		cnAssets_Init(defaultAssetDir.str);
-//	}
 
 	// TODO: Resolution should be read from config or as a a configuration option.
 	const uint32_t width = 1024;
@@ -420,7 +396,17 @@ void cnMain_Shutdown(void)
 
 	cnR_Shutdown();
 	cnUI_Shutdown();
-	cnAssets_Shutdown();
-	cnMem_Shutdown();
-	cnLog_Shutdown();
+
+	for (uint32_t i = 0; i < numCoreSystems; ++i) {
+		const int nextSystemIndex = numCoreSystems - i - 1;
+
+		CnSystem* system = &coreSystems[nextSystemIndex];
+		printf("Shutting down: %s\n", system->name);
+		if (!system->plugin().shutdown) {
+			printf("No shutdown function for: %s\n", system->name);
+		}
+		else {
+			system->plugin().shutdown();
+		}
+	}
 }

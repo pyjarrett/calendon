@@ -3,6 +3,8 @@
 
 #include <calendon/cn.h>
 
+#include <calendon/system.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -22,6 +24,8 @@ CN_API void cnMem_Init(void);
 CN_API void cnMem_Shutdown(void);
 CN_API void cnMem_Allocate(CnDynamicBuffer* buffer, uint32_t size);
 CN_API void cnMem_Free(CnDynamicBuffer* buffer);
+
+CnSystem cnMem_System(void);
 
 #ifdef __cplusplus
 }

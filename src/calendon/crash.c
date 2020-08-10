@@ -84,7 +84,7 @@ bool cnCrash_EnableCoreDump(void)
 }
 #endif /* CN_ENABLE_CORE_DUMPS */
 
-void cnCrash_Init(void)
+bool cnCrash_Init(void)
 {
 #if CN_ENABLE_CORE_DUMPS
 	if (!cnCrash_EnableCoreDump()) {
@@ -160,7 +160,7 @@ bool cnCrash_EnableCoreDump(void)
 	}
 }
 
-void cnCrash_Init(void)
+bool cnCrash_Init(void)
 {
 #if CN_ENABLE_CORE_DUMPS
 	if (!cnCrash_EnableCoreDump()) {
@@ -171,3 +171,25 @@ void cnCrash_Init(void)
 }
 
 #endif
+
+CnPlugin cnCrash_Plugin(void)
+{
+	return (CnPlugin) {
+		.init = cnCrash_Init,
+		.shutdown = NULL,
+		.tick = NULL,
+		.draw = NULL,
+		.sharedLibrary = NULL
+	};
+}
+
+CnSystem cnCrash_System(void)
+{
+	return (CnSystem) {
+		.name = "Crash",
+		.plugin = cnCrash_Plugin,
+		.options = cnSystem_NoOptions,
+		.config = cnSystem_NoConfig,
+		.setDefaultConfig = cnSystem_NoDefaultConfig
+	};
+}

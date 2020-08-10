@@ -57,3 +57,24 @@ void cnMem_Shutdown(void)
 		//CN_ERROR(LogSysMemory, "Memory systems leaks: %" PRIu32, MemOutstandingAllocations);
 	}
 }
+
+CnPlugin cnMem_Plugin(void)
+{
+	return (CnPlugin) {
+		.init = cnMem_Init,
+		.shutdown = cnMem_Shutdown,
+		.tick = NULL,
+		.draw = NULL,
+		.sharedLibrary = NULL
+	};
+}
+
+CnSystem cnMem_System(void) {
+	return (CnSystem) {
+		.name = "Memory",
+		.plugin = cnMem_Plugin,
+		.options = cnSystem_NoOptions,
+		.config = cnSystem_NoConfig,
+		.setDefaultConfig = cnSystem_NoDefaultConfig
+	};
+}

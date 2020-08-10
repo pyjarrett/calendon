@@ -62,6 +62,7 @@ CnPlugin cnLog_Plugin(void) {
 CnSystem cnLog_System(void)
 {
 	return (CnSystem) {
+		.name = "Log",
 		.options = cnLog_CommandLineOptionList,
 		.config = cnLog_Config,
 		.setDefaultConfig = cnLog_SetDefaultConfig,

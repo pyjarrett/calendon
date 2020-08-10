@@ -5,12 +5,15 @@
 #define CN_CRASH_H
 
 #include <calendon/cn.h>
+#include <calendon/system.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-CN_API void cnCrash_Init(void);
+CN_API bool cnCrash_Init(void);
+
+CnSystem cnCrash_System(void);
 
 #ifdef __cplusplus
 }
