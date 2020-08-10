@@ -2,18 +2,33 @@
 
 #include <calendon/cn.h>
 
-#include <calendon/command-line-parse.h>
 #include <calendon/string.h>
-#include <calendon/system.h>
+
+int32_t cnAssets_OptionAssetDir(const CnCommandLineParse* parse, void* c);
 
 static CnAssetsConfig s_config;
+static CnCommandLineOption options[] = {
+	{
+		"-a,--asset-dir DIR         Change the directory for assets.\n",
+		"-a",
+		"--asset-dir",
+		cnAssets_OptionAssetDir
+	},
+};
+
+CnCommandLineOptionList cnAssets_CommandLineOptionList(void) {
+	CnCommandLineOptionList optionList;
+	optionList.options = options;
+	optionList.numOptions = 1;
+	return optionList;
+}
 
 int32_t cnAssets_OptionAssetDir(const CnCommandLineParse* parse, void* c)
 {
 	CN_ASSERT_NOT_NULL(parse);
 	CN_ASSERT_NOT_NULL(c);
 
-	CnAssetsConfig* config = c;
+	CnAssetsConfig* config = (CnAssetsConfig*)c;
 
 	if (!cnCommandLineParse_HasLookAhead(parse, 2)) {
 		printf("Must provide an asset directory to use.\n");
@@ -34,22 +49,6 @@ int32_t cnAssets_OptionAssetDir(const CnCommandLineParse* parse, void* c)
 		printf( "The asset path is too long.");
 		return CnOptionParseError;
 	}
-}
-
-static CnCommandLineOption options[] = {
-	{
-		"-a,--asset-dir DIR         Change the directory for assets.\n",
-		"-a",
-		"--asset-dir",
-		cnAssets_OptionAssetDir
-	},
-};
-
-CnCommandLineOptionList cnAssets_CommandLineOptionList(void) {
-	CnCommandLineOptionList optionList;
-	optionList.options = options;
-	optionList.numOptions = 1;
-	return optionList;
 }
 
 void* cnAssets_Config(void) {

@@ -2,6 +2,7 @@
 #define CN_ASSETS_CONFIG_H
 
 #include <calendon/cn.h>
+#include <calendon/path.h>
 #include <calendon/system.h>
 
 typedef struct {
@@ -11,6 +12,5 @@ typedef struct {
 CnCommandLineOptionList cnAssets_CommandLineOptionList(void);
 void* cnAssets_Config(void);
 void cnAssets_SetDefaultConfig(void* config);
-
 
 #endif /* CN_ASSETS_CONFIG_H */
