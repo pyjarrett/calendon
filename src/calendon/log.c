@@ -33,10 +33,11 @@ static CnCommandLineOption options[] = {
 
 static CnCommandLineOptionList optionList;
 
-CnCommandLineOptionList* cnLog_CommandLineOptionList(void) {
-	optionList.options = options;
-	optionList.numOptions = 0;
-	return &optionList;
+CnCommandLineOptionList cnLog_CommandLineOptionList(void) {
+	return (CnCommandLineOptionList) {
+		.options = options,
+		.numOptions = 0
+	};
 }
 
 void* cnLog_Config(void) {
