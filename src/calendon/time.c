@@ -13,24 +13,24 @@ LARGE_INTEGER qpcFrequency;
 
 CnPlugin cnTime_Plugin(void)
 {
-	CnPlugin plugin;
-	plugin.init = cnTime_Init;
-	plugin.shutdown = NULL;
-	plugin.tick = NULL;
-	plugin.draw = NULL;
-	plugin.sharedLibrary = NULL;
-	return plugin;
+	return (CnPlugin) {
+		.init = cnTime_Init,
+		.shutdown = NULL,
+		.tick = NULL,
+		.draw = NULL,
+		.sharedLibrary = NULL
+	};
 }
 
 CnSystem cnTime_System(void)
 {
-	CnSystem system;
-	system.name = "Time";
-	system.options = cnSystem_NoOptions;
-	system.setDefaultConfig = cnSystem_NoDefaultConfig;
-	system.config = cnSystem_NoConfig;
-	system.plugin = cnTime_Plugin;
-	return system;
+	return (CnSystem) {
+		.name = "Time",
+		.options = cnSystem_NoOptions,
+		.setDefaultConfig = cnSystem_NoDefaultConfig,
+		.config = cnSystem_NoConfig,
+		.plugin = cnTime_Plugin
+	};
 }
 
 bool cnTime_Init(void)
