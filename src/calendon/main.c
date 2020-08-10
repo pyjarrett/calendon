@@ -43,7 +43,14 @@ void cnMain_AddCoreSystem(CnSystem system)
 	++numCoreSystems;
 };
 
-bool cnMain_Init(void) { return true; }
+CnMainConfig s_config;
+
+bool cnMain_Init(void) {
+	if (s_config.tickLimit != 0) {
+		cnMain_SetTickLimit(s_config.tickLimit);
+	}
+	return true;
+}
 
 CnPlugin cnMain_Plugin(void) {
 	return (CnPlugin) {
@@ -54,8 +61,6 @@ CnPlugin cnMain_Plugin(void) {
 		.sharedLibrary = NULL
 	};
 }
-
-CnMainConfig s_config;
 
 int32_t cnMain_Payload(const CnCommandLineParse* parse, CnMainConfig* config)
 {
@@ -86,12 +91,44 @@ int32_t cnMain_Payload(const CnCommandLineParse* parse, CnMainConfig* config)
 	}
 }
 
+int32_t cnMain_OptionTickLimit(const CnCommandLineParse* parse, CnMainConfig* config)
+{
+	CN_ASSERT_NOT_NULL(parse);
+	CN_ASSERT_NOT_NULL(config);
+
+	if (!cnCommandLineParse_HasLookAhead(parse, 2)) {
+		printf("Must provide the number of ticks for which to run the program.\n");
+		return CnOptionParseError;
+	}
+
+	const char* tickString = cnCommandLineParse_LookAhead(parse, 2);
+	char* readCursor;
+	const int64_t parsedValue = strtoll(tickString, &readCursor, 10);
+	if (parsedValue < 0) {
+		printf("Cannot step a negative number of ticks: %s\n", tickString);
+		return CnOptionParseError;
+	}
+
+	if (*readCursor != '\0' || errno == ERANGE) {
+		printf("Unable to parse tick limit: %s\n", tickString);
+		return CnOptionParseError;
+	}
+	config->tickLimit = parsedValue;
+	return 2;
+}
+
 static CnCommandLineOption s_options[] = {
 	{
 		"-g,--game SHARED_LIB       Change the game/demo to boot.\n",
 		"-g",
 		"--game",
 		cnMain_Payload
+	},
+	{
+		"-t,--tick-limit NUM_TICKS  Limit the run to a specific number of ticks.\n",
+		"-t",
+		"--tick-limit",
+		cnMain_OptionTickLimit
 	}
 };
 
@@ -110,7 +147,7 @@ CnCommandLineOptionList cnMain_CommandLineOptionList(void)
 {
 	return (CnCommandLineOptionList) {
 		.options = s_options,
-		.numOptions = 1
+		.numOptions = 2
 	};
 }
 
@@ -127,12 +164,18 @@ CnSystem cnMain_System(void)
 
 static void cnMain_BuildCoreSystemList(void)
 {
-	cnMain_AddCoreSystem(cnMain_System());
-	cnMain_AddCoreSystem(cnLog_System());
-	cnMain_AddCoreSystem(cnCrash_System());
-	cnMain_AddCoreSystem(cnMem_System());
-	cnMain_AddCoreSystem(cnTime_System());
-	cnMain_AddCoreSystem(cnAssets_System());
+	CnSystem_SystemFn systems[] = {
+		cnMain_System,
+		cnLog_System,
+		cnCrash_System,
+		cnMem_System,
+		cnTime_System,
+		cnAssets_System
+	};
+
+	for (uint32_t i = 0; i < CN_ARRAY_SIZE(systems); ++i) {
+		cnMain_AddCoreSystem(systems[i]());
+	}
 }
 
 void cnMain_DescribeEnv(void)
@@ -222,6 +265,9 @@ bool cnMain_ParseCommandLine(int argc, char** argv)
 					parseAdvanced = true;
 					break;
 				}
+			}
+			if (cnCommandLineParse_IsComplete(&commandLineParse)) {
+				break;
 			}
 		}
 		if (!parseAdvanced) {
@@ -398,7 +444,7 @@ void cnMain_Shutdown(void)
 	cnUI_Shutdown();
 
 	for (uint32_t i = 0; i < numCoreSystems; ++i) {
-		const int nextSystemIndex = numCoreSystems - i - 1;
+		const uint32_t nextSystemIndex = numCoreSystems - i - 1;
 
 		CnSystem* system = &coreSystems[nextSystemIndex];
 		printf("Shutting down: %s\n", system->name);
