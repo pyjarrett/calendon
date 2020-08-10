@@ -1,6 +1,7 @@
 #include "time.h"
 
 #include <calendon/float.h>
+#include <calendon/system.h>
 
 #ifdef _WIN32
 // Windows lacks the convenient POSIX API for this, so resort to using query
@@ -10,7 +11,29 @@
 
 LARGE_INTEGER qpcFrequency;
 
-void cnTime_Init(void)
+CnPlugin cnTime_Plugin(void)
+{
+	CnPlugin plugin;
+	plugin.init = cnTime_Init;
+	plugin.shutdown = NULL;
+	plugin.tick = NULL;
+	plugin.draw = NULL;
+	plugin.sharedLibrary = NULL;
+	return plugin;
+}
+
+CnSystem cnTime_System(void)
+{
+	CnSystem system;
+	system.name = "Time";
+	system.commandLineOptionsList = cnSystem_NoOptions;
+	system.setDefaultConfig = cnSystem_NoDefaultConfig;
+	system.config = cnSystem_NoConfig;
+	system.plugin = cnTime_Plugin;
+	return system;
+}
+
+bool cnTime_Init(void)
 {
 	// From the docs:
 	// The qpcFrequency of the performance counter is fixed at system boot and is
@@ -18,6 +41,7 @@ void cnTime_Init(void)
 	// from QueryPerformanceFrequency as the application initializes, and then
 	// cache the result.
 	QueryPerformanceFrequency(&qpcFrequency);
+	return true;
 }
 
 uint64_t cnTime_NowNs(void)

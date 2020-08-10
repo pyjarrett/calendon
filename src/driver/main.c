@@ -16,16 +16,10 @@
  * shutdown.
  */
 #include <calendon/main.h>
-#include <calendon/main-config.h>
 
 int main(int argc, char* argv[])
 {
-	CnMainConfig config;
-	if (!cnMainConfig_ParseCommandLine(&config, argc, argv)) {
-		return EXIT_FAILURE;
-	}
-
-	cnMain_Init(&config);
+	cnMain_StartUp(argc, argv);
 	cnMain_Loop();
 	cnMain_Shutdown();
 	return EXIT_SUCCESS;

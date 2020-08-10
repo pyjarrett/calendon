@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-CN_API void cnMain_Init(CnMainConfig* config);
+CN_API void cnMain_StartUp(int argc, char** argv);
 CN_API void cnMain_Loop(void);
 CN_API void cnMain_Shutdown(void);
 

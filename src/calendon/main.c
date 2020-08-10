@@ -13,6 +13,8 @@
 #include <calendon/process.h>
 #endif
 #include <calendon/path.h>
+#include <calendon/string.h> // for config
+#include <calendon/system.h>
 #include <calendon/tick-limits.h>
 #include <calendon/time.h>
 #include <calendon/render.h>
@@ -29,6 +31,110 @@ static CnPlugin_InitFn Main_Init;
 static CnPlugin_TickFn Main_Tick;
 static CnPlugin_DrawFn Main_Draw;
 static CnPlugin_ShutdownFn Main_Shutdown;
+
+enum { CnMaxNumCoreSystems = 16 };
+static CnSystem coreSystems[CnMaxNumCoreSystems];
+static size_t numCoreSystems = 0;
+
+void cnMain_AddCoreSystem(CnSystem system)
+{
+	CN_ASSERT(numCoreSystems < CnMaxNumCoreSystems, "Too many core systems added.");
+	coreSystems[numCoreSystems] = system;
+	++numCoreSystems;
+};
+
+bool cnMain_Init(void) { return true; }
+
+CnPlugin cnMain_Plugin(void) {
+	CnPlugin plugin;
+	plugin.init = cnMain_Init;
+	plugin.shutdown = NULL;
+	plugin.tick = NULL;
+	plugin.draw = NULL;
+	return plugin;
+}
+
+CnMainConfig s_config;
+
+int32_t cnMain_Payload(const CnCommandLineParse* parse, CnMainConfig* config)
+{
+	CN_ASSERT_NOT_NULL(parse);
+	CN_ASSERT_NOT_NULL(config);
+
+	if (!cnCommandLineParse_HasLookAhead(parse, 2)) {
+		printf("Payload must be provided a shared library (or DLL) to load\n");
+		return CnOptionParseError;
+	}
+
+	const char* gamePath = cnCommandLineParse_LookAhead(parse, 2);
+	if (cnString_TerminatedFitsIn(gamePath, CN_MAX_TERMINATED_PATH)) {
+		if (!cnPath_IsFile(gamePath)) {
+			char cwd[CN_MAX_TERMINATED_PATH];
+			cnEnv_CurrentWorkingDirectory(cwd, CN_MAX_TERMINATED_PATH);
+			printf("Current working directory is: %s\n", cwd);
+			printf("Game library %s does not exist.\n", gamePath);
+			return CnOptionParseError;
+		}
+		cnPathBuffer_Set(&config->gameLibPath, gamePath);
+		printf("Game library: '%s'\n", config->gameLibPath.str);
+		return 2;
+	}
+	else {
+		printf( "Length of name of game library is too long.");
+		return CnOptionParseError;
+	}
+}
+
+static CnCommandLineOption s_options[] = {
+	{
+		"-g,--game SHARED_LIB       Change the game/demo to boot.\n",
+		"-g",
+		"--game",
+		cnMain_Payload
+	}
+};
+
+void* cnMain_Config(void)
+{
+	return &s_config;
+}
+
+void cnMain_SetDefaultConfig(void* config)
+{
+	CnMainConfig* c = (CnMainConfig*)config;
+	memset(c, 0, sizeof(CnMainConfig));
+}
+
+CnCommandLineOptionList cnMain_CommandLineOptionList(void)
+{
+	return (CnCommandLineOptionList) {
+		.options = s_options,
+		.numOptions = 1
+	};
+}
+
+CnSystem cnMain_System(void)
+{
+	CnSystem system;
+	system.name = "Main";
+	system.commandLineOptionsList = cnMain_CommandLineOptionList;
+	system.config = cnMain_Config;
+	system.setDefaultConfig = cnMain_SetDefaultConfig;
+	system.plugin = cnMain_Plugin;
+	return system;
+}
+
+static void cnMain_BuildCoreSystemList(void)
+{
+	cnMain_AddCoreSystem(cnMain_System());
+	cnMain_AddCoreSystem(cnLog_System());
+	cnMain_AddCoreSystem(cnAssets_System());
+
+//		cnMain_AddCoreSystem(cnLog_System());
+//		cnMain_AddCoreSystem(cnCrash_System());
+//		cnMain_AddCoreSystem(cnMem_System());
+	cnMain_AddCoreSystem(cnTime_System());
+}
 
 void cnMain_DescribeEnv(void)
 {
@@ -83,32 +189,119 @@ void cnMain_LoadPayloadFromFile(const char* sharedLibraryName)
 	}
 }
 
+
+bool cnMain_ParseCommandLine(int argc, char** argv)
+{
+	CN_ASSERT(argc >= 1, "Argument count must at least include the executable.");
+	CN_ASSERT(argv, "Cannot parse null arguments.");
+
+	for (uint32_t i = 0; i < numCoreSystems; ++i) {
+		if (coreSystems[i].setDefaultConfig == NULL) {
+			CN_ERROR(LogSysMain, "%s is missing a default config.", coreSystems[i].name);
+		}
+		CN_ASSERT_NOT_NULL(coreSystems[i].setDefaultConfig);
+		coreSystems[i].setDefaultConfig(coreSystems[i].config());
+	}
+
+	CnCommandLineParse commandLineParse = cnCommandLineParse_Make(argc, argv);
+
+	// The log system is not initialized at this point, so use printf.
+	while (cnCommandLineParse_ShouldContinue(&commandLineParse)) {
+		bool parseAdvanced = false;
+		for (uint32_t systemIndex = 0; systemIndex < numCoreSystems; ++systemIndex) {
+			CnSystem* system = &coreSystems[systemIndex];
+			CnCommandLineOptionList options = system->commandLineOptionsList();
+			for (uint32_t parserIndex = 0; parserIndex < options.numOptions; ++parserIndex) {
+				CnCommandLineOption* option = &options.options[parserIndex];
+				if (cnCommandLineOption_Matches(option, &commandLineParse)) {
+					const int32_t argsParsed = option->parser(&commandLineParse, system->config());
+					if (argsParsed == CnOptionParseError) {
+						cnArgparse_PrintUsage(argc, argv);
+						return false;
+					}
+					cnCommandLineParse_Advance(&commandLineParse, argsParsed);
+					parseAdvanced = true;
+					break;
+				}
+			}
+		}
+		if (!parseAdvanced) {
+			printf("Unable to parse argument: \"%s\" at index %d\n",
+				cnCommandLineParse_LookAhead(&commandLineParse, 1),
+				cnCommandLineParse_LookAheadIndex(&commandLineParse, 1));
+			break;
+		}
+	}
+	if (!cnCommandLineParse_IsComplete(&commandLineParse)) {
+		printf("Unknown command line option\n");
+		printf("Only parsed %d of %d arguments\n",
+			cnCommandLineParse_LookAheadIndex(&commandLineParse, 1),
+			argc);
+		cnArgparse_PrintUsage(argc, argv);
+		return false;
+	}
+	return true;
+}
+
 /**
  * Common initialization point for all global systems.
  */
-void cnMain_InitAllSystems(CnMainConfig* config)
+void cnMain_InitAllSystems(int argc, char** argv)
 {
-	CN_ASSERT(config, "Cannot initialize using a null CnMainConfig.");
+	// Build the list of core systems.
+	cnMain_BuildCoreSystemList();
+
+	if (!cnMain_ParseCommandLine(argc, argv)) {
+		CN_FATAL_ERROR("Unable to parse command line.");
+	}
+
+	for (uint32_t i = 0; i < numCoreSystems; ++i) {
+		if (!coreSystems[i].plugin().init()) {
+			CN_FATAL_ERROR("Unable to initialize core system: %d", i);
+		}
+	}
+
+#if CN_USE_CONFIG_FILES
+	cnConfig_Init();
+	{
+		// Read every configuration file.
+		CnConfigFile file = cnConfigFile_Load(fileName);
+
+		// Apply each attribute in turn.
+		CnConfigKey key = cnConfig_NextKey();
+		CnConfigLine line = cnConfig_NextLine();
+
+		const char* prefix = cnConfigKey_Prefix(key);
+		CnSystemId id = cnConfig_PrefixToSystemId(prefix);
+
+		const char8 value = cnConfigKey_Value(key);
+
+		CnSystem* system;
+		system->Configure();
+	}
+#endif
+/*
 	cnLog_Init();
 	cnCrash_Init();
 	cnMem_Init();
 	cnTime_Init();
-
-	if (strlen(config->assetDirPath.str) != 0) {
-		cnAssets_Init(config->assetDirPath.str);
-	}
-	else {
-		// If no asset directory was provided, look for `$CALENDON_HOME/assets`, or
-		// for an `assets/` directory in the working directory.
-		CnPathBuffer defaultAssetDir;
-		if (!cnEnv_DefaultCalendonHome(&defaultAssetDir)) {
-			CN_FATAL_ERROR("Unable to determine the current Calendon home directory.");
-		}
-		if (!cnPathBuffer_Join(&defaultAssetDir, "assets")) {
-			CN_FATAL_ERROR("Unable to assemble a default asset directory name.");
-		}
-		cnAssets_Init(defaultAssetDir.str);
-	}
+ */
+	
+//	if (strlen(config->assetDirPath.str) != 0) {
+//		cnAssets_Init(config->assetDirPath.str);
+//	}
+//	else {
+//		// If no asset directory was provided, look for `$CALENDON_HOME/assets`, or
+//		// for an `assets/` directory in the working directory.
+//		CnPathBuffer defaultAssetDir;
+//		if (!cnEnv_DefaultCalendonHome(&defaultAssetDir)) {
+//			CN_FATAL_ERROR("Unable to determine the current Calendon home directory.");
+//		}
+//		if (!cnPathBuffer_Join(&defaultAssetDir, "assets")) {
+//			CN_FATAL_ERROR("Unable to assemble a default asset directory name.");
+//		}
+//		cnAssets_Init(defaultAssetDir.str);
+//	}
 
 	// TODO: Resolution should be read from config or as a a configuration option.
 	const uint32_t width = 1024;
@@ -120,18 +313,19 @@ void cnMain_InitAllSystems(CnMainConfig* config)
 	cnUI_Init(&uiInitParams);
 	cnR_Init(uiInitParams.resolution);
 
-	if (!cnMainConfig_IsHosted(config)) {
-		if (!cnPath_IsFile(config->gameLibPath.str)) {
-			CN_FATAL_ERROR("Cannot load game. '%s' is not a game library.", config->gameLibPath.str);
+	// If there is a demo to load from file, then use that.
+	if (!cnPlugin_IsComplete(&s_config.payload)) {
+		if (!cnPath_IsFile(s_config.gameLibPath.str)) {
+			CN_FATAL_ERROR("Cannot load game. '%s' is not a game library.", s_config.gameLibPath.str);
 		}
 
-		const char* gameLib = config->gameLibPath.str;
+		const char* gameLib = s_config.gameLibPath.str;
 		if (gameLib) {
 			cnMain_LoadPayloadFromFile(gameLib);
 		}
 	}
 	else {
-		cnMain_RegisterPayload(&config->payload);
+		cnMain_RegisterPayload(&s_config.payload);
 	}
 
 	if (Main_Init) {
@@ -140,7 +334,7 @@ void cnMain_InitAllSystems(CnMainConfig* config)
 	if (!Main_Draw) CN_FATAL_ERROR("Draw function missing. Write a Main_Draw(void) function.");
 	if (!Main_Tick) CN_FATAL_ERROR("Update function missing. Write a Main_Tick(void) function.");
 
-	cnMain_SetTickLimit(config->tickLimit);
+	//cnMain_SetTickLimit(s_config.tickLimit);
 
 	lastTick = cnTime_MakeNow();
 
@@ -190,11 +384,10 @@ bool cnMain_GenerateTick(CnTime* outDt)
 	return true;
 }
 
-void cnMain_Init(CnMainConfig* config)
+void cnMain_StartUp(int argc, char** argv)
 {
-	CN_ASSERT(config, "Cannot initialize a driver with a null CnMainConfig.");
 	cnMain_DescribeEnv();
-	cnMain_InitAllSystems(config);
+	cnMain_InitAllSystems(argc, argv);
 }
 
 /**

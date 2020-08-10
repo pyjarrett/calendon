@@ -12,7 +12,6 @@ typedef struct {
 	CnPlugin payload;
 
 	CnPathBuffer gameLibPath;
-	CnPathBuffer assetDirPath;
 
 	int64_t tickLimit;
 } CnMainConfig;

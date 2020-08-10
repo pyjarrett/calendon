@@ -44,7 +44,7 @@ Example:
 .. code-block::
 
     // Main Init(ialization)
-    cnMain_Init
+    cnMain_StartUp
 
     // CnFloat4x4 non-uniform scaling
     cnFloat4x4_NonUniformScale

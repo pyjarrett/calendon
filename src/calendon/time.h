@@ -7,6 +7,8 @@ extern "C" {
 
 #include <calendon/cn.h>
 
+#include <calendon/system.h>
+
 /**
  * @file time.h
  *
@@ -20,11 +22,13 @@ extern "C" {
  * - difficulties understanding the units of a time integer being passed
  */
 
+CN_API CnSystem cnTime_System(void);
+
 /*
  * Functions for getting the current time and converting other units to the
  * same units being used for time.
  */
-CN_API void cnTime_Init(void);
+CN_API bool cnTime_Init(void);
 
 CN_API_DEPRECATED("0.0.1", "Use time functions with units.", CN_API uint64_t cnTime_NowNs(void));
 

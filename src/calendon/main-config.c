@@ -5,7 +5,6 @@
 
 #include <string.h>
 
-
 bool cnMainConfig_IsHosted(CnMainConfig* config)
 {
 	CN_ASSERT(config, "Cannot determine if null config is hosted.");
@@ -22,8 +21,6 @@ bool cnMainConfig_ParseCommandLine(CnMainConfig* config, int argc, char** argv)
 	CN_ASSERT(config, "Cannot parse arguments to a null CnMainConfig.");
 
 	cnPathBuffer_Clear(&config->gameLibPath);
-	cnPathBuffer_Clear(&config->assetDirPath);
-
 	memset(&config->payload, 0, sizeof(config->payload));
 	config->tickLimit = 0;
 
