@@ -26,7 +26,7 @@ CnSystem cnTime_System(void)
 {
 	CnSystem system;
 	system.name = "Time";
-	system.commandLineOptionsList = cnSystem_NoOptions;
+	system.options = cnSystem_NoOptions;
 	system.setDefaultConfig = cnSystem_NoDefaultConfig;
 	system.config = cnSystem_NoConfig;
 	system.plugin = cnTime_Plugin;

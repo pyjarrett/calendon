@@ -51,9 +51,9 @@ void cnArgparse_PrintUsage(int argc, char** argv)
 		printf("%3d: \"%s\"\n", i, argv[i]);
 	}
 
-	printf("\nUsage: calendon\n");
-	for (uint32_t i = 0; i < CN_ARRAY_SIZE(parsers); ++i) {
-		printf("%s", parsers[i].help);
-	}
+//	printf("\nUsage: calendon\n");
+//	for (uint32_t i = 0; i < CN_ARRAY_SIZE(parsers); ++i) {
+//		printf("%s", parsers[i].help);
+//	}
 	printf("\n");
 }

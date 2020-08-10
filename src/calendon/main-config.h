@@ -17,7 +17,6 @@ typedef struct {
 } CnMainConfig;
 
 bool cnMainConfig_IsHosted(CnMainConfig* config);
-CN_API bool cnMainConfig_ParseCommandLine(CnMainConfig* config, int argc, char** argv);
 CN_API void cnMainConfig_Freestanding(CnMainConfig* config, CnPlugin_InitFn init, CnPlugin_TickFn tick, CnPlugin_DrawFn draw, CnPlugin_ShutdownFn shutdown);
 
 #ifdef __cplusplus

@@ -16,23 +16,24 @@ CnLogHandle LogSysAssets;
 static bool assetsInitialized = false;
 
 CnPlugin cnAssets_Plugin(void) {
-	CnPlugin plugin;
-	plugin.init = cnAssets_Init;
-	plugin.shutdown = cnAssets_Shutdown;
-	plugin.tick = NULL;
-	plugin.draw = NULL;
-	return plugin;
+	return (CnPlugin) {
+		.init = cnAssets_Init,
+		.shutdown = cnAssets_Shutdown,
+		.tick = NULL,
+		.draw = NULL,
+		.sharedLibrary = NULL
+	};
 }
 
 CnSystem cnAssets_System(void)
 {
-	CnSystem system;
-	system.name = "Assets";
-	system.commandLineOptionsList = cnAssets_CommandLineOptionList;
-	system.config = cnAssets_Config;
-	system.setDefaultConfig = cnAssets_SetDefaultConfig;
-	system.plugin = cnAssets_Plugin;
-	return system;
+	return (CnSystem) {
+		.name = "Assets",
+		.options = cnAssets_CommandLineOptionList,
+		.config = cnAssets_Config,
+		.setDefaultConfig = cnAssets_SetDefaultConfig,
+		.plugin = cnAssets_Plugin
+	};
 }
 
 bool cnAssets_IsReady(void)

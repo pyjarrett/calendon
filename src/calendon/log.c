@@ -61,7 +61,7 @@ CnPlugin cnLog_Plugin(void) {
 CnSystem cnLog_System(void)
 {
 	CnSystem system;
-	system.commandLineOptionsList = cnLog_CommandLineOptionList;
+	system.options = cnLog_CommandLineOptionList;
 	system.config = cnLog_Config;
 	system.setDefaultConfig = cnLog_SetDefaultConfig;
 	system.plugin = cnLog_Plugin;

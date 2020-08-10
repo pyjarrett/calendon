@@ -117,7 +117,7 @@ CnSystem cnMain_System(void)
 {
 	CnSystem system;
 	system.name = "Main";
-	system.commandLineOptionsList = cnMain_CommandLineOptionList;
+	system.options = cnMain_CommandLineOptionList;
 	system.config = cnMain_Config;
 	system.setDefaultConfig = cnMain_SetDefaultConfig;
 	system.plugin = cnMain_Plugin;
@@ -210,7 +210,7 @@ bool cnMain_ParseCommandLine(int argc, char** argv)
 		bool parseAdvanced = false;
 		for (uint32_t systemIndex = 0; systemIndex < numCoreSystems; ++systemIndex) {
 			CnSystem* system = &coreSystems[systemIndex];
-			CnCommandLineOptionList options = system->commandLineOptionsList();
+			CnCommandLineOptionList options = system->options();
 			for (uint32_t parserIndex = 0; parserIndex < options.numOptions; ++parserIndex) {
 				CnCommandLineOption* option = &options.options[parserIndex];
 				if (cnCommandLineOption_Matches(option, &commandLineParse)) {

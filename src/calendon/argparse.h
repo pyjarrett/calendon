@@ -19,8 +19,6 @@
 extern "C" {
 #endif
 
-extern CnCommandLineOption parsers[3];
-
 void cnArgparse_PrintUsage(int argc, char** argv);
 
 #ifdef __cplusplus
