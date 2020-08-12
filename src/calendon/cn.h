@@ -2,8 +2,29 @@
 #define CN_H
 
 #ifdef __cplusplus
-extern "C" {
-#endif
+#define CN_HEADER_BEGIN_EXPORTED extern "C" {
+#define CN_HEADER_BEGIN_PRIVATE extern "C" {
+#define CN_HEADER_END }
+#else
+/**
+ * Exported headers should contain CN_API functions and struct definitions for
+ * use by clients.
+ */
+#define CN_HEADER_BEGIN_EXPORTED
+
+/**
+ * Identifier for private headers which should not contain CN_API functions
+ * since this is not required.
+ */
+#define CN_HEADER_BEGIN_PRIVATE
+
+/**
+ * Terminates a header.
+ */
+#define CN_HEADER_END
+#endif /* __cplusplus */
+
+CN_HEADER_BEGIN_EXPORTED
 
 /*
  * This is the "standard" Calendon header which most files should include to get
@@ -271,8 +292,6 @@ extern CN_API char fatalErrorBuffer[fatalErrorBufferLength];
  */
 #define CN_ARRAY_SIZE(arr) (sizeof(arr)  / sizeof(arr[0]))
 
-#ifdef __cplusplus
-}
-#endif
+CN_HEADER_END
 
 #endif /* CN_H */
