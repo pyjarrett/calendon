@@ -49,17 +49,12 @@
  */
 #include <calendon/cn.h>
 
-#include <calendon/argparse.h>
+#include <calendon/command-line-option.h>
 #include <calendon/plugin.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-typedef struct {
-	CnCommandLineOption* options;
-	size_t numOptions;
-} CnCommandLineOptionList;
 
 typedef CnCommandLineOptionList (*CnSystem_CommandLineOptionsListFn)(void);
 typedef CnPlugin (*CnSystem_PluginFn)(void);

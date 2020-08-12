@@ -3,6 +3,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#include <calendon/log-config.h>
+
 static bool initialized = false;
 CN_API char LogVerbosityChar[CnLogVerbosityNum];
 CN_API uint32_t LogSystemsVerbosity[CN_LOG_MAX_SYSTEMS];
@@ -10,36 +12,7 @@ CN_API const char* LogSystemsRegistered[CN_LOG_MAX_SYSTEMS];
 CN_API uint32_t LogSystemsNumRegistered;
 CN_API CnLogHandle LogSysMain;
 
-typedef struct {
-	bool enabled;
-} CnLogConfig;
-
 static CnLogConfig s_config;
-
-int32_t cnLog_OptionDisable(const CnCommandLineParse* parse, void* config)
-{
-	CnLogConfig* c = (CnLogConfig*)config;
-	c->enabled = false;
-	return 1;
-}
-
-static CnCommandLineOption options[] = {
-	{
-		"Disables runtime logging output.",
-		NULL,
-		"--log-disable",
-		cnLog_OptionDisable,
-	}
-};
-
-static CnCommandLineOptionList optionList;
-
-CnCommandLineOptionList cnLog_CommandLineOptionList(void) {
-	return (CnCommandLineOptionList) {
-		.options = options,
-		.numOptions = 0
-	};
-}
 
 void* cnLog_Config(void) {
 	return &s_config;

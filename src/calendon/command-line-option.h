@@ -30,6 +30,11 @@ typedef struct {
 	CnCommandLineOptionParser parser;
 } CnCommandLineOption;
 
+typedef struct {
+	CnCommandLineOption* options;
+	size_t numOptions;
+} CnCommandLineOptionList;
+
 bool cnCommandLineOption_Matches(const CnCommandLineOption* option, const CnCommandLineParse* parse);
 
 #ifdef __cplusplus
