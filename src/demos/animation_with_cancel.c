@@ -130,22 +130,24 @@ CN_GAME_API bool CnPlugin_Init(void)
 	return true;
 }
 
+enum { ActionStateReadyBufferLength = 1024 };
+
 void drawUI(void)
 {
 	CnFloat2 statusLocation = cnFloat2_Make(50, 50);
-	char buffer[1024];
+	char buffer[ActionStateReadyBufferLength];
 	switch (changeAction.state) {
 		case CnActionStateReady:
-			sprintf(buffer, "Ready: Press Space");
+			cnString_Format(buffer, ActionStateReadyBufferLength, "Ready: Press Space");
 			break;
 		case CnActionStateInProgress:
-			sprintf(buffer, "In Progress: %" PRIu64, cnTime_Milli(changeAction.executionTimeLeft));
+			cnString_Format(buffer, ActionStateReadyBufferLength, "In Progress: %" PRIu64, cnTime_Milli(changeAction.executionTimeLeft));
 			break;
 		case CnActionStateCoolingDown:
-			sprintf(buffer, "Cooling Down: %" PRIu64, cnTime_Milli(changeAction.coolDownLeft));
+			cnString_Format(buffer, ActionStateReadyBufferLength, "Cooling Down: %" PRIu64, cnTime_Milli(changeAction.coolDownLeft));
 			break;
 		case CnActionStateWindingUp:
-			sprintf(buffer, "Winding Up: %" PRIu64, cnTime_Milli(changeAction.windUpLeft));
+			cnString_Format(buffer, ActionStateReadyBufferLength, "Winding Up: %" PRIu64, cnTime_Milli(changeAction.windUpLeft));
 			break;
 		default: CN_ASSERT(false, "Unknown action state");
 	}

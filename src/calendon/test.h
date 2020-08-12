@@ -61,6 +61,10 @@ extern "C" {
 #include <calendon/cn.h>
 #include <calendon/float.h>
 
+#ifdef _WIN32
+#include <calendon/compat-windows.h>
+#endif
+
 #include <string.h>
 
 /**
@@ -89,7 +93,9 @@ typedef struct {
 
 CN_TEST_HARNESS_API cnTestSuiteReport suiteReport;
 CN_TEST_HARNESS_API cnTestUnitReport unitReport;
-CN_TEST_HARNESS_API char errorFormatBuffer[4096];
+
+enum { CnTestErrorFormatBufferLength = 4096 };
+CN_TEST_HARNESS_API char errorFormatBuffer[CnTestErrorFormatBufferLength];
 
 /**
  * A visibly noticable marker to use for when things fail.
@@ -108,7 +114,7 @@ CN_TEST_HARNESS_API void cnTest_UnitStart(cnTestUnitReport* u, const char* name)
 	u->runsLeft = 1;
 	u->assertsFailed = 0;
 	u->failureForced = false;
-	printf("  [ %-6s ] %s\n", "", name);
+	cnPrint("  [ %-6s ] %s\n", "", name);
 }
 
 CN_TEST_HARNESS_API void cnTest_UnitAssertFailed(cnTestUnitReport* u) {
@@ -132,19 +138,19 @@ CN_TEST_HARNESS_API void cnTest_SuiteInit(cnTestSuiteReport* r) {
 
 CN_TEST_HARNESS_API void cnTest_SuiteStart(cnTestSuiteReport* r, const char* name) {
 	r->name = name;
-	printf("Test suite: %s\n", name);
+	cnPrint("Test suite: %s\n", name);
 }
 
 CN_TEST_HARNESS_API void cnTest_SuitePrintResults(cnTestSuiteReport* r) {
 	if (!r) abort();
-	printf("  [________]\n");
+	cnPrint("  [________]\n");
 	if (r->testsFailed > 0) {
-		printf(cnTestFailMarker);
-		printf(">>[%8s]" " %s ( %" PRIu32 " failed )\n",
+		cnPrint(cnTestFailMarker);
+		cnPrint(">>[%8s]" " %s ( %" PRIu32 " failed )\n",
 			"FAILED ", r->name, r->testsFailed);
 	}
 	else {
-		printf("  [%8s]" " %s ( %" PRIu32 " ) \n",
+		cnPrint("  [%8s]" " %s ( %" PRIu32 " ) \n",
 			"PASSED ", r->name, r->testsPassed);
 	}
 }
@@ -161,12 +167,12 @@ CN_TEST_HARNESS_API void cnTest_SuiteShutdown(cnTestSuiteReport* r) {
 
 	if (cnTest_UnitSucceeded(u)) {
 		++r->testsPassed;
-		printf("  [ %+6s ] %s\n", "PASS", u->name);
+		cnPrint("  [ %+6s ] %s\n", "PASS", u->name);
 	}
 	else {
 		++r->testsFailed;
-		printf(cnTestFailMarker);
-		printf(">>[ %-6s ] %s\n",
+		cnPrint(cnTestFailMarker);
+		cnPrint(">>[ %-6s ] %s\n",
 			"FAILED", u->name);
 	}
 }
@@ -206,7 +212,7 @@ CN_TEST_HARNESS_API void cnTest_CleanUpPreviousUnit(cnTestSuiteReport* r, cnTest
  * CN_TEST_SUITE_BEGIN("A short battery of tests")
  *
  * // Code can be put here if desired.
- * printf("Running my test suite\n");
+ * cnPrint("Running my test suite\n");
  * helperFunction1();
  *
  * CN_TEST_UNIT("A test") {
@@ -297,7 +303,7 @@ CN_TEST_HARNESS_API void cnTest_CleanUpPreviousUnit(cnTestSuiteReport* r, cnTest
 		if (assertionStatus == 0) { stmt; } \
 		if (assertionStatus != CN_TEST_ASSERTION_OCCURRED) { \
 			cnTest_UnitAssertFailed(&unitReport); \
-			printf("%s:%i  Assertion not triggered: " #stmt, \
+			cnPrint("%s:%i  Assertion not triggered: " #stmt, \
 				__FILE__, __LINE__); \
 			break; \
 		} \
@@ -315,9 +321,9 @@ CN_TEST_HARNESS_API void cnTest_CleanUpPreviousUnit(cnTestSuiteReport* r, cnTest
 { \
 	if (a != b) { \
 		cnTest_UnitAssertFailed(&unitReport); \
-		const int written = sprintf(errorFormatBuffer, "%s:%" PRIu64  "  \"%%%s != %%%s\" (%s != %s)\n", \
+		const int written = cnString_Format(errorFormatBuffer, CnTestErrorFormatBufferLength, "%s:%" PRIu64  "  \"%%%s != %%%s\" (%s != %s)\n", \
 			file, line, formatter, formatter, left, right); \
-		printf(errorFormatBuffer, a, b); \
+		cnPrint(errorFormatBuffer, a, b); \
 		return false; \
 	} \
 	return true; \
@@ -356,7 +362,7 @@ CN_TEST_ASSERT_FN_DEFN(uint64_t, PRIu64)
 #define CN_TEST_ASSERT_CLOSE_F(a, b, pct) \
 	if (cnFloat_RelativeDiff(a, b) > pct) { \
 		cnTest_UnitAssertFailed(&unitReport); \
-		printf("%s:%i  \"" #a " is not within %f%% of " #b "\" (%f != %f)\n", \
+		cnPrint("%s:%i  \"" #a " is not within %f%% of " #b "\" (%f != %f)\n", \
 			__FILE__, __LINE__, (10.0f * (float)pct), ((float)(a)), ((float)(b))); \
 		break; \
 	}
@@ -368,7 +374,7 @@ CN_TEST_ASSERT_FN_DEFN(uint64_t, PRIu64)
 #define CN_TEST_ASSERT_EXACT_F(a, b) \
 	if (a != b) { \
 		cnTest_UnitAssertFailed(&unitReport); \
-		printf("%s:%i  \"" #a " is exactly equal to " #b "\" (%f != %f)\n", \
+		cnPrint("%s:%i  \"" #a " is exactly equal to " #b "\" (%f != %f)\n", \
 			__FILE__, __LINE__, ((float)(a)), ((float)(b))); \
 		break; \
 	}
@@ -381,7 +387,7 @@ CN_TEST_ASSERT_FN_DEFN(uint64_t, PRIu64)
 #define CN_TEST_ASSERT_EQ_STR(expected, actual) \
 	if (strcmp(expected, actual) != 0) { \
 		cnTest_UnitAssertFailed(&unitReport); \
-		printf("%s:%i  " #expected " != " #actual " (\"%s\" != \"%s\")\n", \
+		cnPrint("%s:%i  " #expected " != " #actual " (\"%s\" != \"%s\")\n", \
 			__FILE__, __LINE__, (expected), (actual)); \
 		break; \
 	}
@@ -392,7 +398,7 @@ CN_TEST_ASSERT_FN_DEFN(uint64_t, PRIu64)
 #define CN_TEST_ASSERT_TRUE(expr) { \
 		if (!(expr)) { \
 			cnTest_UnitAssertFailed(&unitReport); \
-			printf("%s:%i  \"" #expr "\" should be true\n", \
+			cnPrint("%s:%i  \"" #expr "\" should be true\n", \
 				__FILE__, __LINE__); \
 			break; \
 		} \
@@ -404,7 +410,7 @@ CN_TEST_ASSERT_FN_DEFN(uint64_t, PRIu64)
 #define CN_TEST_ASSERT_FALSE(expr) { \
 		if (!!(expr)) { \
 			cnTest_UnitAssertFailed(&unitReport); \
-			printf("%s:%i  \"" #expr "\" should be false\n", \
+			cnPrint("%s:%i  \"" #expr "\" should be false\n", \
 				__FILE__, __LINE__); \
 			break; \
 		} \

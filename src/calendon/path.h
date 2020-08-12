@@ -23,6 +23,7 @@ extern "C" {
 #endif
 
 #ifdef _WIN32
+	#include <calendon/compat-windows.h>
 	#include <minwindef.h>
 	// https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file
 	// > A local path is structured in the following order: drive letter, colon,

@@ -2,6 +2,7 @@
 
 #include <calendon/log.h>
 
+#include <stdio.h>
 #include <string.h>
 
 #ifdef _WIN32
@@ -27,7 +28,7 @@ HANDLE cnCrash_OpenMiniDumpFile(DWORD processId)
 	}
 
 	char miniDumpFileName[128];
-	snprintf(miniDumpFileName, 128, "core.%lu.dmp", processId);
+	cnString_Format(miniDumpFileName, 128, "core.%lu.dmp", processId);
 	if (!cnPathBuffer_Join(&miniDumpFilePath, miniDumpFileName)) {
 		CN_ERROR(LogSysMain, "Unable to build minidump file path");
 		return INVALID_HANDLE_VALUE;

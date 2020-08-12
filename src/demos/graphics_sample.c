@@ -85,7 +85,7 @@ static void drawScene(void)
 	static int fpsTick = 0;
 	if (++fpsTick % 10 == 0) {
 		fpsTick = 0;
-		sprintf(frameTime, "FPS: %.1f", 1000.0f / cnTime_Milli(lastDt));
+		cnString_Format(frameTime, 100, "FPS: %.1f", 1000.0f / cnTime_Milli(lastDt));
 	}
 	cnR_DrawSimpleText(font, cnFloat2_Make(0, 700), frameTime);
 }

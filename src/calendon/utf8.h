@@ -26,6 +26,8 @@
 
 #include <calendon/cn.h>
 
+#include <stdio.h>
+
 #if defined(__clang__)
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wpointer-sign"

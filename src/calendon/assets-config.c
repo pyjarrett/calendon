@@ -31,22 +31,22 @@ int32_t cnAssets_OptionAssetDir(const CnCommandLineParse* parse, void* c)
 	CnAssetsConfig* config = (CnAssetsConfig*)c;
 
 	if (!cnCommandLineParse_HasLookAhead(parse, 2)) {
-		printf("Must provide an asset directory to use.\n");
+		cnPrint("Must provide an asset directory to use.\n");
 		return CnOptionParseError;
 	}
 
 	const char* assetDir = cnCommandLineParse_LookAhead(parse, 2);
 	if (cnString_TerminatedFitsIn(assetDir, CN_MAX_TERMINATED_PATH)) {
 		if (!cnPath_IsDir(assetDir)) {
-			printf("Asset directory %s does not exist\n", assetDir);
+			cnPrint("Asset directory %s does not exist\n", assetDir);
 			return CnOptionParseError;
 		}
 		cnPathBuffer_Set(&config->assetDirPath, assetDir);
-		printf("Asset path: '%s'\n", config->assetDirPath.str);
+		cnPrint("Asset path: '%s'\n", config->assetDirPath.str);
 		return 2;
 	}
 	else {
-		printf( "The asset path is too long.");
+		cnPrint( "The asset path is too long.");
 		return CnOptionParseError;
 	}
 }

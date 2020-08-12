@@ -40,7 +40,6 @@ CN_HEADER_BEGIN_EXPORTED
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 /**
@@ -177,6 +176,20 @@ typedef struct { uint64_t native; } CnTime;
 	#define CN_WARN_DEPRECATED(msg)
 #endif
 
+/**
+ * Use the Log system instead of this function.
+ *
+ * A simple print function to break the header dependency on printf.
+ */
+CN_API void cnPrint(const char* msg, ...);
+
+/**
+ * Helper function to write strings.
+ *
+ * Prevents direct dependency on stdio.h.
+ */
+CN_API int cnString_Format(char* str, size_t strLength, const char* format, ...);
+
 #if CN_TESTING
 #include <calendon/test-asserts.h>
 /**
@@ -189,7 +202,7 @@ typedef struct { uint64_t native; } CnTime;
 				longjmp(cnTest_AssertJumpBuffer, CN_TEST_ASSERTION_OCCURRED); \
 			} \
 			else { \
-				printf("%s:%i Assertion failure: " message "\n", __FILE__, \
+				cnPrint("%s:%i Assertion failure: " message "\n", __FILE__, \
 					__LINE__, ##__VA_ARGS__); \
 				longjmp(cnTest_AssertUnexpectedJumpBuffer, CN_TEST_ASSERTION_UNEXPECTED); \
 			} \
@@ -228,38 +241,12 @@ typedef struct { uint64_t native; } CnTime;
 enum { fatalErrorBufferLength = 1024 };
 extern CN_API char fatalErrorBuffer[fatalErrorBufferLength];
 
-/*
- * An unrecoverable event happened at this point in the program.
- *
- * This causes a crash.  Use this when the program cannot recover from whatever
- * ill the program is in at this point.  Use `CN_FATAL_ERROR` to indicate
- * problems where the program was expected to succeed at an operation but
- * didn't, or an unrecoverable error occurred.
+/**
+ * Do not call this directly.  Use `CN_FATAL_ERROR` instead.
  */
-#ifdef _WIN32
-	#include <calendon/compat-windows.h>
-	#include <debugapi.h>
-	#define CN_FATAL_ERROR(error_message, ...) \
-	    do { \
-			if (IsDebuggerPresent()) { \
-				printf(error_message, ##__VA_ARGS__); \
-				fflush(stdout); \
-				CN_DEBUG_BREAK(); \
-				abort(); \
-			} else { \
-				snprintf(fatalErrorBuffer, fatalErrorBufferLength, "%s:%i\n" error_message, __FILE__, __LINE__, ##__VA_ARGS__); \
-				MessageBox(NULL, fatalErrorBuffer, "Fatal Error", MB_OK); abort(); \
-			} \
-		} while (0)
-#else
-	#define CN_FATAL_ERROR(error_message, ...) \
-		do { \
-			printf(error_message, ##__VA_ARGS__); \
-			fflush(stdout); \
-			CN_DEBUG_BREAK(); \
-			abort(); \
-		} while (0)
-#endif
+CN_API void cnFatalError(const char* msg, ...);
+
+#define CN_FATAL_ERROR(msg, ...) cnFatalError("%s:%i\n" msg, __FILE__, __LINE__, ##__VA_ARGS__);
 
 /**
  * Used to suppress errors resulting from unused values.

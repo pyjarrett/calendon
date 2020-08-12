@@ -1,5 +1,6 @@
 #include "main.h"
 
+#include <calendon/argparse.h>
 #include <calendon/assets.h>
 #include <calendon/assets-fileio.h>
 #include <calendon/control.h>
@@ -34,7 +35,7 @@ static CnPlugin_ShutdownFn Main_Shutdown;
 
 enum { CnMaxNumCoreSystems = 16 };
 static CnSystem coreSystems[CnMaxNumCoreSystems];
-static size_t numCoreSystems = 0;
+static uint32_t numCoreSystems = 0;
 
 void cnMain_AddCoreSystem(CnSystem system)
 {
