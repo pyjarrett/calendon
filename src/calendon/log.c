@@ -121,7 +121,7 @@ void cnLog_RegisterSystem(uint32_t* system, const char* name, uint32_t verbosity
 
 void cnLog_Print(CnLogHandle system, CnLogVerbosity verbosity, const char* format, ...)
 {
-	if ((uint32_t)verbosity <= LogSystemsVerbosity[system]) {
+	if (s_config.enabled && (uint32_t)verbosity <= LogSystemsVerbosity[system]) {
 		va_list args;
 		va_start(args, format);
 		vprintf(format, args);
