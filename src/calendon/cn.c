@@ -29,17 +29,20 @@ void cnFatalError(const char* msg, ...)
 		vsnprintf(fatalErrorBuffer, fatalErrorBufferLength, msg, args);
 		MessageBox(NULL, fatalErrorBuffer, "Fatal Error", MB_OK);
 	}
-	abort();
 	va_end(args);
+	abort();
 }
 #else
-#define CN_FATAL_ERROR(error_message, ...) \
-	do { \
-		printf(error_message, ##__VA_ARGS__); \
-		fflush(stdout); \
-		CN_DEBUG_BREAK(); \
-		abort(); \
-	} while (0)
+void cnFatalError(const char* msg, ...)
+{
+	va_list args;
+	va_start(args, msg);
+	vprintf(msg, args);
+	va_end(args);
+	fflush(stdout);
+	CN_DEBUG_BREAK();
+	abort();
+}
 #endif
 
 /**
