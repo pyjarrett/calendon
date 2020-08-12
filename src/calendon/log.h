@@ -108,19 +108,19 @@ extern CN_API char LogVerbosityChar[CnLogVerbosityNum];
  */
 extern CN_API uint32_t LogSystemsVerbosity[CN_LOG_MAX_SYSTEMS];
 
+CN_API void cnLog_Print(CnLogHandle system, CnLogVerbosity verbosity, const char* msg, ...);
+
 /**
  * Records a message to the log system.
  */
-#define CN_LOG(system, verbosity, msg, ...) do { \
-	if (verbosity <= LogSystemsVerbosity[system]) { \
-		printf("%c: %40s:%i SYS_%-10s: " msg " \n", \
-			LogVerbosityChar[verbosity], \
-			__FILE__, \
-			__LINE__, \
-			LogSystemsRegistered[system], \
-			##__VA_ARGS__ \
-			); \
-    } } while(0)
+#define CN_LOG(system, verbosity, msg, ...) \
+	cnLog_Print(system, verbosity, \
+		"%c: %40s:%i SYS_%-10s: " msg " \n", \
+		LogVerbosityChar[verbosity], \
+		__FILE__, __LINE__, \
+		LogSystemsRegistered[system], \
+		##__VA_ARGS__ \
+		);
 
 /**
  * Errors are serious issues which must be addressed prior to shipping a product
