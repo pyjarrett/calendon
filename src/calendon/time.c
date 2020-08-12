@@ -11,28 +11,6 @@
 
 LARGE_INTEGER qpcFrequency;
 
-CnPlugin cnTime_Plugin(void)
-{
-	return (CnPlugin) {
-		.init = cnTime_Init,
-		.shutdown = NULL,
-		.tick = NULL,
-		.draw = NULL,
-		.sharedLibrary = NULL
-	};
-}
-
-CnSystem cnTime_System(void)
-{
-	return (CnSystem) {
-		.name = "Time",
-		.options = cnSystem_NoOptions,
-		.setDefaultConfig = cnSystem_NoDefaultConfig,
-		.config = cnSystem_NoConfig,
-		.plugin = cnTime_Plugin
-	};
-}
-
 bool cnTime_Init(void)
 {
 	// From the docs:
@@ -60,8 +38,9 @@ uint64_t cnTime_NowNs(void)
 
 #include <time.h>
 
-void cnTime_Init(void)
+bool cnTime_Init(void)
 {
+	return true;
 }
 
 uint64_t cnTime_NowNs(void)
@@ -156,4 +135,26 @@ CnTime cnTime_Max(CnTime left, CnTime right)
 CnTime cnTime_Min(CnTime left, CnTime right)
 {
 	return cnTime_LessThan(left, right) ? left : right;
+}
+
+CnPlugin cnTime_Plugin(void)
+{
+	return (CnPlugin) {
+		.init = cnTime_Init,
+		.shutdown = NULL,
+		.tick = NULL,
+		.draw = NULL,
+		.sharedLibrary = NULL
+	};
+}
+
+CnSystem cnTime_System(void)
+{
+	return (CnSystem) {
+		.name = "Time",
+		.options = cnSystem_NoOptions,
+		.setDefaultConfig = cnSystem_NoDefaultConfig,
+		.config = cnSystem_NoConfig,
+		.plugin = cnTime_Plugin
+	};
 }

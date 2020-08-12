@@ -63,10 +63,12 @@ CnPlugin cnMain_Plugin(void) {
 	};
 }
 
-int32_t cnMain_Payload(const CnCommandLineParse* parse, CnMainConfig* config)
+int32_t cnMain_Payload(const CnCommandLineParse* parse, void* c)
 {
 	CN_ASSERT_NOT_NULL(parse);
-	CN_ASSERT_NOT_NULL(config);
+	CN_ASSERT_NOT_NULL(c);
+
+	CnMainConfig* config = (CnMainConfig*)c;
 
 	if (!cnCommandLineParse_HasLookAhead(parse, 2)) {
 		printf("Payload must be provided a shared library (or DLL) to load\n");
@@ -92,10 +94,12 @@ int32_t cnMain_Payload(const CnCommandLineParse* parse, CnMainConfig* config)
 	}
 }
 
-int32_t cnMain_OptionTickLimit(const CnCommandLineParse* parse, CnMainConfig* config)
+int32_t cnMain_OptionTickLimit(const CnCommandLineParse* parse, void* c)
 {
 	CN_ASSERT_NOT_NULL(parse);
-	CN_ASSERT_NOT_NULL(config);
+	CN_ASSERT_NOT_NULL(c);
+
+	CnMainConfig* config = (CnMainConfig*)c;
 
 	if (!cnCommandLineParse_HasLookAhead(parse, 2)) {
 		printf("Must provide the number of ticks for which to run the program.\n");
