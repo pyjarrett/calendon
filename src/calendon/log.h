@@ -141,10 +141,7 @@ CN_API void cnLog_Print(CnLogHandle system, CnLogVerbosity verbosity, const char
 #define CN_TRACE(system, msg, ...) CN_LOG(system, CnLogVerbosityTrace, msg, ##__VA_ARGS__)
 
 CnSystem cnLog_System(void);
-
 CN_API bool cnLog_IsReady(void);
-CN_API bool cnLog_Init(void);
-CN_API void cnLog_Shutdown(void);
 CN_API void cnLog_RegisterSystem(CnLogHandle* system, const char* name, uint32_t verbosity);
 
 #ifdef __cplusplus

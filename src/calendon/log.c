@@ -24,27 +24,6 @@ void cnLog_SetDefaultConfig(void* config)
 	c->enabled = true;
 }
 
-CnPlugin cnLog_Plugin(void) {
-	return (CnPlugin) {
-		.init = cnLog_Init,
-		.shutdown = cnLog_Shutdown,
-		.tick = NULL,
-		.draw = NULL,
-		.sharedLibrary = NULL
-	};
-}
-
-CnSystem cnLog_System(void)
-{
-	return (CnSystem) {
-		.name = "Log",
-		.options = cnLog_CommandLineOptionList,
-		.config = cnLog_Config,
-		.setDefaultConfig = cnLog_SetDefaultConfig,
-		.plugin = cnLog_Plugin
-	};
-}
-
 bool cnLog_IsReady(void)
 {
 	return initialized;
@@ -127,4 +106,25 @@ void cnLog_Print(CnLogHandle system, CnLogVerbosity verbosity, const char* forma
 		vprintf(format, args);
 		va_end(args);
 	}
+}
+
+CnPlugin cnLog_Plugin(void) {
+	return (CnPlugin) {
+		.init = cnLog_Init,
+		.shutdown = cnLog_Shutdown,
+		.tick = NULL,
+		.draw = NULL,
+		.sharedLibrary = NULL
+	};
+}
+
+CnSystem cnLog_System(void)
+{
+	return (CnSystem) {
+		.name = "Log",
+		.options = cnLog_CommandLineOptionList,
+		.config = cnLog_Config,
+		.setDefaultConfig = cnLog_SetDefaultConfig,
+		.plugin = cnLog_Plugin
+	};
 }

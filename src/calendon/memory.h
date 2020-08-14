@@ -20,8 +20,6 @@ typedef struct {
 	uint32_t size;
 } CnDynamicBuffer;
 
-CN_API bool cnMem_Init(void);
-CN_API void cnMem_Shutdown(void);
 CN_API void cnMem_Allocate(CnDynamicBuffer* buffer, uint32_t size);
 CN_API void cnMem_Free(CnDynamicBuffer* buffer);
 

@@ -15,27 +15,6 @@ static size_t assetsRootLength = 0;
 CnLogHandle LogSysAssets;
 static bool assetsInitialized = false;
 
-CnPlugin cnAssets_Plugin(void) {
-	return (CnPlugin) {
-		.init = cnAssets_Init,
-		.shutdown = cnAssets_Shutdown,
-		.tick = NULL,
-		.draw = NULL,
-		.sharedLibrary = NULL
-	};
-}
-
-CnSystem cnAssets_System(void)
-{
-	return (CnSystem) {
-		.name = "Assets",
-		.options = cnAssets_CommandLineOptionList,
-		.config = cnAssets_Config,
-		.setDefaultConfig = cnAssets_SetDefaultConfig,
-		.plugin = cnAssets_Plugin
-	};
-}
-
 bool cnAssets_IsReady(void)
 {
 	return assetsInitialized;
@@ -99,4 +78,25 @@ bool cnAssets_PathBufferFor(const char* assetName, CnPathBuffer* path)
 	CN_TRACE(LogSysAssets, "Resolved asset path '%s' -> '%s'", assetName, path->str);
 
 	return true;
+}
+
+CnPlugin cnAssets_Plugin(void) {
+	return (CnPlugin) {
+		.init          = cnAssets_Init,
+		.shutdown      = cnAssets_Shutdown,
+		.tick          = NULL,
+		.draw          = NULL,
+		.sharedLibrary = NULL
+	};
+}
+
+CnSystem cnAssets_System(void)
+{
+	return (CnSystem) {
+		.name             = "Assets",
+		.options          = cnAssets_CommandLineOptionList,
+		.config           = cnAssets_Config,
+		.setDefaultConfig = cnAssets_SetDefaultConfig,
+		.plugin           = cnAssets_Plugin
+	};
 }

@@ -11,8 +11,6 @@ extern "C" {
 
 CN_API CnSystem cnAssets_System(void);
 CN_API bool cnAssets_IsReady(void);
-CN_API bool cnAssets_Init(void);
-CN_API void cnAssets_Shutdown(void);
 CN_API bool cnAssets_PathBufferFor(const char* assetName, CnPathBuffer* path);
 
 #ifdef __cplusplus

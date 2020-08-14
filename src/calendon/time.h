@@ -28,13 +28,6 @@ CN_API CnSystem cnTime_System(void);
  * Functions for getting the current time and converting other units to the
  * same units being used for time.
  */
-CN_API bool cnTime_Init(void);
-
-CN_API_DEPRECATED("0.0.1", "Use time functions with units.", CN_API uint64_t cnTime_NowNs(void));
-
-/*
- * Time conversion functions.
- */
 CN_API uint64_t cnTime_MsToNs(uint64_t ms);
 CN_API uint64_t cnTime_NsToMs(uint64_t ns);
 CN_API uint64_t cnTime_SecToNs(uint64_t sec);
