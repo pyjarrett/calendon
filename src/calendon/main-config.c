@@ -3,7 +3,9 @@
 #include <calendon/cn.h>
 #include <calendon/argparse.h>
 #include <calendon/env.h>
+#include <calendon/string.h>
 
+#include <errno.h>
 #include <string.h>
 
 int32_t cnMain_OptionPayload(const CnCommandLineParse* parse, void* c);
@@ -111,8 +113,4 @@ void cnMainConfig_Freestanding(CnPlugin_InitFn init, CnPlugin_TickFn tick,
 	s_config.payload.draw = draw;
 	s_config.payload.shutdown = shutdown;
 	s_config.payload.sharedLibrary = NULL;
-
-//	if (!cnMainConfig_IsHosted(&s_config)) {
-//		CN_FATAL_ERROR("Improperly hosted config.");
-//	}
 }

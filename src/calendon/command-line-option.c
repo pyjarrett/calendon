@@ -1,9 +1,6 @@
 #include "command-line-option.h"
 
-#include <calendon/env.h>
-#include <calendon/string.h>
-
-#include <calendon/main-config.h>
+#include <string.h>
 
 /**
  * Return if the next argument to parse matches the command line option.
