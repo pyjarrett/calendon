@@ -960,7 +960,7 @@ CnDimension2u32 cnRLL_Resolution(void)
 
 CnAABB2 cnRLL_BackingCanvasArea(void)
 {
-	return cnAABB2_MakeMinMax(cnFloat2_Make(0.0f, 0.0f), cnFloat2_Make(windowWidth, windowHeight));
+	return cnAABB2_MakeMinMax(cnFloat2_Make(0.0f, 0.0f), cnFloat2_Make((float)windowWidth, (float)windowHeight));
 }
 
 CnAABB2 cnRLL_Viewport(void)
@@ -968,14 +968,14 @@ CnAABB2 cnRLL_Viewport(void)
 	return viewport;
 }
 
-void cnRLL_SetViewport(CnAABB2 viewport)
+void cnRLL_SetViewport(CnAABB2 v)
 {
-	CN_ASSERT(cnAABB2_FullyContainsAABB2(cnRLL_BackingCanvasArea(), viewport, 0.0f),
+	CN_ASSERT(cnAABB2_FullyContainsAABB2(cnRLL_BackingCanvasArea(), v, 0.0f),
 		"Attempting to draw a viewport not contained on the backing canvas.");
-	viewport = viewport;
+	viewport = v;
 
-	glViewport(viewport.min.x, viewport.min.y,
-		cnAABB2_Width(viewport), cnAABB2_Height(viewport));
+	glViewport((GLint)v.min.x, (GLint)v.min.y,
+		(GLsizei)cnAABB2_Width(v), (GLsizei)cnAABB2_Height(v));
 }
 
 void cnRLL_SetCameraAABB2(const CnAABB2 mapSlice)

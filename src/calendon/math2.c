@@ -271,9 +271,12 @@ CnDimension2u32 cnMath2_TransformDimension2u32(CnDimension2u32 dimension,
 	CnTransform2 transform)
 {
 	const CnFloat2 scale = cnTransform2_Scale(transform);
+	CN_ASSERT_FINITE_F32(scale.x);
+	CN_ASSERT_FINITE_F32(scale.y);
+
 	return (CnDimension2u32) {
-		roundf(dimension.width * scale.x),
-		roundf(dimension.height * scale.y) };
+		(uint32_t)roundf(dimension.width * scale.x),
+		(uint32_t)roundf(dimension.height * scale.y) };
 }
 
 /**

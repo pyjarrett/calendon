@@ -118,7 +118,7 @@ CN_GAME_API void CnPlugin_Tick(CnTime dt)
 	}
 
 	for (uint32_t i = 0; i < NUM_PLANETS; ++i) {
-		bodies[i].position = cnFloat2_Add(bodies[i].position, cnFloat2_Multiply(bodies[i].velocity, ms));
+		bodies[i].position = cnFloat2_Add(bodies[i].position, cnFloat2_Multiply(bodies[i].velocity, (float)ms));
 	}
 }
 

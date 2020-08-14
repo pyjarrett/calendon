@@ -11,7 +11,7 @@ extern "C" {
  * Floating point utilities.
  */
 
-CN_API float cnFloat_RelativeDiff(float a, float b);
+CN_API float cnFloat_RelativeDiff(const float a, const float b);
 
 CN_API float cnFloat_Clamp(const float value, const float min, const float max);
 
