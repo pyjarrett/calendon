@@ -25,23 +25,24 @@
 #include <stdio.h>
 #include <time.h>
 
-static CnTime lastTick;
-static CnPlugin Payload;
+static CnTime s_lastTick;
+static CnPlugin s_payload;
 
-static CnPlugin_InitFn Main_Init;
-static CnPlugin_TickFn Main_Tick;
-static CnPlugin_DrawFn Main_Draw;
-static CnPlugin_ShutdownFn Main_Shutdown;
+// TODO: Remove.
+static CnPlugin_InitFn s_mainInit;
+static CnPlugin_TickFn s_mainTick;
+static CnPlugin_DrawFn s_mainDraw;
+static CnPlugin_ShutdownFn s_mainShutdown;
 
 enum { CnMaxNumCoreSystems = 16 };
-static CnSystem coreSystems[CnMaxNumCoreSystems];
-static uint32_t numCoreSystems = 0;
+static CnSystem s_coreSystems[CnMaxNumCoreSystems];
+static uint32_t s_numCoreSystems = 0;
 
 void cnMain_AddCoreSystem(CnSystem system)
 {
-	CN_ASSERT(numCoreSystems < CnMaxNumCoreSystems, "Too many core systems added.");
-	coreSystems[numCoreSystems] = system;
-	++numCoreSystems;
+	CN_ASSERT(s_numCoreSystems < CnMaxNumCoreSystems, "Too many core systems added.");
+	s_coreSystems[s_numCoreSystems] = system;
+	++s_numCoreSystems;
 };
 
 CnMainConfig s_config;
@@ -199,10 +200,10 @@ void cnMain_RegisterPayload(CnPlugin* payload)
 	if (!payload->tick) CN_FATAL_ERROR("CnPlugin_TickFn function missing in payload.");
 	if (!payload->shutdown) CN_FATAL_ERROR("CnPlugin_ShutdownFn function missing in payload.");
 
-	Main_Init = payload->init;
-	Main_Tick = payload->tick;
-	Main_Draw = payload->draw;
-	Main_Shutdown = payload->shutdown;
+	s_mainInit = payload->init;
+	s_mainTick = payload->tick;
+	s_mainDraw = payload->draw;
+	s_mainShutdown = payload->shutdown;
 }
 
 void cnMain_LoadPayloadFromFile(const char* sharedLibraryName)
@@ -218,20 +219,20 @@ void cnMain_LoadPayloadFromFile(const char* sharedLibraryName)
 	strftime(timeBuffer, sizeof(timeBuffer), "%c", lt);
 	CN_TRACE(LogSysMain, "Last modified time: %s", timeBuffer);
 
-	if (Main_Shutdown) {
-		Main_Shutdown();
+	if (s_mainShutdown) {
+		s_mainShutdown();
 	}
 
-	cnSharedLibrary_Release(Payload.sharedLibrary);
-	Payload.sharedLibrary = cnSharedLibrary_Load(sharedLibraryName);
+	cnSharedLibrary_Release(s_payload.sharedLibrary);
+	s_payload.sharedLibrary = cnSharedLibrary_Load(sharedLibraryName);
 
-	if (!cnPlugin_LoadFromFile(&Payload, sharedLibraryName)) {
+	if (!cnPlugin_LoadFromFile(&s_payload, sharedLibraryName)) {
 		CN_FATAL_ERROR("Unable to load game module: %s", sharedLibraryName);
 	}
 
-	cnMain_RegisterPayload(&Payload);
+	cnMain_RegisterPayload(&s_payload);
 
-	if (!Payload.init()) {
+	if (!s_payload.init()) {
 		CN_FATAL_ERROR("%s failed to initialize", sharedLibraryName);
 	}
 }
@@ -242,12 +243,12 @@ bool cnMain_ParseCommandLine(int argc, char** argv)
 	CN_ASSERT(argc >= 1, "Argument count must at least include the executable.");
 	CN_ASSERT(argv, "Cannot parse null arguments.");
 
-	for (uint32_t i = 0; i < numCoreSystems; ++i) {
-		if (coreSystems[i].setDefaultConfig == NULL) {
-			CN_ERROR(LogSysMain, "%s is missing a default config.", coreSystems[i].name);
+	for (uint32_t i = 0; i < s_numCoreSystems; ++i) {
+		if (s_coreSystems[i].setDefaultConfig == NULL) {
+			CN_ERROR(LogSysMain, "%s is missing a default config.", s_coreSystems[i].name);
 		}
-		CN_ASSERT_NOT_NULL(coreSystems[i].setDefaultConfig);
-		coreSystems[i].setDefaultConfig(coreSystems[i].config());
+		CN_ASSERT_NOT_NULL(s_coreSystems[i].setDefaultConfig);
+		s_coreSystems[i].setDefaultConfig(s_coreSystems[i].config());
 	}
 
 	CnCommandLineParse commandLineParse = cnCommandLineParse_Make(argc, argv);
@@ -255,8 +256,8 @@ bool cnMain_ParseCommandLine(int argc, char** argv)
 	// The log system is not initialized at this point, so use printf.
 	while (cnCommandLineParse_ShouldContinue(&commandLineParse)) {
 		bool parseAdvanced = false;
-		for (uint32_t systemIndex = 0; systemIndex < numCoreSystems; ++systemIndex) {
-			CnSystem* system = &coreSystems[systemIndex];
+		for (uint32_t systemIndex = 0; systemIndex < s_numCoreSystems; ++systemIndex) {
+			CnSystem* system = &s_coreSystems[systemIndex];
 			CnCommandLineOptionList options = system->options();
 			for (uint32_t parserIndex = 0; parserIndex < options.numOptions; ++parserIndex) {
 				CnCommandLineOption* option = &options.options[parserIndex];
@@ -304,8 +305,8 @@ void cnMain_InitAllSystems(int argc, char** argv)
 		CN_FATAL_ERROR("Unable to parse command line.");
 	}
 
-	for (uint32_t i = 0; i < numCoreSystems; ++i) {
-		if (!coreSystems[i].plugin().init()) {
+	for (uint32_t i = 0; i < s_numCoreSystems; ++i) {
+		if (!s_coreSystems[i].plugin().init()) {
 			CN_FATAL_ERROR("Unable to initialize core system: %d", i);
 		}
 	}
@@ -355,15 +356,15 @@ void cnMain_InitAllSystems(int argc, char** argv)
 		cnMain_RegisterPayload(&s_config.payload);
 	}
 
-	if (Main_Init) {
-		Main_Init();
+	if (s_mainInit) {
+		s_mainInit();
 	}
-	if (!Main_Draw) CN_FATAL_ERROR("Draw function missing. Write a Main_Draw(void) function.");
-	if (!Main_Tick) CN_FATAL_ERROR("Update function missing. Write a Main_Tick(void) function.");
+	if (!s_mainDraw) CN_FATAL_ERROR("Draw function missing. Write a Main_Draw(void) function.");
+	if (!s_mainTick) CN_FATAL_ERROR("Update function missing. Write a Main_Tick(void) function.");
 
 	//cnMain_SetTickLimit(s_config.tickLimit);
 
-	lastTick = cnTime_MakeNow();
+	s_lastTick = cnTime_MakeNow();
 
 	CN_TRACE(LogSysMain, "Systems initialized.");
 
@@ -384,7 +385,7 @@ void cnMain_InitAllSystems(int argc, char** argv)
  */
 bool cnMain_GenerateTick(CnTime* outDt)
 {
-	const CnTime current = cnTime_Max(lastTick, cnTime_MakeNow());
+	const CnTime current = cnTime_Max(s_lastTick, cnTime_MakeNow());
 
 	// Prevent updating too rapidly.  Maintaining a relatively consistent
 	// timestep limits stored state and prevents precision errors due to
@@ -393,12 +394,12 @@ bool cnMain_GenerateTick(CnTime* outDt)
 	// Since Calendon is single-threaded, VSync will probably ensure that the
 	// minimum tick size is never missed.
 	const CnTime minTickSize = cnTime_MakeMilli(8);
-	const CnTime dt = cnTime_SubtractMonotonic(current, lastTick);
+	const CnTime dt = cnTime_SubtractMonotonic(current, s_lastTick);
 	if (cnTime_LessThan(dt, minTickSize)) {
 		return false;
 	}
 
-	lastTick = current;
+	s_lastTick = current;
 
 	// Ignore huge ticks, such as when resuming in the debugger.
 	const CnTime maxTickSize = cnTime_MakeMilli(5000);
@@ -423,8 +424,8 @@ void cnMain_StartUp(int argc, char** argv)
  */
 void cnMain_Loop(void)
 {
-	CN_ASSERT(Main_Tick, "Tick function not defined.");
-	CN_ASSERT(Main_Draw, "Draw function not defined.");
+	CN_ASSERT(s_mainTick, "Tick function not defined.");
+	CN_ASSERT(s_mainDraw, "Draw function not defined.");
 
 	while (cnMain_IsRunning() && !cnMain_IsTickLimitReached())
 	{
@@ -434,24 +435,24 @@ void cnMain_Loop(void)
 
 		CnTime dt;
 		if (cnMain_GenerateTick(&dt)) {
-			Main_Tick(dt);
+			s_mainTick(dt);
 			cnMain_TickCompleted();
 		}
-		Main_Draw();
+		s_mainDraw();
 	}
 }
 
 void cnMain_Shutdown(void)
 {
-	if (Main_Shutdown) Main_Shutdown();
+	if (s_mainShutdown) s_mainShutdown();
 
 	cnR_Shutdown();
 	cnUI_Shutdown();
 
-	for (uint32_t i = 0; i < numCoreSystems; ++i) {
-		const uint32_t nextSystemIndex = numCoreSystems - i - 1;
+	for (uint32_t i = 0; i < s_numCoreSystems; ++i) {
+		const uint32_t nextSystemIndex = s_numCoreSystems - i - 1;
 
-		CnSystem* system = &coreSystems[nextSystemIndex];
+		CnSystem* system = &s_coreSystems[nextSystemIndex];
 		printf("Shutting down: %s\n", system->name);
 		if (!system->plugin().shutdown) {
 			printf("No shutdown function for: %s\n", system->name);
