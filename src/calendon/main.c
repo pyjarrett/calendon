@@ -38,6 +38,8 @@ enum { CnMaxNumCoreSystems = 16 };
 static CnSystem s_coreSystems[CnMaxNumCoreSystems];
 static uint32_t s_numCoreSystems = 0;
 
+CnSystem cnMain_System(void);
+
 void cnMain_AddCoreSystem(CnSystem system)
 {
 	CN_ASSERT(s_numCoreSystems < CnMaxNumCoreSystems, "Too many core systems added.");
@@ -45,127 +47,12 @@ void cnMain_AddCoreSystem(CnSystem system)
 	++s_numCoreSystems;
 };
 
-CnMainConfig s_config;
-
 bool cnMain_Init(void) {
-	if (s_config.tickLimit != 0) {
-		cnMain_SetTickLimit(s_config.tickLimit);
+	CnMainConfig* config = (CnMainConfig*)cnMain_Config();
+	if (config->tickLimit != 0) {
+		cnMain_SetTickLimit(config->tickLimit);
 	}
 	return true;
-}
-
-CnPlugin cnMain_Plugin(void) {
-	return (CnPlugin) {
-		.init = cnMain_Init,
-		.shutdown = NULL,
-		.tick = NULL,
-		.draw = NULL,
-		.sharedLibrary = NULL
-	};
-}
-
-int32_t cnMain_Payload(const CnCommandLineParse* parse, void* c)
-{
-	CN_ASSERT_NOT_NULL(parse);
-	CN_ASSERT_NOT_NULL(c);
-
-	CnMainConfig* config = (CnMainConfig*)c;
-
-	if (!cnCommandLineParse_HasLookAhead(parse, 2)) {
-		printf("Payload must be provided a shared library (or DLL) to load\n");
-		return CnOptionParseError;
-	}
-
-	const char* gamePath = cnCommandLineParse_LookAhead(parse, 2);
-	if (cnString_TerminatedFitsIn(gamePath, CN_MAX_TERMINATED_PATH)) {
-		if (!cnPath_IsFile(gamePath)) {
-			char cwd[CN_MAX_TERMINATED_PATH];
-			cnEnv_CurrentWorkingDirectory(cwd, CN_MAX_TERMINATED_PATH);
-			printf("Current working directory is: %s\n", cwd);
-			printf("Game library %s does not exist.\n", gamePath);
-			return CnOptionParseError;
-		}
-		cnPathBuffer_Set(&config->gameLibPath, gamePath);
-		printf("Game library: '%s'\n", config->gameLibPath.str);
-		return 2;
-	}
-	else {
-		printf( "Length of name of game library is too long.");
-		return CnOptionParseError;
-	}
-}
-
-int32_t cnMain_OptionTickLimit(const CnCommandLineParse* parse, void* c)
-{
-	CN_ASSERT_NOT_NULL(parse);
-	CN_ASSERT_NOT_NULL(c);
-
-	CnMainConfig* config = (CnMainConfig*)c;
-
-	if (!cnCommandLineParse_HasLookAhead(parse, 2)) {
-		printf("Must provide the number of ticks for which to run the program.\n");
-		return CnOptionParseError;
-	}
-
-	const char* tickString = cnCommandLineParse_LookAhead(parse, 2);
-	char* readCursor;
-	const int64_t parsedValue = strtoll(tickString, &readCursor, 10);
-	if (parsedValue < 0) {
-		printf("Cannot step a negative number of ticks: %s\n", tickString);
-		return CnOptionParseError;
-	}
-
-	if (*readCursor != '\0' || errno == ERANGE) {
-		printf("Unable to parse tick limit: %s\n", tickString);
-		return CnOptionParseError;
-	}
-	config->tickLimit = parsedValue;
-	return 2;
-}
-
-static CnCommandLineOption s_options[] = {
-	{
-		"-g,--game SHARED_LIB       Change the game/demo to boot.\n",
-		"-g",
-		"--game",
-		cnMain_Payload
-	},
-	{
-		"-t,--tick-limit NUM_TICKS  Limit the run to a specific number of ticks.\n",
-		"-t",
-		"--tick-limit",
-		cnMain_OptionTickLimit
-	}
-};
-
-void* cnMain_Config(void)
-{
-	return &s_config;
-}
-
-void cnMain_SetDefaultConfig(void* config)
-{
-	CnMainConfig* c = (CnMainConfig*)config;
-	memset(c, 0, sizeof(CnMainConfig));
-}
-
-CnCommandLineOptionList cnMain_CommandLineOptionList(void)
-{
-	return (CnCommandLineOptionList) {
-		.options = s_options,
-		.numOptions = 2
-	};
-}
-
-CnSystem cnMain_System(void)
-{
-	return (CnSystem) {
-		.name = "Main",
-		.options = cnMain_CommandLineOptionList,
-		.config = cnMain_Config,
-		.setDefaultConfig = cnMain_SetDefaultConfig,
-		.plugin = cnMain_Plugin
-	};
 }
 
 static void cnMain_BuildCoreSystemList(void)
@@ -236,7 +123,6 @@ void cnMain_LoadPayloadFromFile(const char* sharedLibraryName)
 		CN_FATAL_ERROR("%s failed to initialize", sharedLibraryName);
 	}
 }
-
 
 bool cnMain_ParseCommandLine(int argc, char** argv)
 {
@@ -342,18 +228,19 @@ void cnMain_InitAllSystems(int argc, char** argv)
 	cnR_Init(uiInitParams.resolution);
 
 	// If there is a demo to load from file, then use that.
-	if (!cnPlugin_IsComplete(&s_config.payload)) {
-		if (!cnPath_IsFile(s_config.gameLibPath.str)) {
-			CN_FATAL_ERROR("Cannot load game. '%s' is not a game library.", s_config.gameLibPath.str);
+	CnMainConfig* config = (CnMainConfig*)cnMain_Config();
+	if (!cnPlugin_IsComplete(&config->payload)) {
+		if (!cnPath_IsFile(config->gameLibPath.str)) {
+			CN_FATAL_ERROR("Cannot load game. '%s' is not a game library.", config->gameLibPath.str);
 		}
 
-		const char* gameLib = s_config.gameLibPath.str;
+		const char* gameLib = config->gameLibPath.str;
 		if (gameLib) {
 			cnMain_LoadPayloadFromFile(gameLib);
 		}
 	}
 	else {
-		cnMain_RegisterPayload(&s_config.payload);
+		cnMain_RegisterPayload(&config->payload);
 	}
 
 	if (s_mainInit) {
@@ -461,4 +348,25 @@ void cnMain_Shutdown(void)
 			system->plugin().shutdown();
 		}
 	}
+}
+
+CnPlugin cnMain_Plugin(void) {
+	return (CnPlugin) {
+		.init          = cnMain_Init,
+		.shutdown      = NULL,
+		.tick          = NULL,
+		.draw          = NULL,
+		.sharedLibrary = NULL
+	};
+}
+
+CnSystem cnMain_System(void)
+{
+	return (CnSystem) {
+		.name             = "Main",
+		.options          = cnMain_CommandLineOptionList,
+		.config           = cnMain_Config,
+		.setDefaultConfig = cnMain_SetDefaultConfig,
+		.plugin           = cnMain_Plugin
+	};
 }
