@@ -135,13 +135,7 @@ void cnMain_PrintUsage(int argc, char** argv)
 
 		for (uint32_t optionIndex = 0; optionIndex < optionList.numOptions; ++optionIndex) {
 			CnCommandLineOption* option = &optionList.options[optionIndex];
-			const char* shortOption = option->shortOption ? option->shortOption : "";
-			const char* longOption = option->longOption ? option->longOption : "";
 			const char* help = option->help ? option->help : "";
-
-			const int ColumnWidthShortOption = 4;
-			const int ColumnWidthLongOption = 20;
-
 			cnPrint("%s\n", help);
 		}
 	}
