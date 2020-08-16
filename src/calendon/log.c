@@ -7,12 +7,19 @@
 
 static bool initialized = false;
 CN_API char LogVerbosityChar[CnLogVerbosityNum];
+CN_API const char* LogVerbosityString[CnLogVerbosityNum];
 CN_API uint32_t LogSystemsVerbosity[CN_LOG_MAX_SYSTEMS];
 CN_API const char* LogSystemsRegistered[CN_LOG_MAX_SYSTEMS];
 CN_API uint32_t LogSystemsNumRegistered;
+CN_API CnLogMessageCounter LogMessagesProduced[CN_LOG_MAX_SYSTEMS];
 CN_API CnLogHandle LogSysMain;
 
 static CnLogConfig s_config;
+
+void cnLogMessageCounter_Zero(CnLogMessageCounter* counter)
+{
+	memset(counter, 0, sizeof(counter));
+}
 
 void* cnLog_Config(void) {
 	return &s_config;
@@ -45,9 +52,15 @@ bool cnLog_Init(void)
 		LogSystemsRegistered[i] = NULL;
 	}
 
+	LogVerbosityChar[CnLogVerbosityFatal] = 'F';
 	LogVerbosityChar[CnLogVerbosityError] = 'E';
 	LogVerbosityChar[CnLogVerbosityWarn] = 'W';
 	LogVerbosityChar[CnLogVerbosityTrace] = 'T';
+
+	LogVerbosityString[CnLogVerbosityFatal] = "Fatal";
+	LogVerbosityString[CnLogVerbosityError] = "Error";
+	LogVerbosityString[CnLogVerbosityWarn] = "Warning";
+	LogVerbosityString[CnLogVerbosityTrace] = "Trace";
 
 	initialized = true;
 
@@ -56,9 +69,38 @@ bool cnLog_Init(void)
 	return true;
 }
 
+void cnLog_PrintStats(void)
+{
+	CN_ASSERT(cnLog_IsReady(), "Cannot shutdown log system, it was never initialized.");
+
+	const int systemColumnWidth = 30;
+	const int counterColumnWidth = 16;
+
+	cnPrint("\nTotal log messages written\n");
+
+	// Print column headers
+	cnPrint("%*s", systemColumnWidth, "");
+	for (uint32_t i = 0; i < CnLogVerbosityNum; ++i) {
+		cnPrint("    %*s", counterColumnWidth, LogVerbosityString[i]);
+	}
+	cnPrint("\n");
+
+	// Print message counts.
+	for (uint32_t i = 0; i < LogSystemsNumRegistered; ++i) {
+		cnPrint("%*s", systemColumnWidth, LogSystemsRegistered[i]);
+		for (uint32_t msgType = 0; msgType < CnLogVerbosityNum; ++msgType) {
+			cnPrint("    %*" PRIu64, counterColumnWidth, LogMessagesProduced[i].counts[msgType]);
+		}
+		cnPrint("\n");
+	}
+}
+
 void cnLog_Shutdown(void)
 {
 	CN_ASSERT(cnLog_IsReady(), "Cannot shutdown log system, it was never initialized.");
+
+	cnLog_PrintStats();
+
 	for (uint32_t i = 0; i < LogSystemsNumRegistered; ++i) {
 		LogSystemsRegistered[i] = NULL;
 	}
@@ -96,11 +138,17 @@ void cnLog_RegisterSystem(uint32_t* system, const char* name, uint32_t verbosity
 	}
 	LogSystemsRegistered[*system] = name;
 	LogSystemsVerbosity[*system] = verbosity;
+
+	for (int i = 0; i < CnLogVerbosityNum; ++i) {
+		LogMessagesProduced[*system].counts[i] = 0;
+	}
 }
 
 void cnLog_Print(CnLogHandle system, CnLogVerbosity verbosity, const char* format, ...)
 {
 	if (s_config.enabled && (uint32_t)verbosity <= LogSystemsVerbosity[system]) {
+		++LogMessagesProduced[system].counts[verbosity];
+
 		va_list args;
 		va_start(args, format);
 		vprintf(format, args);

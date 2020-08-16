@@ -96,10 +96,24 @@ typedef enum {
 	CnLogVerbosityNum
 } CnLogVerbosity;
 
+typedef struct {
+	uint64_t counts[CnLogVerbosityNum];
+} CnLogMessageCounter;
+
+/**
+ * Count the number of log messages produced by each system.
+ */
+extern CN_API CnLogMessageCounter LogMessagesProduced[CN_LOG_MAX_SYSTEMS];
+
 /**
  * Characters printed in the line to represent the type of log entry.
  */
 extern CN_API char LogVerbosityChar[CnLogVerbosityNum];
+
+/**
+ * Long descriptions of verbosity types.
+ */
+extern CN_API const char* LogVerbosityString[CnLogVerbosityNum];
 
 /**
  * Per-system verbosity settings given by values in `CN_LOG_*`.  Every system
