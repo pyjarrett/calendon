@@ -9,7 +9,8 @@ int32_t cnAssets_OptionAssetDir(const CnCommandLineParse* parse, void* c);
 static CnAssetsConfig s_config;
 static CnCommandLineOption options[] = {
 	{
-		"-a,--asset-dir DIR         Change the directory for assets.\n",
+		"\t-a,--asset-dir DIR\n"
+			"\t\tChange the directory for assets.\n",
 		"-a",
 		"--asset-dir",
 		cnAssets_OptionAssetDir

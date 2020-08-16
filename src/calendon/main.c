@@ -1,6 +1,5 @@
 #include "main.h"
 
-#include <calendon/argparse.h>
 #include <calendon/assets.h>
 #include <calendon/assets-fileio.h>
 #include <calendon/control.h>
@@ -124,6 +123,36 @@ void cnMain_LoadPayloadFromFile(const char* sharedLibraryName)
 	}
 }
 
+void cnMain_PrintUsage(int argc, char** argv)
+{
+	// Print core systems.
+	for (uint32_t i = 0; i < s_numCoreSystems; ++i) {
+		CnSystem* system = &s_coreSystems[i];
+		CnCommandLineOptionList optionList = system->options();
+		if (system->name && optionList.numOptions > 0) {
+			cnPrint("%s\n", system->name);
+		}
+
+		for (uint32_t optionIndex = 0; optionIndex < optionList.numOptions; ++optionIndex) {
+			CnCommandLineOption* option = &optionList.options[optionIndex];
+			const char* shortOption = option->shortOption ? option->shortOption : "";
+			const char* longOption = option->longOption ? option->longOption : "";
+			const char* help = option->help ? option->help : "";
+
+			const int ColumnWidthShortOption = 4;
+			const int ColumnWidthLongOption = 20;
+
+			cnPrint("%s\n", help);
+		}
+	}
+
+	// Print the provided arguments.
+	cnPrint("Arguments provided:\n");
+	for (int i = 0; i < argc; ++i) {
+		cnPrint("%4d: \"%s\"\n", i, argv[i]);
+	}
+}
+
 bool cnMain_ParseCommandLine(int argc, char** argv)
 {
 	CN_ASSERT(argc >= 1, "Argument count must at least include the executable.");
@@ -150,7 +179,7 @@ bool cnMain_ParseCommandLine(int argc, char** argv)
 				if (cnCommandLineOption_Matches(option, &commandLineParse)) {
 					const int32_t argsParsed = option->parser(&commandLineParse, system->config());
 					if (argsParsed == CnOptionParseError) {
-						cnArgparse_PrintUsage(argc, argv);
+						cnMain_PrintUsage(argc, argv);
 						return false;
 					}
 					cnCommandLineParse_Advance(&commandLineParse, argsParsed);
@@ -171,10 +200,10 @@ bool cnMain_ParseCommandLine(int argc, char** argv)
 	}
 	if (!cnCommandLineParse_IsComplete(&commandLineParse)) {
 		printf("Unknown command line option\n");
-		printf("Only parsed %d of %d arguments\n",
+		printf("Only parsed %d of %d arguments\n\n",
 			cnCommandLineParse_LookAheadIndex(&commandLineParse, 1),
 			argc);
-		cnArgparse_PrintUsage(argc, argv);
+		cnMain_PrintUsage(argc, argv);
 		return false;
 	}
 	return true;

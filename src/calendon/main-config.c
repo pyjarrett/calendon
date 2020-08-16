@@ -1,7 +1,6 @@
 #include "main-config.h"
 
 #include <calendon/cn.h>
-#include <calendon/argparse.h>
 #include <calendon/env.h>
 #include <calendon/string.h>
 
@@ -14,13 +13,15 @@ int32_t cnMain_OptionTickLimit(const CnCommandLineParse* parse, void* c);
 static CnMainConfig s_config;
 static CnCommandLineOption s_options[] = {
 	{
-		"-g,--game SHARED_LIB       Change the game/demo to boot.\n",
+		"\t-g,--game SHARED_LIB\n"
+			"\t\tChange the game/demo to boot.\n",
 		"-g",
 		"--game",
 		cnMain_OptionPayload
 	},
 	{
-		"-t,--tick-limit NUM_TICKS  Limit the run to a specific number of ticks.\n",
+		"\t-t,--tick-limit NUM_TICKS\n"
+			"\t\tLimit the run to a specific number of ticks.\n",
 		"-t",
 		"--tick-limit",
 		cnMain_OptionTickLimit

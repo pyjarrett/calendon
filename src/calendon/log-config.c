@@ -14,7 +14,8 @@ int32_t cnLog_OptionDisable(const CnCommandLineParse* parse, void* config)
 
 static CnCommandLineOption options[] = {
 	{
-		"Disables runtime logging output.",
+		"\t--log-disable\n"
+			"\t\tDisables runtime logging output.\n",
 		NULL,
 		"--log-disable",
 		cnLog_OptionDisable,
