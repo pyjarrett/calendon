@@ -31,28 +31,17 @@
  * 2) The severity of the log entry.
  * 3) The file and line of where the log entry is generated.
  * 4) The program time at which the log entry occurred.
- *
- * @subsection Reasons for not using `std::ostream` operators
- *
- * `std::ostream` locks users into writing against the `<<` operator. Also,
- * more in-depth formatting requires extensive documentation lookup and very
- * verbose code.
 */
 #ifndef CN_LOG_H
 #define CN_LOG_H
 
-#include "cn.h"
+#include <calendon/cn.h>
 
+#include <calendon/log-verbosity.h>
+#include <calendon/log-system.h>
 #include <calendon/system.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/**
- * Maximum number of systems supported by the logging system.
- */
-#define CN_LOG_MAX_SYSTEMS 64
+CN_HEADER_BEGIN_EXPORTED
 
 /**
  * Simplifies the question of "What type is a log handle?"
@@ -69,32 +58,6 @@ extern CN_API CnLogHandle LogSysMain;
  * line to indicate the originating system of each message.
  */
 extern CN_API const char* LogSystemsRegistered[CN_LOG_MAX_SYSTEMS];
-
-/**
- * Log verbosity settings in increasing order of logging.  Using a higher
- * setting enables logging from all systems below it.
- */
-typedef enum {
-	// Since unsigned ints are used, GCC generates lots of compiler warnings
-	// relating to (verbosity <= 0) since verbosity is unsigned and cannot be
-	// less than 0.  This "always on" error mode hides that error.
-	CnLogVerbosityFatal = 0,
-
-	/** Very serious issues requiring attention. */
-	CnLogVerbosityError = 1,
-
-	/**
-	 * Warnings to be fixed before shipping.  The program can continue
-	 * executing, but it is in an abnormal or reduced state.
-	 */
-	CnLogVerbosityWarn = 2,
-
-	/** Messages for tracing program flow. */
-	CnLogVerbosityTrace = 3,
-
-	/** Total number of verbosity settings. */
-	CnLogVerbosityNum
-} CnLogVerbosity;
 
 typedef struct {
 	uint64_t counts[CnLogVerbosityNum];
@@ -158,8 +121,6 @@ CnSystem cnLog_System(void);
 CN_API bool cnLog_IsReady(void);
 CN_API void cnLog_RegisterSystem(CnLogHandle* system, const char* name, uint32_t verbosity);
 
-#ifdef __cplusplus
-}
-#endif
+CN_HEADER_END
 
 #endif /* CN_LOG_H */
