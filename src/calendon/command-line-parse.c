@@ -53,10 +53,7 @@ int cnCommandLineParse_LookAheadIndex(const CnCommandLineParse* parse, int amoun
 {
 	CN_ASSERT_NOT_NULL(parse);
 	CN_ASSERT(amount > 0, "Must look ahead at least by 1 argument.");
-	const int index = (parse->numArgsParsed - 1) + amount;
-
-	CN_ASSERT(index < parse->argc, "Look ahead out of range: %d", amount);
-	return index;
+	return (parse->numArgsParsed - 1) + amount;
 }
 
 /**

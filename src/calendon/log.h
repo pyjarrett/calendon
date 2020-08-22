@@ -66,15 +66,6 @@ typedef struct {
  */
 extern CN_API CnLogMessageCounter LogMessagesProduced[CN_LOG_MAX_SYSTEMS];
 
-/**
- * Characters printed in the line to represent the type of log entry.
- */
-extern CN_API char LogVerbosityChar[CnLogVerbosityNum];
-
-/**
- * Long descriptions of verbosity types.
- */
-extern CN_API const char* LogVerbosityString[CnLogVerbosityNum];
 
 /**
  * Per-system verbosity settings given by values in `CN_LOG_*`.  Every system
@@ -115,9 +106,12 @@ CN_API void cnLog_Print(CnLogHandle system, CnLogVerbosity verbosity, const char
  */
 #define CN_TRACE(system, msg, ...) CN_LOG(system, CnLogVerbosityTrace, msg, ##__VA_ARGS__)
 
+void cnLog_PreInit(void);
 CnSystem cnLog_System(void);
 CN_API bool cnLog_IsReady(void);
-CN_API void cnLog_RegisterSystem(CnLogHandle* system, const char* name, uint32_t verbosity);
+CN_API uint32_t cnLog_RegisterSystem(const char* name);
+
+CN_API void cnLogHandle_SetVerbosity(CnLogHandle system, uint32_t verbosity);
 
 CN_HEADER_END
 

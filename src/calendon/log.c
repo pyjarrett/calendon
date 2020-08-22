@@ -4,10 +4,9 @@
 #include <stdio.h>
 
 #include <calendon/log-config.h>
+#include <calendon/string.h>
 
 static bool initialized = false;
-CN_API char LogVerbosityChar[CnLogVerbosityNum];
-CN_API const char* LogVerbosityString[CnLogVerbosityNum];
 CN_API uint32_t LogSystemsVerbosity[CN_LOG_MAX_SYSTEMS];
 CN_API const char* LogSystemsRegistered[CN_LOG_MAX_SYSTEMS];
 CN_API uint32_t LogSystemsNumRegistered;
@@ -36,36 +35,25 @@ bool cnLog_IsReady(void)
 	return initialized;
 }
 
-bool cnLog_Init(void)
+void cnLog_PreInit(void)
 {
 #if _WIN32
 	// Enable UTF-8 output on Windows.
 	SetConsoleOutputCP(CP_UTF8);
 #endif
-	if (cnLog_IsReady()) {
-		CN_FATAL_ERROR("Double initialization of logging system.");
-		return false;
-	}
 	LogSystemsNumRegistered = 0;
 
 	for (int i=0; i<CN_LOG_MAX_SYSTEMS; ++i) {
 		LogSystemsRegistered[i] = NULL;
 	}
 
-	LogVerbosityChar[CnLogVerbosityFatal] = 'F';
-	LogVerbosityChar[CnLogVerbosityError] = 'E';
-	LogVerbosityChar[CnLogVerbosityWarn] = 'W';
-	LogVerbosityChar[CnLogVerbosityTrace] = 'T';
-
-	LogVerbosityString[CnLogVerbosityFatal] = "Fatal";
-	LogVerbosityString[CnLogVerbosityError] = "Error";
-	LogVerbosityString[CnLogVerbosityWarn] = "Warning";
-	LogVerbosityString[CnLogVerbosityTrace] = "Trace";
-
 	initialized = true;
 
-	cnLog_RegisterSystem(&LogSysMain, "Main", CnLogVerbosityTrace);
-	CN_TRACE(LogSysMain, "Log system initialized.");
+	LogSysMain = cnLog_RegisterSystem("Main");
+}
+
+bool cnLog_Init(void)
+{
 	return true;
 }
 
@@ -114,16 +102,18 @@ void cnLog_Shutdown(void)
  *
  * Assumes "name" is somewhere where it doesn't need dynamic allocation.
  */
-void cnLog_RegisterSystem(uint32_t* system, const char* name, uint32_t verbosity)
+uint32_t cnLog_RegisterSystem(const char* name)
 {
+	CN_ASSERT_NOT_NULL(name);
+
 	if (!cnLog_IsReady()) {
 		CN_FATAL_ERROR("Log system not initialized, cannot register any systems.");
 	}
 
-	// TODO: Is it possible to check the location of name to verify it's in the
-	// program .rodata segment itself?
-	if (!system) {
-		CN_FATAL_ERROR("Cannot assign a log system ID to a null pointer.");
+	for (uint32_t i = 0; i < LogSystemsNumRegistered; ++i) {
+		if (cnString_Equal(name, LogSystemsRegistered[i], CN_LOG_MAX_SYSTEM_NAME_LENGTH)) {
+			return i;
+		}
 	}
 
 	if (LogSystemsNumRegistered + 1 >= CN_LOG_MAX_SYSTEMS) {
@@ -131,24 +121,27 @@ void cnLog_RegisterSystem(uint32_t* system, const char* name, uint32_t verbosity
 			"maximum number have already been registered.");
 	}
 
-	*system = LogSystemsNumRegistered++;
-	if (LogSystemsRegistered[*system] != NULL) {
-		CN_FATAL_ERROR("Cannot register log system ID for '%s', ID is already used: %i\n",
-			name, *system);
-	}
-	LogSystemsRegistered[*system] = name;
-	LogSystemsVerbosity[*system] = verbosity;
+	const CnLogHandle systemIndex = LogSystemsNumRegistered++;
+	LogSystemsRegistered[systemIndex] = name;
+	LogSystemsVerbosity[systemIndex] = CnLogVerbosityWarn;
 
 	for (int i = 0; i < CnLogVerbosityNum; ++i) {
-		LogMessagesProduced[*system].counts[i] = 0;
+		LogMessagesProduced[systemIndex].counts[i] = 0;
 	}
+
+	return systemIndex;
+}
+
+CN_API void cnLogHandle_SetVerbosity(CnLogHandle system, uint32_t verbosity)
+{
+	CN_ASSERT(cnLog_IsValidVerbosity(verbosity),
+		"Verbosity setting is not valid: " PRIu32, verbosity);
 }
 
 void cnLog_Print(CnLogHandle system, CnLogVerbosity verbosity, const char* format, ...)
 {
+	++LogMessagesProduced[system].counts[verbosity];
 	if (s_config.enabled && (uint32_t)verbosity <= LogSystemsVerbosity[system]) {
-		++LogMessagesProduced[system].counts[verbosity];
-
 		va_list args;
 		va_start(args, format);
 		vprintf(format, args);

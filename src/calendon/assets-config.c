@@ -37,7 +37,7 @@ int32_t cnAssets_OptionAssetDir(const CnCommandLineParse* parse, void* c)
 	}
 
 	const char* assetDir = cnCommandLineParse_LookAhead(parse, 2);
-	if (cnString_TerminatedFitsIn(assetDir, CN_MAX_TERMINATED_PATH)) {
+	if (cnString_FitsWithNull(assetDir, CN_MAX_TERMINATED_PATH)) {
 		if (!cnPath_IsDir(assetDir)) {
 			cnPrint("Asset directory %s does not exist\n", assetDir);
 			return CnOptionParseError;

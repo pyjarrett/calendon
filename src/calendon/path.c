@@ -73,7 +73,7 @@ bool cnPathBuffer_Set(CnPathBuffer* path, const char* initialPath)
 	CN_ASSERT(path != NULL, "Cannot assign to a null CnPathBuffer");
 	CN_ASSERT(initialPath != NULL, "Cannot assign a null initial path to a CnPathBuffer");
 	const size_t initialPathLength = strlen(initialPath);
-	if (cnString_TerminatedFitsIn(initialPath, CN_MAX_TERMINATED_PATH)) {
+	if (cnString_FitsWithNull(initialPath, CN_MAX_TERMINATED_PATH)) {
 		strcpy(path->str, initialPath);
 		return true;
 	}

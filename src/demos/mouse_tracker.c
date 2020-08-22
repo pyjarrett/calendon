@@ -14,7 +14,8 @@ CnFloat2 position;
 
 CN_GAME_API bool CnPlugin_Init(void)
 {
-	cnLog_RegisterSystem(&LogSysSample, "Sample", CnLogVerbosityTrace);
+	LogSysSample = cnLog_RegisterSystem("Sample");
+	cnLogHandle_SetVerbosity(LogSysSample, CnLogVerbosityTrace);
 	CN_TRACE(LogSysSample, "Sample loaded");
 
 	position = cnFloat2_Make(300, 300);
