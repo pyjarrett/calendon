@@ -1,9 +1,19 @@
-#ifndef CN_LOG_VERBOSITY_H
-#define CN_LOG_VERBOSITY_H
+#ifndef CN_LOG_SYSTEM_H
+#define CN_LOG_SYSTEM_H
 
+/**
+ * @file log-settings.h
+ *
+ * Compile-time settings for the logging system.
+ */
 #include <calendon/cn.h>
 
 CN_HEADER_BEGIN_EXPORTED
+
+/**
+ * Maximum number of systems supported by the logging system.
+ */
+#define CN_LOG_MAX_SYSTEMS 64
 
 /**
  * Log verbosity settings in increasing order of logging.  Using a higher
@@ -33,4 +43,4 @@ typedef enum {
 
 CN_HEADER_END
 
-#endif /* CN_LOG_VERBOSITY_H */
+#endif /* CN_LOG_SYSTEM_H */

@@ -30,7 +30,6 @@ int32_t cnLog_OptionFilter(const CnCommandLineParse* parse, void* config)
 			// Report an error for invalid verbosity.
 		// TODO: call register system automatically after systems are created.
 		// TODO: manually initialize the basics of the logging system before other systems.
-
 	}
 
 	CN_FATAL_ERROR("NOT DONE");

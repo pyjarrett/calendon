@@ -1,12 +1,13 @@
-/*
+#ifndef CN_LOG_H
+#define CN_LOG_H
+
+/**
  * Logging system.
  *
  * I'm a little hesitant to add any sophisticated logging system because it
  * often gets more abuse than actual use.  The benefits of allowing program
  * tracing and reporting of errors without resorting to the debugger outweigh
- * the negative sides.  I'm considering adding a portion of the system to
- * collect statistics of error and warning reports, but it is not sufficiently
- * important at this time.
+ * the negative sides.
  *
  * Logging systems help development by providing a running log of things which
  * have happened and variable inspection with minimal effect on program speed
@@ -32,13 +33,10 @@
  * 3) The file and line of where the log entry is generated.
  * 4) The program time at which the log entry occurred.
 */
-#ifndef CN_LOG_H
-#define CN_LOG_H
 
 #include <calendon/cn.h>
 
-#include <calendon/log-verbosity.h>
-#include <calendon/log-system.h>
+#include <calendon/log-settings.h>
 #include <calendon/system.h>
 
 CN_HEADER_BEGIN_EXPORTED
