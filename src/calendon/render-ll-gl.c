@@ -584,7 +584,7 @@ static bool cnRLL_CreateShader(GLuint* shader, const char* source, const uint32_
 
 void cnRLL_InitGL(void)
 {
-	cnLog_RegisterSystem(&LogSysRender, "Render", CnLogVerbosityTrace);
+	LogSysRender = cnLog_RegisterSystem("Render");
 
 	// TODO: Settle on an appropriate OpenGL version to use.
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);

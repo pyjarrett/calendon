@@ -31,7 +31,7 @@ bool cnAssets_Init(void)
 		CN_FATAL_ERROR("Double initialization of assets system.");
 		return false;
 	}
-	if (!cnString_TerminatedFitsIn(config->assetDirPath.str, CN_MAX_TERMINATED_PATH)) {
+	if (!cnString_FitsWithNull(config->assetDirPath.str, CN_MAX_TERMINATED_PATH)) {
 		CN_FATAL_ERROR("Asset path root is too long.  Cannot initialize asset path with %s", &config->assetDirPath.str);
 		return false;
 	}
@@ -45,7 +45,7 @@ bool cnAssets_Init(void)
 		return false;
 	}
 
-	cnLog_RegisterSystem(&LogSysAssets, "Assets", CnLogVerbosityTrace);
+	LogSysAssets = cnLog_RegisterSystem("Assets");
 
 	CN_TRACE(LogSysAssets, "Assets initialized with root at: '%s'", assetsRoot);
 	assetsInitialized = true;

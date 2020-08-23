@@ -10,7 +10,7 @@ static uint32_t LogSysMemory;
 bool cnMem_Init(void)
 {
 	MemOutstandingAllocations = 0;
-	cnLog_RegisterSystem(&LogSysMemory, "Memory", CnLogVerbosityTrace);
+	LogSysMemory = cnLog_RegisterSystem("Memory");
 	return true;
 }
 

@@ -60,7 +60,7 @@ int32_t cnMain_OptionPayload(const CnCommandLineParse* parse, void* c)
 	}
 
 	const char* gamePath = cnCommandLineParse_LookAhead(parse, 2);
-	if (cnString_TerminatedFitsIn(gamePath, CN_MAX_TERMINATED_PATH)) {
+	if (cnString_FitsWithNull(gamePath, CN_MAX_TERMINATED_PATH)) {
 		if (!cnPath_IsFile(gamePath)) {
 			char cwd[CN_MAX_TERMINATED_PATH];
 			cnEnv_CurrentWorkingDirectory(cwd, CN_MAX_TERMINATED_PATH);

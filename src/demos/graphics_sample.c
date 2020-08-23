@@ -92,7 +92,8 @@ static void drawScene(void)
 
 CN_GAME_API bool CnPlugin_Init(void)
 {
-	cnLog_RegisterSystem(&LogSysSample, "Sample", CnLogVerbosityTrace);
+	LogSysSample = cnLog_RegisterSystem("Sample");
+	cnLogHandle_SetVerbosity(LogSysSample, CnLogVerbosityTrace);
 	CN_TRACE(LogSysSample, "Sample loaded");
 
 	CN_TRACE(LogSysSample, "Animation loop size:        %zu bytes", sizeof(CnAnimationLoop));

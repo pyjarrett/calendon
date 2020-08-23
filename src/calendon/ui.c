@@ -13,7 +13,7 @@ CnInput lastInput;
 static void cnUI_CreateWindow(const uint32_t w, const uint32_t h)
 {
 	const uint32_t windowInitFlags = SDL_WINDOW_OPENGL;
-	window = SDL_CreateWindow("Powerblocks (calendon)", SDL_WINDOWPOS_CENTERED,
+	window = SDL_CreateWindow("Calendon", SDL_WINDOWPOS_CENTERED,
 			SDL_WINDOWPOS_CENTERED, (int)w, (int)h, windowInitFlags);
 	if (window == NULL) {
 		SDL_Quit();

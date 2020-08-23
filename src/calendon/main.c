@@ -117,10 +117,6 @@ void cnMain_LoadPayloadFromFile(const char* sharedLibraryName)
 	}
 
 	cnMain_RegisterPayload(&s_payload);
-
-	if (!s_payload.init()) {
-		CN_FATAL_ERROR("%s failed to initialize", sharedLibraryName);
-	}
 }
 
 void cnMain_PrintUsage(int argc, char** argv)
@@ -209,6 +205,7 @@ bool cnMain_ParseCommandLine(int argc, char** argv)
 void cnMain_InitAllSystems(int argc, char** argv)
 {
 	cnMain_BuildCoreSystemList();
+	cnLog_PreInit();
 
 	if (!cnMain_ParseCommandLine(argc, argv)) {
 		CN_FATAL_ERROR("Unable to parse command line.");

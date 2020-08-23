@@ -1,12 +1,13 @@
-/*
+#ifndef CN_LOG_H
+#define CN_LOG_H
+
+/**
  * Logging system.
  *
  * I'm a little hesitant to add any sophisticated logging system because it
  * often gets more abuse than actual use.  The benefits of allowing program
  * tracing and reporting of errors without resorting to the debugger outweigh
- * the negative sides.  I'm considering adding a portion of the system to
- * collect statistics of error and warning reports, but it is not sufficiently
- * important at this time.
+ * the negative sides.
  *
  * Logging systems help development by providing a running log of things which
  * have happened and variable inspection with minimal effect on program speed
@@ -31,28 +32,14 @@
  * 2) The severity of the log entry.
  * 3) The file and line of where the log entry is generated.
  * 4) The program time at which the log entry occurred.
- *
- * @subsection Reasons for not using `std::ostream` operators
- *
- * `std::ostream` locks users into writing against the `<<` operator. Also,
- * more in-depth formatting requires extensive documentation lookup and very
- * verbose code.
 */
-#ifndef CN_LOG_H
-#define CN_LOG_H
 
-#include "cn.h"
+#include <calendon/cn.h>
 
+#include <calendon/log-settings.h>
 #include <calendon/system.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/**
- * Maximum number of systems supported by the logging system.
- */
-#define CN_LOG_MAX_SYSTEMS 64
+CN_HEADER_BEGIN_EXPORTED
 
 /**
  * Simplifies the question of "What type is a log handle?"
@@ -70,32 +57,6 @@ extern CN_API CnLogHandle LogSysMain;
  */
 extern CN_API const char* LogSystemsRegistered[CN_LOG_MAX_SYSTEMS];
 
-/**
- * Log verbosity settings in increasing order of logging.  Using a higher
- * setting enables logging from all systems below it.
- */
-typedef enum {
-	// Since unsigned ints are used, GCC generates lots of compiler warnings
-	// relating to (verbosity <= 0) since verbosity is unsigned and cannot be
-	// less than 0.  This "always on" error mode hides that error.
-	CnLogVerbosityFatal = 0,
-
-	/** Very serious issues requiring attention. */
-	CnLogVerbosityError = 1,
-
-	/**
-	 * Warnings to be fixed before shipping.  The program can continue
-	 * executing, but it is in an abnormal or reduced state.
-	 */
-	CnLogVerbosityWarn = 2,
-
-	/** Messages for tracing program flow. */
-	CnLogVerbosityTrace = 3,
-
-	/** Total number of verbosity settings. */
-	CnLogVerbosityNum
-} CnLogVerbosity;
-
 typedef struct {
 	uint64_t counts[CnLogVerbosityNum];
 } CnLogMessageCounter;
@@ -104,16 +65,6 @@ typedef struct {
  * Count the number of log messages produced by each system.
  */
 extern CN_API CnLogMessageCounter LogMessagesProduced[CN_LOG_MAX_SYSTEMS];
-
-/**
- * Characters printed in the line to represent the type of log entry.
- */
-extern CN_API char LogVerbosityChar[CnLogVerbosityNum];
-
-/**
- * Long descriptions of verbosity types.
- */
-extern CN_API const char* LogVerbosityString[CnLogVerbosityNum];
 
 /**
  * Per-system verbosity settings given by values in `CN_LOG_*`.  Every system
@@ -154,12 +105,13 @@ CN_API void cnLog_Print(CnLogHandle system, CnLogVerbosity verbosity, const char
  */
 #define CN_TRACE(system, msg, ...) CN_LOG(system, CnLogVerbosityTrace, msg, ##__VA_ARGS__)
 
+void cnLog_PreInit(void);
 CnSystem cnLog_System(void);
 CN_API bool cnLog_IsReady(void);
-CN_API void cnLog_RegisterSystem(CnLogHandle* system, const char* name, uint32_t verbosity);
+CN_API uint32_t cnLog_RegisterSystem(const char* name);
 
-#ifdef __cplusplus
-}
-#endif
+CN_API void cnLogHandle_SetVerbosity(CnLogHandle system, uint32_t verbosity);
+
+CN_HEADER_END
 
 #endif /* CN_LOG_H */
