@@ -13,12 +13,12 @@ CN_HEADER_BEGIN_EXPORTED
 /**
  * Maximum number of systems supported by the logging system.
  */
-#define CN_LOG_MAX_SYSTEMS 64
+#define CN_LOG_MAX_SYSTEMS 128
 
 /**
  * Maximum length of name copied into the logging system.
  */
-#define CN_LOG_MAX_SYSTEM_NAME_TERMINATED_LENGTH 64
+#define CN_LOG_MAX_SYSTEM_NAME_TERMINATED_LENGTH 32
 
 /**
  * Log verbosity settings in increasing order of logging.  Using a higher
@@ -49,12 +49,12 @@ typedef enum {
 /**
  * Characters printed in the line to represent the type of log entry.
  */
-extern CN_API char LogVerbosityChar[CnLogVerbosityNum];
+extern CN_API char g_logVerbosityChar[CnLogVerbosityNum];
 
 /**
  * Long descriptions of verbosity types.
  */
-extern CN_API const char* LogVerbosityString[CnLogVerbosityNum];
+extern CN_API const char* g_logVerbosityString[CnLogVerbosityNum];
 
 bool cnLog_IsValidVerbosity(uint32_t verbosity);
 

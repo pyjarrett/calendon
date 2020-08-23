@@ -27,6 +27,9 @@
  * reduces program performance and makes logs more difficult to decipher.  Log
  * entries should also be easy to filter, and preferably not span multiple lines.
  *
+ * Systems registered with the log system will log only warnings and errors
+ * by default.
+ *
  * Text log entries should provide:
  * 1) The system doing the logging.
  * 2) The severity of the log entry.
@@ -42,12 +45,18 @@
 CN_HEADER_BEGIN_EXPORTED
 
 /**
- * Simplifies the question of "What type is a log handle?"
+ * Simplifies the question of "What type is a log handle?"  The convention for
+ * log handles is `LogSys<MySystem>` so the logging macros look like they're
+ * using a type, not a variable.
  */
 typedef uint32_t CnLogHandle;
 
 /**
  * Global main program log.
+ *
+ * This is provided for quick convenience while troubleshooting issues quickly,
+ * and is not intended for most messages in the long-term.  Registering systems
+ * allows for log filters to quickly remove chaff from the salient parts.
  */
 extern CN_API CnLogHandle LogSysMain;
 
@@ -55,24 +64,12 @@ extern CN_API CnLogHandle LogSysMain;
  * Names of all systems registered for use.  These names get added to every log
  * line to indicate the originating system of each message.
  */
-extern CN_API const char* LogSystemsRegistered[CN_LOG_MAX_SYSTEMS];
-
-typedef struct {
-	uint64_t counts[CnLogVerbosityNum];
-} CnLogMessageCounter;
+extern CN_API const char* g_logSystemNames[CN_LOG_MAX_SYSTEMS];
 
 /**
- * Count the number of log messages produced by each system.
+ * Prints a message to the given log handle.  Do not call this function directly,
+ * instead use `CN_LOG`.
  */
-extern CN_API CnLogMessageCounter LogMessagesProduced[CN_LOG_MAX_SYSTEMS];
-
-/**
- * Per-system verbosity settings given by values in `CN_LOG_*`.  Every system
- * has its own verbosity settings so you can disable the ones for spammy
- * systems while you ridicule their authors.
- */
-extern CN_API uint32_t LogSystemsVerbosity[CN_LOG_MAX_SYSTEMS];
-
 CN_API void cnLog_Print(CnLogHandle system, CnLogVerbosity verbosity, const char* msg, ...);
 
 /**
@@ -81,9 +78,9 @@ CN_API void cnLog_Print(CnLogHandle system, CnLogVerbosity verbosity, const char
 #define CN_LOG(system, verbosity, msg, ...) \
 	cnLog_Print(system, verbosity, \
 		"%c: %40s:%i SYS_%-10s: " msg " \n", \
-		LogVerbosityChar[verbosity], \
+		g_logVerbosityChar[verbosity], \
 		__FILE__, __LINE__, \
-		LogSystemsRegistered[system], \
+		g_logSystemNames[system], \
 		##__VA_ARGS__ \
 		);
 
@@ -105,12 +102,12 @@ CN_API void cnLog_Print(CnLogHandle system, CnLogVerbosity verbosity, const char
  */
 #define CN_TRACE(system, msg, ...) CN_LOG(system, CnLogVerbosityTrace, msg, ##__VA_ARGS__)
 
-void cnLog_PreInit(void);
-CnSystem cnLog_System(void);
-CN_API bool cnLog_IsReady(void);
-CN_API uint32_t cnLog_RegisterSystem(const char* name);
+void            cnLog_PreInit(void);
+CnSystem        cnLog_System(void);
 
-CN_API void cnLogHandle_SetVerbosity(CnLogHandle system, uint32_t verbosity);
+CN_API bool     cnLog_IsReady(void);
+CN_API uint32_t cnLog_RegisterSystem(const char* name);
+CN_API void     cnLog_SetVerbosity(CnLogHandle system, uint32_t verbosity);
 
 CN_HEADER_END
 

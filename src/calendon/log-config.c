@@ -72,8 +72,6 @@ int32_t cnLog_OptionFilter(const CnCommandLineParse* parse, void* config)
 		memset(systemName, 0, CN_LOG_MAX_SYSTEM_NAME_TERMINATED_LENGTH);
 		memcpy(systemName, nextArg, systemNameNumBytes);
 
-		cnPrint("Setting verbosity for system: %s\n", systemName);
-
 		const char verbosityChar = nextArg[delimiterIndex + 1];
 		uint32_t verbosity;
 		if (!cnLog_VerbosityFromChar(verbosityChar, &verbosity)) {
@@ -82,7 +80,7 @@ int32_t cnLog_OptionFilter(const CnCommandLineParse* parse, void* config)
 		}
 
 		CnLogHandle systemLogHandle = cnLog_RegisterSystem(systemName);
-		cnLogHandle_SetVerbosity(systemLogHandle, verbosity);
+		cnLog_SetVerbosity(systemLogHandle, verbosity);
 
 		argsParsed += 1;
 	}

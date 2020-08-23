@@ -97,7 +97,7 @@ void applyInputs(const CnInput* input, const CnTime dt)
 CN_GAME_API bool CnPlugin_Init(void)
 {
 	LogSysSample = cnLog_RegisterSystem("Sample");
-	cnLogHandle_SetVerbosity(LogSysSample, CnLogVerbosityTrace);
+	cnLog_SetVerbosity(LogSysSample, CnLogVerbosityTrace);
 	CN_TRACE(LogSysSample, "Sample loaded");
 
 	CnPathBuffer fontPath;

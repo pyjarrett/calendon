@@ -109,7 +109,7 @@ BinaryAnimation squareAnim;
 CN_GAME_API bool CnPlugin_Init(void)
 {
 	LogSysSample = cnLog_RegisterSystem("Sample");
-	cnLogHandle_SetVerbosity(LogSysSample, CnLogVerbosityTrace);
+	cnLog_SetVerbosity(LogSysSample, CnLogVerbosityTrace);
 	CN_TRACE(LogSysSample, "Sample loaded");
 
 	left = cnFloat2_Make(300, 300);

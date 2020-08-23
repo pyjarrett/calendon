@@ -360,7 +360,6 @@ void cnMain_Shutdown(void)
 		const uint32_t nextSystemIndex = s_numCoreSystems - i - 1;
 
 		CnSystem* system = &s_coreSystems[nextSystemIndex];
-		printf("Shutting down: %s\n", system->name);
 		if (!system->plugin().shutdown) {
 			printf("No shutdown function for: %s\n", system->name);
 		}
