@@ -63,6 +63,38 @@ bool cnString_Equal(const char* left, const char* right, const size_t maxCharByt
 	return strncmp(left, right, maxCharBytes) == 0;
 }
 
+/**
+ * Copies at most a specific number of characters from the source to the
+ * destination.
+ *
+ * Returns false and does not modify the destination if the source does not
+ * terminate after that number of characters.
+ */
+bool cnString_Copy(char* destination, const char* source, const size_t maxCharBytes)
+{
+	CN_ASSERT_NOT_NULL(destination);
+	CN_ASSERT_NOT_NULL(source);
+
+	size_t numSourceBytes;
+
+	const bool sourceTerminated = cnString_NumCharacterBytes(source, maxCharBytes, &numSourceBytes);
+	if (!sourceTerminated) {
+		CN_ASSERT(false, "Unterminated source string in copy.");
+		return false;
+	}
+
+	const char* s = source;
+	char* d = destination;
+	while(*s) {
+		*d = *s;
+		++s;
+		++d;
+	}
+	*d = 0;
+
+	return true;
+}
+
 bool cnString_HasPrefix(const char* str, const size_t maxCharBytes, const char* prefix)
 {
 	CN_ASSERT_NOT_NULL(str);

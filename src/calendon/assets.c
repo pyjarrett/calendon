@@ -46,7 +46,6 @@ bool cnAssets_Init(void)
 	}
 
 	LogSysAssets = cnLog_RegisterSystem("Assets");
-	cnLogHandle_SetVerbosity(LogSysAssets, CnLogVerbosityTrace);
 
 	CN_TRACE(LogSysAssets, "Assets initialized with root at: '%s'", assetsRoot);
 	assetsInitialized = true;

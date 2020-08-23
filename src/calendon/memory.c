@@ -11,7 +11,6 @@ bool cnMem_Init(void)
 {
 	MemOutstandingAllocations = 0;
 	LogSysMemory = cnLog_RegisterSystem("Memory");
-	cnLogHandle_SetVerbosity(LogSysMemory, CnLogVerbosityTrace);
 	return true;
 }
 

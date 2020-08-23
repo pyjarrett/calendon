@@ -66,7 +66,6 @@ typedef struct {
  */
 extern CN_API CnLogMessageCounter LogMessagesProduced[CN_LOG_MAX_SYSTEMS];
 
-
 /**
  * Per-system verbosity settings given by values in `CN_LOG_*`.  Every system
  * has its own verbosity settings so you can disable the ones for spammy

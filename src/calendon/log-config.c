@@ -17,7 +17,7 @@ int32_t cnLog_OptionDisable(const CnCommandLineParse* parse, void* config)
 int32_t cnLog_OptionFilter(const CnCommandLineParse* parse, void* config)
 {
 	CN_ASSERT_NOT_NULL(parse);
-	CnLogConfig* c = (CnLogConfig*)config;
+	CN_UNUSED(config);
 
 	int argsParsed = 1;
 	while (cnCommandLineParse_HasLookAhead(parse, argsParsed + 1)) {
@@ -35,6 +35,10 @@ int32_t cnLog_OptionFilter(const CnCommandLineParse* parse, void* config)
 		if (cnString_HasPrefix(nextArg, maxArgLength, "-")
 			|| cnString_HasPrefix(nextArg, maxArgLength, "--"))
 		{
+			if (argsParsed == 1) {
+				cnPrint("No log filters provided.\n");
+				return CnOptionParseError;
+			}
 			return argsParsed;
 		}
 
@@ -43,7 +47,6 @@ int32_t cnLog_OptionFilter(const CnCommandLineParse* parse, void* config)
 			return CnOptionParseError;
 		}
 
-		// Find the location of the split.
 		size_t delimiterIndex;
 		if (!cnString_FirstIndexOfChar(nextArg, maxArgLength, ':', &delimiterIndex)) {
 			return CnOptionParseError;
@@ -62,11 +65,11 @@ int32_t cnLog_OptionFilter(const CnCommandLineParse* parse, void* config)
 			return CnOptionParseError;
 		}
 
-		char systemName[CN_LOG_MAX_SYSTEM_NAME_LENGTH];
-		if (argNumChars >= CN_LOG_MAX_SYSTEM_NAME_LENGTH) {
+		char systemName[CN_LOG_MAX_SYSTEM_NAME_TERMINATED_LENGTH];
+		if (argNumChars >= CN_LOG_MAX_SYSTEM_NAME_TERMINATED_LENGTH) {
 			return CnOptionParseError;
 		}
-		memset(systemName, 0, CN_LOG_MAX_SYSTEM_NAME_LENGTH);
+		memset(systemName, 0, CN_LOG_MAX_SYSTEM_NAME_TERMINATED_LENGTH);
 		memcpy(systemName, nextArg, systemNameNumBytes);
 
 		cnPrint("Setting verbosity for system: %s\n", systemName);
@@ -84,7 +87,10 @@ int32_t cnLog_OptionFilter(const CnCommandLineParse* parse, void* config)
 		argsParsed += 1;
 	}
 
-//	CN_FATAL_ERROR("NOT DONE");
+	if (argsParsed == 1) {
+		cnPrint("No log filters provided.\n");
+		return CnOptionParseError;
+	}
 	return argsParsed;
 }
 

@@ -58,6 +58,20 @@ CN_TEST_SUITE_BEGIN("String")
 		CN_TEST_ASSERT_FALSE(cnString_Equal("left", "right", 16));
 	}
 
+	CN_TEST_UNIT("Copy") {
+		char buffer[64];
+		const char* source1 = "this is a test";
+		CN_TEST_PRECONDITION(cnString_Copy(NULL, source1, 64));
+		CN_TEST_PRECONDITION(cnString_Copy(buffer, NULL, 64));
+		CN_TEST_PRECONDITION(cnString_Copy(buffer, source1, 4);)
+
+		cnString_Copy(buffer, source1, 64);
+		CN_TEST_ASSERT_EQ_STR(source1, buffer);
+
+		cnString_Copy(buffer, "", 16);
+		CN_TEST_ASSERT_EQ_STR("", buffer);
+	}
+
 	CN_TEST_UNIT("HasPrefix") {
 		const char* logEnable = "--log-enable";
 		const char* tickLimit = "--tick-limit";

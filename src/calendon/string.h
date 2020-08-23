@@ -24,6 +24,7 @@ CN_API bool cnString_FitsWithNull(const char* str, const size_t bytes);
 CN_API bool cnString_NumCharacterBytes(const char* str, const size_t maxCharBytes, size_t* outLength);
 CN_API bool cnString_StorageRequired(const char* str, const size_t maxBytes, size_t* outLength);
 
+CN_API bool cnString_Copy(char* destination, const char* source, const size_t maxCharBytes);
 CN_API bool cnString_Equal(const char* left, const char* right, const size_t maxBytes);
 CN_API bool cnString_HasPrefix(const char* str, const size_t maxCharBytes, const char* prefix);
 

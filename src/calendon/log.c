@@ -13,6 +13,10 @@ CN_API uint32_t LogSystemsNumRegistered;
 CN_API CnLogMessageCounter LogMessagesProduced[CN_LOG_MAX_SYSTEMS];
 CN_API CnLogHandle LogSysMain;
 
+static char LogSystemNameStorage[CN_LOG_MAX_SYSTEMS * CN_LOG_MAX_SYSTEM_NAME_TERMINATED_LENGTH];
+CN_STATIC_ASSERT(sizeof(LogSystemNameStorage) <= 4096,
+	"Excessive storage used for system name storage in log system");
+
 static CnLogConfig s_config;
 
 void cnLogMessageCounter_Zero(CnLogMessageCounter* counter)
@@ -111,7 +115,7 @@ uint32_t cnLog_RegisterSystem(const char* name)
 	}
 
 	for (uint32_t i = 0; i < LogSystemsNumRegistered; ++i) {
-		if (cnString_Equal(name, LogSystemsRegistered[i], CN_LOG_MAX_SYSTEM_NAME_LENGTH)) {
+		if (cnString_Equal(name, LogSystemsRegistered[i], CN_LOG_MAX_SYSTEM_NAME_TERMINATED_LENGTH)) {
 			return i;
 		}
 	}
@@ -122,7 +126,9 @@ uint32_t cnLog_RegisterSystem(const char* name)
 	}
 
 	const CnLogHandle systemIndex = LogSystemsNumRegistered++;
-	LogSystemsRegistered[systemIndex] = name;
+	char* nameStorage = &LogSystemNameStorage[systemIndex * CN_LOG_MAX_SYSTEM_NAME_TERMINATED_LENGTH];
+	cnString_Copy(nameStorage, name, CN_LOG_MAX_SYSTEM_NAME_TERMINATED_LENGTH);
+	LogSystemsRegistered[systemIndex] = nameStorage;
 	LogSystemsVerbosity[systemIndex] = CnLogVerbosityWarn;
 
 	for (int i = 0; i < CnLogVerbosityNum; ++i) {
@@ -136,6 +142,7 @@ CN_API void cnLogHandle_SetVerbosity(CnLogHandle system, uint32_t verbosity)
 {
 	CN_ASSERT(cnLog_IsValidVerbosity(verbosity),
 		"Verbosity setting is not valid: " PRIu32, verbosity);
+	LogSystemsVerbosity[system] = verbosity;
 }
 
 void cnLog_Print(CnLogHandle system, CnLogVerbosity verbosity, const char* format, ...)

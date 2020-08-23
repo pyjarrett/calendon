@@ -18,7 +18,7 @@ CN_HEADER_BEGIN_EXPORTED
 /**
  * Maximum length of name copied into the logging system.
  */
-#define CN_LOG_MAX_SYSTEM_NAME_LENGTH 128
+#define CN_LOG_MAX_SYSTEM_NAME_TERMINATED_LENGTH 64
 
 /**
  * Log verbosity settings in increasing order of logging.  Using a higher
