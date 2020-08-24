@@ -27,12 +27,6 @@
 static CnTime s_lastTick;
 static CnPlugin s_payload;
 
-// TODO: Remove.
-static CnPlugin_InitFn s_mainInit;
-static CnPlugin_TickFn s_mainTick;
-static CnPlugin_DrawFn s_mainDraw;
-static CnPlugin_ShutdownFn s_mainShutdown;
-
 enum { CnMaxNumCoreSystems = 16 };
 static CnSystem s_coreSystems[CnMaxNumCoreSystems];
 static uint32_t s_numCoreSystems = 0;
@@ -85,11 +79,6 @@ void cnMain_RegisterPayload(CnPlugin* payload)
 	if (!payload->draw) CN_FATAL_ERROR("CnPlugin_DrawFn function missing in payload.");
 	if (!payload->tick) CN_FATAL_ERROR("CnPlugin_TickFn function missing in payload.");
 	if (!payload->shutdown) CN_FATAL_ERROR("CnPlugin_ShutdownFn function missing in payload.");
-
-	s_mainInit = payload->init;
-	s_mainTick = payload->tick;
-	s_mainDraw = payload->draw;
-	s_mainShutdown = payload->shutdown;
 }
 
 void cnMain_LoadPayloadFromFile(const char* sharedLibraryName)
@@ -99,22 +88,22 @@ void cnMain_LoadPayloadFromFile(const char* sharedLibraryName)
 	if (!cnAssets_LastModifiedTime(sharedLibraryName, &gameLibModified)) {
 		CN_FATAL_ERROR("Unable to determine last modified time of '%s'", sharedLibraryName);
 	}
-
 	struct tm *lt = localtime((time_t*)&gameLibModified);
 	char timeBuffer[80];
 	strftime(timeBuffer, sizeof(timeBuffer), "%c", lt);
 	CN_TRACE(LogSysMain, "Last modified time: %s", timeBuffer);
 
-	if (s_mainShutdown) {
-		s_mainShutdown();
+	// Shutdown any previous plugin.
+	if (s_payload.shutdown) {
+		s_payload.shutdown();
 	}
 
 	cnSharedLibrary_Release(s_payload.sharedLibrary);
-	s_payload.sharedLibrary = cnSharedLibrary_Load(sharedLibraryName);
-
-	if (!cnPlugin_LoadFromFile(&s_payload, sharedLibraryName)) {
+	CnSharedLibrary library = cnSharedLibrary_Load(sharedLibraryName);
+	if (!library) {
 		CN_FATAL_ERROR("Unable to load game module: %s", sharedLibraryName);
 	}
+	cnPlugin_LoadFromSharedLibrary(&s_payload, library);
 
 	cnMain_RegisterPayload(&s_payload);
 }
@@ -263,13 +252,11 @@ void cnMain_InitAllSystems(int argc, char** argv)
 		cnMain_RegisterPayload(&config->payload);
 	}
 
-	if (s_mainInit) {
-		s_mainInit();
+	if (s_payload.init) {
+		s_payload.init();
 	}
-	if (!s_mainDraw) CN_FATAL_ERROR("Draw function missing. Write a Main_Draw(void) function.");
-	if (!s_mainTick) CN_FATAL_ERROR("Update function missing. Write a Main_Tick(void) function.");
-
-	//cnMain_SetTickLimit(s_config.tickLimit);
+	if (!s_payload.draw) CN_FATAL_ERROR("Draw function missing. Write a CnPlugin_Draw(void) function.");
+	if (!s_payload.tick) CN_FATAL_ERROR("Update function missing. Write a CnPlugin_Tick(void) function.");
 
 	s_lastTick = cnTime_MakeNow();
 
@@ -331,8 +318,8 @@ void cnMain_StartUp(int argc, char** argv)
  */
 void cnMain_Loop(void)
 {
-	CN_ASSERT(s_mainTick, "Tick function not defined.");
-	CN_ASSERT(s_mainDraw, "Draw function not defined.");
+	CN_ASSERT(s_payload.tick, "Tick function not defined.");
+	CN_ASSERT(s_payload.draw, "Draw function not defined.");
 
 	while (cnMain_IsRunning() && !cnMain_IsTickLimitReached())
 	{
@@ -342,16 +329,16 @@ void cnMain_Loop(void)
 
 		CnTime dt;
 		if (cnMain_GenerateTick(&dt)) {
-			s_mainTick(dt);
+			s_payload.tick(dt);
 			cnMain_TickCompleted();
 		}
-		s_mainDraw();
+		s_payload.draw();
 	}
 }
 
 void cnMain_Shutdown(void)
 {
-	if (s_mainShutdown) s_mainShutdown();
+	if (s_payload.shutdown) s_payload.shutdown();
 
 	cnR_Shutdown();
 	cnUI_Shutdown();

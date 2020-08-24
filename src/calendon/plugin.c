@@ -4,19 +4,18 @@
  * Loads a plugin's shared library and assigns its functions from a file.
  * Does not initialize the plugin.
  */
-bool cnPlugin_LoadFromFile(CnPlugin* plugin, const char* sharedLibraryName)
+bool cnPlugin_LoadFromSharedLibrary(CnPlugin* plugin, CnSharedLibrary library)
 {
-	CN_ASSERT(plugin, "Cannot load to a null CnPlugin.");
-	CN_ASSERT(sharedLibraryName, "Cannot load a CnPlugin from a null shared library name.");
+	CN_ASSERT_NOT_NULL(plugin);
+	CN_ASSERT_NOT_NULL(library);
 
-	plugin->sharedLibrary = cnSharedLibrary_Load(sharedLibraryName);
-	if (!plugin->sharedLibrary) {
-		return false;
-	}
-	plugin->init = (CnPlugin_InitFn) cnSharedLibrary_LookupFn(plugin->sharedLibrary, "CnPlugin_Init");
-	plugin->draw = (CnPlugin_DrawFn) cnSharedLibrary_LookupFn(plugin->sharedLibrary, "CnPlugin_Draw");
-	plugin->tick = (CnPlugin_TickFn) cnSharedLibrary_LookupFn(plugin->sharedLibrary, "CnPlugin_Tick");
-	plugin->shutdown = (CnPlugin_ShutdownFn) cnSharedLibrary_LookupFn(plugin->sharedLibrary, "CnPlugin_Shutdown");
+	plugin->init = (CnPlugin_InitFn) cnSharedLibrary_LookupFn(library, "CnPlugin_Init");
+	plugin->draw = (CnPlugin_DrawFn) cnSharedLibrary_LookupFn(library, "CnPlugin_Draw");
+	plugin->tick = (CnPlugin_TickFn) cnSharedLibrary_LookupFn(library, "CnPlugin_Tick");
+	plugin->shutdown = (CnPlugin_ShutdownFn) cnSharedLibrary_LookupFn(library, "CnPlugin_Shutdown");
+	plugin->sharedLibrary = library;
+	plugin->sharedLibrary = library;
+
 	return true;
 }
 
