@@ -2,6 +2,7 @@
 
 #include <calendon/cn.h>
 
+#include <calendon/env.h>
 #include <calendon/string.h>
 
 int32_t cnAssets_OptionAssetDir(const CnCommandLineParse* parse, void* c);
@@ -59,5 +60,12 @@ void* cnAssets_Config(void) {
 void cnAssets_SetDefaultConfig(void* config)
 {
 	CnAssetsConfig* c = (CnAssetsConfig*)config;
+
 	cnPathBuffer_Clear(&c->assetDirPath);
+	if (!cnEnv_DefaultCalendonHome(&c->assetDirPath)) {
+		CN_FATAL_ERROR("Unable to get default Calendon home.");
+	}
+	if (!cnPathBuffer_Join(&c->assetDirPath, "assets")) {
+		CN_FATAL_ERROR("Unable to join to Calendon home expect asset dir path: %s", c->assetDirPath.str);
+	}
 }
