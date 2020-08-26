@@ -71,7 +71,7 @@ void cnMain_DescribeEnv(void)
 	CN_TRACE(LogSysMain, "CWD: '%s'", buffer);
 }
 
-void cnMain_RegisterPayload(CnPlugin* payload)
+void cnMain_ValidatePayload(CnPlugin* payload)
 {
 	CN_ASSERT(payload, "Cannot register a null payload.");
 
@@ -105,7 +105,7 @@ void cnMain_LoadPayloadFromFile(const char* sharedLibraryName)
 	}
 	cnPlugin_LoadFromSharedLibrary(&s_payload, library);
 
-	cnMain_RegisterPayload(&s_payload);
+	cnMain_ValidatePayload(&s_payload);
 }
 
 void cnMain_PrintUsage(int argc, char** argv)
@@ -248,7 +248,7 @@ void cnMain_InitAllSystems(int argc, char** argv)
 		}
 	}
 	else {
-		cnMain_RegisterPayload(&config->payload);
+		cnMain_ValidatePayload(&config->payload);
 	}
 
 	if (s_payload.init) {

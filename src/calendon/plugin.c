@@ -14,7 +14,6 @@ bool cnPlugin_LoadFromSharedLibrary(CnPlugin* plugin, CnSharedLibrary library)
 	plugin->tick = (CnPlugin_TickFn) cnSharedLibrary_LookupFn(library, "CnPlugin_Tick");
 	plugin->shutdown = (CnPlugin_ShutdownFn) cnSharedLibrary_LookupFn(library, "CnPlugin_Shutdown");
 	plugin->sharedLibrary = library;
-	plugin->sharedLibrary = library;
 
 	return true;
 }
