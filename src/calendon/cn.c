@@ -29,9 +29,8 @@ void cnValidatePtr(const void* ptr, const char* ptrName)
 	MEMORY_BASIC_INFORMATION memInfo;
 	const size_t bytesReturned = VirtualQuery(ptr, &memInfo, sizeof(memInfo));
 	if (bytesReturned > 0) {
-		if ((memInfo.Protect & PAGE_NOACCESS) | (memInfo.Protect & PAGE_GUARD)) {
-			CN_FATAL_ERROR("Invalid memory access: %s", ptrName);
-		}
+		const bool invalid = (memInfo.Protect & PAGE_NOACCESS) | (memInfo.Protect & PAGE_GUARD);
+		CN_ASSERT(!invalid, "Invalid memory access: %s", ptrName);
 	}
 }
 #endif
