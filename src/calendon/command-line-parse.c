@@ -42,6 +42,8 @@ void cnCommandLineParse_Advance(CnCommandLineParse* parse, int argsParsed)
 {
 	CN_ASSERT_NOT_NULL(parse);
 	parse->numArgsParsed += argsParsed;
+	CN_ASSERT(parse->numArgsParsed <= parse->argc, "Advanced out of parser range to %d by %d",
+			  parse->argc, argsParsed);
 }
 
 /**
