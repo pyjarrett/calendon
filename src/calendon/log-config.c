@@ -5,6 +5,8 @@
 #include <calendon/log.h>
 #include <calendon/string.h>
 
+#include <string.h>
+
 static CnLogConfig s_logConfig;
 
 int32_t cnLog_OptionDisable(const CnCommandLineParse* parse, void* config)
