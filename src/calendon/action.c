@@ -17,7 +17,7 @@ const char* CnActionState_AsString(CnActionState state)
 void cnAction_Set(CnAction* action, CnTime windUp,
 	CnTime executionTime, CnTime coolDown)
 {
-	CN_ASSERT_NOT_NULL(action);
+	CN_ASSERT_PTR(action);
 	action->windUp = windUp;
 	action->executionTime = executionTime;
 	action->coolDown = coolDown;
@@ -29,7 +29,7 @@ void cnAction_Set(CnAction* action, CnTime windUp,
  */
 static void cnAction_Enter(CnAction* action, CnActionState state)
 {
-	CN_ASSERT_NOT_NULL(action);
+	CN_ASSERT_PTR(action);
 	switch (state) {
 		case CnActionStateReady:
 			action->state = CnActionStateReady;
@@ -68,7 +68,7 @@ static void cnAction_Enter(CnAction* action, CnActionState state)
 
 void cnAction_Start(CnAction* action)
 {
-	CN_ASSERT_NOT_NULL(action);
+	CN_ASSERT_PTR(action);
 	switch (action->state) {
 		case CnActionStateReady:
 			cnAction_Enter(action, CnActionStateWindingUp);
@@ -86,7 +86,7 @@ void cnAction_Start(CnAction* action)
 
 void cnAction_Cancel(CnAction* action)
 {
-	CN_ASSERT_NOT_NULL(action);
+	CN_ASSERT_PTR(action);
 	switch (action->state) {
 		case CnActionStateReady:
 			break;
@@ -104,7 +104,7 @@ void cnAction_Cancel(CnAction* action)
 
 void cnAction_Tick(CnAction* action, CnTime dt)
 {
-	CN_ASSERT_NOT_NULL(action);
+	CN_ASSERT_PTR(action);
 	switch (action->state) {
 		case CnActionStateReady:
 			break;
@@ -133,7 +133,7 @@ void cnAction_Tick(CnAction* action, CnTime dt)
 
 void cnAction_Reset(CnAction* action)
 {
-	CN_ASSERT_NOT_NULL(action);
+	CN_ASSERT_PTR(action);
 	switch (action->state) {
 		case CnActionStateReady:
 			break;
@@ -151,7 +151,7 @@ void cnAction_Reset(CnAction* action)
 
 void cnAction_Log(CnAction* action, CnLogHandle log)
 {
-	CN_ASSERT_NOT_NULL(action);
+	CN_ASSERT_PTR(action);
 	CN_TRACE(log, "%s: %" PRIu64 "/%" PRIu64
 			" %" PRIu64 "/%" PRIu64
 			" %" PRIu64 "/%" PRIu64

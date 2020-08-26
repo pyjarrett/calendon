@@ -5,7 +5,7 @@
  */
 CnCommandLineParse cnCommandLineParse_Make(int argc, char** argv) {
 	CN_ASSERT(argc > 0, "A command line must have at least the program name.");
-	CN_ASSERT_NOT_NULL(argv);
+	CN_ASSERT_PTR(argv);
 
 	return (CnCommandLineParse) {
 		.argc = argc,
@@ -21,7 +21,7 @@ CnCommandLineParse cnCommandLineParse_Make(int argc, char** argv) {
  */
 bool cnCommandLineParse_ShouldContinue(const CnCommandLineParse* parse)
 {
-	CN_ASSERT_NOT_NULL(parse);
+	CN_ASSERT_PTR(parse);
 	CN_ASSERT(parse->numArgsParsed > 0,
 		"Next argument index out of bounds: %d", parse->numArgsParsed);
 	CN_ASSERT(parse->numArgsParsed <= parse->argc,
@@ -31,7 +31,7 @@ bool cnCommandLineParse_ShouldContinue(const CnCommandLineParse* parse)
 
 bool cnCommandLineParse_IsComplete(const CnCommandLineParse* parse)
 {
-	CN_ASSERT_NOT_NULL(parse);
+	CN_ASSERT_PTR(parse);
 	return parse->numArgsParsed == parse->argc;
 }
 
@@ -40,7 +40,7 @@ bool cnCommandLineParse_IsComplete(const CnCommandLineParse* parse)
  */
 void cnCommandLineParse_Advance(CnCommandLineParse* parse, int argsParsed)
 {
-	CN_ASSERT_NOT_NULL(parse);
+	CN_ASSERT_PTR(parse);
 	parse->numArgsParsed += argsParsed;
 	CN_ASSERT(parse->numArgsParsed <= parse->argc, "Advanced out of parser range to %d by %d",
 			  parse->argc, argsParsed);
@@ -53,7 +53,7 @@ void cnCommandLineParse_Advance(CnCommandLineParse* parse, int argsParsed)
  */
 int cnCommandLineParse_LookAheadIndex(const CnCommandLineParse* parse, int amount)
 {
-	CN_ASSERT_NOT_NULL(parse);
+	CN_ASSERT_PTR(parse);
 	CN_ASSERT(amount > 0, "Must look ahead at least by 1 argument.");
 	return (parse->numArgsParsed - 1) + amount;
 }
@@ -64,7 +64,7 @@ int cnCommandLineParse_LookAheadIndex(const CnCommandLineParse* parse, int amoun
  */
 const char* cnCommandLineParse_LookAhead(const CnCommandLineParse* parse, int amount)
 {
-	CN_ASSERT_NOT_NULL(parse);
+	CN_ASSERT_PTR(parse);
 	CN_ASSERT(amount > 0, "Must look ahead at least by 1 argument.");
 	const int lookAheadIndex = cnCommandLineParse_LookAheadIndex(parse, amount);
 	CN_ASSERT(lookAheadIndex > 0 || lookAheadIndex < parse->argc,
@@ -78,7 +78,7 @@ const char* cnCommandLineParse_LookAhead(const CnCommandLineParse* parse, int am
  */
 bool cnCommandLineParse_HasLookAhead(const CnCommandLineParse* parse, int amount)
 {
-	CN_ASSERT_NOT_NULL(parse);
+	CN_ASSERT_PTR(parse);
 	CN_ASSERT(amount > 0, "Must look ahead at least one argument: %d", amount);
 	return cnCommandLineParse_LookAheadIndex(parse, amount) < parse->argc;
 }

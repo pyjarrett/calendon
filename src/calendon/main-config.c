@@ -49,8 +49,8 @@ void cnMain_SetDefaultConfig(void* config)
 
 int32_t cnMain_OptionPayload(const CnCommandLineParse* parse, void* c)
 {
-	CN_ASSERT_NOT_NULL(parse);
-	CN_ASSERT_NOT_NULL(c);
+	CN_ASSERT_PTR(parse);
+	CN_ASSERT_PTR(c);
 
 	CnMainConfig* config = (CnMainConfig*)c;
 
@@ -80,8 +80,8 @@ int32_t cnMain_OptionPayload(const CnCommandLineParse* parse, void* c)
 
 int32_t cnMain_OptionTickLimit(const CnCommandLineParse* parse, void* c)
 {
-	CN_ASSERT_NOT_NULL(parse);
-	CN_ASSERT_NOT_NULL(c);
+	CN_ASSERT_PTR(parse);
+	CN_ASSERT_PTR(c);
 
 	CnMainConfig* config = (CnMainConfig*)c;
 

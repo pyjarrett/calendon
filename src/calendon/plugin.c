@@ -6,8 +6,8 @@
  */
 bool cnPlugin_LoadFromSharedLibrary(CnPlugin* plugin, CnSharedLibrary library)
 {
-	CN_ASSERT_NOT_NULL(plugin);
-	CN_ASSERT_NOT_NULL(library);
+	CN_ASSERT_PTR(plugin);
+	CN_ASSERT_PTR(library);
 
 	plugin->init = (CnPlugin_InitFn) cnSharedLibrary_LookupFn(library, "CnPlugin_Init");
 	plugin->draw = (CnPlugin_DrawFn) cnSharedLibrary_LookupFn(library, "CnPlugin_Draw");
@@ -23,7 +23,7 @@ bool cnPlugin_LoadFromSharedLibrary(CnPlugin* plugin, CnSharedLibrary library)
  */
 bool cnPlugin_IsComplete(CnPlugin* plugin)
 {
-	CN_ASSERT_NOT_NULL(plugin);
+	CN_ASSERT_PTR(plugin);
 	return plugin->init
 		&& plugin->shutdown
 		&& plugin->draw

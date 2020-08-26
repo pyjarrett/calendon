@@ -27,8 +27,8 @@ CnCommandLineOptionList cnAssets_CommandLineOptionList(void) {
 
 int32_t cnAssets_OptionAssetDir(const CnCommandLineParse* parse, void* c)
 {
-	CN_ASSERT_NOT_NULL(parse);
-	CN_ASSERT_NOT_NULL(c);
+	CN_ASSERT_PTR(parse);
+	CN_ASSERT_PTR(c);
 
 	CnAssetsConfig* config = (CnAssetsConfig*)c;
 

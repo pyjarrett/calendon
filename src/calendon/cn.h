@@ -225,7 +225,7 @@ CN_API int cnString_Format(char* str, size_t strLength, const char* format, ...)
     } while (0)
 #endif
 
-#define CN_ASSERT_NOT_NULL(value) CN_ASSERT(value, #value " is null.")
+#define CN_ASSERT_PTR(value) CN_ASSERT(value, #value " is invalid.")
 #define CN_ASSERT_FINITE_F32(value) CN_ASSERT(isfinite(value), #value " is not finite: %f", value)
 
 /**

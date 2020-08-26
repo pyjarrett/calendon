@@ -18,7 +18,7 @@ int32_t cnLog_OptionDisable(const CnCommandLineParse* parse, void* config)
 
 int32_t cnLog_OptionFilter(const CnCommandLineParse* parse, void* config)
 {
-	CN_ASSERT_NOT_NULL(parse);
+	CN_ASSERT_PTR(parse);
 	CN_UNUSED(config);
 
 	int argsParsed = 1;

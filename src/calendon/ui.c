@@ -23,7 +23,7 @@ static void cnUI_CreateWindow(const uint32_t w, const uint32_t h)
 
 void cnUI_Init(CnUIInitParams* params)
 {
-	CN_ASSERT_NOT_NULL(params);
+	CN_ASSERT_PTR(params);
 
 	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
 		CN_FATAL_ERROR("Unable to init SDL");
@@ -90,14 +90,14 @@ CnInput* cnInput_Poll(void)
 
 void cnInput_ApplyButtonMapping(const CnInput* input, CnButtonMapping* mapping)
 {
-	CN_ASSERT_NOT_NULL(input);
-	CN_ASSERT_NOT_NULL(mapping);
+	CN_ASSERT_PTR(input);
+	CN_ASSERT_PTR(mapping);
 
 	for (uint32_t i = 0; i < input->keySet.down.size; ++i) {
 		const CnPhysicalButtonId buttonId = input->keySet.down.keys[i];
 		if (cnButtonMapping_IsMapped(mapping, buttonId)) {
 			CnDigitalButton* button = cnButtonMapping_LookUp(mapping, buttonId);
-			CN_ASSERT_NOT_NULL(button);
+			CN_ASSERT_PTR(button);
 			cnDigitalButton_Press(button);
 		}
 	}
@@ -106,7 +106,7 @@ void cnInput_ApplyButtonMapping(const CnInput* input, CnButtonMapping* mapping)
 		const CnPhysicalButtonId buttonId = input->keySet.up.keys[i];
 		if (cnButtonMapping_IsMapped(mapping, buttonId)) {
 			CnDigitalButton* button = cnButtonMapping_LookUp(mapping, buttonId);
-			CN_ASSERT_NOT_NULL(button);
+			CN_ASSERT_PTR(button);
 			cnDigitalButton_Release(button);
 		}
 	}

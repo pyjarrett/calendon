@@ -80,7 +80,7 @@ BinaryAnimation squareAnim;
 
 void applyInputs(const CnInput* input, const CnTime dt)
 {
-	CN_ASSERT_NOT_NULL(input);
+	CN_ASSERT_PTR(input);
 
 	// Apply the tick before applying inputs.
 	cnAction_Tick(&changeAction, dt);
@@ -171,7 +171,7 @@ CN_GAME_API void CnPlugin_Draw(void)
 CN_GAME_API void CnPlugin_Tick(CnTime dt)
 {
 	CnInput* input = cnInput_Poll();
-	CN_ASSERT_NOT_NULL(input);
+	CN_ASSERT_PTR(input);
 
 	applyInputs(input, dt);
 

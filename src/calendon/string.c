@@ -5,7 +5,7 @@
 
 bool cnString_FitsWithNull(const char* str, const size_t bytes)
 {
-	CN_ASSERT_NOT_NULL(str);
+	CN_ASSERT_PTR(str);
 
 	CN_ASSERT(bytes != 0, "Strings must be at least 1 byte long.");
 	CN_ASSERT(bytes < SIZE_MAX, "Strings must be less than %zu bytes", SIZE_MAX);
@@ -19,8 +19,8 @@ bool cnString_FitsWithNull(const char* str, const size_t bytes)
  */
 bool cnString_StorageRequired(const char* str, const size_t maxBytes, size_t* length)
 {
-	CN_ASSERT_NOT_NULL(str);
-	CN_ASSERT_NOT_NULL(length);
+	CN_ASSERT_PTR(str);
+	CN_ASSERT_PTR(length);
 
 	CN_ASSERT(maxBytes != 0, "Strings must be at least 1 byte long.");
 	CN_ASSERT(maxBytes < SIZE_MAX, "Strings must be less than %zu bytes", SIZE_MAX);
@@ -44,8 +44,8 @@ bool cnString_NumCharacterBytes(const char* str, const size_t maxCharBytes, size
 
 bool cnString_Equal(const char* left, const char* right, const size_t maxCharBytes)
 {
-	CN_ASSERT_NOT_NULL(left);
-	CN_ASSERT_NOT_NULL(right);
+	CN_ASSERT_PTR(left);
+	CN_ASSERT_PTR(right);
 
 	size_t numLeftBytes, numRightBytes;
 	const bool leftTerminated = cnString_NumCharacterBytes(left, maxCharBytes, &numLeftBytes);
@@ -72,8 +72,8 @@ bool cnString_Equal(const char* left, const char* right, const size_t maxCharByt
  */
 bool cnString_Copy(char* destination, const char* source, const size_t maxCharBytes)
 {
-	CN_ASSERT_NOT_NULL(destination);
-	CN_ASSERT_NOT_NULL(source);
+	CN_ASSERT_PTR(destination);
+	CN_ASSERT_PTR(source);
 
 	size_t numSourceBytes;
 
@@ -97,8 +97,8 @@ bool cnString_Copy(char* destination, const char* source, const size_t maxCharBy
 
 bool cnString_HasPrefix(const char* str, const size_t maxCharBytes, const char* prefix)
 {
-	CN_ASSERT_NOT_NULL(str);
-	CN_ASSERT_NOT_NULL(prefix);
+	CN_ASSERT_PTR(str);
+	CN_ASSERT_PTR(prefix);
 
 	size_t numStrBytes, numPrefixBytes;
 	const bool strTerminated = cnString_NumCharacterBytes(str, maxCharBytes, &numStrBytes);
@@ -131,8 +131,8 @@ bool cnString_HasPrefix(const char* str, const size_t maxCharBytes, const char* 
 
 bool cnString_FirstIndexOfChar(const char* str, const size_t maxBytes, char ch, size_t* index)
 {
-	CN_ASSERT_NOT_NULL(str);
-	CN_ASSERT_NOT_NULL(index);
+	CN_ASSERT_PTR(str);
+	CN_ASSERT_PTR(index);
 	CN_ASSERT(maxBytes != SIZE_MAX, "Max bytes must be < SIZE_MAX");
 
 	size_t strLength;

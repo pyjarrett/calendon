@@ -150,7 +150,7 @@ void cnLog_Shutdown(void)
  */
 uint32_t cnLog_RegisterSystem(const char* name)
 {
-	CN_ASSERT_NOT_NULL(name);
+	CN_ASSERT_PTR(name);
 
 	if (!cnLog_IsReady()) {
 		CN_FATAL_ERROR("Log system not initialized, cannot register any systems.");

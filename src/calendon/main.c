@@ -137,8 +137,8 @@ void cnMain_PrintUsage(int argc, char** argv)
  */
 int32_t cnMain_RunSystemParsers(CnCommandLineParse* commandLineParse, CnSystem* system)
 {
-	CN_ASSERT_NOT_NULL(commandLineParse);
-	CN_ASSERT_NOT_NULL(system);
+	CN_ASSERT_PTR(commandLineParse);
+	CN_ASSERT_PTR(system);
 
 	CnCommandLineOptionList options = system->options();
 	for (uint32_t parserIndex = 0; parserIndex < options.numOptions; ++parserIndex) {
@@ -153,13 +153,13 @@ int32_t cnMain_RunSystemParsers(CnCommandLineParse* commandLineParse, CnSystem* 
 bool cnMain_ParseCommandLine(int argc, char** argv)
 {
 	CN_ASSERT(argc >= 1, "Argument count must at least include the executable.");
-	CN_ASSERT_NOT_NULL(argv);
+	CN_ASSERT_PTR(argv);
 
 	for (uint32_t i = 0; i < s_numCoreSystems; ++i) {
 		if (s_coreSystems[i].setDefaultConfig == NULL) {
 			CN_ERROR(LogSysMain, "%s is missing a default config.", s_coreSystems[i].name);
 		}
-		CN_ASSERT_NOT_NULL(s_coreSystems[i].setDefaultConfig);
+		CN_ASSERT_PTR(s_coreSystems[i].setDefaultConfig);
 		s_coreSystems[i].setDefaultConfig(s_coreSystems[i].config());
 	}
 
