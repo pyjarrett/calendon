@@ -4,7 +4,7 @@
 
 #include <math.h>
 
-CN_TEST_API void cnTextureAtlas_Allocate(CnTextureAtlas* ta, CnDimension2u32 subImageSize, uint32_t numImages) {
+void cnTextureAtlas_Allocate(CnTextureAtlas* ta, CnDimension2u32 subImageSize, uint32_t numImages) {
 	CN_ASSERT(ta != NULL, "Cannot allocate a NULL texture atlas.");
 	CN_ASSERT(subImageSize.width > 0, "Cannot create a texture atlas with a zero width sub image.");
 	CN_ASSERT(subImageSize.height > 0, "Cannot create a texture atlas with a zero height sub image.");
@@ -20,20 +20,20 @@ CN_TEST_API void cnTextureAtlas_Allocate(CnTextureAtlas* ta, CnDimension2u32 sub
 	cnImageRGBA8_AllocateSized(&ta->image, ta->backingSizePixels);
 }
 
-CN_TEST_API void cnTextureAtlas_Free(CnTextureAtlas* ta)
+void cnTextureAtlas_Free(CnTextureAtlas* ta)
 {
 	CN_ASSERT(ta != NULL, "Cannot free a NULL texture atlas.");
 	cnImageRGBA8_Free(&ta->image);
 }
 
-CN_TEST_API CnRowColu32 cnTextureAtlas_SubImageGrid(CnTextureAtlas* ta, uint32_t subImageId)
+CnRowColu32 cnTextureAtlas_SubImageGrid(CnTextureAtlas* ta, uint32_t subImageId)
 {
 	const uint32_t row = (uint32_t)(subImageId / ta->gridSize.width);
 	const uint32_t col = subImageId % ta->gridSize.width;
 	return (CnRowColu32) { row, col };
 }
 
-CN_TEST_API uint32_t cnImageRGBA8_offsetForRowCol(CnImageRGBA8* image, CnRowColu32 rowCol, bool flip)
+uint32_t cnImageRGBA8_OffsetForRowCol(CnImageRGBA8* image, CnRowColu32 rowCol, bool flip)
 {
 	CN_ASSERT(image != NULL, "Cannot get an offset into a null CnImageRGBA8.");
 	if (flip) {
@@ -45,7 +45,7 @@ CN_TEST_API uint32_t cnImageRGBA8_offsetForRowCol(CnImageRGBA8* image, CnRowColu
 }
 
 // Assumes both textures are unflipped.
-CN_TEST_API uint32_t cnTextureAtlas_Insert(CnTextureAtlas* ta, CnImageRGBA8* subImage) {
+uint32_t cnTextureAtlas_Insert(CnTextureAtlas* ta, CnImageRGBA8* subImage) {
 	CN_ASSERT(subImage != NULL, "Cannot add a null image to a texture atlas.");
 	CN_ASSERT(ta->usedImages < ta->totalImages, "CnTextureAtlas is full.");
 
@@ -83,7 +83,7 @@ CN_TEST_API uint32_t cnTextureAtlas_Insert(CnTextureAtlas* ta, CnImageRGBA8* sub
 	return ta->usedImages++;
 }
 
-CN_TEST_API void cnTextureAtlas_TexCoordForSubImage(CnTextureAtlas* ta, CnFloat2* output, uint32_t subImageId)
+void cnTextureAtlas_TexCoordForSubImage(CnTextureAtlas* ta, CnFloat2* output, uint32_t subImageId)
 {
 	CN_ASSERT(ta != NULL, "Cannot get subtexture coordiantes for a null texture atlas.");
 	CN_ASSERT(output != NULL, "Cannot write subtexture coordinates to a null location.");

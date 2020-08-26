@@ -29,12 +29,11 @@ typedef struct {
 	CnDimension2u32 gridSize;
 } CnTextureAtlas;
 
-CN_TEST_API void cnTextureAtlas_Allocate(CnTextureAtlas* ta, CnDimension2u32 subImageSize, uint32_t numImages);
-CN_TEST_API void cnTextureAtlas_Free(CnTextureAtlas* ta);
+CN_TEST_API void        cnTextureAtlas_Allocate(CnTextureAtlas* ta, CnDimension2u32 subImageSize, uint32_t numImages);
+CN_TEST_API void        cnTextureAtlas_Free(CnTextureAtlas* ta);
 CN_TEST_API CnRowColu32 cnTextureAtlas_SubImageGrid(CnTextureAtlas* ta, uint32_t subImageId);
-CN_TEST_API uint32_t cnImageRGBA8_offsetForRowCol(CnImageRGBA8* image, CnRowColu32 rowCol, bool flip);
-CN_TEST_API uint32_t cnTextureAtlas_Insert(CnTextureAtlas* ta, CnImageRGBA8* subImage);
-CN_TEST_API void cnTextureAtlas_TexCoordForSubImage(CnTextureAtlas* ta, CnFloat2* output, uint32_t subImageId);
+CN_TEST_API uint32_t    cnTextureAtlas_Insert(CnTextureAtlas* ta, CnImageRGBA8* subImage);
+CN_TEST_API void        cnTextureAtlas_TexCoordForSubImage(CnTextureAtlas* ta, CnFloat2* output, uint32_t subImageId);
 
 #ifdef __cplusplus
 }

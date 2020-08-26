@@ -30,12 +30,13 @@ typedef struct {
 	uint32_t width, height;
 } CnImageRGBA8;
 
-CN_API bool cnImageRGBA8_Allocate(CnImageRGBA8* image, const char* fileName);
-CN_API bool cnImageRGBA8_AllocateSized(CnImageRGBA8* image, CnDimension2u32 size);
-CN_API void cnImageRGBA8_Free(CnImageRGBA8* image);
-CN_API void cnImageRGBA8_Flip(CnImageRGBA8* image);
-CN_API void cnImageRGBA8_ClearRGBA(CnImageRGBA8* image, uint8_t r, uint8_t b, uint8_t g, uint8_t a);
-CN_API uint32_t cnImageRGBA8_GetPixelRowCol(CnImageRGBA8* image, CnRowColu32 rowCol);
+CN_API bool          cnImageRGBA8_Allocate(CnImageRGBA8* image, const char* fileName);
+CN_API bool          cnImageRGBA8_AllocateSized(CnImageRGBA8* image, CnDimension2u32 size);
+CN_API void          cnImageRGBA8_Free(CnImageRGBA8* image);
+CN_API void          cnImageRGBA8_Flip(CnImageRGBA8* image);
+CN_API void          cnImageRGBA8_ClearRGBA(CnImageRGBA8* image, uint8_t r, uint8_t b, uint8_t g, uint8_t a);
+CN_API uint32_t      cnImageRGBA8_GetPixelRowCol(CnImageRGBA8* image, CnRowColu32 rowCol);
+CN_TEST_API uint32_t cnImageRGBA8_OffsetForRowCol(CnImageRGBA8* image, CnRowColu32 rowCol, bool flip);
 
 #ifdef __cplusplus
 }
