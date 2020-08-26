@@ -225,7 +225,13 @@ CN_API int cnString_Format(char* str, size_t strLength, const char* format, ...)
     } while (0)
 #endif
 
+#if defined(_WIN32) && defined(CN_DEBUG)
+CN_API void cnValidatePtr(const void* ptr, const char* ptrName);
+#define CN_ASSERT_PTR(value) cnValidatePtr(value, #value);
+#else
 #define CN_ASSERT_PTR(value) CN_ASSERT(value, #value " is invalid.")
+#endif
+
 #define CN_ASSERT_FINITE_F32(value) CN_ASSERT(isfinite(value), #value " is not finite: %f", value)
 
 /**

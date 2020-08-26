@@ -5,6 +5,37 @@
 
 CN_API char fatalErrorBuffer[fatalErrorBufferLength];
 
+#if defined(_WIN32) && defined(CN_DEBUG)
+#include <calendon/compat-windows.h>
+#include <memoryapi.h>
+/**
+ * EXPERIMENTAL
+ *
+ * A simple check to ensure access to the start of the pointer location.  This
+ * does not guard against long ranges of access accesses, or verify that the
+ * data at the pointer location is valid.
+ *
+ * This uses VirtualQuery instead of IsBadPtr or similar because I'm considering
+ * using pointer checks to examine memory access patterns, such as to see
+ * which data should be allocated together.
+ *
+ * https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualquery
+ * https://docs.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-queryworkingset
+ * https://stackoverflow.com/questions/8058005/mac-os-x-equivalent-of-virtualquery-or-proc-pid-maps
+ * https://stackoverflow.com/questions/269314/is-there-a-better-way-than-parsing-proc-self-maps-to-figure-out-memory-protecti
+ */
+void cnValidatePtr(const void* ptr, const char* ptrName)
+{
+	MEMORY_BASIC_INFORMATION memInfo;
+	const size_t bytesReturned = VirtualQuery(ptr, &memInfo, sizeof(memInfo));
+	if (bytesReturned > 0) {
+		if ((memInfo.Protect & PAGE_NOACCESS) | (memInfo.Protect & PAGE_GUARD)) {
+			CN_FATAL_ERROR("Invalid memory access: %s", ptrName);
+		}
+	}
+}
+#endif
+
 /*
  * An unrecoverable event happened at this point in the program.
  *
