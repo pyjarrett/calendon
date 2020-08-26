@@ -143,10 +143,28 @@ void cnMain_PrintUsage(int argc, char** argv)
 	}
 }
 
+/**
+ * Attempt to parse the next command line option with a given system.
+ */
+int32_t cnMain_RunSystemParsers(CnCommandLineParse* commandLineParse, CnSystem* system)
+{
+	CN_ASSERT_NOT_NULL(commandLineParse);
+	CN_ASSERT_NOT_NULL(system);
+
+	CnCommandLineOptionList options = system->options();
+	for (uint32_t parserIndex = 0; parserIndex < options.numOptions; ++parserIndex) {
+		CnCommandLineOption *option = &options.options[parserIndex];
+		if (cnCommandLineOption_Matches(option, commandLineParse)) {
+			return option->parser(commandLineParse, system->config());
+		}
+	}
+	return 0;
+}
+
 bool cnMain_ParseCommandLine(int argc, char** argv)
 {
 	CN_ASSERT(argc >= 1, "Argument count must at least include the executable.");
-	CN_ASSERT(argv, "Cannot parse null arguments.");
+	CN_ASSERT_NOT_NULL(argv);
 
 	for (uint32_t i = 0; i < s_numCoreSystems; ++i) {
 		if (s_coreSystems[i].setDefaultConfig == NULL) {
@@ -157,44 +175,25 @@ bool cnMain_ParseCommandLine(int argc, char** argv)
 	}
 
 	CnCommandLineParse commandLineParse = cnCommandLineParse_Make(argc, argv);
-
-	// The log system is not initialized at this point, so use printf.
 	while (cnCommandLineParse_ShouldContinue(&commandLineParse)) {
-		bool parseAdvanced = false;
-		for (uint32_t systemIndex = 0; systemIndex < s_numCoreSystems; ++systemIndex) {
+		int argsParsed = 0;
+		int systemIndex = 0;
+		while (systemIndex < s_numCoreSystems && argsParsed == 0) {
 			CnSystem* system = &s_coreSystems[systemIndex];
-			CnCommandLineOptionList options = system->options();
-			for (uint32_t parserIndex = 0; parserIndex < options.numOptions; ++parserIndex) {
-				CnCommandLineOption* option = &options.options[parserIndex];
-				if (cnCommandLineOption_Matches(option, &commandLineParse)) {
-					const int32_t argsParsed = option->parser(&commandLineParse, system->config());
-					if (argsParsed == CnOptionParseError) {
-						cnMain_PrintUsage(argc, argv);
-						return false;
-					}
-					cnCommandLineParse_Advance(&commandLineParse, argsParsed);
-					parseAdvanced = true;
-					break;
-				}
-			}
-			if (cnCommandLineParse_IsComplete(&commandLineParse)) {
+			argsParsed = cnMain_RunSystemParsers(&commandLineParse, system);
+			if (argsParsed != 0) {
 				break;
 			}
+			++systemIndex;
 		}
-		if (!parseAdvanced) {
-			printf("Unable to parse argument: \"%s\" at index %d\n",
+		if (argsParsed <= 0) {
+			cnPrint("Unable to parse argument: \"%s\" at index %d\n",
 				cnCommandLineParse_LookAhead(&commandLineParse, 1),
 				cnCommandLineParse_LookAheadIndex(&commandLineParse, 1));
-			break;
+			cnMain_PrintUsage(argc, argv);
+			return false;
 		}
-	}
-	if (!cnCommandLineParse_IsComplete(&commandLineParse)) {
-		printf("Unknown command line option\n");
-		printf("Only parsed %d of %d arguments\n\n",
-			cnCommandLineParse_LookAheadIndex(&commandLineParse, 1),
-			argc);
-		cnMain_PrintUsage(argc, argv);
-		return false;
+		cnCommandLineParse_Advance(&commandLineParse, argsParsed);
 	}
 	return true;
 }
