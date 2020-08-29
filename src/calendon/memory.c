@@ -16,10 +16,7 @@ bool cnMem_Init(void)
 
 void cnMem_Allocate(CnDynamicBuffer* buffer, uint32_t size)
 {
-	if (!buffer) {
-		CN_ERROR(LogSysMemory, "Cannot allocate for a null CnDynamicBuffer");
-		return;
-	}
+	CN_ASSERT_PTR(buffer);
 
 	if (size == 0) {
 		CN_ERROR(LogSysMemory, "Refusing to allocate nothing for a CnDynamicBuffer.");
@@ -36,10 +33,7 @@ void cnMem_Allocate(CnDynamicBuffer* buffer, uint32_t size)
 
 void cnMem_Free(CnDynamicBuffer* buffer)
 {
-	if (!buffer) {
-		CN_ERROR(LogSysMemory, "Cannot release a null CnDynamicBuffer.");
-		return;
-	}
+	CN_ASSERT_PTR(buffer);
 	CN_ASSERT(buffer->contents != 0, "CnDynamicBuffer has already been freed");
 	free(buffer->contents);
 	buffer->contents = NULL;
