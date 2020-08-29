@@ -167,7 +167,7 @@ bool cnMain_ParseCommandLine(int argc, char** argv)
 	CnCommandLineParse commandLineParse = cnCommandLineParse_Make(argc, argv);
 	while (cnCommandLineParse_ShouldContinue(&commandLineParse)) {
 		int argsParsed = 0;
-		int systemIndex = 0;
+		uint32_t systemIndex = 0;
 		while (systemIndex < s_numCoreSystems && argsParsed == 0) {
 			CnSystem* system = &s_coreSystems[systemIndex];
 			argsParsed = cnMain_RunSystemParsers(&commandLineParse, system);
