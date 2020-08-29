@@ -13,6 +13,7 @@ typedef struct {
 	CnPlugin payload;
 	CnPathBuffer gameLibPath;
 	int64_t tickLimit;
+	bool headless;
 } CnMainConfig;
 
 void* cnMain_Config(void);

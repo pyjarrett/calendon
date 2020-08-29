@@ -10,6 +10,7 @@
 int32_t cnMain_OptionPrintWorkingDirectory(const CnCommandLineParse* parse, void* c);
 int32_t cnMain_OptionPayload(const CnCommandLineParse* parse, void* c);
 int32_t cnMain_OptionTickLimit(const CnCommandLineParse* parse, void* c);
+int32_t cnMain_OptionHeadless(const CnCommandLineParse* parse, void* c);
 
 static CnMainConfig s_config;
 static CnCommandLineOption s_options[] = {
@@ -33,6 +34,13 @@ static CnCommandLineOption s_options[] = {
 		"-t",
 		"--tick-limit",
 		cnMain_OptionTickLimit
+	},
+	{
+		"\t--headless\n"
+		"\t\tRun without starting up the UI or the renderer.\n",
+		NULL,
+		"--headless",
+		cnMain_OptionHeadless
 	}
 };
 
@@ -40,7 +48,7 @@ CnCommandLineOptionList cnMain_CommandLineOptionList(void)
 {
 	return (CnCommandLineOptionList) {
 		.options = s_options,
-		.numOptions = 2
+		.numOptions = 4
 	};
 }
 
@@ -53,6 +61,7 @@ void cnMain_SetDefaultConfig(void* config)
 {
 	CnMainConfig* c = (CnMainConfig*)config;
 	memset(c, 0, sizeof(CnMainConfig));
+	c->headless = false;
 }
 
 int32_t cnMain_OptionPrintWorkingDirectory(const CnCommandLineParse* parse, void* config)
@@ -131,6 +140,17 @@ int32_t cnMain_OptionTickLimit(const CnCommandLineParse* parse, void* c)
 	}
 	config->tickLimit = parsedValue;
 	return 2;
+}
+
+int32_t cnMain_OptionHeadless(const CnCommandLineParse* parse, void* c)
+{
+	CN_ASSERT_PTR(parse);
+	CN_ASSERT_PTR(c);
+
+	CnMainConfig* config = (CnMainConfig*)c;
+	config->headless = true;
+
+	return 1;
 }
 
 void cnMainConfig_Freestanding(CnPlugin_InitFn init, CnPlugin_TickFn tick,

@@ -180,86 +180,6 @@ bool cnMain_ParseCommandLine(int argc, char** argv)
 }
 
 /**
- * Common initialization point for all global systems.
- */
-void cnMain_InitAllSystems(int argc, char** argv)
-{
-	cnMain_BuildCoreSystemList();
-	cnLog_PreInit();
-
-	if (!cnMain_ParseCommandLine(argc, argv)) {
-		CN_FATAL_ERROR("Unable to parse command line.");
-	}
-
-	for (uint32_t i = 0; i < s_numCoreSystems; ++i) {
-		if (!s_coreSystems[i].plugin().init()) {
-			CN_FATAL_ERROR("Unable to initialize core system: %d", i);
-		}
-	}
-
-#if CN_USE_CONFIG_FILES
-	cnConfig_Init();
-	{
-		// Read every configuration file.
-		CnConfigFile file = cnConfigFile_Load(fileName);
-
-		// Apply each attribute in turn.
-		CnConfigKey key = cnConfig_NextKey();
-		CnConfigLine line = cnConfig_NextLine();
-
-		const char* prefix = cnConfigKey_Prefix(key);
-		CnSystemId id = cnConfig_PrefixToSystemId(prefix);
-
-		const char8 value = cnConfigKey_Value(key);
-
-		CnSystem* system;
-		system->Configure();
-	}
-#endif
-
-	// TODO: Resolution should be read from config or as a a configuration option.
-	const uint32_t width = 1024;
-	const uint32_t height = 768;
-
-	CnUIInitParams uiInitParams;
-	uiInitParams.resolution = (CnDimension2u32) { .width = width, .height = height };
-
-	cnUI_Init(&uiInitParams);
-	cnR_Init(uiInitParams.resolution);
-
-	// If there is a demo to load from file, then use that.
-	CnMainConfig* config = (CnMainConfig*)cnMain_Config();
-	if (!cnPlugin_IsComplete(&config->payload)) {
-		if (!cnPath_IsFile(config->gameLibPath.str)) {
-			CN_FATAL_ERROR("Cannot load game. '%s' is not a game library.", config->gameLibPath.str);
-		}
-
-		const char* gameLib = config->gameLibPath.str;
-		if (gameLib) {
-			cnMain_LoadPayloadFromFile(gameLib);
-		}
-	}
-	else {
-		cnMain_ValidatePayload(&config->payload);
-	}
-
-	if (s_payload.init) {
-		s_payload.init();
-	}
-	if (!s_payload.draw) CN_FATAL_ERROR("Draw function missing. Write a CnPlugin_Draw(void) function.");
-	if (!s_payload.tick) CN_FATAL_ERROR("Update function missing. Write a CnPlugin_Tick(void) function.");
-
-	s_lastTick = cnTime_MakeNow();
-
-	CN_TRACE(LogSysMain, "Systems initialized.");
-
-#ifdef _WIN32
-	// TODO: This should be hidden unless doing an "diagnostic-startup-crash" or some other special behavior.
-	//cnProc_PrintLoadedDLLs();
-#endif
-}
-
-/**
  * Possibly generate a delta time for the next game update.  If the time since
  * the previous tick is too small or very large, no tick will be generated.
  * Small ticks do needless work, and large ticks might be due to resuming from
@@ -297,6 +217,19 @@ bool cnMain_GenerateTick(CnTime* outDt)
 	return true;
 }
 
+static void cnMain_StartUpUI(void)
+{
+	// TODO: Resolution should be read from config or as a a configuration option.
+	const uint32_t width = 1024;
+	const uint32_t height = 768;
+
+	CnUIInitParams uiInitParams;
+	uiInitParams.resolution = (CnDimension2u32) { .width = width, .height = height };
+
+	cnUI_Init(&uiInitParams);
+	cnR_Init(uiInitParams.resolution);
+}
+
 void cnMain_StartUp(int argc, char** argv)
 {
 	cnMain_BuildCoreSystemList();
@@ -312,18 +245,12 @@ void cnMain_StartUp(int argc, char** argv)
 		}
 	}
 
-	// TODO: Resolution should be read from config or as a a configuration option.
-	const uint32_t width = 1024;
-	const uint32_t height = 768;
-
-	CnUIInitParams uiInitParams;
-	uiInitParams.resolution = (CnDimension2u32) { .width = width, .height = height };
-
-	cnUI_Init(&uiInitParams);
-	cnR_Init(uiInitParams.resolution);
+	CnMainConfig* config = (CnMainConfig*) cnMain_Config();
+	if (!config->headless) {
+		cnMain_StartUpUI();
+	}
 
 	// If there is a demo to load from file, then use that.
-	CnMainConfig* config = (CnMainConfig*) cnMain_Config();
 	if (!cnPlugin_IsComplete(&config->payload)) {
 		if (!cnPath_IsFile(config->gameLibPath.str)) {
 			CN_FATAL_ERROR("Cannot load game. '%s' is not a game library.", config->gameLibPath.str);
