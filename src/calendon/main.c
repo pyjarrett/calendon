@@ -312,26 +312,6 @@ void cnMain_StartUp(int argc, char** argv)
 		}
 	}
 
-#if CN_USE_CONFIG_FILES
-	cnConfig_Init();
-		{
-			// Read every configuration file.
-			CnConfigFile file = cnConfigFile_Load(fileName);
-
-			// Apply each attribute in turn.
-			CnConfigKey key = cnConfig_NextKey();
-			CnConfigLine line = cnConfig_NextLine();
-
-			const char* prefix = cnConfigKey_Prefix(key);
-			CnSystemId id = cnConfig_PrefixToSystemId(prefix);
-
-			const char8 value = cnConfigKey_Value(key);
-
-			CnSystem* system;
-			system->Configure();
-		}
-#endif
-
 	// TODO: Resolution should be read from config or as a a configuration option.
 	const uint32_t width = 1024;
 	const uint32_t height = 768;
@@ -358,20 +338,10 @@ void cnMain_StartUp(int argc, char** argv)
 		cnMain_ValidatePayload(&config->payload);
 	}
 
-	if (s_payload.init) {
-		s_payload.init();
-	}
-	if (!s_payload.draw) CN_FATAL_ERROR("Draw function missing. Write a CnPlugin_Draw(void) function.");
-	if (!s_payload.tick) CN_FATAL_ERROR("Update function missing. Write a CnPlugin_Tick(void) function.");
-
+	s_payload.init();
 	s_lastTick = cnTime_MakeNow();
 
 	CN_TRACE(LogSysMain, "Systems initialized.");
-
-#ifdef _WIN32
-// TODO: This should be hidden unless doing an "diagnostic-startup-crash" or some other special behavior.
-//cnProc_PrintLoadedDLLs();
-#endif
 }
 
 /**
