@@ -7,11 +7,19 @@
 #include <errno.h>
 #include <string.h>
 
+int32_t cnMain_OptionPrintWorkingDirectory(const CnCommandLineParse* parse, void* c);
 int32_t cnMain_OptionPayload(const CnCommandLineParse* parse, void* c);
 int32_t cnMain_OptionTickLimit(const CnCommandLineParse* parse, void* c);
 
 static CnMainConfig s_config;
 static CnCommandLineOption s_options[] = {
+	{
+		"\t--pwd\n"
+		"\t\tPrint the current working directory.\n",
+		NULL,
+		"--pwd",
+		cnMain_OptionPrintWorkingDirectory
+	},
 	{
 		"\t-g,--game SHARED_LIB\n"
 			"\t\tChange the game/demo to boot.\n",
@@ -45,6 +53,23 @@ void cnMain_SetDefaultConfig(void* config)
 {
 	CnMainConfig* c = (CnMainConfig*)config;
 	memset(c, 0, sizeof(CnMainConfig));
+}
+
+int32_t cnMain_OptionPrintWorkingDirectory(const CnCommandLineParse* parse, void* config)
+{
+	CN_ASSERT_PTR(parse);
+	CN_ASSERT_PTR(config);
+
+	CN_UNUSED(parse);
+	CN_UNUSED(config);
+
+	CnPathBuffer cwd;
+	if (!cnPathBuffer_CurrentWorkingDirectory(&cwd)) {
+		CN_FATAL_ERROR("Unable to get current working directory.");
+	}
+	cnPrint("Current working directory: '%s'\n", cwd);
+
+	return 1;
 }
 
 int32_t cnMain_OptionPayload(const CnCommandLineParse* parse, void* c)
