@@ -223,7 +223,7 @@ bool cnFont_PSF2Allocate(CnFontPSF2* font, const char* path)
 	const uint8_t* const unicodeTableStart = bitmapStart + bitmapSize;
 	const uint8_t* const unicodeTableEnd = (uint8_t*)fileBuffer.contents + fileBuffer.size;
 	cnFont_PSF2ReadUnicodeTableIntoGlyphMap(&font->map, unicodeTableStart, unicodeTableEnd);
-	cnMem_Free(&fileBuffer);
+	cnDynamicBuffer_Free(&fileBuffer);
 	return true;
 }
 

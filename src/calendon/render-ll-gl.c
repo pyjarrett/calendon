@@ -847,8 +847,8 @@ void cnRLL_LoadSimpleShader(const char* vertexShaderFileName,
 		CN_TRACE(LogSysRender, "Vertex shader %s", vertexShaderBuffer.contents);
 		CN_ERROR(LogSysRender, "Unable to create shader program");
 	}
-	cnMem_Free(&vertexShaderBuffer);
-	cnMem_Free(&fragmentShaderBuffer);
+	cnDynamicBuffer_Free(&vertexShaderBuffer);
+	cnDynamicBuffer_Free(&fragmentShaderBuffer);
 }
 
 void cnRLL_LoadShaders(void)

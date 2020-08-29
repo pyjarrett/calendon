@@ -55,7 +55,7 @@ bool cnAssets_ReadFile(const char *filename, uint32_t format, CnDynamicBuffer *b
 	if (format == CnFileTypeText) {
 		fileLength += 1;
 	}
-	cnMem_Allocate(buffer, (uint32_t) fileLength);
+	cnDynamicBuffer_Allocate(buffer, (uint32_t) fileLength);
 
 	fseek(file, 0, SEEK_SET);
 	size_t amountRead = fread(buffer->contents, 1, (size_t)fileLength, file);

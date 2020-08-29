@@ -53,7 +53,7 @@ static void cnMain_BuildCoreSystemList(void)
 		cnMain_System,
 		cnLog_System,
 		cnCrash_System,
-		cnMem_System,
+		cnMemory_System,
 		cnTime_System,
 		cnAssets_System
 	};

@@ -4,17 +4,17 @@
 
 #include <calendon/log.h>
 
-static uint32_t MemOutstandingAllocations;
-static uint32_t LogSysMemory;
+static CnLogHandle LogSysMemory;
+static uint32_t s_outstandingDynamicBuffers;
 
-bool cnMem_Init(void)
+bool cnMemory_Init(void)
 {
-	MemOutstandingAllocations = 0;
+	s_outstandingDynamicBuffers = 0;
 	LogSysMemory = cnLog_RegisterSystem("Memory");
 	return true;
 }
 
-void cnMem_Allocate(CnDynamicBuffer* buffer, uint32_t size)
+void cnDynamicBuffer_Allocate(CnDynamicBuffer* buffer, uint32_t size)
 {
 	CN_ASSERT_PTR(buffer);
 
@@ -28,46 +28,46 @@ void cnMem_Allocate(CnDynamicBuffer* buffer, uint32_t size)
 		CN_ERROR(LogSysMemory, "Unable to allocate %" PRIu32 " bytes for CnDynamicBuffer", size);
 	}
 	buffer->size = size;
-	++MemOutstandingAllocations;
+	++s_outstandingDynamicBuffers;
 }
 
-void cnMem_Free(CnDynamicBuffer* buffer)
+void cnDynamicBuffer_Free(CnDynamicBuffer* buffer)
 {
 	CN_ASSERT_PTR(buffer);
 	CN_ASSERT(buffer->contents != 0, "CnDynamicBuffer has already been freed");
 	free(buffer->contents);
 	buffer->contents = NULL;
 
-	if (MemOutstandingAllocations == 0) {
+	if (s_outstandingDynamicBuffers == 0) {
 		CN_ERROR(LogSysMemory, "Double free of buffer %p", (void*)buffer);
 	}
 	else {
-		--MemOutstandingAllocations;
+		--s_outstandingDynamicBuffers;
 	}
 }
 
-void cnMem_Shutdown(void)
+void cnMemory_Shutdown(void)
 {
-	if (MemOutstandingAllocations != 0) {
-		//CN_ERROR(LogSysMemory, "Memory systems leaks: %" PRIu32, MemOutstandingAllocations);
+	if (s_outstandingDynamicBuffers != 0) {
+		//CN_ERROR(LogSysMemory, "Memory systems leaks: %" PRIu32, s_outstandingDynamicBuffers);
 	}
 }
 
-CnPlugin cnMem_Plugin(void)
+CnPlugin cnMemory_Plugin(void)
 {
 	return (CnPlugin) {
-		.init = cnMem_Init,
-		.shutdown = cnMem_Shutdown,
+		.init = cnMemory_Init,
+		.shutdown = cnMemory_Shutdown,
 		.tick = NULL,
 		.draw = NULL,
 		.sharedLibrary = NULL
 	};
 }
 
-CnSystem cnMem_System(void) {
+CnSystem cnMemory_System(void) {
 	return (CnSystem) {
 		.name = "Memory",
-		.plugin = cnMem_Plugin,
+		.plugin = cnMemory_Plugin,
 		.options = cnSystem_NoOptions,
 		.config = cnSystem_NoConfig,
 		.setDefaultConfig = cnSystem_NoDefaultConfig

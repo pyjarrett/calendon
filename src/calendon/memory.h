@@ -12,7 +12,7 @@ extern "C" {
 /**
  * A single contiguous block of dynamically allocated memory.
  *
- * Allocated with `cnMem_Allocate` and then released with `cnMem_Free`.  The number
+ * Allocated with `cnDynamicBuffer_Allocate` and then released with `cnDynamicBuffer_Free`.  The number
  * of unfree'd buffers is reported on shutdown.
  */
 typedef struct {
@@ -20,10 +20,10 @@ typedef struct {
 	uint32_t size;
 } CnDynamicBuffer;
 
-CN_API void cnMem_Allocate(CnDynamicBuffer* buffer, uint32_t size);
-CN_API void cnMem_Free(CnDynamicBuffer* buffer);
+CN_API void cnDynamicBuffer_Allocate(CnDynamicBuffer* buffer, uint32_t size);
+CN_API void cnDynamicBuffer_Free(CnDynamicBuffer* buffer);
 
-CnSystem cnMem_System(void);
+CnSystem cnMemory_System(void);
 
 #ifdef __cplusplus
 }

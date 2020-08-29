@@ -17,7 +17,7 @@ void cnImageRGBA8_Flip(CnImageRGBA8* image)
 	CN_ASSERT(image->height > 0, "Cannot flip an image with no height.");
 
 	CnDynamicBuffer flippedImage;
-	cnMem_Allocate(&flippedImage, image->pixels.size);
+	cnDynamicBuffer_Allocate(&flippedImage, image->pixels.size);
 
 	// Assume RGBA8 encoding.
 	const uint32_t pixelSize = 4 * sizeof(uint8_t);
@@ -45,7 +45,7 @@ void cnImageRGBA8_Flip(CnImageRGBA8* image)
 	image->pixels.contents = flippedImage.contents;
 	flippedImage.contents = temp;
 
-	cnMem_Free(&flippedImage);
+	cnDynamicBuffer_Free(&flippedImage);
 }
 
 /**
@@ -72,7 +72,7 @@ bool cnImageRGBA8_Allocate(CnImageRGBA8* image, const char* fileName)
 	size_t decodedSize = 0;
 	spng_decoded_image_size(pngContext, format, &decodedSize);
 
-	cnMem_Allocate(&image->pixels, (uint32_t) decodedSize);
+	cnDynamicBuffer_Allocate(&image->pixels, (uint32_t) decodedSize);
 	image->pixels.size = (uint32_t)decodedSize;
 
 	spng_decode_image(pngContext, (uint8_t*)image->pixels.contents, image->pixels.size, format, 0);
@@ -91,7 +91,7 @@ bool cnImageRGBA8_Allocate(CnImageRGBA8* image, const char* fileName)
 	CN_TRACE(LogSysAssets, "Output size: %llu", decodedSize);
 	CN_TRACE(LogSysAssets, "CnInput fileContents size: %d", fileBuffer.size);
 
-	cnMem_Free(&fileBuffer);
+	cnDynamicBuffer_Free(&fileBuffer);
 
 	return true;
 }
@@ -102,7 +102,7 @@ bool cnImageRGBA8_AllocateSized(CnImageRGBA8* image, CnDimension2u32 size)
 	CN_ASSERT(size.width > 0 && size.height > 0, "CnImageRGBA8 must have non-zero size %"
 		PRIu32 "x%" PRIu32, size.width, size.height);
 
-	cnMem_Allocate(&image->pixels, size.width * size.height * 4 /* bytes per pixel*/);
+	cnDynamicBuffer_Allocate(&image->pixels, size.width * size.height * 4 /* bytes per pixel*/);
 	image->width = size.width;
 	image->height = size.height;
 	return true;
@@ -111,7 +111,7 @@ bool cnImageRGBA8_AllocateSized(CnImageRGBA8* image, CnDimension2u32 size)
 void cnImageRGBA8_Free(CnImageRGBA8* image)
 {
 	CN_ASSERT(image != NULL, "Cannot load data into a null image.");
-	cnMem_Free(&image->pixels);
+	cnDynamicBuffer_Free(&image->pixels);
 }
 
 void cnImageRGBA8_ClearRGBA(CnImageRGBA8* image, uint8_t r, uint8_t b, uint8_t g, uint8_t a)
