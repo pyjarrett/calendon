@@ -7,10 +7,10 @@
 #include <errno.h>
 #include <string.h>
 
-int32_t cnMain_OptionPrintWorkingDirectory(const CnCommandLineParse* parse, void* c);
+int32_t cnMain_OptionPrintWorkingDirectory(const CnCommandLineParse* parse, void* config);
 int32_t cnMain_OptionPayload(const CnCommandLineParse* parse, void* c);
-int32_t cnMain_OptionTickLimit(const CnCommandLineParse* parse, void* c);
-int32_t cnMain_OptionHeadless(const CnCommandLineParse* parse, void* c);
+int32_t cnMain_OptionTickLimit(const CnCommandLineParse* parse, void* config);
+int32_t cnMain_OptionHeadless(const CnCommandLineParse* parse, void* config);
 
 static CnMainConfig s_config;
 static CnCommandLineOption s_options[] = {
@@ -81,12 +81,12 @@ int32_t cnMain_OptionPrintWorkingDirectory(const CnCommandLineParse* parse, void
 	return 1;
 }
 
-int32_t cnMain_OptionPayload(const CnCommandLineParse* parse, void* c)
+int32_t cnMain_OptionPayload(const CnCommandLineParse* parse, void* config)
 {
 	CN_ASSERT_PTR(parse);
-	CN_ASSERT_PTR(c);
+	CN_ASSERT_PTR(config);
 
-	CnMainConfig* config = (CnMainConfig*)c;
+	CnMainConfig* mainConfig = (CnMainConfig*)config;
 
 	if (!cnCommandLineParse_HasLookAhead(parse, 2)) {
 		cnPrint("Payload must be provided a shared library (or DLL) to load\n");
@@ -104,8 +104,8 @@ int32_t cnMain_OptionPayload(const CnCommandLineParse* parse, void* c)
 			cnPrint("Game library %s does not exist.\n", gamePath);
 			return CnOptionParseError;
 		}
-		cnPathBuffer_Set(&config->gameLibPath, gamePath);
-		cnPrint("Game library: '%s'\n", config->gameLibPath.str);
+		cnPathBuffer_Set(&mainConfig->gameLibPath, gamePath);
+		cnPrint("Game library: '%s'\n", mainConfig->gameLibPath.str);
 		return 2;
 	}
 	else {
@@ -114,12 +114,12 @@ int32_t cnMain_OptionPayload(const CnCommandLineParse* parse, void* c)
 	}
 }
 
-int32_t cnMain_OptionTickLimit(const CnCommandLineParse* parse, void* c)
+int32_t cnMain_OptionTickLimit(const CnCommandLineParse* parse, void* config)
 {
 	CN_ASSERT_PTR(parse);
-	CN_ASSERT_PTR(c);
+	CN_ASSERT_PTR(config);
 
-	CnMainConfig* config = (CnMainConfig*)c;
+	CnMainConfig* mainConfig = (CnMainConfig*)config;
 
 	if (!cnCommandLineParse_HasLookAhead(parse, 2)) {
 		cnPrint("Must provide the number of ticks for which to run the program.\n");
@@ -138,17 +138,17 @@ int32_t cnMain_OptionTickLimit(const CnCommandLineParse* parse, void* c)
 		cnPrint("Unable to parse tick limit: %s\n", tickString);
 		return CnOptionParseError;
 	}
-	config->tickLimit = parsedValue;
+	mainConfig->tickLimit = parsedValue;
 	return 2;
 }
 
-int32_t cnMain_OptionHeadless(const CnCommandLineParse* parse, void* c)
+int32_t cnMain_OptionHeadless(const CnCommandLineParse* parse, void* config)
 {
 	CN_ASSERT_PTR(parse);
-	CN_ASSERT_PTR(c);
+	CN_ASSERT_PTR(config);
 
-	CnMainConfig* config = (CnMainConfig*)c;
-	config->headless = true;
+	CnMainConfig* mainConfig = (CnMainConfig*)config;
+	mainConfig->headless = true;
 
 	return 1;
 }
