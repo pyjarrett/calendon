@@ -8,7 +8,6 @@
 #ifdef _WIN32
 
 #if CN_ENABLE_CORE_DUMPS
-#include <calendon/env.h>
 #include <calendon/path.h>
 #include <calendon/compat-windows.h>
 #include <DbgHelp.h>

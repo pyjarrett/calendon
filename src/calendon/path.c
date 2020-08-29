@@ -1,10 +1,15 @@
 #include "path.h"
 
-#include <calendon/env.h>
 #include <calendon/string.h>
 
 #include <string.h>
 #include <sys/stat.h>
+
+#ifdef _WIN32
+	#include <calendon/compat-windows.h>
+#elif __linux__
+	#include <unistd.h>
+#endif
 
 bool cnPath_Exists(const char* path)
 {
@@ -107,6 +112,30 @@ bool cnPathBuffer_IsFile(CnPathBuffer* path)
 
 bool cnPathBuffer_CurrentWorkingDirectory(CnPathBuffer* path)
 {
-	CN_ASSERT(path != NULL, "Cannot put a current working directory into a null CnPathBuffer.");
-	return cnEnv_CurrentWorkingDirectory(path->str, CN_MAX_TERMINATED_PATH);
+	CN_ASSERT_PTR(path);
+
+#ifdef _WIN32
+	//https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getcurrentdirectory
+	return GetCurrentDirectory(CN_MAX_TERMINATED_PATH, path->str) != 0;
+#elif __linux__
+	return getcwd(path->str, CN_MAX_TERMINATED_PATH) != NULL;
+#endif
+}
+
+/**
+ * The Calendon project home is the root of the git repo.  The environment
+ * variable CALENDON_HOME defines the Calendon project home, otherwise it
+ * becomes the current working directory.
+ */
+bool cnPathBuffer_DefaultCalendonHome(CnPathBuffer* path)
+{
+	CN_ASSERT_PTR(path);
+
+	const char* calendonHomeEnvVar = getenv("CALENDON_HOME");
+	if (calendonHomeEnvVar) {
+		cnPathBuffer_Set(path, calendonHomeEnvVar);
+		return true;
+	}
+
+	return cnPathBuffer_CurrentWorkingDirectory(path);
 }

@@ -3,7 +3,6 @@
 #include <calendon/cn.h>
 
 #include <calendon/assets-config.h>
-#include <calendon/env.h>
 #include <calendon/log.h>
 #include <calendon/path.h>
 #include <calendon/string.h>
@@ -40,7 +39,9 @@ bool cnAssets_Init(void)
 
 	if (!cnPath_IsDir(assetsRoot)) {
 		CnPathBuffer cwd;
-		cnEnv_CurrentWorkingDirectory(cwd.str, CN_MAX_TERMINATED_PATH);
+		if (!cnPathBuffer_CurrentWorkingDirectory(&cwd)) {
+			CN_FATAL_ERROR("Unable to get current working directory.");
+		}
 		CN_FATAL_ERROR("Assets root directory doesn't exist: %s.  CWD: %s", assetsRoot, cwd.str);
 		return false;
 	}

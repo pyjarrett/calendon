@@ -4,7 +4,6 @@
 #include <calendon/assets-fileio.h>
 #include <calendon/control.h>
 #include <calendon/crash.h>
-#include <calendon/env.h>
 #include <calendon/log.h>
 #include <calendon/main-config.h>
 #include <calendon/memory.h>
@@ -66,9 +65,11 @@ static void cnMain_BuildCoreSystemList(void)
 
 void cnMain_DescribeEnv(void)
 {
-	char buffer[1024];
-	cnEnv_CurrentWorkingDirectory(buffer, 1024);
-	CN_TRACE(LogSysMain, "CWD: '%s'", buffer);
+	CnPathBuffer cwd;
+	if (!cnPathBuffer_CurrentWorkingDirectory(&cwd)) {
+		CN_FATAL_ERROR("Unable to get current working directory.");
+	}
+	CN_TRACE(LogSysMain, "CWD: '%s'", cwd.str);
 }
 
 void cnMain_ValidatePayload(CnPlugin* payload)

@@ -1,7 +1,7 @@
 #include "main-config.h"
 
 #include <calendon/cn.h>
-#include <calendon/env.h>
+#include <calendon/path.h>
 #include <calendon/string.h>
 
 #include <errno.h>
@@ -62,9 +62,11 @@ int32_t cnMain_OptionPayload(const CnCommandLineParse* parse, void* c)
 	const char* gamePath = cnCommandLineParse_LookAhead(parse, 2);
 	if (cnString_FitsWithNull(gamePath, CN_MAX_TERMINATED_PATH)) {
 		if (!cnPath_IsFile(gamePath)) {
-			char cwd[CN_MAX_TERMINATED_PATH];
-			cnEnv_CurrentWorkingDirectory(cwd, CN_MAX_TERMINATED_PATH);
-			cnPrint("Current working directory is: %s\n", cwd);
+			CnPathBuffer cwd;
+			if (!cnPathBuffer_CurrentWorkingDirectory(&cwd)) {
+				CN_FATAL_ERROR("Unable to get current working directory.");
+			}
+			cnPrint("Current working directory is: %s\n", cwd.str);
 			cnPrint("Game library %s does not exist.\n", gamePath);
 			return CnOptionParseError;
 		}

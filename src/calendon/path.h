@@ -17,7 +17,7 @@ extern "C" {
  * Verify the path length assumption against the OS.
  */
 #ifdef __linux__
-#include <linux/limits.h>
+	#include <linux/limits.h>
 	CN_STATIC_ASSERT(CN_MAX_TERMINATED_PATH <= PATH_MAX,
 		"Calendon allows larger path sizes than the OS");
 #endif
@@ -40,7 +40,6 @@ extern "C" {
  * for quick buffer creation on the stack.
  */
 typedef struct {
-	// Adds 1 byte for null terminator to maximum path length.
 	char str[CN_MAX_TERMINATED_PATH];
 } CnPathBuffer;
 
@@ -54,7 +53,9 @@ CN_API bool cnPathBuffer_Join(CnPathBuffer* root, const char* suffix);
 CN_API bool cnPathBuffer_Exists(CnPathBuffer* path);
 CN_API bool cnPathBuffer_IsDir(CnPathBuffer* path);
 CN_API bool cnPathBuffer_IsFile(CnPathBuffer* path);
+
 CN_API bool cnPathBuffer_CurrentWorkingDirectory(CnPathBuffer* path);
+CN_API bool cnPathBuffer_DefaultCalendonHome(CnPathBuffer* path);
 
 #ifdef __cplusplus
 }
