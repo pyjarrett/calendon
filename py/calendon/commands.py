@@ -347,6 +347,7 @@ def cmd_default(ctx: ProjectContext, args: argparse.Namespace) -> int:
 def cmd_reset(ctx: ProjectContext, args: argparse.Namespace) -> int:
     return ctx.clear_default(args.name)
 
+
 def cmd_pysetup(ctx: ProjectContext, args: argparse.Namespace) -> int:
     """Creates a virtual environment for helper module installs."""
     if not _verify_executable_exists(ctx, 'python3'):
@@ -383,7 +384,7 @@ def cmd_pysetup(ctx: ProjectContext, args: argparse.Namespace) -> int:
         required_dev_packages.extend(['sphinx', 'sphinx_rtd_theme', 'breathe'])
         pip_install_args = [ctx.path_for_program('localpython3'), '-m', 'pip', 'install']
         pip_install_args.extend(required_dev_packages)
-    ctx.register_program('sphinx-build', os.path.join(ctx.venv_bin_dir(), mp.root_to_executable('sphinx-build')))
+    ctx.register_program('sphinx-build', os.path.join(ctx.venv_bin_dir(), mp.root_to_executable('sphinx-build')), override=True)
     return run_program(pip_install_args, cwd=ctx.calendon_home())
 
 
