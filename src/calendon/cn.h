@@ -1,6 +1,23 @@
 #ifndef CN_H
 #define CN_H
 
+/**
+ * @file cn.h
+ *
+ * This is the "standard" Calendon header which most files should include to get
+ * the basic types and base functionality and macros used in Calendon code.
+ *
+ * The size of this prelude-style header should be reduced to minimum practical
+ * to prevent introducing excessive elements throughout the engine and bloating
+ * compile times.
+ *
+ * This header should always be included first since it is likely to be
+ * converted into a precompiled header.
+ */
+
+/*
+ * Macros for helping with C++ compatibility.
+ */
 #ifdef __cplusplus
 #define CN_HEADER_BEGIN_EXPORTED extern "C" {
 #define CN_HEADER_BEGIN_PRIVATE extern "C" {
@@ -26,21 +43,10 @@
 
 CN_HEADER_BEGIN_EXPORTED
 
-/*
- * This is the "standard" Calendon header which most files should include to get
- * the basic types and base functionality and macros used in Calendon code.
- *
- * The size of this prelude-style header should be reduced to minimum practical
- * to prevent introducing excessive elements throughout the engine and bloating
- * compile times.
- *
- * This header should always be included first since it is likely to be
- * converted into a precompiled header.
- */
 #include <inttypes.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdlib.h>
+#include <stdbool.h>   // For bool
+#include <stdint.h>    // For (u)int(8,16,32,64)_t
+#include <stdlib.h>    // For size_t and NULL
 
 /**
  * A native representation of time.  This could be machine cycles or
@@ -232,6 +238,11 @@ CN_API void cnValidatePtr(const void* ptr, const char* ptrName);
 #define CN_ASSERT_PTR(value) CN_ASSERT(value, #value " is invalid.")
 #endif
 
+/**
+ * Floating point code often assumes that a float is a meaningful finite value.
+ * Tracking down NaN, -infinity and +infinity can be simplified by using guards
+ * like this one.
+ */
 #define CN_ASSERT_FINITE_F32(value) CN_ASSERT(isfinite(value), #value " is not finite: %f", value)
 
 /**
