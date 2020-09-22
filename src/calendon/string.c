@@ -58,6 +58,7 @@ bool cnString_Equal(const char* left, const char* right, const size_t maxCharByt
 
 	if (!rightTerminated) {
 		CN_ASSERT(false, "Unterminated string.");
+		return false;
 	}
 
 	return strncmp(left, right, maxCharBytes) == 0;
