@@ -61,6 +61,7 @@ def _verify_venv_dir_exists(venv: str) -> bool:
 
 
 def cmd_clean(ctx: ProjectContext, args: argparse.Namespace) -> int:
+    """Clean up the build directory and build files."""
     build_dir: str = ctx.build_dir()
     if not os.path.exists(build_dir):
         return 0
@@ -82,6 +83,7 @@ def cmd_clean(ctx: ProjectContext, args: argparse.Namespace) -> int:
 
 
 def cmd_gen(ctx: ProjectContext, args: argparse.Namespace) -> int:
+    """Runs the generator to make build files like Visual Studio solutions."""
     if not _verify_executable_exists(ctx, 'cmake'):
         return 1
 
@@ -175,6 +177,7 @@ def cmd_doc(ctx: ProjectContext, args: argparse.Namespace) -> int:
 
 
 def cmd_check(ctx: ProjectContext, args: argparse.Namespace) -> int:
+    """Runs tests."""
     if not _verify_executable_exists(ctx, 'cmake'):
         return 1
 
@@ -316,6 +319,7 @@ def cmd_new(ctx: ProjectContext, args: argparse.Namespace) -> int:
 
 
 def cmd_env(ctx: ProjectContext, _args: argparse.Namespace) -> int:
+    """Prints the current Crank environment."""
     json.dump(ctx.dump(), sys.stdout, indent=4)
     print()
     return 0
@@ -341,10 +345,12 @@ def cmd_register(ctx: ProjectContext, args: argparse.Namespace) -> int:
 
 
 def cmd_default(ctx: ProjectContext, args: argparse.Namespace) -> int:
+    """Sets a default compiler, build-dir, build-config, game, or asset-dir."""
     return ctx.set_default(args.name, args.value)
 
 
 def cmd_reset(ctx: ProjectContext, args: argparse.Namespace) -> int:
+    """Reverts a defaulted compiler, build-dir, build-config, game, or asset-dir."""
     return ctx.clear_default(args.name)
 
 
@@ -417,13 +423,16 @@ def cmd_pycheck(ctx: ProjectContext, args: argparse.Namespace) -> int:
 
 
 def cmd_source(_ctx: ProjectContext, _args: argparse.Namespace) -> int:
+    """Does nothing.  Will run a script of commands at some point."""
     return 1
 
 
 def cmd_save(ctx: ProjectContext, _args: argparse.Namespace) -> int:
+    """Saves the current Crank context to file."""
     ctx.save()
     return 0
 
 
 def cmd_load(_ctx: ProjectContext, _args: argparse.Namespace) -> int:
+    """Does nothing.  Will load the context from file."""
     return 1
