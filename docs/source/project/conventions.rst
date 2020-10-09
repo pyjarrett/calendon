@@ -142,7 +142,7 @@ Example:
 
     cn<type>_Set(<type>*, args...)
 
-Some resources cannot be copied, but do not making allocations.
+Some resources cannot be copied, but do not make allocations.
 
 Example:
 
@@ -180,9 +180,9 @@ Returning ``true`` indicates success, returning ``false`` indicates failure.
 Primitive Types
 ---------------
 
-- Prefer ``NULL`` to ``0``
+- Use ``NULL`` rather than ``0`` to indicate null pointers.
 - Prefer ``float`` over ``double``.
-- Used sized versions of integers and macro format specifiers:
+- Use sized versions of integers and macro format specifiers:
 
 +-------------------+-----------------+
 | Integer Types     |  Format         |
@@ -257,7 +257,7 @@ Header file:
      * What is the purpose of this file?
      */
 
-    // extern "C" here to also included headers.
+    // extern "C" here to include others headers.
     #ifdef __cplusplus
     extern "C" {
     #endif
@@ -302,9 +302,11 @@ Comment should be terminated by a period (.) to indicate that it is a complete
 thought and not accidentally cut off.
 
 Use Javadoc style ``/** */`` for documentation with "space-star-space" on
-intermediate lines.  Functions should be documented in source (``.c``) files to
-keep their documentation close to the code.  Macros, structs, and typedef must
-be documented at their definition sites.
+intermediate lines.  Macros, structs, and typedef should be documented at their
+definition sites.  Functions should be documented in source (``.c``) files to
+keep their documentation close to the code and easier to update.  This may
+change in the future so documentation can be read by users in exported headers,
+but is the convention for now.
 
 .. code-block::
 
