@@ -19,9 +19,6 @@ enum { CnMaxNumCoreSystems = 16 };
 extern CnSystem s_coreSystems[CnMaxNumCoreSystems];
 extern uint32_t s_numCoreSystems;
 
-CnPlugin cnMain_Plugin(void);
-CnSystem cnMain_System(void);
-
 void cnMain_BuildCoreSystemList(void);
 bool cnMain_ParseCommandLine(int argc, char** argv);
 

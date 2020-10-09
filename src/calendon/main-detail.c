@@ -103,7 +103,7 @@ void cnMain_LoadPayloadFromFile(const char* sharedLibraryName)
 	}
 
 	cnSharedLibrary_Release(s_payload.sharedLibrary);
-	CnSharedLibrary library = cnSharedLibrary_Load(sharedLibraryName);
+	const CnSharedLibrary library = cnSharedLibrary_Load(sharedLibraryName);
 	if (!library) {
 		CN_FATAL_ERROR("Unable to load game module: %s", sharedLibraryName);
 	}
@@ -144,7 +144,7 @@ int32_t cnMain_RunSystemParsers(CnCommandLineParse* commandLineParse, CnSystem* 
 	CN_ASSERT_PTR(commandLineParse);
 	CN_ASSERT_PTR(system);
 
-	CnCommandLineOptionList options = system->options();
+	const CnCommandLineOptionList options = system->options();
 	for (uint32_t parserIndex = 0; parserIndex < options.numOptions; ++parserIndex) {
 		CnCommandLineOption *option = &options.options[parserIndex];
 		if (cnCommandLineOption_Matches(option, commandLineParse)) {

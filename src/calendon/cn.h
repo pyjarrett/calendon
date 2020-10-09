@@ -223,7 +223,7 @@ CN_API int cnString_Format(char* str, size_t strLength, const char* format, ...)
 
 #if defined(_WIN32) && defined(CN_DEBUG)
 CN_API void cnValidatePtr(const void* ptr, const char* ptrName);
-#define CN_ASSERT_PTR(value) cnValidatePtr(value, #value);
+#define CN_ASSERT_PTR(value) cnValidatePtr(value, #value)
 #else
 #define CN_ASSERT_PTR(value) CN_ASSERT(value, #value " is invalid.")
 #endif
