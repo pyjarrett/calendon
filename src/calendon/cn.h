@@ -182,18 +182,8 @@ typedef struct { uint64_t native; } CnTime;
 	#define CN_WARN_DEPRECATED(msg)
 #endif
 
-/**
- * Use the Log system instead of this function.
- *
- * A simple print function to break the header dependency on printf.
- */
 CN_API void cnPrint(const char* msg, ...);
 
-/**
- * Helper function to write strings.
- *
- * Prevents direct dependency on stdio.h.
- */
 CN_API int cnString_Format(char* str, size_t strLength, const char* format, ...);
 
 #if CN_TESTING

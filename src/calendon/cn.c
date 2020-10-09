@@ -76,7 +76,11 @@ void cnFatalError(const char* msg, ...)
 #endif
 
 /**
- * Breaks the header dependency on stdio to minimize the size of cn.h.
+ * A simple print function to break the dependency on printf, so cn.h does not
+ * depend on stdio.
+ *
+ * Typically, you should use the Log system instead of this function, unless
+ * the Log system is not available.
  */
 void cnPrint(const char* msg, ...)
 {
@@ -86,6 +90,11 @@ void cnPrint(const char* msg, ...)
 	va_end(args);
 }
 
+/**
+ * Helper function to write strings.
+ *
+ * Prevents direct dependency on stdio.h.
+ */
 CN_API int cnString_Format(char* str, size_t strLength, const char* format, ...)
 {
 	va_list args;
