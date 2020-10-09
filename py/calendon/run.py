@@ -39,7 +39,7 @@ def run_program(command_line: List[str], **kwargs):
 
         try:
             line = err_queue.get_nowait()
-            print(f'err:{line}')
+            print(line)
         except queue.Empty:
             pass
 
