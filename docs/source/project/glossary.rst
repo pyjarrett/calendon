@@ -52,7 +52,7 @@ concepts should be documented in the source code itself.
         A program which links to the Calendon library and provides its own main
         entry point.
 
-    hosted program
+    driven program
         A payload loaded and run by the Calendon driver.
 
     payload

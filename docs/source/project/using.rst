@@ -3,7 +3,7 @@ Using Calendon in a Project
 
 Calendon can be used in two ways:
 
-Hosted
+Driver
 ------
 
 For quick setups and rapid iteration.
@@ -11,7 +11,7 @@ For quick setups and rapid iteration.
 Write a shared library (or dll) payload which can be loaded and run by the Calendon driver
 using command line arguments.
 
-.. image:: ../images/using-hosted.svg
+.. image:: ../images/using-driver.svg
 
 **Pros**
 
@@ -29,12 +29,12 @@ using command line arguments.
 - Requires configuration for targeting your payload to use
   the IDE for running and debugging.
 
-Freestanding
-------------
+Library
+-------
 
 Integrate Calendon into your executable and directly control initialization.
 
-.. image:: ../images/using-freestanding.svg
+.. image:: ../images/using-library.svg
 
 **Pros**
 
