@@ -57,7 +57,7 @@ void cnMain_AddCoreSystem(CnSystem system)
 	CN_ASSERT(s_numCoreSystems < CnMaxNumCoreSystems, "Too many core systems added.");
 	s_coreSystems[s_numCoreSystems] = system;
 	++s_numCoreSystems;
-};
+}
 
 void cnMain_BuildCoreSystemList(void)
 {
@@ -72,6 +72,15 @@ void cnMain_BuildCoreSystemList(void)
 
 	for (uint32_t i = 0; i < CN_ARRAY_SIZE(systems); ++i) {
 		cnMain_AddCoreSystem(systems[i]());
+	}
+}
+
+void cnMain_InitCoreSystems(void)
+{
+	for (uint32_t i = 0; i < s_numCoreSystems; ++i) {
+		if (!s_coreSystems[i].plugin().init()) {
+			CN_FATAL_ERROR("Unable to initialize core system: %d", i);
+		}
 	}
 }
 
@@ -110,6 +119,25 @@ void cnMain_LoadPayloadFromFile(const char* sharedLibraryName)
 	cnPlugin_LoadFromSharedLibrary(&s_payload, library);
 
 	cnMain_ValidatePayload(&s_payload);
+}
+
+void cnMain_LoadPayload(CnMainConfig* config)
+{
+	CN_ASSERT_PTR(config);
+	if (!cnPlugin_IsComplete(&config->payload)) {
+		if (!cnPath_IsFile(config->gameLibPath.str)) {
+			CN_FATAL_ERROR("Cannot load game. '%s' is not a game library.", config->gameLibPath.str);
+		}
+
+		const char* gameLib = config->gameLibPath.str;
+		if (gameLib) {
+			cnMain_LoadPayloadFromFile(gameLib);
+		}
+	}
+	else {
+		cnMain_ValidatePayload(&config->payload);
+	}
+	s_payload.init();
 }
 
 void cnMain_PrintUsage(int argc, char** argv)
