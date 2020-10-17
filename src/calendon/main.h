@@ -1,9 +1,14 @@
-#ifndef CN_DRIVER_H
-#define CN_DRIVER_H
+#ifndef CN_MAIN_H
+#define CN_MAIN_H
+
+/**
+ * @file main.h
+ *
+ * The main program controls for Calendon.  These are the high-level controls to
+ * run a Calendon-based program.
+ */
 
 #include <calendon/cn.h>
-
-#include <calendon/main-config.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,4 +22,4 @@ CN_API void cnMain_Shutdown(void);
 }
 #endif
 
-#endif /* CALENDON_DRIVER_H */
+#endif /* CN_MAIN_H */

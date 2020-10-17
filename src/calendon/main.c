@@ -2,11 +2,15 @@
 
 #include <calendon/control.h>
 #include <calendon/log.h>
+#include <calendon/main-config.h>
 #include <calendon/main-detail.h>
 #include <calendon/tick-limits.h>
 #include <calendon/render.h>
 #include <calendon/ui.h>
 
+/**
+ * The initial startup point for Calendon.
+ */
 void cnMain_StartUp(int argc, char** argv)
 {
 	cnMain_BuildCoreSystemList();
