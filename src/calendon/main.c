@@ -13,19 +13,33 @@
  */
 void cnMain_StartUp(int argc, char** argv)
 {
+	// Builds the list of the systems known from program initialization to load
+	// and use.
 	cnMain_BuildCoreSystemList();
+
+	// Log filters exist as part of the command line, so pre-initialization of
+	// the log is required to be able to apply the filters.
 	cnLog_PreInit();
 
+	// Command line parsing requires the availability of systems for parsing of
+	// arguments.  Systems which allow command-line configuration must then
+	// have already been determined and described.
+	//
+	// Command line parsing allow systems to provide overrides for their
+	// default configurations, or for their configurations as loaded from file.
 	if (!cnMain_ParseCommandLine(argc, argv)) {
 		CN_FATAL_ERROR("Unable to parse command line.");
 	}
 
+	// Configuration of systems is complete at this point, so initialize systems.
 	for (uint32_t i = 0; i < s_numCoreSystems; ++i) {
 		if (!s_coreSystems[i].plugin().init()) {
 			CN_FATAL_ERROR("Unable to initialize core system: %d", i);
 		}
 	}
 
+	// Calendon could be used for headless programs, such as a server for
+	// multiplayer play.
 	CnMainConfig* config = (CnMainConfig*) cnMain_Config();
 	if (!config->headless) {
 		cnMain_StartUpUI();
@@ -45,8 +59,10 @@ void cnMain_StartUp(int argc, char** argv)
 	else {
 		cnMain_ValidatePayload(&config->payload);
 	}
-
 	s_payload.init();
+
+	// Initialize the time of the first program tick, so tick deltas are
+	// relevant after this point.
 	s_lastTick = cnTime_MakeNow();
 
 	CN_TRACE(LogSysMain, "Systems initialized.");
