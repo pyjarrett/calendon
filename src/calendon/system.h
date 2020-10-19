@@ -57,7 +57,11 @@ extern "C" {
 #endif
 
 typedef CnCommandLineOptionList (*CnSystem_CommandLineOptionsListFn)(void);
-typedef CnPlugin (*CnSystem_PluginFn)(void);
+
+typedef bool (*CnPlugin_InitFn)(void);
+typedef void (*CnPlugin_DrawFn)(void);
+typedef void (*CnPlugin_TickFn)(CnTime);
+typedef void (*CnPlugin_ShutdownFn)(void);
 
 /**
  * Returns the location of the system's configuration struct.
@@ -69,21 +73,52 @@ typedef void* (*CnSystem_ConfigFn)(void);
  */
 typedef void (*CnSystem_SetDefaultConfigFn)(void*);
 
+/**
+ * Provide a command line option list which has no options.
+ */
 CnCommandLineOptionList cnSystem_NoOptions(void);
+
+/**
+ * A noop function to do nothing to set a default config.
+ */
 void cnSystem_NoDefaultConfig(void*);
+
+/**
+ * Returns a NULL pointer to a config, indicating that the system has no
+ * storage for a config struct.
+ */
 void* cnSystem_NoConfig(void);
 
 /**
  * A system which not only operates like a plugin, but which provides runtime
- * configuration.  System initialization order depends upon their the
+ * configuration.
+ *
+ * System initialization order depends upon their the
  * topological sort of all of their dependencies.
+ *
+ * @todo provide descriptions of system dependencies
+ * @todo sort system dependencies using a topological sort
  */
 typedef struct {
+	/**
+	 * The name of the system which will be used as the prefix for the various
+	 * common functions to load.
+	 */
 	const char* name;
 	CnSystem_CommandLineOptionsListFn options;
-	CnSystem_PluginFn plugin;
 	CnSystem_ConfigFn config;
 	CnSystem_SetDefaultConfigFn setDefaultConfig;
+
+	CnPlugin_InitFn init;
+	CnPlugin_DrawFn draw;
+	CnPlugin_TickFn tick;
+	CnPlugin_ShutdownFn shutdown;
+
+	/**
+	 * The library from which this plugin was loaded.  If not loaded from a
+	 * shared library, this might be NULL.
+	 */
+	CnSharedLibrary sharedLibrary;
 } CnSystem;
 
 /**
