@@ -6,7 +6,7 @@
 #include <calendon/log.h>
 #include <calendon/main-config.h>
 #include <calendon/memory.h>
-#include <calendon/plugin.h>
+#include <calendon/behavior.h>
 #ifdef _WIN32
 #include <calendon/process.h>
 #endif
@@ -19,7 +19,7 @@
 #include <time.h>
 
 CnTime s_lastTick;
-CnPlugin s_payload;
+CnBehavior s_payload;
 CnSystem s_coreSystems[CnMaxNumCoreSystems];
 uint32_t s_numCoreSystems = 0;
 
@@ -31,8 +31,8 @@ static bool cnMain_Init(void) {
 	return true;
 }
 
-static CnPlugin cnMain_Plugin(void) {
-	return (CnPlugin) {
+static CnBehavior cnMain_Plugin(void) {
+	return (CnBehavior) {
 		.init          = cnMain_Init,
 		.shutdown      = NULL,
 		.tick          = NULL,
@@ -84,7 +84,7 @@ void cnMain_InitCoreSystems(void)
 	}
 }
 
-void cnMain_ValidatePayload(CnPlugin* payload)
+void cnMain_ValidatePayload(CnBehavior* payload)
 {
 	CN_ASSERT(payload, "Cannot register a null payload.");
 
@@ -116,7 +116,7 @@ void cnMain_LoadPayloadFromFile(const char* sharedLibraryName)
 	if (!library) {
 		CN_FATAL_ERROR("Unable to load game module: %s", sharedLibraryName);
 	}
-	cnPlugin_LoadFromSharedLibrary(&s_payload, library);
+	cnBehavior_LoadFromSharedLibrary(&s_payload, library);
 
 	cnMain_ValidatePayload(&s_payload);
 }
@@ -124,7 +124,7 @@ void cnMain_LoadPayloadFromFile(const char* sharedLibraryName)
 void cnMain_LoadPayload(CnMainConfig* config)
 {
 	CN_ASSERT_PTR(config);
-	if (!cnPlugin_IsComplete(&config->payload)) {
+	if (!cnBehavior_IsComplete(&config->payload)) {
 		if (!cnPath_IsFile(config->gameLibPath.str)) {
 			CN_FATAL_ERROR("Cannot load game. '%s' is not a game library.", config->gameLibPath.str);
 		}

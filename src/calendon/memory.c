@@ -53,9 +53,9 @@ void cnMemory_Shutdown(void)
 	}
 }
 
-CnPlugin cnMemory_Plugin(void)
+CnBehavior cnMemory_Plugin(void)
 {
-	return (CnPlugin) {
+	return (CnBehavior) {
 		.init = cnMemory_Init,
 		.shutdown = cnMemory_Shutdown,
 		.tick = NULL,

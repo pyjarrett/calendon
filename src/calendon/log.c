@@ -200,8 +200,8 @@ void cnLog_Print(CnLogHandle system, CnLogVerbosity verbosity, const char* forma
 	}
 }
 
-CnPlugin cnLog_Plugin(void) {
-	return (CnPlugin) {
+CnBehavior cnLog_Plugin(void) {
+	return (CnBehavior) {
 		.init = cnLog_Init,
 		.shutdown = cnLog_Shutdown,
 		.tick = NULL,

@@ -174,9 +174,9 @@ bool cnCrash_Init(void)
 
 #endif
 
-CnPlugin cnCrash_Plugin(void)
+CnBehavior cnCrash_Plugin(void)
 {
-	return (CnPlugin) {
+	return (CnBehavior) {
 		.init = cnCrash_Init,
 		.shutdown = NULL,
 		.tick = NULL,

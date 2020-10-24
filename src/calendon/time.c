@@ -137,9 +137,9 @@ CnTime cnTime_Min(CnTime left, CnTime right)
 	return cnTime_LessThan(left, right) ? left : right;
 }
 
-CnPlugin cnTime_Plugin(void)
+CnBehavior cnTime_Plugin(void)
 {
-	return (CnPlugin) {
+	return (CnBehavior) {
 		.init = cnTime_Init,
 		.shutdown = NULL,
 		.tick = NULL,

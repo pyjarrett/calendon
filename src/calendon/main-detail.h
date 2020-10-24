@@ -5,7 +5,7 @@
 
 #include <calendon/log.h>
 #include <calendon/main-config.h>
-#include <calendon/plugin.h>
+#include <calendon/behavior.h>
 #include <calendon/system.h>
 #include <calendon/time.h>
 
@@ -14,7 +14,7 @@ extern "C" {
 #endif
 
 extern CnTime s_lastTick;
-extern CnPlugin s_payload;
+extern CnBehavior s_payload;
 
 enum { CnMaxNumCoreSystems = 16 };
 extern CnSystem s_coreSystems[CnMaxNumCoreSystems];
@@ -26,7 +26,7 @@ bool cnMain_ParseCommandLine(int argc, char** argv);
 
 void cnMain_StartUpUI(void);
 void cnMain_LoadPayload(CnMainConfig* config);
-void cnMain_ValidatePayload(CnPlugin* payload);
+void cnMain_ValidatePayload(CnBehavior* payload);
 bool cnMain_GenerateTick(CnTime* outDt);
 
 #ifdef __cplusplus

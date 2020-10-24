@@ -62,6 +62,8 @@ void cnMain_Loop(void)
 
 	while (cnMain_IsRunning() && !cnMain_IsTickLimitReached())
 	{
+		// cnUI_StartFrame();
+
 		// Event checking should be quick.  Always processing events prevents
 		// slowness due to bursts.
 		cnUI_ProcessWindowEvents();
@@ -70,8 +72,12 @@ void cnMain_Loop(void)
 		if (cnMain_GenerateTick(&dt)) {
 			s_payload.tick(dt);
 			cnMain_TickCompleted();
+			s_payload.draw();
 		}
-		s_payload.draw();
+
+		// cnPayload_Draw(s_payload);
+
+		// cnUI_EndFrame();
 	}
 }
 

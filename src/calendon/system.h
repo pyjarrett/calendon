@@ -50,7 +50,7 @@
 #include <calendon/cn.h>
 
 #include <calendon/command-line-option.h>
-#include <calendon/plugin.h>
+#include <calendon/behavior.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -58,10 +58,11 @@ extern "C" {
 
 typedef CnCommandLineOptionList (*CnSystem_CommandLineOptionsListFn)(void);
 
-typedef bool (*CnPlugin_InitFn)(void);
-typedef void (*CnPlugin_DrawFn)(void);
-typedef void (*CnPlugin_TickFn)(CnTime);
-typedef void (*CnPlugin_ShutdownFn)(void);
+/**
+ * Initialization can fail.
+ */
+typedef bool (*CnSystem_InitFn)(void);
+typedef void (*CnSystem_ShutdownFn)(void);
 
 /**
  * Returns the location of the system's configuration struct.
@@ -105,14 +106,18 @@ typedef struct {
 	 * common functions to load.
 	 */
 	const char* name;
+
+	// Configuration control.
 	CnSystem_CommandLineOptionsListFn options;
 	CnSystem_ConfigFn config;
 	CnSystem_SetDefaultConfigFn setDefaultConfig;
 
-	CnPlugin_InitFn init;
-	CnPlugin_DrawFn draw;
-	CnPlugin_TickFn tick;
-	CnPlugin_ShutdownFn shutdown;
+	// Lifecycle control.
+	CnSystem_InitFn init;
+	CnSystem_ShutdownFn shutdown;
+
+	// Behaviors to be used by the system.
+	CnBehavior plugin;
 
 	/**
 	 * The library from which this plugin was loaded.  If not loaded from a

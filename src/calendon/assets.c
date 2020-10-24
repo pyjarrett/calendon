@@ -81,8 +81,8 @@ bool cnAssets_PathBufferFor(const char* assetName, CnPathBuffer* path)
 	return true;
 }
 
-CnPlugin cnAssets_Plugin(void) {
-	return (CnPlugin) {
+CnBehavior cnAssets_Plugin(void) {
+	return (CnBehavior) {
 		.init          = cnAssets_Init,
 		.shutdown      = cnAssets_Shutdown,
 		.tick          = NULL,
