@@ -248,7 +248,9 @@ def cmd_run(ctx: ProjectContext, args: argparse.Namespace) -> int:
     ovr_ctx = ctx.copy_with_overrides(vars(args))
 
     # Ensure an up-to-date build.
-    cmd_build(ovr_ctx, args)
+    build_status = cmd_build(ovr_ctx, args)
+    if build_status != 0:
+        return build_status
 
     ovr_ctx.set_game(os.path.join(ctx.demo_dir(), mp.root_to_shared_lib(args.demo)))
     return ovr_ctx.run_driver()
