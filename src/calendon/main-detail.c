@@ -19,7 +19,6 @@
 #include <time.h>
 
 CnTime s_lastTick;
-CnBehavior s_payload;
 CnSystem s_coreSystems[CnMaxNumCoreSystems];
 uint32_t s_numCoreSystems = 0;
 
@@ -31,32 +30,36 @@ static bool cnMain_Init(void) {
 	return true;
 }
 
-static CnBehavior cnMain_Plugin(void) {
-	return (CnBehavior) {
-		.init          = cnMain_Init,
-		.shutdown      = NULL,
-		.tick          = NULL,
-		.draw          = NULL,
-		.sharedLibrary = NULL
-	};
+const char* cnMain_Name(void)
+{
+	return "Main";
 }
 
 static CnSystem cnMain_System(void)
 {
 	return (CnSystem) {
-		.name             = "Main",
+		.name             = cnMain_Name,
 		.options          = cnMain_CommandLineOptionList,
 		.config           = cnMain_Config,
 		.setDefaultConfig = cnMain_SetDefaultConfig,
-		.plugin           = cnMain_Plugin
+
+		.init             = cnMain_Init,
+		.shutdown         = NULL,
+		.sharedLibrary    = NULL,
+
+		.behavior         = cnSystem_NoBehavior()
 	};
 }
 
-void cnMain_AddCoreSystem(CnSystem system)
+CnSystem* cnMain_AddCoreSystem(CnSystem system)
 {
-	CN_ASSERT(s_numCoreSystems < CnMaxNumCoreSystems, "Too many core systems added.");
-	s_coreSystems[s_numCoreSystems] = system;
+	if (s_numCoreSystems >= CnMaxNumCoreSystems) {
+		CN_FATAL_ERROR("Too many core systems added.");
+	}
+	CnSystem* assigned = &s_coreSystems[s_numCoreSystems];
+	*assigned = system;
 	++s_numCoreSystems;
+	return assigned;
 }
 
 void cnMain_BuildCoreSystemList(void)
@@ -78,24 +81,21 @@ void cnMain_BuildCoreSystemList(void)
 void cnMain_InitCoreSystems(void)
 {
 	for (uint32_t i = 0; i < s_numCoreSystems; ++i) {
-		if (!s_coreSystems[i].plugin().init()) {
+		if (!s_coreSystems[i].init()) {
 			CN_FATAL_ERROR("Unable to initialize core system: %d", i);
 		}
 	}
 }
 
-void cnMain_ValidatePayload(CnBehavior* payload)
+void cnMain_LoadPayload(CnMainConfig* config)
 {
-	CN_ASSERT(payload, "Cannot register a null payload.");
+	CN_ASSERT_PTR(config);
 
-	if (!payload->init) CN_FATAL_ERROR("CnPlugin_Init function missing in payload.");
-	if (!payload->draw) CN_FATAL_ERROR("CnPlugin_DrawFn function missing in payload.");
-	if (!payload->tick) CN_FATAL_ERROR("CnPlugin_TickFn function missing in payload.");
-	if (!payload->shutdown) CN_FATAL_ERROR("CnPlugin_ShutdownFn function missing in payload.");
-}
+	if (!cnPath_IsFile(config->gameLibPath.str)) {
+		CN_FATAL_ERROR("Cannot load game. '%s' is not a game library.", config->gameLibPath.str);
+	}
 
-void cnMain_LoadPayloadFromFile(const char* sharedLibraryName)
-{
+	const char* sharedLibraryName = config->gameLibPath.str;
 	CN_ASSERT(sharedLibraryName, "Cannot use a null shared library name to load a payload.");
 	uint64_t gameLibModified;
 	if (!cnAssets_LastModifiedTime(sharedLibraryName, &gameLibModified)) {
@@ -106,38 +106,21 @@ void cnMain_LoadPayloadFromFile(const char* sharedLibraryName)
 	strftime(timeBuffer, sizeof(timeBuffer), "%c", lt);
 	CN_TRACE(LogSysMain, "Last modified time: %s", timeBuffer);
 
-	// Shutdown any previous plugin.
-	if (s_payload.shutdown) {
-		s_payload.shutdown();
-	}
-
-	cnSharedLibrary_Release(s_payload.sharedLibrary);
-	const CnSharedLibrary library = cnSharedLibrary_Load(sharedLibraryName);
-	if (!library) {
+	const CnSharedLibrary sharedLib = cnSharedLibrary_Load(sharedLibraryName);
+	if (!sharedLib) {
 		CN_FATAL_ERROR("Unable to load game module: %s", sharedLibraryName);
 	}
-	cnBehavior_LoadFromSharedLibrary(&s_payload, library);
 
-	cnMain_ValidatePayload(&s_payload);
-}
-
-void cnMain_LoadPayload(CnMainConfig* config)
-{
-	CN_ASSERT_PTR(config);
-	if (!cnBehavior_IsComplete(&config->payload)) {
-		if (!cnPath_IsFile(config->gameLibPath.str)) {
-			CN_FATAL_ERROR("Cannot load game. '%s' is not a game library.", config->gameLibPath.str);
-		}
-
-		const char* gameLib = config->gameLibPath.str;
-		if (gameLib) {
-			cnMain_LoadPayloadFromFile(gameLib);
-		}
+	if (s_numCoreSystems >= CnMaxNumCoreSystems) {
+		CN_FATAL_ERROR("Too many core systems, cannot load demo.");
 	}
-	else {
-		cnMain_ValidatePayload(&config->payload);
+	CnSystem loaded;
+	if (!cnSystem_LoadFromSharedLibrary(&loaded, "Demo", sharedLib)) {
+		CN_FATAL_ERROR("Unable to load demo.");
 	}
-	s_payload.init();
+
+	CnSystem* demo = cnMain_AddCoreSystem(loaded);
+	demo->init();
 }
 
 void cnMain_PrintUsage(int argc, char** argv)
@@ -194,7 +177,7 @@ bool cnMain_ParseCommandLine(int argc, char** argv)
 	// the command line.
 	for (uint32_t i = 0; i < s_numCoreSystems; ++i) {
 		if (s_coreSystems[i].setDefaultConfig == NULL) {
-			CN_ERROR(LogSysMain, "%s is missing a default config.", s_coreSystems[i].name);
+			CN_ERROR(LogSysMain, "%s is missing a default config.", s_coreSystems[i].name());
 		}
 		CN_ASSERT_PTR(s_coreSystems[i].setDefaultConfig);
 		s_coreSystems[i].setDefaultConfig(s_coreSystems[i].config());

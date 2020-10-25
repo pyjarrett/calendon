@@ -67,7 +67,7 @@ void step(void)
 	}
 }
 
-CN_GAME_API bool CnPlugin_Init(void)
+CN_GAME_API bool Demo_Init(void)
 {
 	LogSysSample = cnLog_RegisterSystem("Sample");
 	cnLog_SetVerbosity(LogSysSample, CnLogVerbosityTrace);
@@ -79,23 +79,21 @@ CN_GAME_API bool CnPlugin_Init(void)
     return true;
 }
 
-CN_GAME_API void CnPlugin_Draw(void)
+CN_GAME_API void Demo_Draw(CnFrameEvent* event)
 {
+	CN_UNUSED(event);
 	cnR_StartFrame();
 	const CnOpaqueColor white = cnOpaqueColor_MakeRGBu8(255, 255, 255);
 	cnR_DrawDebugLineStrip(points[currentBuffer], numCurrentPoints, white);
 	cnR_EndFrame();
 }
 
-CN_GAME_API void CnPlugin_Tick(CnTime dt)
+CN_GAME_API void Demo_Tick(CnFrameEvent* event)
 {
-	currentTime = cnTime_Add(currentTime, dt);
+	CN_ASSERT_PTR(event);
+	currentTime = cnTime_Add(currentTime, event->dt);
 	if (cnTime_LessThan(timeBeforeStep, currentTime)) {
 		step();
 		currentTime = cnTime_SubtractMonotonic(currentTime, timeBeforeStep);
 	}
-}
-
-CN_GAME_API void CnPlugin_Shutdown(void)
-{
 }

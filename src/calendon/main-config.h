@@ -20,8 +20,6 @@ void* cnMain_Config(void);
 void cnMain_SetDefaultConfig(void* config);
 CnCommandLineOptionList cnMain_CommandLineOptionList(void);
 
-CN_API void cnMainConfig_Freestanding(CnPlugin_InitFn init, CnPlugin_TickFn tick, CnPlugin_DrawFn draw, CnPlugin_ShutdownFn shutdown);
-
 #ifdef __cplusplus
 }
 #endif

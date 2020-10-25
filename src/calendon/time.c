@@ -137,24 +137,23 @@ CnTime cnTime_Min(CnTime left, CnTime right)
 	return cnTime_LessThan(left, right) ? left : right;
 }
 
-CnBehavior cnTime_Plugin(void)
+const char* cnTime_Name(void)
 {
-	return (CnBehavior) {
-		.init = cnTime_Init,
-		.shutdown = NULL,
-		.tick = NULL,
-		.draw = NULL,
-		.sharedLibrary = NULL
-	};
+	return "Time";
 }
 
 CnSystem cnTime_System(void)
 {
 	return (CnSystem) {
-		.name = "Time",
-		.options = cnSystem_NoOptions,
+		.name             = cnTime_Name,
+		.options          = cnSystem_NoOptions,
 		.setDefaultConfig = cnSystem_NoDefaultConfig,
-		.config = cnSystem_NoConfig,
-		.plugin = cnTime_Plugin
+		.config           = cnSystem_NoConfig,
+
+		.init             = cnTime_Init,
+		.shutdown         = NULL,
+		.sharedLibrary    = NULL,
+
+		.behavior         = cnSystem_NoBehavior()
 	};
 }

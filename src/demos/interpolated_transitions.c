@@ -106,7 +106,7 @@ void Anim_Update(BinaryAnimation* anim, CnTime dt)
 CnFloat2 left, right;
 BinaryAnimation squareAnim;
 
-CN_GAME_API bool CnPlugin_Init(void)
+CN_GAME_API bool Demo_Init(void)
 {
 	LogSysSample = cnLog_RegisterSystem("Sample");
 	cnLog_SetVerbosity(LogSysSample, CnLogVerbosityTrace);
@@ -124,7 +124,7 @@ CN_GAME_API bool CnPlugin_Init(void)
 	return true;
 }
 
-CN_GAME_API void CnPlugin_Draw(void)
+CN_GAME_API void Demo_Draw(CnFrameEvent* event)
 {
 	cnR_StartFrame();
 
@@ -135,8 +135,9 @@ CN_GAME_API void CnPlugin_Draw(void)
 	cnR_EndFrame();
 }
 
-CN_GAME_API void CnPlugin_Tick(CnTime dt)
+CN_GAME_API void Demo_Tick(CnFrameEvent* event)
 {
+	CN_ASSERT_PTR(event);
 	CnInput* input = cnInput_Poll();
 	CN_ASSERT(input, "CnInput poll provided a null pointer.");
 
@@ -152,7 +153,7 @@ CN_GAME_API void CnPlugin_Tick(CnTime dt)
 		}
 	}
 	else {
-		Anim_Update(&squareAnim, dt);
+		Anim_Update(&squareAnim, event->dt);
 		if (spaceDown && !spaceProcessed) {
 			Anim_Reverse(&squareAnim);
 			spaceProcessed = true;
@@ -162,8 +163,4 @@ CN_GAME_API void CnPlugin_Tick(CnTime dt)
 	if (!spaceDown) {
 		spaceProcessed = false;
 	}
-}
-
-CN_GAME_API void CnPlugin_Shutdown(void)
-{
 }

@@ -200,23 +200,23 @@ void cnLog_Print(CnLogHandle system, CnLogVerbosity verbosity, const char* forma
 	}
 }
 
-CnBehavior cnLog_Plugin(void) {
-	return (CnBehavior) {
-		.init = cnLog_Init,
-		.shutdown = cnLog_Shutdown,
-		.tick = NULL,
-		.draw = NULL,
-		.sharedLibrary = NULL
-	};
+const char* cnLog_Name(void)
+{
+	return "Log";
 }
 
 CnSystem cnLog_System(void)
 {
 	return (CnSystem) {
-		.name = "Log",
-		.options = cnLog_CommandLineOptionList,
-		.config = cnLog_Config,
+		.name             = cnLog_Name,
+		.options          = cnLog_CommandLineOptionList,
+		.config           = cnLog_Config,
 		.setDefaultConfig = cnLog_SetDefaultConfig,
-		.plugin = cnLog_Plugin
+
+		.init             = cnLog_Init,
+		.shutdown         = cnLog_Shutdown,
+		.sharedLibrary    = NULL,
+
+		.behavior         = cnSystem_NoBehavior()
 	};
 }

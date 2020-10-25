@@ -81,23 +81,26 @@ bool cnAssets_PathBufferFor(const char* assetName, CnPathBuffer* path)
 	return true;
 }
 
-CnBehavior cnAssets_Plugin(void) {
-	return (CnBehavior) {
-		.init          = cnAssets_Init,
-		.shutdown      = cnAssets_Shutdown,
-		.tick          = NULL,
-		.draw          = NULL,
-		.sharedLibrary = NULL
-	};
+const char* cnAssets_Name(void)
+{
+	return "Assets";
 }
 
 CnSystem cnAssets_System(void)
 {
 	return (CnSystem) {
-		.name             = "Assets",
+		.name             = cnAssets_Name,
 		.options          = cnAssets_CommandLineOptionList,
 		.config           = cnAssets_Config,
 		.setDefaultConfig = cnAssets_SetDefaultConfig,
-		.plugin           = cnAssets_Plugin
+
+		.init             = cnAssets_Init,
+		.shutdown         = cnAssets_Shutdown,
+		.sharedLibrary    = NULL,
+
+		.behavior.beginFrame = NULL,
+		.behavior.tick       = NULL,
+		.behavior.draw       = NULL,
+		.behavior.endFrame   = NULL,
 	};
 }

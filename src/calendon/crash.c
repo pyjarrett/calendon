@@ -174,24 +174,23 @@ bool cnCrash_Init(void)
 
 #endif
 
-CnBehavior cnCrash_Plugin(void)
+const char* cnCrash_Name(void)
 {
-	return (CnBehavior) {
-		.init = cnCrash_Init,
-		.shutdown = NULL,
-		.tick = NULL,
-		.draw = NULL,
-		.sharedLibrary = NULL
-	};
+	return "Crash";
 }
 
 CnSystem cnCrash_System(void)
 {
 	return (CnSystem) {
-		.name = "Crash",
-		.plugin = cnCrash_Plugin,
-		.options = cnSystem_NoOptions,
-		.config = cnSystem_NoConfig,
-		.setDefaultConfig = cnSystem_NoDefaultConfig
+		.name             = cnCrash_Name,
+		.options          = cnSystem_NoOptions,
+		.config           = cnSystem_NoConfig,
+		.setDefaultConfig = cnSystem_NoDefaultConfig,
+
+		.init             = cnCrash_Init,
+		.shutdown         = NULL,
+		.sharedLibrary    = NULL,
+
+		.behavior         = cnSystem_NoBehavior()
 	};
 }

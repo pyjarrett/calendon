@@ -51,12 +51,15 @@
 
 #include <calendon/command-line-option.h>
 #include <calendon/behavior.h>
+#include <calendon/shared-library.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef CnCommandLineOptionList (*CnSystem_CommandLineOptionsListFn)(void);
+
+typedef const char* (*CnSystem_NameFn)(void);
 
 /**
  * Initialization can fail.
@@ -91,6 +94,11 @@ void cnSystem_NoDefaultConfig(void*);
 void* cnSystem_NoConfig(void);
 
 /**
+ * An empty behavior which does nothing.
+ */
+CnBehavior cnSystem_NoBehavior(void);
+
+/**
  * A system which not only operates like a plugin, but which provides runtime
  * configuration.
  *
@@ -105,7 +113,7 @@ typedef struct {
 	 * The name of the system which will be used as the prefix for the various
 	 * common functions to load.
 	 */
-	const char* name;
+	CnSystem_NameFn name;
 
 	// Configuration control.
 	CnSystem_CommandLineOptionsListFn options;
@@ -117,7 +125,7 @@ typedef struct {
 	CnSystem_ShutdownFn shutdown;
 
 	// Behaviors to be used by the system.
-	CnBehavior plugin;
+	CnBehavior behavior;
 
 	/**
 	 * The library from which this plugin was loaded.  If not loaded from a
@@ -130,6 +138,8 @@ typedef struct {
  * A function which describes a system.
  */
 typedef CnSystem (*CnSystem_SystemFn)(void);
+
+bool cnSystem_LoadFromSharedLibrary(CnSystem* system, const char* name, CnSharedLibrary library);
 
 #ifdef __cplusplus
 }

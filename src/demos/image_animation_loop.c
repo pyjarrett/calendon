@@ -26,7 +26,7 @@ CnButtonMapping buttonMapping;
 
 CnFloat2 position;
 
-CN_GAME_API bool CnPlugin_Init(void)
+CN_GAME_API bool Demo_Init(void)
 {
 	LogSysSample = cnLog_RegisterSystem("Sample");
 	cnLog_SetVerbosity(LogSysSample, CnLogVerbosityTrace);
@@ -67,8 +67,9 @@ CN_GAME_API bool CnPlugin_Init(void)
 	return true;
 }
 
-CN_GAME_API void CnPlugin_Draw(void)
+CN_GAME_API void Demo_Draw(CnFrameEvent* event)
 {
+	CN_UNUSED(event);
 	cnR_StartFrame();
 
 	CnDimension2f size = { .width = 100.0f, .height = 100.0f };
@@ -94,11 +95,8 @@ void applyInputs(CnTime dt)
 	}
 }
 
-CN_GAME_API void CnPlugin_Tick(CnTime dt)
+CN_GAME_API void Demo_Tick(CnFrameEvent* event)
 {
-	applyInputs(dt);
-}
-
-CN_GAME_API void CnPlugin_Shutdown(void)
-{
+	CN_ASSERT_PTR(event);
+	applyInputs(event->dt);
 }

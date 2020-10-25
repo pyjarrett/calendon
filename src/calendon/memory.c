@@ -53,23 +53,23 @@ void cnMemory_Shutdown(void)
 	}
 }
 
-CnBehavior cnMemory_Plugin(void)
+const char* cnMemory_Name(void)
 {
-	return (CnBehavior) {
-		.init = cnMemory_Init,
-		.shutdown = cnMemory_Shutdown,
-		.tick = NULL,
-		.draw = NULL,
-		.sharedLibrary = NULL
-	};
+	return "Memory";
 }
 
-CnSystem cnMemory_System(void) {
+CnSystem cnMemory_System(void)
+{
 	return (CnSystem) {
-		.name = "Memory",
-		.plugin = cnMemory_Plugin,
-		.options = cnSystem_NoOptions,
-		.config = cnSystem_NoConfig,
-		.setDefaultConfig = cnSystem_NoDefaultConfig
+		.name             = cnMemory_Name,
+		.options          = cnSystem_NoOptions,
+		.config           = cnSystem_NoConfig,
+		.setDefaultConfig = cnSystem_NoDefaultConfig,
+
+		.init             = cnMemory_Init,
+		.shutdown         = cnMemory_Shutdown,
+		.sharedLibrary    = NULL,
+
+		.behavior         = cnSystem_NoBehavior()
 	};
 }

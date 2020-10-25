@@ -12,7 +12,7 @@ CnLogHandle LogSysSample;
 
 CnFloat2 position;
 
-CN_GAME_API bool CnPlugin_Init(void)
+CN_GAME_API bool Demo_Init(void)
 {
 	LogSysSample = cnLog_RegisterSystem("Sample");
 	cnLog_SetVerbosity(LogSysSample, CnLogVerbosityTrace);
@@ -22,8 +22,9 @@ CN_GAME_API bool CnPlugin_Init(void)
 	return true;
 }
 
-CN_GAME_API void CnPlugin_Draw(void)
+CN_GAME_API void Demo_Draw(CnFrameEvent* event)
 {
+	CN_UNUSED(event);
 	cnR_StartFrame();
 
 	CnDimension2f rectSize = { 50, 50 };
@@ -33,15 +34,11 @@ CN_GAME_API void CnPlugin_Draw(void)
 	cnR_EndFrame();
 }
 
-CN_GAME_API void CnPlugin_Tick(CnTime dt)
+CN_GAME_API void Demo_Tick(CnFrameEvent* event)
 {
-	CN_UNUSED(dt);
+	CN_UNUSED(event);
 	CnInput* input = cnInput_Poll();
 	CN_ASSERT(input, "CnInput poll provided a null pointer.");
 	position = cnFloat2_Make((float) input->mouse.x, (float) input->mouse.y);
 
-}
-
-CN_GAME_API void CnPlugin_Shutdown(void)
-{
 }

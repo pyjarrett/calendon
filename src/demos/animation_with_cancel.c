@@ -94,7 +94,7 @@ void applyInputs(const CnInput* input, const CnTime dt)
 	}
 }
 
-CN_GAME_API bool CnPlugin_Init(void)
+CN_GAME_API bool Demo_Init(void)
 {
 	LogSysSample = cnLog_RegisterSystem("Sample");
 	cnLog_SetVerbosity(LogSysSample, CnLogVerbosityTrace);
@@ -155,8 +155,10 @@ void drawUI(void)
 	cnR_DrawSimpleText(font, statusLocation, buffer);
 }
 
-CN_GAME_API void CnPlugin_Draw(void)
+CN_GAME_API void Demo_Draw(CnFrameEvent* event)
 {
+	CN_UNUSED(event);
+
 	cnR_StartFrame();
 
 	const CnDimension2f rectSize = { 50, 50 };
@@ -168,12 +170,14 @@ CN_GAME_API void CnPlugin_Draw(void)
 	cnR_EndFrame();
 }
 
-CN_GAME_API void CnPlugin_Tick(CnTime dt)
+CN_GAME_API void Demo_Tick(CnFrameEvent* event)
 {
+	CN_ASSERT_PTR(event);
+
 	CnInput* input = cnInput_Poll();
 	CN_ASSERT_PTR(input);
 
-	applyInputs(input, dt);
+	applyInputs(input, event->dt);
 
 	if (!squareAnim.transitioning) {
 		if (changeAction.state == CnActionStateInProgress) {
@@ -181,11 +185,7 @@ CN_GAME_API void CnPlugin_Tick(CnTime dt)
 		}
 	}
 	else {
-		anim_update(&squareAnim, dt, animationRate);
+		anim_update(&squareAnim, event->dt, animationRate);
 	}
 	anim_complete(&squareAnim, animationRate);
-}
-
-CN_GAME_API void CnPlugin_Shutdown(void)
-{
 }

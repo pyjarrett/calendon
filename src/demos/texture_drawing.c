@@ -19,7 +19,7 @@ CnLogHandle LogSysSample;
 
 static CnSpriteId spriteId;
 
-CN_GAME_API bool CnPlugin_Init(void)
+CN_GAME_API bool Demo_Init(void)
 {
 	LogSysSample = cnLog_RegisterSystem("Sample");
 	cnLog_SetVerbosity(LogSysSample, CnLogVerbosityTrace);
@@ -44,8 +44,9 @@ CN_GAME_API bool CnPlugin_Init(void)
 	return true;
 }
 
-CN_GAME_API void CnPlugin_Draw(void)
+CN_GAME_API void Demo_Draw(CnFrameEvent* event)
 {
+	CN_UNUSED(event);
 	cnR_StartFrame();
 
 	CnFloat2 position = cnFloat2_Make(200, 200);
@@ -56,10 +57,7 @@ CN_GAME_API void CnPlugin_Draw(void)
 	cnR_EndFrame();
 }
 
-CN_GAME_API void CnPlugin_Tick(CnTime dt)
+CN_GAME_API void Demo_Tick(CnFrameEvent* event)
 {
-}
-
-CN_GAME_API void CnPlugin_Shutdown(void)
-{
+	CN_UNUSED(event);
 }

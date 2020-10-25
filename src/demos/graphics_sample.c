@@ -90,7 +90,7 @@ static void drawScene(void)
 	cnR_DrawSimpleText(font, cnFloat2_Make(0, 700), frameTime);
 }
 
-CN_GAME_API bool CnPlugin_Init(void)
+CN_GAME_API bool Demo_Init(void)
 {
 	LogSysSample = cnLog_RegisterSystem("Sample");
 	cnLog_SetVerbosity(LogSysSample, CnLogVerbosityTrace);
@@ -137,8 +137,9 @@ CN_GAME_API bool CnPlugin_Init(void)
 	return true;
 }
 
-CN_GAME_API void CnPlugin_Draw(void)
+CN_GAME_API void Demo_Draw(CnFrameEvent* event)
 {
+	CN_UNUSED(event);
 	cnR_StartFrame();
 
 	const CnAABB2 backingArea = cnR_BackingCanvasAABB2();
@@ -166,12 +167,9 @@ CN_GAME_API void CnPlugin_Draw(void)
 	cnR_EndFrame();
 }
 
-CN_GAME_API void CnPlugin_Tick(CnTime dt)
+CN_GAME_API void Demo_Tick(CnFrameEvent* event)
 {
-	cnAnimLoop_Tick(&sampleLoop, &sampleCursor, dt);
-	lastDt = dt;
-}
-
-CN_GAME_API void CnPlugin_Shutdown(void)
-{
+	CN_ASSERT_PTR(event);
+	cnAnimLoop_Tick(&sampleLoop, &sampleCursor, event->dt);
+	lastDt = event->dt;
 }

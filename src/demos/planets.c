@@ -26,7 +26,7 @@ typedef struct {
 #define NUM_PLANETS 4
 CelestialBody bodies[NUM_PLANETS];
 
-CN_GAME_API bool CnPlugin_Init(void)
+CN_GAME_API bool Demo_Init(void)
 {
 	LogSysSample = cnLog_RegisterSystem("Sample");
 	cnLog_SetVerbosity(LogSysSample, CnLogVerbosityTrace);
@@ -64,7 +64,7 @@ CN_GAME_API bool CnPlugin_Init(void)
 	return true;
 }
 
-CN_GAME_API void CnPlugin_Draw(void)
+CN_GAME_API void Demo_Draw(CnFrameEvent* event)
 {
 	cnR_StartFrame();
 
@@ -85,11 +85,12 @@ CN_GAME_API void CnPlugin_Draw(void)
 	cnR_EndFrame();
 }
 
-CN_GAME_API void CnPlugin_Tick(CnTime dt)
+CN_GAME_API void Demo_Tick(CnFrameEvent* event)
 {
-	lastDt = dt;
+	CN_ASSERT_PTR(event);
+	lastDt = event->dt;
 
-	const uint64_t ms = cnTime_Milli(dt);
+	const uint64_t ms = cnTime_Milli(event->dt);
 
 	const float gravitationalConstant = 0.0005f;
 	const float minGravityApplication = 2.0f;
@@ -121,8 +122,4 @@ CN_GAME_API void CnPlugin_Tick(CnTime dt)
 	for (uint32_t i = 0; i < NUM_PLANETS; ++i) {
 		bodies[i].position = cnFloat2_Add(bodies[i].position, cnFloat2_Multiply(bodies[i].velocity, (float)ms));
 	}
-}
-
-CN_GAME_API void CnPlugin_Shutdown(void)
-{
 }

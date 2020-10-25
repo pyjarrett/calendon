@@ -38,8 +38,6 @@ typedef struct {
 	CnBehavior_FrameFn endFrame;
 } CnBehavior;
 
-bool cnBehavior_LoadFromSharedLibrary(CnBehavior* behavior, CnSharedLibrary library);
-
 // Convenience functions provided to more simply and safely call frame functions
 // on a behavior, since a behavior may not have all frame functions assigned.
 void cnBehavior_BeginFrame(CnBehavior* behavior, CnFrameEvent* event);

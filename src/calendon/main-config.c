@@ -62,6 +62,7 @@ void cnMain_SetDefaultConfig(void* config)
 	CnMainConfig* c = (CnMainConfig*)config;
 	memset(c, 0, sizeof(CnMainConfig));
 	c->headless = false;
+	cnPathBuffer_Clear(&c->gameLibPath);
 }
 
 int32_t cnMain_OptionPrintWorkingDirectory(const CnCommandLineParse* parse, void* config)
@@ -151,14 +152,4 @@ int32_t cnMain_OptionHeadless(const CnCommandLineParse* parse, void* config)
 	mainConfig->headless = true;
 
 	return 1;
-}
-
-void cnMainConfig_Freestanding(CnPlugin_InitFn init, CnPlugin_TickFn tick,
-	CnPlugin_DrawFn draw, CnPlugin_ShutdownFn shutdown)
-{
-	s_config.payload.init = init;
-	s_config.payload.tick = tick;
-	s_config.payload.draw = draw;
-	s_config.payload.shutdown = shutdown;
-	s_config.payload.sharedLibrary = NULL;
 }
