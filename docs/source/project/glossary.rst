@@ -35,6 +35,17 @@ concepts should be documented in the source code itself.
         project, which also contains functions exported specifically for
         internal testing.
 
+    core system
+        Any of the built-in systems initialized prior to other systems to
+        provide basic functionality.
+          - Crash dumps    (Crash)
+          - Logging        (Log)
+          - Memory         (Mem)
+          - Time           (Time)
+          - Configuration  (Config)
+          - User Interface (UI)
+          - Rendering      (R)
+
     crank
         A command-line tool included in Calendon to simplify building and
         testing Calendon across platforms.
@@ -57,19 +68,16 @@ concepts should be documented in the source code itself.
 
     payload
         A game, demo or tool shared library (or dynamic link library)
-        which implements the basic interface for initializing, ticking, drawing
-        and shutting down.
-
-    plugin
-        A piece of code which implements the basic interface for initializing,
-        ticking, drawing and shutting down.  Plugins might not be loaded from
-        shared libraries and be assembled within a running program, such as
-        using function pointers.
+        loaded at runtime by the driver which implements the system interface.
 
     system
         A logical set of code, which may include more than one component.
-        Systems have a common prefix (e.g. ``cnLog_*``) and usually have an
-        initialization (``*_Init``) and a shutdown (``*_Shutdown``) function.
+        Systems have a common prefix (e.g. ``cnLog_*``) and describe a method
+        of configuration, lifecycle, and behavior.
+
+        Systems might be built in, such as the core systems (e.g. Assets,
+        Memory), loaded from shared libraries, or assembled within a running
+        program with function pointers.
 
     tick
         A time-based update.  Prefer "tick" to "update."

@@ -1,9 +1,9 @@
-#ifndef CN_PLUGIN_H
-#define CN_PLUGIN_H
+#ifndef CN_BEHAVIOR_H
+#define CN_BEHAVIOR_H
 
 /**
- * Behaviors group frame update functions, such as to be used by systems to give
- * them runtime behaviors.
+ * Behaviors group frame update functions, to be used by systems to group
+ * their runtime behaviors.
  */
 
 #include <calendon/cn.h>
@@ -49,4 +49,4 @@ void cnBehavior_EndFrame(CnBehavior* behavior, CnFrameEvent* event);
 }
 #endif
 
-#endif /* CN_PLUGIN_H */
+#endif /* CN_BEHAVIOR_H */

@@ -33,6 +33,11 @@ CnBehavior cnSystem_NoBehavior(void)
 	};
 }
 
+/**
+ * Finds functions with the matching prefix, followed by _FunctionName for each
+ * system function type: Name, Init, BeginFrame, Tick, Draw, and EndFrame.
+ * e.g. "Physics" would find "Physics_Name", "Physics_Init", "Physics_Tick", etc.
+ */
 bool cnSystem_LoadFromSharedLibrary(CnSystem* system, const char* name, CnSharedLibrary library)
 {
 	CN_ASSERT_PTR(system);

@@ -4,47 +4,16 @@
 /**
  * @file system.h
  *
- * Systems link configuration capability with multiple plugins.  They are
- * describe initialization dependency order.
+ * The basic building block of behavior in Calendon is the "system".
  *
- * A game is an assemblage of systems.  Not all systems exist at the same time,
- * and some provide supporting capabilities for others.
+ * A game is an assemblage of systems.
  *
- * As currently defined and implemented:
- * - "Plugin" : the grouping of initialization, shutdown, tick and draw
- * functions.  This is driven by the program driver itself.
+ * Systems provide configuration, initialization and shutdown, and main loop
+ * update behavior in a single unit.  All of these three elements are optional.
  *
- * Improving definitions:
- * - "System" : A set of attributes and code to provide a capability and may
- *   have its own initialization and shutdown code.  Knowing that something is
- *   a system does not mean you know any of its actual capabilities.
- * - "Runtime System" : A system which provides a function to update its state
- *   for a discrete passage of time, called a "tick".
- * - "Lifetime System" : A system which exists throughout the life of the entire
- *   program, from program initialization to program shutdown.
- * - "Core System" : A member of a group of "lifetime system"s which get
- *   initialized prior to any other systems to provide basic functionality to
- *   the game.
- *     - Crash dumps    (Crash)
- *     - Logging        (Log)
- *     - Memory         (Mem)
- *     - Time           (Time)
- *     - Configuration  (Config)
- *     - User Interface (UI)
- *     - Rendering      (R)
- *
- * Program Lifecycle
- * 1. Program Initialization
- *   - The driver determines the core systems.
- *   - TODO: The driver reads core system configuration and issues configuration
- *     commands to the core systems.
- *   - Command line arguments get parsed to apply overrides to startup system
- *     configs.
- *
- * Z. Program Shutdown
- *
- * Extensions:
- * - Allowing systems to disable or enable other systems.
+ * Systems may have behavior which executes during the 4 phase tick of the
+ * game update loop.  Some systems, like core's "Memory" system provide support
+ * for other systems, but have no behavior of their own.
  *
  */
 #include <calendon/cn.h>
@@ -57,8 +26,10 @@
 extern "C" {
 #endif
 
-typedef CnCommandLineOptionList (*CnSystem_CommandLineOptionsListFn)(void);
-
+/**
+ * Systems must provide allocation for their own name to prevent complexity
+ * from memory allocations issues dealing with dynamically loaded systems.
+ */
 typedef const char* (*CnSystem_NameFn)(void);
 
 /**
@@ -66,6 +37,8 @@ typedef const char* (*CnSystem_NameFn)(void);
  */
 typedef bool (*CnSystem_InitFn)(void);
 typedef void (*CnSystem_ShutdownFn)(void);
+
+typedef CnCommandLineOptionList (*CnSystem_CommandLineOptionsListFn)(void);
 
 /**
  * Returns the location of the system's configuration struct.
@@ -98,16 +71,6 @@ void* cnSystem_NoConfig(void);
  */
 CnBehavior cnSystem_NoBehavior(void);
 
-/**
- * A system which not only operates like a plugin, but which provides runtime
- * configuration.
- *
- * System initialization order depends upon their the
- * topological sort of all of their dependencies.
- *
- * @todo provide descriptions of system dependencies
- * @todo sort system dependencies using a topological sort
- */
 typedef struct {
 	/**
 	 * The name of the system which will be used as the prefix for the various
@@ -135,7 +98,7 @@ typedef struct {
 } CnSystem;
 
 /**
- * A function which describes a system.
+ * A function returning a description of a system.
  */
 typedef CnSystem (*CnSystem_SystemFn)(void);
 
