@@ -2,6 +2,7 @@
 File conversions to support multiplatforms.
 """
 
+from typing import Optional
 import os
 import subprocess
 import sys
@@ -61,4 +62,18 @@ def file_opener() -> str:
 
 def open_file(filename: str):
     """Opens a file using a default program."""
-    subprocess.Popen([file_opener(), filename], shell=True)
+    subprocess.Popen([file_opener(), filename], shell=False)
+
+
+def recommended_executable(program_name: str) -> Optional[str]:
+    """Shows the program which would be executed based on path."""
+    if sys.platform == 'win32':
+        program_locator = 'where'
+    else:
+        program_locator = 'which'
+
+    try:
+        return subprocess.check_output([program_locator, program_name]).decode().strip()
+    except subprocess.CalledProcessError:
+        print(f'Unable to find program to execute for: {program_name}')
+        return None

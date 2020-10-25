@@ -26,6 +26,13 @@ def _verify_executable_exists(ctx: ProjectContext, alias: Optional[str]) -> bool
 
     if not ctx.has_registered_program(alias):
         print(f'No alias exists for {alias}')
+        recommended: Optional[str] = mp.recommended_executable(mp.root_to_executable(alias))
+        if recommended is not None:
+            choice: str = input(f'Use recommended path for alias "{alias}": {recommended} [y/N]? ')
+            if choice == 'y':
+                print(f'Setting alias {alias} -> {recommended}')
+                return ctx.register_program(alias, recommended)
+
         print('Use `crank register ALIAS PATH` to register a program for use.')
         print('Example: crank register cmake "C:/Program Files/CMake/bin/cmake.exe"')
         return False
