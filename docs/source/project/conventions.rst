@@ -257,14 +257,14 @@ Header file:
      * What is the purpose of this file?
      */
 
+    // includes
+    // cn.h first and separate from the other header files.
+    #include <calendon/cn.h>
+
     // extern "C" here to include others headers.
     #ifdef __cplusplus
     extern "C" {
     #endif
-
-    // includes
-    // cn.h first and separate from the other header files.
-    #include <calendon/cn.h>
 
     // structs, enums, and typedefs
 
