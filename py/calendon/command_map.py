@@ -12,12 +12,12 @@ import calendon.parsers as parsers
 class CrankCommand:
     """A description of a command to hook up in Crank."""
     name: str
-    help: str
+    help: str  # pylint: disable=redefined-builtin
     parser: Any
     command: Any
 
     @staticmethod
-    def create(name: str, help: str) -> CrankCommand:
+    def create(name: str, help: str) -> CrankCommand:  # pylint: disable=redefined-builtin
         """Make a command using parser_* and cmd_* functions from associated libraries."""
         parser = getattr(parsers, f'parser_{name}', None)
         command = getattr(cmd, f'cmd_{name}', None)

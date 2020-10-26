@@ -219,9 +219,9 @@ def cmd_export(ctx: ProjectContext, args: argparse.Namespace) -> int:
     """Exports the currently built shared libraries and headers."""
     top_level_dir_name: str = 'calendon-0.0.1'
     if args.output_dir:
-        export_dir: str = os.path.join(args.output_dir, top_level_dir_name)
+        export_dir = os.path.join(args.output_dir, top_level_dir_name)
     else:
-        export_dir: str = os.path.join(ctx.export_dir(), top_level_dir_name)
+        export_dir = os.path.join(ctx.export_dir(), top_level_dir_name)
 
     header_dir: str = os.path.join(export_dir, 'include', 'calendon')
     base_dir: str = ctx.source_dir()
@@ -399,7 +399,9 @@ def cmd_pysetup(ctx: ProjectContext, args: argparse.Namespace) -> int:
         required_dev_packages.extend(['sphinx', 'sphinx_rtd_theme', 'breathe'])
         pip_install_args = [ctx.path_for_program('localpython3'), '-m', 'pip', 'install']
         pip_install_args.extend(required_dev_packages)
-    ctx.register_program('sphinx-build', os.path.join(ctx.venv_bin_dir(), mp.root_to_executable('sphinx-build')), override=True)
+
+    sphinx_build_path: str = os.path.join(ctx.venv_bin_dir(), mp.root_to_executable('sphinx-build'))
+    ctx.register_program('sphinx-build', sphinx_build_path, override=True)
     return run_program(pip_install_args, cwd=ctx.calendon_home())
 
 
@@ -414,8 +416,9 @@ def cmd_pycheck(ctx: ProjectContext, args: argparse.Namespace) -> int:
     python_path = ctx.path_for_program('localpython3')
     checks = [['mypy'],
               ['pylint'],
-              ['pycodestyle', '--max-line-length=120', '--show-source', '--statistics', '--count'],
-              ['pydocstyle', '--ignore=D200,D203,D204,D212,D401'],
+              ['pycodestyle', '--max-line-length=120', '--show-source',
+               '--statistics', '--count', '--ignore=E731'],
+              ['pydocstyle', '--ignore=D100,D102,D103,D104,D200,D203,D204,D212,D401'],
               ]
 
     failures = 0

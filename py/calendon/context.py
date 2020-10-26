@@ -20,11 +20,11 @@ from calendon.multiplatform import root_to_executable
 from calendon.run import run_program
 
 
-def _override_flavor_from_dict(flavor: object, kv: Dict):
+def _override_flavor_from_dict(flavor: object, overrides: Dict):
     """Overrides values in a flavor if they assigned in the namespace."""
-    for k in kv:
-        if kv[k] is not None and hasattr(flavor, k):
-            setattr(flavor, k, kv[k])
+    for k in overrides:
+        if overrides[k] is not None and hasattr(flavor, k):
+            setattr(flavor, k, overrides[k])
 
 
 @dataclass
@@ -69,9 +69,9 @@ class ProjectContext:
         self._registered_programs: Dict[str, str] = {}
         self._load_config(os.path.join(self.calendon_home(), '.crank'))
 
-    def _override_from_dict(self, kv: Dict):
-        _override_flavor_from_dict(self._build_flavor, kv)
-        _override_flavor_from_dict(self._run_flavor, kv)
+    def override_from_dict(self, overrides: Dict):
+        _override_flavor_from_dict(self._build_flavor, overrides)
+        _override_flavor_from_dict(self._run_flavor, overrides)
 
     def _load_config(self, config_path: str):
         """Loads a config from a path."""
@@ -80,9 +80,9 @@ class ProjectContext:
             return
 
         with open(config_path, 'r') as file:
-            kv = json.load(file)
-            self._registered_programs = kv.get('registered_programs', {})
-            self._override_from_dict(kv)
+            config_values = json.load(file)
+            self._registered_programs = config_values.get('registered_programs', {})
+            self.override_from_dict(config_values)
 
     def _save_config(self, config_path: str):
         with open(config_path, 'w') as file:
@@ -101,10 +101,10 @@ class ProjectContext:
     def save(self):
         self._save_config(os.path.join(self.calendon_home(), '.crank'))
 
-    def copy_with_overrides(self, kv: Dict) -> ProjectContext:
+    def copy_with_overrides(self, overrides: Dict) -> ProjectContext:
         """Creates a new context with the given overrides applied."""
         ctx = copy.deepcopy(self)
-        ctx._override_from_dict(kv)
+        ctx.override_from_dict(overrides)
         return ctx
 
     def calendon_home(self) -> str:
@@ -223,7 +223,6 @@ class ProjectContext:
             return True
 
         return False
-
 
 
 def default_calendon_home():

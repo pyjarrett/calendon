@@ -16,7 +16,6 @@ def reload():
 
     Provided to improve iteration of development on Crank.
     """
-
     # Manually reload for now.
     # TODO: Implement a depedency trace of modules for better maintainability.
     importlib.reload(cmake)

@@ -63,9 +63,9 @@ class InteractiveMode(cmd.Cmd):
 
 class CmdArgumentParser(argparse.ArgumentParser):
     """Base parser for use with Cmd to prevent crashing on bad parses."""
-    def parse_args(self, args):
+    def parse_args(self, args=None, namespace=None):
         """Catch the SystemExit so bad parses don't crash the interactive session."""
         try:
-            return super().parse_args(args)
+            return super().parse_args(args, namespace)
         except SystemExit:
             return None
