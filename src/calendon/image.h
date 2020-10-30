@@ -3,7 +3,7 @@
 
 #include <calendon/cn.h>
 
-#include <calendon/math2.h>
+#include <calendon/dimension.h>
 #include <calendon/memory.h>
 #include <calendon/row-col.h>
 
