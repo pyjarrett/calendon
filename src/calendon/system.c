@@ -1,5 +1,6 @@
 #include "system.h"
 
+#include <string.h>
 #include <calendon/string.h>
 
 CnCommandLineOptionList cnSystem_NoOptions(void)

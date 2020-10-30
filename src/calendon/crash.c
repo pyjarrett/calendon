@@ -2,9 +2,6 @@
 
 #include <calendon/log.h>
 
-#include <stdio.h>
-#include <string.h>
-
 #ifdef _WIN32
 
 #if CN_ENABLE_CORE_DUMPS
@@ -97,8 +94,10 @@ bool cnCrash_Init(void)
 
 #ifdef __linux__
 
-#include <sys/resource.h>
 #include <errno.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/resource.h>
 
 /**
  * The OS determines the placement of the core files with core_pattern.  This

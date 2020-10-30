@@ -1,6 +1,6 @@
 #include "action.h"
-#include "log.h"
 
+#include <calendon/log.h>
 #include <calendon/time.h>
 
 const char* CnActionState_AsString(CnActionState state)
