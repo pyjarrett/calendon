@@ -132,7 +132,9 @@ void cnMain_Shutdown(void)
 
 		CnSystem* system = &s_coreSystems[nextSystemIndex];
 		if (!system->shutdown) {
-			cnPrint("No shutdown function for: %s\n", system->name());
+            if (system->name) {
+                cnPrint("No shutdown function for: %s\n", system->name());
+            }
 		}
 		else {
 			system->shutdown();
