@@ -40,10 +40,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Profile: Add -pg flag for GCC to use with gprof
 # RelWIthDebugInfo: Optimized build with debug symbols included.
 if (UNIX)
-    set(CMAKE_CONFIGURATION_TYPES Debug;Release;Coverage;Future)
+    set(CMAKE_CONFIGURATION_TYPES Debug;Release;RelWithDebInfo;Coverage;Future)
 elseif (WIN32)
     # Coverage is not supported on Windows.
-    set(CMAKE_CONFIGURATION_TYPES Debug;Release)
+    set(CMAKE_CONFIGURATION_TYPES Debug;Release;RelWithDebInfo)
 endif()
 if(NOT CMAKE_BUILD_TYPE)
     # Visual studio might not correctly set CMAKEBUILD_TYPE
