@@ -3,7 +3,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include <calendon/log-config.h>
 #include <calendon/string.h>
 
 CnLogHandle LogSysMain;
@@ -15,6 +14,8 @@ const char* g_logSystemNames[CN_LOG_MAX_SYSTEMS];
  * needs to be tracked.
  */
 static bool s_initialized = false;
+
+static bool s_enabled = true;
 
 /**
  * The memory system is not initialized before logging needs to be initialized.
@@ -54,21 +55,9 @@ typedef struct {
  */
 static CnLogMessageCounter s_systemMessagesProduced[CN_LOG_MAX_SYSTEMS];
 
-static CnLogConfig s_config;
-
 void cnLogMessageCounter_Zero(CnLogMessageCounter* counter)
 {
 	memset(counter, 0, sizeof(*counter));
-}
-
-void* cnLog_Config(void) {
-	return &s_config;
-}
-
-void cnLog_SetDefaultConfig(void* config)
-{
-	CnLogConfig* c = (CnLogConfig*)config;
-	c->enabled = true;
 }
 
 bool cnLog_IsReady(void)
@@ -97,11 +86,6 @@ void cnLog_PreInit(void)
 	LogSysMain = cnLog_RegisterSystem("Main");
 }
 
-bool cnLog_Init(void)
-{
-	return true;
-}
-
 void cnLog_PrintStats(void)
 {
 	CN_ASSERT(cnLog_IsReady(), "Cannot shutdown log system, it was never initialized.");
@@ -126,20 +110,6 @@ void cnLog_PrintStats(void)
 		}
 		cnPrint("\n");
 	}
-}
-
-void cnLog_Shutdown(void)
-{
-	CN_ASSERT(cnLog_IsReady(), "Cannot shutdown log system, it was never initialized.");
-
-	cnLog_PrintStats();
-
-	for (uint32_t i = 0; i < s_numSystemsRegistered; ++i) {
-		g_logSystemNames[i] = NULL;
-	}
-	s_numSystemsRegistered = 0;
-	s_initialized = false;
-	CN_ASSERT(!cnLog_IsReady(), "Log system refused to shut down.");
 }
 
 /**
@@ -179,7 +149,7 @@ uint32_t cnLog_RegisterSystem(const char* name)
 	return systemIndex;
 }
 
-CN_API void cnLog_SetVerbosity(CnLogHandle system, uint32_t verbosity)
+void cnLog_SetVerbosity(CnLogHandle system, uint32_t verbosity)
 {
 	CN_ASSERT(system < s_numSystemsRegistered,
 		"Cannot set verbosity for nonexistent system: " PRIu32, system);
@@ -191,7 +161,7 @@ CN_API void cnLog_SetVerbosity(CnLogHandle system, uint32_t verbosity)
 void cnLog_Print(CnLogHandle system, CnLogVerbosity verbosity, const char* format, ...)
 {
 	++s_systemMessagesProduced[system].counts[verbosity];
-	if (s_config.enabled && (uint32_t)verbosity <= s_systemVerbosities[system]) {
+	if (s_enabled && (uint32_t)verbosity <= s_systemVerbosities[system]) {
 		va_list args;
 		va_start(args, format);
 		vprintf(format, args);
@@ -199,23 +169,21 @@ void cnLog_Print(CnLogHandle system, CnLogVerbosity verbosity, const char* forma
 	}
 }
 
-const char* cnLog_Name(void)
+void cnLog_SetEnabled(bool enabled)
 {
-	return "Log";
+    s_enabled = enabled;
 }
 
-CnSystem cnLog_System(void)
+void cnLog_Shutdown(void)
 {
-	return (CnSystem) {
-		.name             = cnLog_Name,
-		.options          = cnLog_CommandLineOptionList,
-		.config           = cnLog_Config,
-		.setDefaultConfig = cnLog_SetDefaultConfig,
+    CN_ASSERT(cnLog_IsReady(), "Cannot shutdown log system, it was never initialized.");
 
-		.init             = cnLog_Init,
-		.shutdown         = cnLog_Shutdown,
-		.sharedLibrary    = NULL,
+    cnLog_PrintStats();
 
-		.behavior         = cnSystem_NoBehavior()
-	};
+    for (uint32_t i = 0; i < s_numSystemsRegistered; ++i) {
+        g_logSystemNames[i] = NULL;
+    }
+    s_numSystemsRegistered = 0;
+    s_initialized = false;
+    CN_ASSERT(!cnLog_IsReady(), "Log system refused to shut down.");
 }

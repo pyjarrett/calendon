@@ -182,6 +182,10 @@ typedef struct { uint64_t native; } CnTime;
 	#define CN_WARN_DEPRECATED(msg)
 #endif
 
+/*
+ * `stdio.h` is very heavyweight, so break dependencies on it by wrapping
+ * `printf` and `vsnprintf`.
+ */
 CN_API void cnPrint(const char* msg, ...);
 
 CN_API int cnString_Format(char* str, size_t strLength, const char* format, ...);

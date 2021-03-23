@@ -4,6 +4,7 @@
 #include <calendon/assets-fileio.h>
 #include <calendon/crash.h>
 #include <calendon/log.h>
+#include <calendon/log-system.h>
 #include <calendon/main-config.h>
 #include <calendon/memory.h>
 #include <calendon/behavior.h>

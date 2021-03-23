@@ -103,11 +103,13 @@ CN_API void cnLog_Print(CnLogHandle system, CnLogVerbosity verbosity, const char
 #define CN_TRACE(system, msg, ...) CN_LOG(system, CnLogVerbosityTrace, msg, ##__VA_ARGS__)
 
 void            cnLog_PreInit(void);
-CnSystem        cnLog_System(void);
 
 CN_API bool     cnLog_IsReady(void);
 CN_API uint32_t cnLog_RegisterSystem(const char* name);
 CN_API void     cnLog_SetVerbosity(CnLogHandle system, uint32_t verbosity);
+CN_API void     cnLog_SetEnabled(bool enabled);
+
+CN_API void     cnLog_Shutdown(void);
 
 CN_HEADER_END
 

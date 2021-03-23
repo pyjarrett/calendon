@@ -1,5 +1,5 @@
-#ifndef CN_LOG_SYSTEM_H
-#define CN_LOG_SYSTEM_H
+#ifndef CN_LOG_SETTINGS_H
+#define CN_LOG_SETTINGS_H
 
 /**
  * @file log-settings.h
@@ -62,4 +62,4 @@ bool cnLog_VerbosityFromChar(char c, uint32_t* verbosity);
 
 CN_HEADER_END
 
-#endif /* CN_LOG_SYSTEM_H */
+#endif /* CN_LOG_SETTINGS_H */
