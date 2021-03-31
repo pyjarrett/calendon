@@ -15,6 +15,9 @@ const char* g_logSystemNames[CN_LOG_MAX_SYSTEMS];
  */
 static bool s_initialized = false;
 
+/**
+ * Global switch to enable/disable all logging.
+ */
 static bool s_enabled = true;
 
 /**
@@ -86,9 +89,16 @@ void cnLog_PreInit(void)
 	LogSysMain = cnLog_RegisterSystem("Main");
 }
 
-void cnLog_PrintStats(void)
+/**
+ * Displays a log of usage stats to inform developers of which systems are
+ * generating log traffic.
+ *
+ * Excessive logging messages slow the program down, and make logs a pain to go
+ * through and make it easy to miss important messages.
+ */
+static void cnLog_PrintUsageStats(void)
 {
-	CN_ASSERT(cnLog_IsReady(), "Cannot shutdown log system, it was never initialized.");
+	CN_ASSERT(cnLog_IsReady(), "Cannot report log usage stats, it was never initialized.");
 
 	const int systemColumnWidth = 30;
 	const int counterColumnWidth = 16;
@@ -178,7 +188,7 @@ void cnLog_Shutdown(void)
 {
     CN_ASSERT(cnLog_IsReady(), "Cannot shutdown log system, it was never initialized.");
 
-    cnLog_PrintStats();
+    cnLog_PrintUsageStats();
 
     for (uint32_t i = 0; i < s_numSystemsRegistered; ++i) {
         g_logSystemNames[i] = NULL;
