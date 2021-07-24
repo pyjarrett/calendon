@@ -50,6 +50,7 @@ bool cnAssets_ReadFile(const char *filename, uint32_t format, CnDynamicBuffer *b
 	if (fileLength > UINT32_MAX) {
 		CN_ERROR(LogSysMain, "File '%s' is too large to load into dynamic buffer: %li KiB",
 			filename, fileLength / 1024L);
+			fclose(file);
 		return false;
 	}
 	if (format == CnFileTypeText) {
