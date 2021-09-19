@@ -69,7 +69,7 @@ Your installation paths might be slightly different than those given here.
 
 Windows, using powershell:
 ```powershell
-py/crank.py register cmake "C:/CnProgram Files/CMake/bin/cmake.exe" 
+py/crank.py register cmake "C:/Program Files/CMake/bin/cmake.exe" 
 ```
 
 Linux:
