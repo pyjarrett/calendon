@@ -5,9 +5,10 @@ file(GLOB_RECURSE CALENDON_SRCS ./*.c)
 file(GLOB_RECURSE CALENDON_HEADERS ./*.h)
 
 # Add spng explicitly
+set(VENDOR_LIBSPNG_SRC_DIR ${VENDOR_LIBSPNG_ROOT}/spng)
 set(CALENDON_SRCS
 	${CALENDON_SRCS}
-	${VENDOR_LIBSPNG_ROOT}/spng.c)
+	${VENDOR_LIBSPNG_SRC_DIR}/spng.c)
 
 # Ignore compiler warnings on spng.
 if (CMAKE_C_COMPILER_ID MATCHES "MSVC")

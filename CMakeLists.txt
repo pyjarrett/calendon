@@ -162,8 +162,8 @@ endif()
 include(vendor/common/vendorize-cmake-0.1/vendorize.cmake)
 
 # libspng provides extremely simplified PNG loading.
-vendorize(common libspng 0.5.0)
-include_directories(SYSTEM ${VENDOR_LIBSPNG_ROOT})
+vendorize(common libspng 0.6.3)
+include_directories(SYSTEM ${VENDOR_LIBSPNG_ROOT}/spng)
 
 if (WIN32)
 	vendorize(windows sdl2 2.0.10)
