@@ -20,7 +20,7 @@ bool cnAssets_IsReady(void)
 }
 
 /**
- * Initial the asset system with the top level directory where assets should
+ * Initialize the asset system with the top level directory where assets should
  * be found.
  */
 bool cnAssets_Init(void)
