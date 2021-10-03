@@ -7,7 +7,7 @@ from calendon.context import ProjectContext
 
 def establish_connection(ctx: ProjectContext):
     new_db = not os.path.exists(os.path.join(ctx.calendon_home(), 'stats.db'))
-    connection = sqlite3.connect('stats.db')
+    connection = sqlite3.connect('stats.db')  # pylint: disable=E1101
     if new_db:
         print('Creating a new database.')
         connection.execute("""CREATE TABLE COMMANDS
