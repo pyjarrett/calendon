@@ -62,7 +62,7 @@ def file_opener() -> str:
 
 def open_file(filename: str):
     """Opens a file using a default program."""
-    subprocess.Popen([file_opener(), filename], shell=False)
+    subprocess.check_output([file_opener(), filename], shell=False)
 
 
 def recommended_executable(program_name: str) -> Optional[str]:

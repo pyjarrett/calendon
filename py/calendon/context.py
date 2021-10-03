@@ -79,13 +79,13 @@ class ProjectContext:
             print(f'No config file found at {config_path}')
             return
 
-        with open(config_path, 'r') as file:
+        with open(config_path, 'r', encoding='utf8') as file:
             config_values = json.load(file)
             self._registered_programs = config_values.get('registered_programs', {})
             self.override_from_dict(config_values)
 
     def _save_config(self, config_path: str):
-        with open(config_path, 'w') as file:
+        with open(config_path, 'w', encoding='utf8') as file:
             combined = self.dump()
             json.dump(combined, file, indent=4)
 

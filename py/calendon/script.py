@@ -8,7 +8,7 @@ import time
 from calendon.command_map import COMMANDS
 from calendon.context import default_calendon_home, ProjectContext
 from calendon.parsers import parser_add_top_level_args
-import calendon.stats as stats
+from calendon import stats
 
 # Commands which should save settings when run non-interactively.
 COMMANDS_WHICH_SAVE = ['register', 'pysetup', 'default', 'reset']

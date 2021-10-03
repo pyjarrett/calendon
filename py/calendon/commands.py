@@ -277,7 +277,7 @@ def write_demo_template(ctx: ProjectContext, name: str, dry_run: bool) -> bool:
         print(f'Would have written demo to {demo_source_file}')
         return True
 
-    with open(demo_source_file, 'w') as file:
+    with open(demo_source_file, 'w', encoding='utf8') as file:
         file.write(f'''#include <calendon/cn.h>
 #include <calendon/log.h>
 

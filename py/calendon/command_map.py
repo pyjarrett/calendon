@@ -5,7 +5,7 @@ from __future__ import annotations  # See PEP 484 and PEP 563.
 from dataclasses import dataclass
 from typing import Any
 import calendon.commands as cmd
-import calendon.parsers as parsers
+from calendon import parsers
 
 
 @dataclass

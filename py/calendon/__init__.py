@@ -1,13 +1,13 @@
 import importlib
 
-import calendon.cmake as cmake
-import calendon.commands as commands
-import calendon.command_map as command_map
-import calendon.context as context
-import calendon.interactive as interactive
-import calendon.multiplatform as mp
-import calendon.parsers as parsers
-import calendon.run as run
+from calendon import cmake
+from calendon import commands
+from calendon import command_map
+from calendon import context
+from calendon import interactive
+from calendon import multiplatform as mp
+from calendon import parsers
+from calendon import run
 
 
 def reload():
